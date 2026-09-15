@@ -1,0 +1,24 @@
+{
+  "scope": "directory organization and local references",
+  "build": "passed",
+  "html_links": "passed",
+  "mermaid_blocks": 6,
+  "sha256": {
+    "index.html": "31316123e51ea4f99a6f3c2f3e7d6696f294122905f85279432494da89398ed2",
+    "分层生成流程.md": "1737f85bbd40cdf29f68755deeba840698c8e47d9aeab04c2f386cafdabfb3e3",
+    "generated/flow-content.json": "11627a23b4f3d34f8f92c016dcf121b5eb7fab314079c2cefc756b0fbf891bc9",
+    "diagrams/detail3.mmd": "8281a64477fb3cba85f573eebeb0a3e7a8921004b2e50da4c958610fe59819ed",
+    "diagrams/main.svg": "8403970563149addd9199d41f461b9d03c8d3ca6d1051a2b7a16a62f803dc549",
+    "diagrams/detail1.svg": "007d03c676fe8bebc9ad66e1baaea369d4d9f77a76dfdfc65172b9bb802e3c6d",
+    "diagrams/detail2.mmd": "50bb563641d7455f46574c91fc1d13b2a3357b4ed301a85a13a45fc85d523abe",
+    "diagrams/detail3.svg": "034587a22f1f8e425d1941eb3079a0dcf9bc1047bb4551acc69b07aa0f64bee2",
+    "diagrams/main.mmd": "81b243f46ce418aaa9e814c62aac8fec4fb5c78e9c96c79bfa3f2ad2192d1f75",
+    "diagrams/detail2.svg": "a690aef015d4e048657d0f51fdfd0817a63fc0844ac33d90ea632cfdec38c9a5",
+    "diagrams/detail1.mmd": "aac6baec567c565f22e79ea6f29a57563680456ea0f0a3623b7e57c2f735936c",
+    "diagrams/detail4.mmd": "fc106d6756ff31520b088455a7d8ca539756400ff8f6f6d34eff383a148805a3",
+    "diagrams/detail4.svg": "518838f51cfba0511838df9e632208bd580a24dff687eeae82866306ef7e65f3",
+    "diagrams/architecture.svg": "6fe816ce1687dd0d93d03fe7d76787b26350252c36b584501642fa8231b7b9cf",
+    "diagrams/architecture.mmd": "7df4fe609a394cc5a68f885a84495989111b12eba63c35209425c5c93016dd85",
+    "scripts/build.py": "3c9e000ad9f4d9c6559bbeb81d88449415aeb497c8902462da2ce535e3fe6ecf"
+  }
+}

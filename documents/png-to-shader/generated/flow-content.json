@@ -1,0 +1,837 @@
+{
+  "revision": "V3",
+  "diagrams": [
+    {
+      "id": "architecture",
+      "nodes": [
+        {
+          "id": "user",
+          "label": "用户",
+          "kind": "terminal"
+        },
+        {
+          "id": "dispatch",
+          "label": "【程序】LangGraph 任务编排",
+          "kind": "step"
+        },
+        {
+          "id": "analysis",
+          "label": "【分析】分析与实验规划 Agent",
+          "kind": "step"
+        },
+        {
+          "id": "generation",
+          "label": "【生成】Shader 生成与优化 Agent",
+          "kind": "step"
+        },
+        {
+          "id": "review",
+          "label": "【评审】独立视觉评审 Agent",
+          "kind": "step"
+        },
+        {
+          "id": "tools",
+          "label": "【工具】编译、渲染与区域检查",
+          "kind": "step"
+        },
+        {
+          "id": "transition",
+          "label": "【程序】LangGraph 结果处理",
+          "kind": "step"
+        },
+        {
+          "id": "state",
+          "label": "【程序】任务状态与候选制品",
+          "kind": "step"
+        }
+      ],
+      "edges": [
+        {
+          "a": "user",
+          "b": "dispatch",
+          "label": "需求、修改和接受"
+        },
+        {
+          "a": "dispatch",
+          "b": "analysis",
+          "label": "参考、问题与评审证据"
+        },
+        {
+          "a": "dispatch",
+          "b": "generation",
+          "label": "实验任务与基线"
+        },
+        {
+          "a": "dispatch",
+          "b": "review",
+          "label": "参考、保留版与候选图"
+        },
+        {
+          "a": "analysis",
+          "b": "transition",
+          "label": "分析、计划与下一步建议"
+        },
+        {
+          "a": "generation",
+          "b": "transition",
+          "label": "候选、实验记录与限制"
+        },
+        {
+          "a": "review",
+          "b": "transition",
+          "label": "差异、退步与不确定性"
+        },
+        {
+          "a": "generation",
+          "b": "tools",
+          "label": "调用编译和渲染"
+        },
+        {
+          "a": "review",
+          "b": "tools",
+          "label": "调用只读检查"
+        },
+        {
+          "a": "tools",
+          "b": "state",
+          "label": "保存预览与工具结果"
+        },
+        {
+          "a": "transition",
+          "b": "state",
+          "label": "检查条件并更新版本"
+        },
+        {
+          "a": "state",
+          "b": "dispatch",
+          "label": "提供当前任务快照"
+        },
+        {
+          "a": "transition",
+          "b": "dispatch",
+          "label": "安排下一任务或暂停"
+        },
+        {
+          "a": "transition",
+          "b": "user",
+          "label": "重要取舍与最终验收"
+        }
+      ]
+    },
+    {
+      "id": "main",
+      "nodes": [
+        {
+          "id": "input",
+          "label": "参考图与需求",
+          "kind": "terminal"
+        },
+        {
+          "id": "prepare",
+          "label": "01 目标、拆解与基线",
+          "kind": "step"
+        },
+        {
+          "id": "selectElement",
+          "label": "02 选择当前元素",
+          "kind": "step"
+        },
+        {
+          "id": "route",
+          "label": "【分析】是否需要探索机制？",
+          "kind": "decision"
+        },
+        {
+          "id": "simple",
+          "label": "【生成】直接实现候选",
+          "kind": "step"
+        },
+        {
+          "id": "explore",
+          "label": "03 复杂特征探索",
+          "kind": "step"
+        },
+        {
+          "id": "refine",
+          "label": "04 局部比较与优化",
+          "kind": "step"
+        },
+        {
+          "id": "evaluate",
+          "label": "05 整图比较与保留",
+          "kind": "decision"
+        },
+        {
+          "id": "confirm",
+          "label": "06 最终预览与确认",
+          "kind": "step"
+        },
+        {
+          "id": "done",
+          "label": "交付用户接受版",
+          "kind": "terminal"
+        }
+      ],
+      "edges": [
+        {
+          "a": "input",
+          "b": "prepare",
+          "label": ""
+        },
+        {
+          "a": "prepare",
+          "b": "selectElement",
+          "label": ""
+        },
+        {
+          "a": "selectElement",
+          "b": "route",
+          "label": ""
+        },
+        {
+          "a": "route",
+          "b": "simple",
+          "label": "无需探索"
+        },
+        {
+          "a": "route",
+          "b": "explore",
+          "label": "需要探索"
+        },
+        {
+          "a": "simple",
+          "b": "refine",
+          "label": ""
+        },
+        {
+          "a": "explore",
+          "b": "refine",
+          "label": "方向已选"
+        },
+        {
+          "a": "refine",
+          "b": "explore",
+          "label": "换机制／重分析"
+        },
+        {
+          "a": "refine",
+          "b": "evaluate",
+          "label": "送整图比较"
+        },
+        {
+          "a": "evaluate",
+          "b": "selectElement",
+          "label": "局部仍需改进"
+        },
+        {
+          "a": "evaluate",
+          "b": "prepare",
+          "label": "整体需要重调"
+        },
+        {
+          "a": "evaluate",
+          "b": "confirm",
+          "label": "满足提交条件"
+        },
+        {
+          "a": "confirm",
+          "b": "done",
+          "label": "用户接受"
+        }
+      ]
+    },
+    {
+      "id": "detail1",
+      "nodes": [
+        {
+          "id": "input",
+          "label": "【用户】参考图、需求或整体反馈",
+          "kind": "terminal"
+        },
+        {
+          "id": "target",
+          "label": "【分析】整理目标与必保特征",
+          "kind": "step"
+        },
+        {
+          "id": "constraints",
+          "label": "【分析】整理输出约束与资源",
+          "kind": "step"
+        },
+        {
+          "id": "observe",
+          "label": "【分析】观察构图与尺度",
+          "kind": "step"
+        },
+        {
+          "id": "split",
+          "label": "【分析】拆解元素并标注疑点",
+          "kind": "step"
+        },
+        {
+          "id": "relations",
+          "label": "【分析】梳理交互依赖",
+          "kind": "step"
+        },
+        {
+          "id": "baseline",
+          "label": "【生成】实现或调整整图粗稿",
+          "kind": "step"
+        },
+        {
+          "id": "prioritize",
+          "label": "【分析】排序当前问题",
+          "kind": "step"
+        },
+        {
+          "id": "choose",
+          "label": "【分析】制定当前实验任务",
+          "kind": "step"
+        },
+        {
+          "id": "output",
+          "label": "【程序】交给主图选择路线",
+          "kind": "terminal"
+        }
+      ],
+      "edges": [
+        {
+          "a": "input",
+          "b": "target",
+          "label": ""
+        },
+        {
+          "a": "target",
+          "b": "constraints",
+          "label": ""
+        },
+        {
+          "a": "constraints",
+          "b": "observe",
+          "label": ""
+        },
+        {
+          "a": "observe",
+          "b": "split",
+          "label": ""
+        },
+        {
+          "a": "split",
+          "b": "relations",
+          "label": ""
+        },
+        {
+          "a": "relations",
+          "b": "baseline",
+          "label": ""
+        },
+        {
+          "a": "baseline",
+          "b": "prioritize",
+          "label": ""
+        },
+        {
+          "a": "prioritize",
+          "b": "choose",
+          "label": ""
+        },
+        {
+          "a": "choose",
+          "b": "output",
+          "label": ""
+        }
+      ]
+    },
+    {
+      "id": "detail2",
+      "nodes": [
+        {
+          "id": "input",
+          "label": "当前实验任务与整图基线",
+          "kind": "terminal"
+        },
+        {
+          "id": "features",
+          "label": "【分析】梳理特征与疑点",
+          "kind": "step"
+        },
+        {
+          "id": "needLens",
+          "label": "【分析】需要多视角分析？",
+          "kind": "decision"
+        },
+        {
+          "id": "lenses",
+          "label": "【分析】按疑点补充分析",
+          "kind": "step"
+        },
+        {
+          "id": "hypotheses",
+          "label": "【分析】提出不同机制假设",
+          "kind": "step"
+        },
+        {
+          "id": "prototypes",
+          "label": "【生成】实现原型并调用渲染",
+          "kind": "step"
+        },
+        {
+          "id": "pool",
+          "label": "【程序】登记候选与真实预览",
+          "kind": "step"
+        },
+        {
+          "id": "review",
+          "label": "【评审】对比原型与参考",
+          "kind": "step"
+        },
+        {
+          "id": "choice",
+          "label": "【分析】有可用的方向建议？",
+          "kind": "decision"
+        },
+        {
+          "id": "selectionReady",
+          "label": "【程序】选择条件已满足？",
+          "kind": "decision"
+        },
+        {
+          "id": "humanChoice",
+          "label": "【用户】选择或拒绝方向",
+          "kind": "decision"
+        },
+        {
+          "id": "diagnose",
+          "label": "【分析】判断失败原因",
+          "kind": "decision"
+        },
+        {
+          "id": "returnGlobal",
+          "label": "【程序】返回 01 调整拆解",
+          "kind": "terminal"
+        },
+        {
+          "id": "output",
+          "label": "【程序】移交选定方向与原型",
+          "kind": "terminal"
+        }
+      ],
+      "edges": [
+        {
+          "a": "input",
+          "b": "features",
+          "label": ""
+        },
+        {
+          "a": "features",
+          "b": "needLens",
+          "label": ""
+        },
+        {
+          "a": "needLens",
+          "b": "lenses",
+          "label": "需要"
+        },
+        {
+          "a": "needLens",
+          "b": "hypotheses",
+          "label": "无需"
+        },
+        {
+          "a": "lenses",
+          "b": "hypotheses",
+          "label": ""
+        },
+        {
+          "a": "hypotheses",
+          "b": "prototypes",
+          "label": ""
+        },
+        {
+          "a": "prototypes",
+          "b": "pool",
+          "label": ""
+        },
+        {
+          "a": "choice",
+          "b": "diagnose",
+          "label": "均不合适"
+        },
+        {
+          "a": "diagnose",
+          "b": "hypotheses",
+          "label": "实现机制不合适"
+        },
+        {
+          "a": "diagnose",
+          "b": "features",
+          "label": "特征理解有误"
+        },
+        {
+          "a": "diagnose",
+          "b": "returnGlobal",
+          "label": "拆解或整体关系有误"
+        },
+        {
+          "a": "pool",
+          "b": "review",
+          "label": ""
+        },
+        {
+          "a": "review",
+          "b": "choice",
+          "label": "评审证据"
+        },
+        {
+          "a": "choice",
+          "b": "selectionReady",
+          "label": "有方向建议"
+        },
+        {
+          "a": "selectionReady",
+          "b": "output",
+          "label": "已获确认或允许自动选择"
+        },
+        {
+          "a": "selectionReady",
+          "b": "humanChoice",
+          "label": "需要用户选择"
+        },
+        {
+          "a": "humanChoice",
+          "b": "output",
+          "label": "选定方向"
+        },
+        {
+          "a": "humanChoice",
+          "b": "diagnose",
+          "label": "均不合适"
+        }
+      ]
+    },
+    {
+      "id": "detail3",
+      "nodes": [
+        {
+          "id": "input",
+          "label": "本次候选与局部工作版",
+          "kind": "terminal"
+        },
+        {
+          "id": "preview",
+          "label": "【生成】放回场景并调用渲染",
+          "kind": "step"
+        },
+        {
+          "id": "compare",
+          "label": "【评审】比较目标问题与保护项",
+          "kind": "step"
+        },
+        {
+          "id": "adopt",
+          "label": "【分析】提出局部采用建议",
+          "kind": "decision"
+        },
+        {
+          "id": "resolve",
+          "label": "【用户】比较两版",
+          "kind": "decision"
+        },
+        {
+          "id": "keepNew",
+          "label": "【程序】核对后临时采用新版",
+          "kind": "step"
+        },
+        {
+          "id": "keepOld",
+          "label": "【程序】沿用原局部工作版",
+          "kind": "step"
+        },
+        {
+          "id": "nextStep",
+          "label": "【分析】安排下一项实验动作",
+          "kind": "decision"
+        },
+        {
+          "id": "tune",
+          "label": "【生成】按任务范围继续细化",
+          "kind": "step"
+        },
+        {
+          "id": "reanalyse",
+          "label": "【程序】返回 03 重新分析",
+          "kind": "terminal"
+        },
+        {
+          "id": "output",
+          "label": "【程序】移交尝试整图至 05",
+          "kind": "terminal"
+        }
+      ],
+      "edges": [
+        {
+          "a": "input",
+          "b": "preview",
+          "label": ""
+        },
+        {
+          "a": "preview",
+          "b": "compare",
+          "label": ""
+        },
+        {
+          "a": "compare",
+          "b": "adopt",
+          "label": ""
+        },
+        {
+          "a": "adopt",
+          "b": "keepNew",
+          "label": "建议采用"
+        },
+        {
+          "a": "adopt",
+          "b": "keepOld",
+          "label": "无改善或明确退步"
+        },
+        {
+          "a": "adopt",
+          "b": "resolve",
+          "label": "存在取舍或判断冲突"
+        },
+        {
+          "a": "resolve",
+          "b": "keepNew",
+          "label": "选择新候选"
+        },
+        {
+          "a": "resolve",
+          "b": "keepOld",
+          "label": "选择原版"
+        },
+        {
+          "a": "keepNew",
+          "b": "nextStep",
+          "label": ""
+        },
+        {
+          "a": "keepOld",
+          "b": "nextStep",
+          "label": ""
+        },
+        {
+          "a": "nextStep",
+          "b": "tune",
+          "label": "同机制可继续细化"
+        },
+        {
+          "a": "tune",
+          "b": "preview",
+          "label": "生成下一候选"
+        },
+        {
+          "a": "nextStep",
+          "b": "reanalyse",
+          "label": "机制存疑或反复停滞"
+        },
+        {
+          "a": "nextStep",
+          "b": "output",
+          "label": "本轮局部工作就绪"
+        }
+      ]
+    },
+    {
+      "id": "detail4",
+      "nodes": [
+        {
+          "id": "input",
+          "label": "本次尝试整图与整图保留版",
+          "kind": "terminal"
+        },
+        {
+          "id": "compare",
+          "label": "【评审】对照参考做整图比较",
+          "kind": "step"
+        },
+        {
+          "id": "promote",
+          "label": "【分析】提出整图采用建议",
+          "kind": "decision"
+        },
+        {
+          "id": "resolve",
+          "label": "【用户】裁决整体取舍",
+          "kind": "decision"
+        },
+        {
+          "id": "keepNew",
+          "label": "【程序】核对后更新整图保留版",
+          "kind": "step"
+        },
+        {
+          "id": "keepOld",
+          "label": "【程序】沿用原整图保留版",
+          "kind": "step"
+        },
+        {
+          "id": "scope",
+          "label": "【分析】安排保留版下一步",
+          "kind": "decision"
+        },
+        {
+          "id": "local",
+          "label": "【程序】返回 02 处理局部",
+          "kind": "terminal"
+        },
+        {
+          "id": "globalReturn",
+          "label": "【程序】返回 01 调整整体或目标",
+          "kind": "terminal"
+        },
+        {
+          "id": "final",
+          "label": "【工具】按约定条件渲染最终版",
+          "kind": "step"
+        },
+        {
+          "id": "finalCheck",
+          "label": "【评审】视觉与行为要求满足？",
+          "kind": "decision"
+        },
+        {
+          "id": "accept",
+          "label": "【用户】接受此具体版本？",
+          "kind": "decision"
+        },
+        {
+          "id": "feedback",
+          "label": "【分析】整理偏差或修改意见",
+          "kind": "step"
+        },
+        {
+          "id": "modifyScope",
+          "label": "【分析】判断需要修改哪一层",
+          "kind": "decision"
+        },
+        {
+          "id": "done",
+          "label": "【程序】记录接受版并交付",
+          "kind": "terminal"
+        },
+        {
+          "id": "feedbackLocal",
+          "label": "【程序】返回 02 处理局部",
+          "kind": "terminal"
+        },
+        {
+          "id": "feedbackGlobal",
+          "label": "【程序】返回 01 调整整体或目标",
+          "kind": "terminal"
+        }
+      ],
+      "edges": [
+        {
+          "a": "input",
+          "b": "compare",
+          "label": ""
+        },
+        {
+          "a": "compare",
+          "b": "promote",
+          "label": ""
+        },
+        {
+          "a": "promote",
+          "b": "keepNew",
+          "label": "建议采用"
+        },
+        {
+          "a": "promote",
+          "b": "keepOld",
+          "label": "无改善或明确退步"
+        },
+        {
+          "a": "promote",
+          "b": "resolve",
+          "label": "存在整体取舍"
+        },
+        {
+          "a": "resolve",
+          "b": "keepNew",
+          "label": "选择新整图"
+        },
+        {
+          "a": "resolve",
+          "b": "keepOld",
+          "label": "选择原整图"
+        },
+        {
+          "a": "keepNew",
+          "b": "scope",
+          "label": ""
+        },
+        {
+          "a": "keepOld",
+          "b": "scope",
+          "label": ""
+        },
+        {
+          "a": "scope",
+          "b": "local",
+          "label": "局部特征或机制问题"
+        },
+        {
+          "a": "scope",
+          "b": "globalReturn",
+          "label": "整体结构或关系问题"
+        },
+        {
+          "a": "scope",
+          "b": "final",
+          "label": "可以提交"
+        },
+        {
+          "a": "final",
+          "b": "finalCheck",
+          "label": ""
+        },
+        {
+          "a": "finalCheck",
+          "b": "accept",
+          "label": "满足"
+        },
+        {
+          "a": "finalCheck",
+          "b": "feedback",
+          "label": "发现偏差"
+        },
+        {
+          "a": "accept",
+          "b": "done",
+          "label": "明确接受"
+        },
+        {
+          "a": "accept",
+          "b": "feedback",
+          "label": "提出修改"
+        },
+        {
+          "a": "feedback",
+          "b": "modifyScope",
+          "label": ""
+        },
+        {
+          "a": "modifyScope",
+          "b": "feedbackLocal",
+          "label": "局部特征或机制"
+        },
+        {
+          "a": "modifyScope",
+          "b": "feedbackGlobal",
+          "label": "整体、关系或目标"
+        }
+      ]
+    }
+  ]
+}

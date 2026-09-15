@@ -1,0 +1,21 @@
+flowchart TB
+    input(["【用户】参考图、需求或整体反馈"])
+    target["【分析】整理目标与必保特征"]
+    constraints["【分析】整理输出约束与资源"]
+    observe["【分析】观察构图与尺度"]
+    split["【分析】拆解元素并标注疑点"]
+    relations["【分析】梳理交互依赖"]
+    baseline["【生成】实现或调整整图粗稿"]
+    prioritize["【分析】排序当前问题"]
+    choose["【分析】制定当前实验任务"]
+    output(["【程序】交给主图选择路线"])
+
+    input -->target
+    target -->constraints
+    constraints -->observe
+    observe -->split
+    split -->relations
+    relations -->baseline
+    baseline -->prioritize
+    prioritize -->choose
+    choose -->output

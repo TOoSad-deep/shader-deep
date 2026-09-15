@@ -1,0 +1,25 @@
+flowchart TB
+    input(["参考图与需求"])
+    prepare["01 目标、拆解与基线"]
+    selectElement["02 选择当前元素"]
+    route{"【分析】是否需要探索机制？"}
+    simple["【生成】直接实现候选"]
+    explore["03 复杂特征探索"]
+    refine["04 局部比较与优化"]
+    evaluate{"05 整图比较与保留"}
+    confirm["06 最终预览与确认"]
+    done(["交付用户接受版"])
+
+    input -->prepare
+    prepare -->selectElement
+    selectElement -->route
+    route -->|"无需探索"| simple
+    route -->|"需要探索"| explore
+    simple -->refine
+    explore -->|"方向已选"| refine
+    refine -->|"换机制／重分析"| explore
+    refine -->|"送整图比较"| evaluate
+    evaluate -->|"局部仍需改进"| selectElement
+    evaluate -->|"整体需要重调"| prepare
+    evaluate -->|"满足提交条件"| confirm
+    confirm -->|"用户接受"| done

@@ -1,0 +1,39 @@
+flowchart TB
+    input(["本次尝试整图与整图保留版"])
+    compare["【评审】对照参考做整图比较"]
+    promote{"【分析】提出整图采用建议"}
+    resolve{"【用户】裁决整体取舍"}
+    keepNew["【程序】核对后更新整图保留版"]
+    keepOld["【程序】沿用原整图保留版"]
+    scope{"【分析】安排保留版下一步"}
+    local(["【程序】返回 02 处理局部"])
+    globalReturn(["【程序】返回 01 调整整体或目标"])
+    final["【工具】按约定条件渲染最终版"]
+    finalCheck{"【评审】视觉与行为要求满足？"}
+    accept{"【用户】接受此具体版本？"}
+    feedback["【分析】整理偏差或修改意见"]
+    modifyScope{"【分析】判断需要修改哪一层"}
+    done(["【程序】记录接受版并交付"])
+    feedbackLocal(["【程序】返回 02 处理局部"])
+    feedbackGlobal(["【程序】返回 01 调整整体或目标"])
+
+    input -->compare
+    compare -->promote
+    promote -->|"建议采用"| keepNew
+    promote -->|"无改善或明确退步"| keepOld
+    promote -->|"存在整体取舍"| resolve
+    resolve -->|"选择新整图"| keepNew
+    resolve -->|"选择原整图"| keepOld
+    keepNew -->scope
+    keepOld -->scope
+    scope -->|"局部特征或机制问题"| local
+    scope -->|"整体结构或关系问题"| globalReturn
+    scope -->|"可以提交"| final
+    final -->finalCheck
+    finalCheck -->|"满足"| accept
+    finalCheck -->|"发现偏差"| feedback
+    accept -->|"明确接受"| done
+    accept -->|"提出修改"| feedback
+    feedback -->modifyScope
+    modifyScope -->|"局部特征或机制"| feedbackLocal
+    modifyScope -->|"整体、关系或目标"| feedbackGlobal

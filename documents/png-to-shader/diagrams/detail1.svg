@@ -1,0 +1,131 @@
+<svg width="233pt" height="991pt"
+ viewBox="0.00 0.00 233.00 991.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(14.4 976.2)">
+<title>flow</title>
+<polygon fill="white" stroke="none" points="-14.4,14.4 -14.4,-976.2 218.94,-976.2 218.94,14.4 -14.4,14.4"/>
+<!-- input -->
+<g id="node1" class="node">
+<title>input</title>
+<path fill="#f5f5f5" stroke="#888888" d="M192.54,-961.8C192.54,-961.8 12,-961.8 12,-961.8 6,-961.8 0,-955.8 0,-949.8 0,-949.8 0,-910.02 0,-910.02 0,-904.02 6,-898.02 12,-898.02 12,-898.02 192.54,-898.02 192.54,-898.02 198.54,-898.02 204.54,-904.02 204.54,-910.02 204.54,-910.02 204.54,-949.8 204.54,-949.8 204.54,-955.8 198.54,-961.8 192.54,-961.8"/>
+<text xml:space="preserve" text-anchor="middle" x="102.27" y="-937.96" font-family="PingFang SC" font-size="16.00">【用户】</text>
+<text xml:space="preserve" text-anchor="middle" x="102.27" y="-914.71" font-family="PingFang SC" font-size="16.00">参考图、需求或整体反馈</text>
+</g>
+<!-- target -->
+<g id="node2" class="node">
+<title>target</title>
+<path fill="#e9f1ff" stroke="#888888" d="M176.04,-862.02C176.04,-862.02 28.5,-862.02 28.5,-862.02 22.5,-862.02 16.5,-856.02 16.5,-850.02 16.5,-850.02 16.5,-810.24 16.5,-810.24 16.5,-804.24 22.5,-798.24 28.5,-798.24 28.5,-798.24 176.04,-798.24 176.04,-798.24 182.04,-798.24 188.04,-804.24 188.04,-810.24 188.04,-810.24 188.04,-850.02 188.04,-850.02 188.04,-856.02 182.04,-862.02 176.04,-862.02"/>
+<text xml:space="preserve" text-anchor="middle" x="102.27" y="-838.18" font-family="PingFang SC" font-size="16.00">【分析】</text>
+<text xml:space="preserve" text-anchor="middle" x="102.27" y="-814.93" font-family="PingFang SC" font-size="16.00">整理目标与必保特征</text>
+</g>
+<!-- input&#45;&gt;target -->
+<g id="edge1" class="edge">
+<title>input&#45;&gt;target</title>
+<path fill="none" stroke="#777777" d="M102.27,-897.7C102.27,-888.97 102.27,-879.37 102.27,-870.24"/>
+<polygon fill="#777777" stroke="#777777" points="104.55,-870.39 102.27,-863.89 100,-870.39 104.55,-870.39"/>
+</g>
+<!-- constraints -->
+<g id="node3" class="node">
+<title>constraints</title>
+<path fill="#e9f1ff" stroke="#888888" d="M176.04,-762.24C176.04,-762.24 28.5,-762.24 28.5,-762.24 22.5,-762.24 16.5,-756.24 16.5,-750.24 16.5,-750.24 16.5,-710.46 16.5,-710.46 16.5,-704.46 22.5,-698.46 28.5,-698.46 28.5,-698.46 176.04,-698.46 176.04,-698.46 182.04,-698.46 188.04,-704.46 188.04,-710.46 188.04,-710.46 188.04,-750.24 188.04,-750.24 188.04,-756.24 182.04,-762.24 176.04,-762.24"/>
+<text xml:space="preserve" text-anchor="middle" x="102.27" y="-738.4" font-family="PingFang SC" font-size="16.00">【分析】</text>
+<text xml:space="preserve" text-anchor="middle" x="102.27" y="-715.15" font-family="PingFang SC" font-size="16.00">整理输出约束与资源</text>
+</g>
+<!-- target&#45;&gt;constraints -->
+<g id="edge2" class="edge">
+<title>target&#45;&gt;constraints</title>
+<path fill="none" stroke="#777777" d="M102.27,-797.92C102.27,-789.19 102.27,-779.59 102.27,-770.46"/>
+<polygon fill="#777777" stroke="#777777" points="104.55,-770.61 102.27,-764.11 100,-770.61 104.55,-770.61"/>
+</g>
+<!-- observe -->
+<g id="node4" class="node">
+<title>observe</title>
+<path fill="#e9f1ff" stroke="#888888" d="M159.54,-662.46C159.54,-662.46 45,-662.46 45,-662.46 39,-662.46 33,-656.46 33,-650.46 33,-650.46 33,-610.68 33,-610.68 33,-604.68 39,-598.68 45,-598.68 45,-598.68 159.54,-598.68 159.54,-598.68 165.54,-598.68 171.54,-604.68 171.54,-610.68 171.54,-610.68 171.54,-650.46 171.54,-650.46 171.54,-656.46 165.54,-662.46 159.54,-662.46"/>
+<text xml:space="preserve" text-anchor="middle" x="102.27" y="-638.62" font-family="PingFang SC" font-size="16.00">【分析】</text>
+<text xml:space="preserve" text-anchor="middle" x="102.27" y="-615.37" font-family="PingFang SC" font-size="16.00">观察构图与尺度</text>
+</g>
+<!-- constraints&#45;&gt;observe -->
+<g id="edge3" class="edge">
+<title>constraints&#45;&gt;observe</title>
+<path fill="none" stroke="#777777" d="M102.27,-698.14C102.27,-689.41 102.27,-679.81 102.27,-670.68"/>
+<polygon fill="#777777" stroke="#777777" points="104.55,-670.83 102.27,-664.33 100,-670.83 104.55,-670.83"/>
+</g>
+<!-- split -->
+<g id="node5" class="node">
+<title>split</title>
+<path fill="#e9f1ff" stroke="#888888" d="M176.04,-562.68C176.04,-562.68 28.5,-562.68 28.5,-562.68 22.5,-562.68 16.5,-556.68 16.5,-550.68 16.5,-550.68 16.5,-510.9 16.5,-510.9 16.5,-504.9 22.5,-498.9 28.5,-498.9 28.5,-498.9 176.04,-498.9 176.04,-498.9 182.04,-498.9 188.04,-504.9 188.04,-510.9 188.04,-510.9 188.04,-550.68 188.04,-550.68 188.04,-556.68 182.04,-562.68 176.04,-562.68"/>
+<text xml:space="preserve" text-anchor="middle" x="102.27" y="-538.84" font-family="PingFang SC" font-size="16.00">【分析】</text>
+<text xml:space="preserve" text-anchor="middle" x="102.27" y="-515.59" font-family="PingFang SC" font-size="16.00">拆解元素并标注疑点</text>
+</g>
+<!-- observe&#45;&gt;split -->
+<g id="edge4" class="edge">
+<title>observe&#45;&gt;split</title>
+<path fill="none" stroke="#777777" d="M102.27,-598.36C102.27,-589.63 102.27,-580.03 102.27,-570.9"/>
+<polygon fill="#777777" stroke="#777777" points="104.55,-571.05 102.27,-564.55 100,-571.05 104.55,-571.05"/>
+</g>
+<!-- relations -->
+<g id="node6" class="node">
+<title>relations</title>
+<path fill="#e9f1ff" stroke="#888888" d="M151.29,-462.9C151.29,-462.9 53.25,-462.9 53.25,-462.9 47.25,-462.9 41.25,-456.9 41.25,-450.9 41.25,-450.9 41.25,-411.12 41.25,-411.12 41.25,-405.12 47.25,-399.12 53.25,-399.12 53.25,-399.12 151.29,-399.12 151.29,-399.12 157.29,-399.12 163.29,-405.12 163.29,-411.12 163.29,-411.12 163.29,-450.9 163.29,-450.9 163.29,-456.9 157.29,-462.9 151.29,-462.9"/>
+<text xml:space="preserve" text-anchor="middle" x="102.27" y="-439.06" font-family="PingFang SC" font-size="16.00">【分析】</text>
+<text xml:space="preserve" text-anchor="middle" x="102.27" y="-415.81" font-family="PingFang SC" font-size="16.00">梳理交互依赖</text>
+</g>
+<!-- split&#45;&gt;relations -->
+<g id="edge5" class="edge">
+<title>split&#45;&gt;relations</title>
+<path fill="none" stroke="#777777" d="M102.27,-498.58C102.27,-489.85 102.27,-480.25 102.27,-471.12"/>
+<polygon fill="#777777" stroke="#777777" points="104.55,-471.27 102.27,-464.77 100,-471.27 104.55,-471.27"/>
+</g>
+<!-- baseline -->
+<g id="node7" class="node">
+<title>baseline</title>
+<path fill="#edf6ec" stroke="#888888" d="M176.04,-363.12C176.04,-363.12 28.5,-363.12 28.5,-363.12 22.5,-363.12 16.5,-357.12 16.5,-351.12 16.5,-351.12 16.5,-311.34 16.5,-311.34 16.5,-305.34 22.5,-299.34 28.5,-299.34 28.5,-299.34 176.04,-299.34 176.04,-299.34 182.04,-299.34 188.04,-305.34 188.04,-311.34 188.04,-311.34 188.04,-351.12 188.04,-351.12 188.04,-357.12 182.04,-363.12 176.04,-363.12"/>
+<text xml:space="preserve" text-anchor="middle" x="102.27" y="-339.28" font-family="PingFang SC" font-size="16.00">【生成】</text>
+<text xml:space="preserve" text-anchor="middle" x="102.27" y="-316.03" font-family="PingFang SC" font-size="16.00">实现或调整整图粗稿</text>
+</g>
+<!-- relations&#45;&gt;baseline -->
+<g id="edge6" class="edge">
+<title>relations&#45;&gt;baseline</title>
+<path fill="none" stroke="#777777" d="M102.27,-398.8C102.27,-390.07 102.27,-380.47 102.27,-371.34"/>
+<polygon fill="#777777" stroke="#777777" points="104.55,-371.49 102.27,-364.99 100,-371.49 104.55,-371.49"/>
+</g>
+<!-- prioritize -->
+<g id="node8" class="node">
+<title>prioritize</title>
+<path fill="#e9f1ff" stroke="#888888" d="M151.29,-263.34C151.29,-263.34 53.25,-263.34 53.25,-263.34 47.25,-263.34 41.25,-257.34 41.25,-251.34 41.25,-251.34 41.25,-211.56 41.25,-211.56 41.25,-205.56 47.25,-199.56 53.25,-199.56 53.25,-199.56 151.29,-199.56 151.29,-199.56 157.29,-199.56 163.29,-205.56 163.29,-211.56 163.29,-211.56 163.29,-251.34 163.29,-251.34 163.29,-257.34 157.29,-263.34 151.29,-263.34"/>
+<text xml:space="preserve" text-anchor="middle" x="102.27" y="-239.5" font-family="PingFang SC" font-size="16.00">【分析】</text>
+<text xml:space="preserve" text-anchor="middle" x="102.27" y="-216.25" font-family="PingFang SC" font-size="16.00">排序当前问题</text>
+</g>
+<!-- baseline&#45;&gt;prioritize -->
+<g id="edge7" class="edge">
+<title>baseline&#45;&gt;prioritize</title>
+<path fill="none" stroke="#777777" d="M102.27,-299.02C102.27,-290.29 102.27,-280.69 102.27,-271.56"/>
+<polygon fill="#777777" stroke="#777777" points="104.55,-271.71 102.27,-265.21 100,-271.71 104.55,-271.71"/>
+</g>
+<!-- choose -->
+<g id="node9" class="node">
+<title>choose</title>
+<path fill="#e9f1ff" stroke="#888888" d="M167.79,-163.56C167.79,-163.56 36.75,-163.56 36.75,-163.56 30.75,-163.56 24.75,-157.56 24.75,-151.56 24.75,-151.56 24.75,-111.78 24.75,-111.78 24.75,-105.78 30.75,-99.78 36.75,-99.78 36.75,-99.78 167.79,-99.78 167.79,-99.78 173.79,-99.78 179.79,-105.78 179.79,-111.78 179.79,-111.78 179.79,-151.56 179.79,-151.56 179.79,-157.56 173.79,-163.56 167.79,-163.56"/>
+<text xml:space="preserve" text-anchor="middle" x="102.27" y="-139.72" font-family="PingFang SC" font-size="16.00">【分析】</text>
+<text xml:space="preserve" text-anchor="middle" x="102.27" y="-116.47" font-family="PingFang SC" font-size="16.00">制定当前实验任务</text>
+</g>
+<!-- prioritize&#45;&gt;choose -->
+<g id="edge8" class="edge">
+<title>prioritize&#45;&gt;choose</title>
+<path fill="none" stroke="#777777" d="M102.27,-199.24C102.27,-190.51 102.27,-180.91 102.27,-171.78"/>
+<polygon fill="#777777" stroke="#777777" points="104.55,-171.93 102.27,-165.43 100,-171.93 104.55,-171.93"/>
+</g>
+<!-- output -->
+<g id="node10" class="node">
+<title>output</title>
+<path fill="#f5f5f5" stroke="#888888" d="M167.79,-63.78C167.79,-63.78 36.75,-63.78 36.75,-63.78 30.75,-63.78 24.75,-57.78 24.75,-51.78 24.75,-51.78 24.75,-12 24.75,-12 24.75,-6 30.75,0 36.75,0 36.75,0 167.79,0 167.79,0 173.79,0 179.79,-6 179.79,-12 179.79,-12 179.79,-51.78 179.79,-51.78 179.79,-57.78 173.79,-63.78 167.79,-63.78"/>
+<text xml:space="preserve" text-anchor="middle" x="102.27" y="-39.94" font-family="PingFang SC" font-size="16.00">【程序】</text>
+<text xml:space="preserve" text-anchor="middle" x="102.27" y="-16.69" font-family="PingFang SC" font-size="16.00">交给主图选择路线</text>
+</g>
+<!-- choose&#45;&gt;output -->
+<g id="edge9" class="edge">
+<title>choose&#45;&gt;output</title>
+<path fill="none" stroke="#777777" d="M102.27,-99.46C102.27,-90.73 102.27,-81.13 102.27,-72"/>
+<polygon fill="#777777" stroke="#777777" points="104.55,-72.15 102.27,-65.65 100,-72.15 104.55,-72.15"/>
+</g>
+</g>
+</svg>

@@ -1,0 +1,61 @@
+[project]
+name = "shader-deep-app"
+version = "0.1.0"
+description = "Minimal PNG-to-GLSL application built on Deep Agents"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    # 使用仓库内的 Deep Agents SDK 和官方 OpenAI 模型适配器。
+    "deepagents>=0.7.13",
+    # Context Builder 直接使用现有 LangChain 的消息类型和 middleware 接口.
+    "langchain>=1.4.0,<2.0.0",
+    "langchain-openai>=1.1.14,<2.0.0",
+    # 已由 LangChain 安装; 直接声明用于分析工具入参和不可变报告的运行时校验.
+    "pydantic>=2.12.3,<3.0.0",
+    # 复用已锁定的 PNG 解码器，执行有预算限制的分析测量。
+    "pillow>=12.3.0,<13.0.0",
+    # 复用 OpenAI 已锁定的传输异常类型，识别 SSE 中断并执行恢复。
+    "httpx2>=2.12.0,<3.0.0",
+    # 独立 WebGL2 模块使用 Playwright 驱动真实 Chromium.
+    "playwright>=1.62.0,<2.0.0",
+]
+
+[project.scripts]
+shader-deep = "shader_deep.cli:main"
+shader-deep-analyze = "shader_deep.analysis_cli:main"
+
+[build-system]
+requires = ["setuptools>=83.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"shader_deep.rendering" = ["webgl2.js"]
+
+[dependency-groups]
+test = []
+lint = [
+    "ruff>=0.15.22,<0.16.0",
+    "ty>=0.0.62,<1.0.0",
+]
+
+[tool.uv.sources]
+# 本地可编辑引用确保应用直接使用当前仓库源码。
+deepagents = { path = "../../libs/deepagents", editable = true }
+
+[tool.ruff]
+extend = "../../libs/deepagents/pyproject.toml"
+
+[tool.ruff.lint.isort]
+known-first-party = ["shader_deep"]
+
+[tool.ruff.lint.extend-per-file-ignores]
+# 业务层使用标准库 unittest, 保留其断言与异常检查方式, 无需新增测试依赖.
+# 测试名称描述行为, 沿用仓库测试不强制编写 docstring 的约定.
+"tests/**" = ["D1", "PT009", "PT027"]
+
+[tool.ty.environment]
+# 本地 SDK 通过 setuptools 动态导入钩子安装, 为静态检查显式提供源码路径.
+extra-paths = ["../../libs/deepagents"]

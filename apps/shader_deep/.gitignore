@@ -1,0 +1,4 @@
+# 配置示例可以提交, 实际环境文件沿用仓库的忽略规则.
+!.env.example
+output/playwright/
+runs/

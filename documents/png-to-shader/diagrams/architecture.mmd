@@ -1,0 +1,24 @@
+flowchart TB
+    user(["用户"])
+    dispatch["【程序】LangGraph 任务编排"]
+    analysis["【分析】分析与实验规划 Agent"]
+    generation["【生成】Shader 生成与优化 Agent"]
+    review["【评审】独立视觉评审 Agent"]
+    tools["【工具】编译、渲染与区域检查"]
+    transition["【程序】LangGraph 结果处理"]
+    state["【程序】任务状态与候选制品"]
+
+    user -->|"需求、修改和接受"| dispatch
+    dispatch -->|"参考、问题与评审证据"| analysis
+    dispatch -->|"实验任务与基线"| generation
+    dispatch -->|"参考、保留版与候选图"| review
+    analysis -->|"分析、计划与下一步建议"| transition
+    generation -->|"候选、实验记录与限制"| transition
+    review -->|"差异、退步与不确定性"| transition
+    generation -->|"调用编译和渲染"| tools
+    review -->|"调用只读检查"| tools
+    tools -->|"保存预览与工具结果"| state
+    transition -->|"检查条件并更新版本"| state
+    state -->|"提供当前任务快照"| dispatch
+    transition -->|"安排下一任务或暂停"| dispatch
+    transition -->|"重要取舍与最终验收"| user

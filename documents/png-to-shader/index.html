@@ -1,0 +1,171 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>PNG → Shader：三 Agent 架构与分层生成流程</title><style>body{max-width:1050px;margin:32px auto;padding:0 22px;color:#222;font:16px/1.8 system-ui,-apple-system,"PingFang SC",sans-serif}h1{font-size:28px}h2{font-size:23px;margin-top:44px;border-bottom:1px solid #ddd}h3{font-size:19px}a{color:#275fa0}nav{display:flex;flex-wrap:wrap;gap:6px 20px;font-size:14px;padding:12px 0;border-bottom:1px solid #ddd}table{border-collapse:collapse;width:100%;font-size:14px}th,td{border:1px solid #ddd;padding:9px;text-align:left;vertical-align:top}th{background:#f5f5f5}.table,.diagram{overflow:auto}figure{margin:20px 0}.diagram img{display:block;max-width:100%;height:auto;margin:auto}figcaption,summary{font-size:13px;color:#555}pre{padding:15px;background:#f5f5f5;overflow:auto;font-size:13px;line-height:1.6}details{margin:12px 0}summary{cursor:pointer}.download{font-size:14px}footer{margin:40px 0;color:#666;font-size:13px}@media(max-width:650px){body{padding:0 14px}.diagram img{min-width:700px;max-width:none;width:900px}h1{font-size:24px}}</style></head><body><p class="download"><a href="分层生成流程.md" download>下载完整 Markdown（含 Mermaid）</a></p><nav><a href="#section-1">1. Agent 与执行层</a> <a href="#section-2">2. 三 Agent 协作架构</a> <a href="#section-3">3. 实验任务与交接</a> <a href="#section-4">4. 六阶段总览</a> <a href="#section-5">5. 细节 A：目标、拆解与元素选择</a> <a href="#section-6">6. 细节 B：复杂特征探索与分层回退</a> <a href="#section-7">7. 细节 C：局部工作版选择与下一步</a> <a href="#section-8">8. 细节 D：整图保留、修改与交付</a> <a href="#section-9">9. 共用执行规则</a></nav><h1 id="section-0">PNG → Shader：三 Agent 架构与分层生成流程</h1><p>V3 · 2026-09-09。本文是待实现的架构设计。</p><h2 id="section-1">1. Agent 与执行层</h2><p>首版确定三类独立 Agent。分析与生成分别拥有自己的任务上下文；多候选或多视角需要并行时，可以创建同类角色的多个任务实例。</p><div class="table"><table><thead><tr><th>角色</th><th>负责的工作</th><th>返回的结果</th></tr></thead><tbody><tr><td>分析与实验规划 Agent</td><td>理解参考与需求，拆解元素和依赖，提出机制假设，选择当前问题，综合评审后安排下一步</td><td>分析结果、实验任务、采用或回退建议</td></tr><tr><td>Shader 生成与优化 Agent</td><td>实现原型与候选，修复编译，调用渲染，局部优化与场景组合</td><td>Shader、真实预览、实验记录、实现限制</td></tr><tr><td>独立视觉评审 Agent</td><td>对照参考、整图保留版与新候选，检查目标改善、保护项退步与整体观感</td><td>差异报告、观察区域、判断不确定性</td></tr></tbody></table></div><p>分析 Agent 规划“做哪项实验”，生成 Agent 规划“怎样完成这项实验”。评审 Agent 负责证据；重要主观取舍和最终接受由用户决定。</p><div class="table"><table><thead><tr><th>执行组件</th><th>责任</th></tr></thead><tbody><tr><td>LangGraph 主图</td><td>根据分析建议派发任务，检查目标和基线版本，维护预算，执行状态更新，暂停与恢复</td></tr><tr><td>Deep Agents</td><td>用于搭建角色内部的工作循环，重点支持生成过程的文件操作、工具调用和上下文管理；各角色按需配置能力</td></tr><tr><td>普通工具与函数</td><td>编译、真实渲染、指标与区域检查、候选登记、版本保存与交付</td></tr><tr><td>任务状态与制品</td><td>保存目标、候选、整图保留版、用户接受记录、预算及对应的代码和预览</td></tr></tbody></table></div><p>研究和多视角分析归分析 Agent；优化与合成归生成 Agent；局部与整图检查归评审 Agent。图中的“程序”和“工具”是普通代码职责。</p><h2 id="section-2">2. 三 Agent 协作架构</h2><p>下图显示任务与产物如何传递。任务编排和结果处理是同一个 LangGraph 主图中的逻辑部分；各节点不代表独立部署的服务。</p><figure id="architecture"><div class="diagram"><img src="diagrams/architecture.svg" alt="architecture 对应流程图"></div><figcaption><a href="diagrams/architecture.svg">查看 SVG</a> · <a href="diagrams/architecture.mmd" download>下载 Mermaid</a></figcaption></figure><details><summary>查看 Mermaid 源码</summary><pre><code>flowchart TB
+    user([&quot;用户&quot;])
+    dispatch[&quot;【程序】LangGraph 任务编排&quot;]
+    analysis[&quot;【分析】分析与实验规划 Agent&quot;]
+    generation[&quot;【生成】Shader 生成与优化 Agent&quot;]
+    review[&quot;【评审】独立视觉评审 Agent&quot;]
+    tools[&quot;【工具】编译、渲染与区域检查&quot;]
+    transition[&quot;【程序】LangGraph 结果处理&quot;]
+    state[&quot;【程序】任务状态与候选制品&quot;]
+
+    user --&gt;|&quot;需求、修改和接受&quot;| dispatch
+    dispatch --&gt;|&quot;参考、问题与评审证据&quot;| analysis
+    dispatch --&gt;|&quot;实验任务与基线&quot;| generation
+    dispatch --&gt;|&quot;参考、保留版与候选图&quot;| review
+    analysis --&gt;|&quot;分析、计划与下一步建议&quot;| transition
+    generation --&gt;|&quot;候选、实验记录与限制&quot;| transition
+    review --&gt;|&quot;差异、退步与不确定性&quot;| transition
+    generation --&gt;|&quot;调用编译和渲染&quot;| tools
+    review --&gt;|&quot;调用只读检查&quot;| tools
+    tools --&gt;|&quot;保存预览与工具结果&quot;| state
+    transition --&gt;|&quot;检查条件并更新版本&quot;| state
+    state --&gt;|&quot;提供当前任务快照&quot;| dispatch
+    transition --&gt;|&quot;安排下一任务或暂停&quot;| dispatch
+    transition --&gt;|&quot;重要取舍与最终验收&quot;| user
+</code></pre></details><ul><li>三个 Agent 通过明确的任务输入和返回结果交接。全局派发由主图统一执行；同一角色可在不同阶段被多次调用。</li><li>评审 Agent 主要接收目标要求与真实图像，按需使用区域检查工具；生成者的实现解释不能替代图像证据。</li><li>分析 Agent 提出采用、暂存探索、放弃或回退建议；程序核对条件后更新状态。值得继续探索的候选不自动成为整图保留版。</li><li>Agent 的完整聊天历史分别保留，主图只提取业务结果和制品引用，再按任务构造下一次输入。</li></ul><h2 id="section-3">3. 实验任务与交接</h2><p>每次任务绑定一个明确的问题和基线。一次实验内部可以包含多次编译修复与小步试验，但每个有效候选和预览均需登记。</p><div class="table"><table><thead><tr><th>交接</th><th>最少需要的信息</th></tr></thead><tbody><tr><td>主图 → 分析</td><td>用户目标、参考图、当前整图、问题记录、已有假设、最新评审和剩余预算</td></tr><tr><td>分析 → 主图 → 生成</td><td>目标版本、起始整图版本、作用元素或组合、待验证假设、允许修改范围、保护项、预算与结束条件</td></tr><tr><td>生成 → 主图 → 评审</td><td>候选代码与真实预览、捕获条件、起始基线、目标问题与保护项；明确未实现或尚未验证的内容</td></tr><tr><td>评审 → 主图 → 分析</td><td>可定位的视觉差异、改善和退步、判断依据与不确定性；观察与原因推测分开记录</td></tr><tr><td>分析 → 主图</td><td>下一步动作、作用范围、理由和依据的候选版本；程序负责检查与执行</td></tr></tbody></table></div><ul><li>内层允许完成编译修复和假设范围内的优化。需要改变核心假设、整体拆解或任务范围时，返回分析 Agent；新方向以新候选记录，保留原实验身份。</li><li>同轮并行候选共享固定基线并使用独立输出目录，汇总后统一选择。目标或基线变化后，旧结果先在新条件下重新渲染和评价。</li><li>原型预览、阶段 04 的局部工作版、阶段 05 的整图保留版，以及阶段 06 的用户接受版分别记录。</li></ul><h2 id="section-4">4. 六阶段总览</h2><p>保留原有六阶段。流程框表示工作阶段，具体由谁完成在后续细节图中标注。</p><div class="table"><table><thead><tr><th>阶段</th><th>主要分工</th></tr></thead><tbody><tr><td>01 目标、拆解与基线</td><td>分析整理目标、拆解和依赖；生成实现粗稿；程序登记初始基线</td></tr><tr><td>02 选择当前元素</td><td>分析选择当前问题，形成元素或关联组合的实验任务</td></tr><tr><td>03 复杂特征探索</td><td>分析提假设；生成原型；评审对比；分析形成选择建议；重要方向由用户确认</td></tr><tr><td>04 局部比较与优化</td><td>生成优化；评审检查；分析提出采用与后续动作；程序检查并执行</td></tr><tr><td>05 整图比较与保留</td><td>评审整图；分析综合建议；程序决定是否满足更新条件并记录整图保留版</td></tr><tr><td>06 最终预览与确认</td><td>工具按约定条件渲染；评审检查；用户接受；程序记录与交付</td></tr></tbody></table></div><figure id="main"><div class="diagram"><img src="diagrams/main.svg" alt="main 对应流程图"></div><figcaption><a href="diagrams/main.svg">查看 SVG</a> · <a href="diagrams/main.mmd" download>下载 Mermaid</a></figcaption></figure><details><summary>查看 Mermaid 源码</summary><pre><code>flowchart TB
+    input([&quot;参考图与需求&quot;])
+    prepare[&quot;01 目标、拆解与基线&quot;]
+    selectElement[&quot;02 选择当前元素&quot;]
+    route{&quot;【分析】是否需要探索机制？&quot;}
+    simple[&quot;【生成】直接实现候选&quot;]
+    explore[&quot;03 复杂特征探索&quot;]
+    refine[&quot;04 局部比较与优化&quot;]
+    evaluate{&quot;05 整图比较与保留&quot;}
+    confirm[&quot;06 最终预览与确认&quot;]
+    done([&quot;交付用户接受版&quot;])
+
+    input --&gt;prepare
+    prepare --&gt;selectElement
+    selectElement --&gt;route
+    route --&gt;|&quot;无需探索&quot;| simple
+    route --&gt;|&quot;需要探索&quot;| explore
+    simple --&gt;refine
+    explore --&gt;|&quot;方向已选&quot;| refine
+    refine --&gt;|&quot;换机制／重分析&quot;| explore
+    refine --&gt;|&quot;送整图比较&quot;| evaluate
+    evaluate --&gt;|&quot;局部仍需改进&quot;| selectElement
+    evaluate --&gt;|&quot;整体需要重调&quot;| prepare
+    evaluate --&gt;|&quot;满足提交条件&quot;| confirm
+    confirm --&gt;|&quot;用户接受&quot;| done
+</code></pre></details><p>只返回 02 时复用当前场景；需要换机制或修正特征时回到 03；目标、拆解或整体关系变化时回到 01。六阶段不要求每轮从头重跑。</p><h2 id="section-5">5. 细节 A：目标、拆解与元素选择</h2><figure id="detail1"><div class="diagram"><img src="diagrams/detail1.svg" alt="detail1 对应流程图"></div><figcaption><a href="diagrams/detail1.svg">查看 SVG</a> · <a href="diagrams/detail1.mmd" download>下载 Mermaid</a></figcaption></figure><details><summary>查看 Mermaid 源码</summary><pre><code>flowchart TB
+    input([&quot;【用户】参考图、需求或整体反馈&quot;])
+    target[&quot;【分析】整理目标与必保特征&quot;]
+    constraints[&quot;【分析】整理输出约束与资源&quot;]
+    observe[&quot;【分析】观察构图与尺度&quot;]
+    split[&quot;【分析】拆解元素并标注疑点&quot;]
+    relations[&quot;【分析】梳理交互依赖&quot;]
+    baseline[&quot;【生成】实现或调整整图粗稿&quot;]
+    prioritize[&quot;【分析】排序当前问题&quot;]
+    choose[&quot;【分析】制定当前实验任务&quot;]
+    output([&quot;【程序】交给主图选择路线&quot;])
+
+    input --&gt;target
+    target --&gt;constraints
+    constraints --&gt;observe
+    observe --&gt;split
+    split --&gt;relations
+    relations --&gt;baseline
+    baseline --&gt;prioritize
+    prioritize --&gt;choose
+    choose --&gt;output
+</code></pre></details><ul><li>先明确静态参考复刻、审美改版或可控材质目标，以及尺寸、运行环境、时间、资源和需要验证的行为。</li><li>用户明确要求与模型推测分别记录。前者需要保护；后者标注不确定性，允许被后续证据推翻。</li><li>按目标影响、当前偏差与不确定性排序；强依赖元素作为组合处理，复杂程度不直接决定优先级。</li><li>分析整理的目标和约束须与用户需求一致。首次粗稿经技术检查后登记为初始整图保留版，登记不代表视觉达标；后续整体调整作为新尝试，在阶段 05 比较后再更新。</li><li>仅返回 02 时从“排序当前问题”继续。用户改变目标后更新目标版本，并重新评价历史候选。</li></ul><h2 id="section-6">6. 细节 B：复杂特征探索与分层回退</h2><figure id="detail2"><div class="diagram"><img src="diagrams/detail2.svg" alt="detail2 对应流程图"></div><figcaption><a href="diagrams/detail2.svg">查看 SVG</a> · <a href="diagrams/detail2.mmd" download>下载 Mermaid</a></figcaption></figure><details><summary>查看 Mermaid 源码</summary><pre><code>flowchart TB
+    input([&quot;当前实验任务与整图基线&quot;])
+    features[&quot;【分析】梳理特征与疑点&quot;]
+    needLens{&quot;【分析】需要多视角分析？&quot;}
+    lenses[&quot;【分析】按疑点补充分析&quot;]
+    hypotheses[&quot;【分析】提出不同机制假设&quot;]
+    prototypes[&quot;【生成】实现原型并调用渲染&quot;]
+    pool[&quot;【程序】登记候选与真实预览&quot;]
+    review[&quot;【评审】对比原型与参考&quot;]
+    choice{&quot;【分析】有可用的方向建议？&quot;}
+    selectionReady{&quot;【程序】选择条件已满足？&quot;}
+    humanChoice{&quot;【用户】选择或拒绝方向&quot;}
+    diagnose{&quot;【分析】判断失败原因&quot;}
+    returnGlobal([&quot;【程序】返回 01 调整拆解&quot;])
+    output([&quot;【程序】移交选定方向与原型&quot;])
+
+    input --&gt;features
+    features --&gt;needLens
+    needLens --&gt;|&quot;需要&quot;| lenses
+    needLens --&gt;|&quot;无需&quot;| hypotheses
+    lenses --&gt;hypotheses
+    hypotheses --&gt;prototypes
+    prototypes --&gt;pool
+    choice --&gt;|&quot;均不合适&quot;| diagnose
+    diagnose --&gt;|&quot;实现机制不合适&quot;| hypotheses
+    diagnose --&gt;|&quot;特征理解有误&quot;| features
+    diagnose --&gt;|&quot;拆解或整体关系有误&quot;| returnGlobal
+    pool --&gt;review
+    review --&gt;|&quot;评审证据&quot;| choice
+    choice --&gt;|&quot;有方向建议&quot;| selectionReady
+    selectionReady --&gt;|&quot;已获确认或允许自动选择&quot;| output
+    selectionReady --&gt;|&quot;需要用户选择&quot;| humanChoice
+    humanChoice --&gt;|&quot;选定方向&quot;| output
+    humanChoice --&gt;|&quot;均不合适&quot;| diagnose
+</code></pre></details><ul><li>分析 Agent 按疑点选择研究或多视角任务。多视角属于分析角色的不同任务实例，由主图按计划派发。</li><li>不同候选应有明确、可验证的机制差异。生成 Agent 使用可比的场景、尺寸、时间与资源条件实现真实 Shader 原型。</li><li>评审 Agent 给出对比证据，分析 Agent 综合形成方向建议。程序只在已有明确授权范围内自动选择，否则等待用户选择；用户可以拒绝所有方向。</li><li>全部拒绝后，分析 Agent 判断是机制、特征理解还是整体拆解的问题，再由主图回到对应位置。原因不清时先安排能够区分解释的小实验。</li></ul><h2 id="section-7">7. 细节 C：局部工作版选择与下一步</h2><figure id="detail3"><div class="diagram"><img src="diagrams/detail3.svg" alt="detail3 对应流程图"></div><figcaption><a href="diagrams/detail3.svg">查看 SVG</a> · <a href="diagrams/detail3.mmd" download>下载 Mermaid</a></figcaption></figure><details><summary>查看 Mermaid 源码</summary><pre><code>flowchart TB
+    input([&quot;本次候选与局部工作版&quot;])
+    preview[&quot;【生成】放回场景并调用渲染&quot;]
+    compare[&quot;【评审】比较目标问题与保护项&quot;]
+    adopt{&quot;【分析】提出局部采用建议&quot;}
+    resolve{&quot;【用户】比较两版&quot;}
+    keepNew[&quot;【程序】核对后临时采用新版&quot;]
+    keepOld[&quot;【程序】沿用原局部工作版&quot;]
+    nextStep{&quot;【分析】安排下一项实验动作&quot;}
+    tune[&quot;【生成】按任务范围继续细化&quot;]
+    reanalyse([&quot;【程序】返回 03 重新分析&quot;])
+    output([&quot;【程序】移交尝试整图至 05&quot;])
+
+    input --&gt;preview
+    preview --&gt;compare
+    compare --&gt;adopt
+    adopt --&gt;|&quot;建议采用&quot;| keepNew
+    adopt --&gt;|&quot;无改善或明确退步&quot;| keepOld
+    adopt --&gt;|&quot;存在取舍或判断冲突&quot;| resolve
+    resolve --&gt;|&quot;选择新候选&quot;| keepNew
+    resolve --&gt;|&quot;选择原版&quot;| keepOld
+    keepNew --&gt;nextStep
+    keepOld --&gt;nextStep
+    nextStep --&gt;|&quot;同机制可继续细化&quot;| tune
+    tune --&gt;|&quot;生成下一候选&quot;| preview
+    nextStep --&gt;|&quot;机制存疑或反复停滞&quot;| reanalyse
+    nextStep --&gt;|&quot;本轮局部工作就绪&quot;| output
+</code></pre></details><ul><li>评审提供“哪里改善、哪里退步”的证据；分析提出局部采用建议；程序核对目标与基线版本、捕获有效性和保护项条件后执行。检查不通过时不更新版本，刷新任务并交回分析处理。</li><li>有明确目标改善、保护项未超限退步且捕获条件等价时，才可在授权范围内自动临时采用。主观取舍冲突保留两版，由用户选择；改变必保要求须先更新目标。</li><li>图中的一轮指一次提交独立评审的候选检查点。生成 Agent 内部可进行多次编译修复和小步试验，无需每次工具调用都唤醒全部角色；实验结束、停滞或需要改向时交回分析。</li><li>细化从选定局部工作版出发，固定无关输入并重算受影响的倒影、光照或遮挡。临时采用不等于更新整图保留版。</li><li>连续几轮未解决同一问题时停止当前细化路线，由分析重新诊断。所有尝试保留记录，停滞阈值按任务预算设置。</li></ul><h2 id="section-8">8. 细节 D：整图保留、修改与交付</h2><figure id="detail4"><div class="diagram"><img src="diagrams/detail4.svg" alt="detail4 对应流程图"></div><figcaption><a href="diagrams/detail4.svg">查看 SVG</a> · <a href="diagrams/detail4.mmd" download>下载 Mermaid</a></figcaption></figure><details><summary>查看 Mermaid 源码</summary><pre><code>flowchart TB
+    input([&quot;本次尝试整图与整图保留版&quot;])
+    compare[&quot;【评审】对照参考做整图比较&quot;]
+    promote{&quot;【分析】提出整图采用建议&quot;}
+    resolve{&quot;【用户】裁决整体取舍&quot;}
+    keepNew[&quot;【程序】核对后更新整图保留版&quot;]
+    keepOld[&quot;【程序】沿用原整图保留版&quot;]
+    scope{&quot;【分析】安排保留版下一步&quot;}
+    local([&quot;【程序】返回 02 处理局部&quot;])
+    globalReturn([&quot;【程序】返回 01 调整整体或目标&quot;])
+    final[&quot;【工具】按约定条件渲染最终版&quot;]
+    finalCheck{&quot;【评审】视觉与行为要求满足？&quot;}
+    accept{&quot;【用户】接受此具体版本？&quot;}
+    feedback[&quot;【分析】整理偏差或修改意见&quot;]
+    modifyScope{&quot;【分析】判断需要修改哪一层&quot;}
+    done([&quot;【程序】记录接受版并交付&quot;])
+    feedbackLocal([&quot;【程序】返回 02 处理局部&quot;])
+    feedbackGlobal([&quot;【程序】返回 01 调整整体或目标&quot;])
+
+    input --&gt;compare
+    compare --&gt;promote
+    promote --&gt;|&quot;建议采用&quot;| keepNew
+    promote --&gt;|&quot;无改善或明确退步&quot;| keepOld
+    promote --&gt;|&quot;存在整体取舍&quot;| resolve
+    resolve --&gt;|&quot;选择新整图&quot;| keepNew
+    resolve --&gt;|&quot;选择原整图&quot;| keepOld
+    keepNew --&gt;scope
+    keepOld --&gt;scope
+    scope --&gt;|&quot;局部特征或机制问题&quot;| local
+    scope --&gt;|&quot;整体结构或关系问题&quot;| globalReturn
+    scope --&gt;|&quot;可以提交&quot;| final
+    final --&gt;finalCheck
+    finalCheck --&gt;|&quot;满足&quot;| accept
+    finalCheck --&gt;|&quot;发现偏差&quot;| feedback
+    accept --&gt;|&quot;明确接受&quot;| done
+    accept --&gt;|&quot;提出修改&quot;| feedback
+    feedback --&gt;modifyScope
+    modifyScope --&gt;|&quot;局部特征或机制&quot;| feedbackLocal
+    modifyScope --&gt;|&quot;整体、关系或目标&quot;| feedbackGlobal
+</code></pre></details><ul><li>评审同时查看原参考、尝试整图与整图保留版，检查构图、尺度、关系、材质身份和保护项；分析综合提出采用建议。</li><li>程序核对目标、基线、真实预览与选择条件后更新整图保留版。目标或基线已变化时，先刷新任务并重新评价；局部收益不能直接覆盖整图退步。</li><li>采用与否确定后，分析基于所选整图安排下一步。未采用的候选可留作探索分支，后续共同任务继续使用整图保留版。</li><li>最终预览使用约定的运行环境、尺寸、时间和资源条件，先通过技术检查，再由评审检查视觉与行为要求。用户接受绑定具体代码、资源、条件与预览。</li><li>最终偏差和修改意见由分析判定范围，经主图返回实际修改；修改完成并重新评估后才能再次提交。重复绘制的返回出口指向相同的 01 或 02 阶段。</li></ul><h2 id="section-9">9. 共用执行规则</h2><ul><li>编译、渲染、测量、制品保存与版本更新由普通工具或图节点执行。视觉采用建议来自分析与评审证据，最终接受来自用户。</li><li>分析、生成、评审、编译修复与预览共用任务预算。预算耗尽、用户停止或无法继续时，保存现有整图与未解决问题，以未完成状态结束。</li><li>无效代码、不可信捕获或比较条件不一致时先修复，修复计入预算；这些结果不参加视觉选优。</li><li>同一候选的代码、资源、参数、预览和评价应能对应；重要选择记录理由和具体版本。</li><li>目标版本和整图基线是任务输入的一部分。任务恢复或并行结果返回时重新核对；历史结论不能自动适用于新目标。</li><li>每个 Agent 的工具、任务上下文和返回字段按职责配置。全局状态更新由主图集中执行，子 Agent 的完整内部状态不直接作为业务状态回写。</li></ul><footer>HTML 与图示由同一份 Markdown 生成。</footer></body></html>

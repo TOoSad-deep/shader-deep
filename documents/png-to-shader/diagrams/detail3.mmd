@@ -1,0 +1,27 @@
+flowchart TB
+    input(["本次候选与局部工作版"])
+    preview["【生成】放回场景并调用渲染"]
+    compare["【评审】比较目标问题与保护项"]
+    adopt{"【分析】提出局部采用建议"}
+    resolve{"【用户】比较两版"}
+    keepNew["【程序】核对后临时采用新版"]
+    keepOld["【程序】沿用原局部工作版"]
+    nextStep{"【分析】安排下一项实验动作"}
+    tune["【生成】按任务范围继续细化"]
+    reanalyse(["【程序】返回 03 重新分析"])
+    output(["【程序】移交尝试整图至 05"])
+
+    input -->preview
+    preview -->compare
+    compare -->adopt
+    adopt -->|"建议采用"| keepNew
+    adopt -->|"无改善或明确退步"| keepOld
+    adopt -->|"存在取舍或判断冲突"| resolve
+    resolve -->|"选择新候选"| keepNew
+    resolve -->|"选择原版"| keepOld
+    keepNew -->nextStep
+    keepOld -->nextStep
+    nextStep -->|"同机制可继续细化"| tune
+    tune -->|"生成下一候选"| preview
+    nextStep -->|"机制存疑或反复停滞"| reanalyse
+    nextStep -->|"本轮局部工作就绪"| output
