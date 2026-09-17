@@ -13,6 +13,124 @@ Text = Annotated[str, StringConstraints(strict=True, strip_whitespace=True, min_
 # 与业务黑板的标准库 dataclass 不同, 这里的 Pydantic dataclass 会执行运行时校验.
 # 非空文本先去首尾空白; 未知字段直接拒绝, 防止模型悄悄扩展报告协议.
 CONFIG = ConfigDict(extra="forbid")
+SourceKind = Literal["report", "observation", "interpretation", "visual_element", "visual_feature", "visual_relation"]
+
+
+class AnalysisValidationError(ValueError):
+    """携带可直接用于局部修复的字段路径, 仍兼容原 ValueError 入口."""
+
+    def __init__(self, issues: list[dict[str, object]]) -> None:
+        """保留完整错误列表, 文本异常仍可用于既有日志与调用方."""
+        self.issues = issues
+        super().__init__("; ".join(f"{issue['path']}: {issue['message']}" for issue in issues))
+
+
+@dataclass(frozen=True, kw_only=True, config=CONFIG)
+class SourceRef:
+    """引用报告内的具体条目; item_id 为空时引用整份报告."""
+
+    result_id: Text
+    item_id: Text | None = None
+    kind: SourceKind | None = None
+
+
+@dataclass(frozen=True, kw_only=True, config=CONFIG)
+class HypothesisLink:
+    """综合假设继承哪些原始解释, 与陈述的观察依据分开记录."""
+
+    hypothesis_id: Text
+    derived_from: Annotated[tuple[SourceRef, ...], Field(min_length=1)]
+
+
+@dataclass(frozen=True, kw_only=True, config=CONFIG)
+class VisualEvidence:
+    """视觉条目的依据; 缺少来源时保留为未经独立核对的初始判断."""
+
+    basis: Literal["visual", "measurement_supported"] = "visual"
+    evidence_ids: tuple[Text, ...] = ()
+    uncertainties: tuple[Text, ...] = ()
+    source_refs: tuple[SourceRef, ...] = ()
+
+
+@dataclass(frozen=True, kw_only=True, config=CONFIG)
+class VisualElement(VisualEvidence):
+    """中性命名的可定位元素, 不直接认定材质或代码图层."""
+
+    id: Text
+    name: Text
+    region: Text
+    region_box: ImageRegion | None = None
+    parent_id: Text | None = None
+
+
+@dataclass(frozen=True, kw_only=True, config=CONFIG)
+class VisualFeature(VisualEvidence):
+    """允许属于多个元素的可见特征."""
+
+    id: Text
+    element_ids: Annotated[tuple[Text, ...], Field(min_length=1)]
+    description: Text
+    region: Text
+    region_box: ImageRegion | None = None
+
+
+@dataclass(frozen=True, kw_only=True, config=CONFIG)
+class VisualRelation(VisualEvidence):
+    """多个元素之间的可观察组织关系."""
+
+    id: Text
+    element_ids: Annotated[tuple[Text, ...], Field(min_length=2)]
+    description: Text
+
+
+@dataclass(frozen=True, kw_only=True, config=CONFIG)
+class VisualDecomposition:
+    """可修订视觉结构; 未提供结构使用 None, 不等同于空结构."""
+
+    elements: tuple[VisualElement, ...] = ()
+    features: tuple[VisualFeature, ...] = ()
+    relations: tuple[VisualRelation, ...] = ()
+
+
+@dataclass(frozen=True, kw_only=True, config=CONFIG)
+class VisualRevision:
+    """针对已有或报告新增对象的修订建议, 不覆盖原始结构."""
+
+    target_ids: Annotated[tuple[Text, ...], Field(min_length=1)]
+    proposal: Text
+
+
+@dataclass(frozen=True, kw_only=True, config=CONFIG)
+class VisualMapping:
+    """从初稿或报告局部对象到综合对象的映射; 空来源表示初稿."""
+
+    source_id: Text
+    target_id: Text
+    kind: Literal["element", "feature", "relation"]
+    source_result_id: Text | None = None
+
+
+@dataclass(frozen=True, kw_only=True, config=CONFIG)
+class RenderCheckpoint:
+    """后续渲染应比较的可见现象及需要保护的结构."""
+
+    region: Text
+    compare: Text
+    preserve: tuple[Text, ...] = ()
+    region_box: ImageRegion | None = None
+
+
+@dataclass(frozen=True, kw_only=True, config=CONFIG)
+class ImplementationSketch:
+    """关联明确假设的可选实现方向, 不代表已验证的生成参数."""
+
+    id: Text
+    hypothesis_ids: Annotated[tuple[Text, ...], Field(min_length=1)]
+    description: Text
+    element_ids: tuple[Text, ...] = ()
+    feature_ids: tuple[Text, ...] = ()
+    adjustable_variables: tuple[Text, ...] = ()
+    render_checkpoints: tuple[RenderCheckpoint, ...] = ()
 
 
 @dataclass(frozen=True, kw_only=True, config=CONFIG)
@@ -49,6 +167,8 @@ class AnalysisTaskRequest:
     gap: Text | None = None
     expected_evidence: Text | None = None
     evidence_ids: tuple[Text, ...] = ()
+    focus_element_ids: tuple[Text, ...] = ()
+    focus_feature_ids: tuple[Text, ...] = ()
 
     def __post_init__(self) -> None:
         """确保预设视角与自定义视角恰好提供一个."""
@@ -68,6 +188,8 @@ class Observation:
     region_box: ImageRegion | None = None
     basis: Literal["visual", "measurement_supported"] = "visual"
     evidence_ids: tuple[Text, ...] = ()
+    element_ids: tuple[Text, ...] = ()
+    feature_ids: tuple[Text, ...] = ()
 
 
 @dataclass(frozen=True, kw_only=True, config=CONFIG)
@@ -81,6 +203,8 @@ class Interpretation:
     opposing_observation_ids: tuple[Text, ...] = ()
     uncertainties: tuple[Text, ...] = ()
     verification_question: Text | None = None
+    element_ids: tuple[Text, ...] = ()
+    feature_ids: tuple[Text, ...] = ()
 
 
 @dataclass(frozen=True, kw_only=True, config=CONFIG)
@@ -95,32 +219,43 @@ class LensReport:
     suggestions: tuple[Text, ...] = ()
     # 子任务只提出取证需求, 协调器读到报告后决定是否实际测量或追加复核.
     evidence_requests: tuple[EvidenceRequest, ...] = ()
+    visual_additions: VisualDecomposition | None = None
+    visual_revisions: tuple[VisualRevision, ...] = ()
+    implementation_sketches: tuple[ImplementationSketch, ...] = ()
 
     def __post_init__(self) -> None:
         """拒绝重复条目标识、不存在的观察引用及同时支持和反对的引用."""
-        identifiers = [item.id for item in (*self.observations, *self.interpretations)]
+        seen: set[str] = set()
+        issues: list[dict[str, object]] = []
+        for group in ("observations", "interpretations"):
+            for index, item in enumerate(getattr(self, group)):
+                if item.id in seen:
+                    issues.append({"path": f"/{group}/{index}/id", "code": "duplicate_report_id", "message": "Report item IDs must be unique"})
+                seen.add(item.id)
+        # 条目身份尚不唯一时不继续推断观察引用, 避免同一 ID 对应多个含义.
+        if issues:
+            raise AnalysisValidationError(issues)
         observations = {item.id for item in self.observations}
-        if len(set(identifiers)) != len(identifiers):
-            msg = "Report item IDs must be unique"
-            raise ValueError(msg)
-        for item in self.interpretations:
-            supports, opposes = set(item.supporting_observation_ids), set(item.opposing_observation_ids)
-            if not (supports | opposes) <= observations or supports & opposes:
-                msg = (
-                    f"Invalid observation references in interpretation {item.id}: "
-                    f"missing={sorted((supports | opposes) - observations)}, "
-                    f"both_supporting_and_opposing={sorted(supports & opposes)}; "
-                    f"available_observation_ids={sorted(observations)}"
-                )
-                raise ValueError(msg)
+        issues = [issue for index, item in enumerate(self.interpretations) for issue in _interpretation_reference_issues(item, index, observations)]
+        if issues:
+            raise AnalysisValidationError(issues)
 
 
-@dataclass(frozen=True, kw_only=True, config=CONFIG)
-class SourceRef:
-    """引用报告内的具体条目; item_id 为空时引用整份报告."""
-
-    result_id: Text
-    item_id: Text | None = None
+def _interpretation_reference_issues(item: Interpretation, index: int, observations: set[str]) -> list[dict[str, object]]:
+    """一次列出全部可独立修正的本地观察引用, 路径相对报告本身."""
+    conflicting = set(item.supporting_observation_ids) & set(item.opposing_observation_ids)
+    issues: list[dict[str, object]] = []
+    for field in ("supporting_observation_ids", "opposing_observation_ids"):
+        missing = set(getattr(item, field)) - observations
+        conflict = conflicting if field == "opposing_observation_ids" else set()
+        if missing or conflict:
+            message = (
+                f"Invalid observation references in interpretation {item.id}: "
+                f"missing={sorted(missing)}, both_supporting_and_opposing={sorted(conflict)}; "
+                f"available_observation_ids={sorted(observations)}"
+            )
+            issues.append({"path": f"/interpretations/{index}/{field}", "code": "invalid_observation_reference", "message": message})
+    return issues
 
 
 @dataclass(frozen=True, kw_only=True, config=CONFIG)
@@ -129,6 +264,9 @@ class SourcedStatement:
 
     text: Text
     source_refs: Annotated[tuple[SourceRef, ...], Field(min_length=1)]
+    id: Text | None = None
+    element_ids: tuple[Text, ...] = ()
+    feature_ids: tuple[Text, ...] = ()
     basis: Literal["visual", "measurement_supported"] = "visual"
     evidence_ids: tuple[Text, ...] = ()
 
@@ -143,7 +281,11 @@ class AnalysisSummary:
     kind: Literal["analysis_summary"] = "analysis_summary"
     relationships: tuple[SourcedStatement, ...] = ()
     hypotheses: tuple[SourcedStatement, ...] = ()
+    hypothesis_links: tuple[HypothesisLink, ...] = ()
     disagreements: tuple[SourcedStatement, ...] = ()
     open_questions: tuple[SourcedStatement, ...] = ()
     implementation_hints: tuple[SourcedStatement, ...] = ()
     missing_task_ids: tuple[Text, ...] = ()
+    visual_decomposition: VisualDecomposition | None = None
+    visual_mappings: tuple[VisualMapping, ...] = ()
+    implementation_sketches: tuple[ImplementationSketch, ...] = ()

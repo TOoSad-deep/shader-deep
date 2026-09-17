@@ -10,7 +10,7 @@ from shader_deep.analysis.loop import AnalysisLoop
 from shader_deep.analysis.prompts import MAIN_PROMPT
 from shader_deep.analysis.session import AnalysisSession
 from shader_deep.analysis.transport import configure_analysis_model
-from shader_deep.analysis.types import AnalysisLimitError, AnalysisOptions, AnalysisOutcome
+from shader_deep.analysis.types import AnalysisLimitError, AnalysisNoProgressError, AnalysisOptions, AnalysisOutcome
 from shader_deep.artifacts import create_run_directory
 from shader_deep.blackboard import add_target, add_task, new_blackboard
 from shader_deep.config import build_model
@@ -66,17 +66,25 @@ def run_analysis_task(
         lambda: session.summary_result is not None,
         session.tools(),
         request_retries=options.max_request_retries,
+        submission_handler=session.submission_handler,
+        on_prepared=session.on_prepared,
+        on_event=session.event,
+        max_repeated_no_progress=options.max_repeated_no_progress,
+        progress=session.progress,
     )
     session.save()
     try:
         loop.run(model, MAIN_PROMPT, session.config(task_id))
     except AnalysisLimitError as exc:
         session.stop_reason, session.execution.status, session.execution.error = "model_limit", "stopped", str(exc)
+    except AnalysisNoProgressError as exc:
+        session.stop_reason, session.execution.status, session.execution.error = "no_progress", "stopped", str(exc)
     except Exception as exc:  # noqa: BLE001  # 模型服务或图执行失败时保留明确的未完成结果.
         session.stop_reason, session.execution.status, session.execution.error = "error", "failed", f"{type(exc).__name__}: {exc}"
     finally:
         # 正常结束、预算耗尽和执行失败都落盘, 调用方可从 outcome 定位已完成的部分.
         session.save()
+        session.event("run_finished", {"status": session.stop_reason, "error": session.execution.error})
     return session.outcome()
 
 

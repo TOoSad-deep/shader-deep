@@ -20,34 +20,34 @@ class AnalysisOptions:
     Attributes:
         max_tasks: 独立任务总数上限, 包含失败任务和追加任务.
         max_parallel: 同时执行的分析工作线程数上限.
-        max_worker_calls: 每个子任务的模型调用上限, 包含修正报告的调用.
-        max_main_calls: 主分析 Agent 在规划和综合阶段共享的调用上限.
+        max_worker_calls: 每个子任务的模型调用上限, 包含修正报告的调用; 0 表示不限次数.
+        max_main_calls: 主分析 Agent 在规划和综合阶段共享的调用上限; 0 表示不限次数.
         output_dir: 独立运行目录的父目录.
         max_measurements: 协调器执行不同图像测量操作的次数上限.
         max_request_retries: 每次逻辑模型调用因暂时性错误可增加的请求次数.
         request_timeout_seconds: 每次网络请求尝试的超时设置, 单位为秒.
         stream_model_responses: 以流式接收模型输出, 完整接收后再提交工具调用.
         max_output_tokens: 每次请求交给模型服务的输出 token 预算.
+        max_repeated_no_progress: 主任务连续同错同内容的停止阈值; 0 表示关闭.
     """
 
     max_tasks: int = 6
     max_parallel: int = 3
-    max_worker_calls: int = 3
-    max_main_calls: int = 8
+    max_worker_calls: int = 0
+    max_main_calls: int = 0
     output_dir: Path | None = None
     max_measurements: int = 8
     max_request_retries: int = 2
     request_timeout_seconds: int = 120
     stream_model_responses: bool = True
     max_output_tokens: int = 16384
+    max_repeated_no_progress: int = 0
 
     def __post_init__(self) -> None:
         """在调用模型或操作文件前拒绝无效预算."""
         for name in (
             "max_tasks",
             "max_parallel",
-            "max_worker_calls",
-            "max_main_calls",
             "max_measurements",
             "request_timeout_seconds",
             "max_output_tokens",
@@ -56,6 +56,14 @@ class AnalysisOptions:
             if isinstance(value, bool) or not isinstance(value, int) or value < 1:
                 msg = f"{name} must be a positive integer"
                 raise ValueError(msg)
+        for name in ("max_main_calls", "max_worker_calls"):
+            value = getattr(self, name)
+            if isinstance(value, bool) or not isinstance(value, int) or value < 0:
+                msg = f"{name} must be a nonnegative integer; 0 means unlimited"
+                raise ValueError(msg)
+        if isinstance(self.max_repeated_no_progress, bool) or not isinstance(self.max_repeated_no_progress, int) or self.max_repeated_no_progress < 0:
+            msg = "max_repeated_no_progress must be a nonnegative integer; 0 disables the guard"
+            raise ValueError(msg)
         if self.max_tasks < MIN_ANALYSIS_TASKS:
             msg = "Multi-view analysis requires a budget of at least two tasks"
             raise ValueError(msg)
@@ -85,6 +93,7 @@ class ToolFeedback:
     model_call: int
     tool: str
     message: str
+    category: str = "unspecified"
 
 
 @dataclass(kw_only=True)
@@ -97,6 +106,7 @@ class AnalysisExecution:
     error: str | None = None
     request_attempts: tuple[RequestAttempt, ...] = ()
     tool_feedback: tuple[ToolFeedback, ...] = ()
+    format_repair_calls: int = 0
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -112,3 +122,7 @@ class AnalysisOutcome:
 
 class AnalysisLimitError(RuntimeError):
     """某个角色已耗尽应用层的逻辑模型调用预算."""
+
+
+class AnalysisNoProgressError(RuntimeError):
+    """显式启用的重复无进展检查终止当前主任务."""

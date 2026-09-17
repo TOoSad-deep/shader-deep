@@ -7,18 +7,54 @@ from typing import TYPE_CHECKING, TypeVar
 
 import httpx2
 from langchain_core.exceptions import ModelError
+from langchain_core.messages import AIMessage, AIMessageChunk
+from langchain_openai import ChatOpenAI
 
 from shader_deep.analysis.types import RequestAttempt
 
 if TYPE_CHECKING:
-    from collections.abc import Callable
+    from collections.abc import Callable, Iterator
 
-    from langchain_openai import ChatOpenAI
+    from langchain_core.callbacks import CallbackManagerForLLMRun
+    from langchain_core.messages import BaseMessage
+    from langchain_core.outputs import ChatGenerationChunk, ChatResult
+    from openai import BaseModel
 
+    from shader_deep.analysis.events import EventCallback
     from shader_deep.analysis.types import AnalysisExecution, AnalysisOptions
 
 Response = TypeVar("Response")
 MAX_CAUSE_DEPTH = 5
+RAW_TOOL_CALLS = "analysis_raw_tool_calls"
+
+
+class AnalysisChatOpenAI(ChatOpenAI):
+    """保留原始参数供执行前审查, 防止流式解析器补齐非法 JSON 后丢失原文."""
+
+    def _stream(
+        self,
+        messages: list[BaseMessage],
+        stop: list[str] | None = None,
+        run_manager: CallbackManagerForLLMRun | None = None,
+        **kwargs: object,
+    ) -> Iterator[ChatGenerationChunk]:
+        """随流式片段保存参数原文, 由框架按 index 合并而不重新序列化参数."""
+        for chunk in super()._stream(messages, stop=stop, run_manager=run_manager, **kwargs):
+            if isinstance(chunk.message, AIMessageChunk) and chunk.message.tool_call_chunks:
+                chunk.message.additional_kwargs[RAW_TOOL_CALLS] = [dict(call) for call in chunk.message.tool_call_chunks]
+            yield chunk
+
+    def _create_chat_result(self, response: dict | BaseModel, generation_info: dict | None = None) -> ChatResult:
+        """非流式响应同样保留原始参数; 不依赖适配器已解析的工具调用."""
+        result = super()._create_chat_result(response, generation_info)
+        data = response if isinstance(response, dict) else response.model_dump()
+        for generation, choice in zip(result.generations, data.get("choices", []), strict=True):
+            if isinstance(generation.message, AIMessage):
+                generation.message.additional_kwargs[RAW_TOOL_CALLS] = [
+                    {"id": call.get("id"), "name": call.get("function", {}).get("name"), "args": call.get("function", {}).get("arguments")}
+                    for call in choice.get("message", {}).get("tool_calls", []) or []
+                ]
+        return result
 
 
 def configure_analysis_model(model: ChatOpenAI, options: AnalysisOptions) -> ChatOpenAI:
@@ -40,7 +76,10 @@ def configure_analysis_model(model: ChatOpenAI, options: AnalysisOptions) -> Cha
         # 已有联调注释记录: 当前 DeepSeek 接口忽略 max_completion_tokens,
         # 曾以 128 token 对照请求确认 max_tokens 生效, 因此在 extra_body 中设置它.
         extra_body["max_tokens"] = options.max_output_tokens
-    return model.model_copy(
+    # 从已校验实例复制字段与共享客户端, 不重新构造网络资源或改动用户配置.
+    guarded = AnalysisChatOpenAI.model_construct(**model.__dict__)
+    guarded.__pydantic_private__ = model.__pydantic_private__
+    return guarded.model_copy(
         update={
             "root_client": client,
             "client": client.chat.completions,
@@ -53,13 +92,16 @@ def configure_analysis_model(model: ChatOpenAI, options: AnalysisOptions) -> Cha
     )
 
 
-def call_with_recovery(call: Callable[[], Response], execution: AnalysisExecution, retries: int) -> Response:
+def call_with_recovery(
+    call: Callable[[], Response], execution: AnalysisExecution, retries: int, *, on_event: EventCallback | None = None
+) -> Response:
     """只重试暂时性模型请求错误, 并保留任务身份与每次尝试记录.
 
     Args:
         call: 单次模型调用; 重试边界内不能包含工具执行.
         execution: 当前角色的调用计数与审计记录.
         retries: 本次逻辑调用允许的额外请求尝试次数.
+        on_event: 可选的短事件回调, 用于观察请求和重试进度.
 
     Returns:
         首次成功返回的响应.
@@ -70,16 +112,26 @@ def call_with_recovery(call: Callable[[], Response], execution: AnalysisExecutio
     for attempt in range(retries + 1):
         # monotonic 不受系统时钟校准影响; 成功和失败都记录耗时, 便于区分逻辑轮与请求次数.
         began = time.monotonic()
+        if on_event is not None:
+            on_event("request_started", {"attempt": attempt + 1})
         try:
             result = call()
         except Exception as exc:  # 记录所有失败, 仅对判定为暂时性的模型请求错误重试.
-            execution.request_attempts += (_attempt(execution.model_calls, attempt, began, exc),)
+            record = _attempt(execution.model_calls, attempt, began, exc)
+            execution.request_attempts += (record,)
+            if on_event is not None:
+                on_event("request_failed", {"attempt": attempt + 1, "error_type": record.error_type, "elapsed_seconds": record.elapsed_seconds})
             if not _retryable(exc) or attempt == retries:
                 raise
+            if on_event is not None:
+                on_event("request_retry", {"next_attempt": attempt + 2})
             # 退避为 1、2、4、4…秒, 减少暂时性服务错误下的连续请求压力.
             time.sleep(min(2.0**attempt, 4.0))
         else:
-            execution.request_attempts += (_attempt(execution.model_calls, attempt, began, None),)
+            record = _attempt(execution.model_calls, attempt, began, None)
+            execution.request_attempts += (record,)
+            if on_event is not None:
+                on_event("request_completed", {"attempt": attempt + 1, "elapsed_seconds": record.elapsed_seconds})
             return result
     msg = "No request attempts were permitted"
     raise RuntimeError(msg)

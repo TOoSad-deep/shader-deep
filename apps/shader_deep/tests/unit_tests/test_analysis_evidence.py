@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import io
 import json
-from dataclasses import replace
+from dataclasses import asdict, replace
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from unittest import TestCase
@@ -13,7 +13,7 @@ from PIL import Image
 from pydantic import TypeAdapter, ValidationError
 
 from shader_deep.agents.analysis import run_analysis
-from shader_deep.analysis.evidence import ImageRegion, MeasurementRequest, MeasurementSpec
+from shader_deep.analysis.evidence import ImageRegion, MeasurementRecord, MeasurementRequest, MeasurementSpec
 from shader_deep.analysis.measurements import ReferenceMeasurements
 from shader_deep.analysis.profiles import summarize_profile
 from shader_deep.analysis.schemas import LensReport
@@ -21,7 +21,8 @@ from shader_deep.analysis.types import AnalysisOptions, AnalysisOutcome
 from shader_deep.blackboard import add_result, add_target, add_task, new_blackboard
 from shader_deep.context.analysis import build_analysis_context
 from shader_deep.schemas import ResultRecord, TargetRecord, TaskRecord
-from tests.unit_tests._generation_fixture import GenerationFixture, tool_results
+from tests.unit_tests._analysis_fixture import AnalysisFixture
+from tests.unit_tests._generation_fixture import tool_results
 from tests.unit_tests.test_analysis import context_payload, draft_batch, report_arguments, synthesis_arguments
 
 
@@ -55,6 +56,21 @@ class MeasurementTests(TestCase):
         self.assertEqual(light.mean_luma, 220.0)
         self.assertEqual(profile.profile, (20.0,) * 4 + (220.0,) * 4)
         self.assertEqual(profile.image_size, (8, 6))
+
+    def test_measurement_semantics_describe_actual_aggregation_and_legacy_absence(self) -> None:
+        region, _ = self.reader.measure(self.request(measurement()))
+        profile, _ = self.reader.measure(self.request(measurement("line_profile", right=8, axis="y")))
+        self.assertEqual(region.metrics, ("mean_rgb", "mean_encoded_luma"))
+        self.assertEqual(region.aggregation, "mean_over_all_pixels_in_region")
+        self.assertEqual(region.samples_per_value, 24)
+        self.assertEqual(profile.profile, (120.0,) * 6)
+        self.assertEqual(profile.aggregation, "mean_over_each_row_in_region")
+        self.assertEqual(profile.samples_per_value, 8)
+        fields = {"metrics", "aggregation", "samples_per_value", "units", "limitations"}
+        legacy = TypeAdapter(MeasurementRecord).validate_python({key: value for key, value in asdict(region).items() if key not in fields})
+        self.assertEqual(legacy.metrics, ())
+        self.assertIsNone(legacy.aggregation)
+        self.assertIsNone(legacy.samples_per_value)
 
     def test_deduplication_ignores_question_and_irrelevant_axis_but_keeps_geometry(self) -> None:
         self.reader.limit = 1
@@ -164,11 +180,11 @@ class MeasurementTests(TestCase):
         self.assertEqual(len(state["measurements"][result.id].profile), 500)
 
 
-class AnalysisEvidenceTests(GenerationFixture):
+class AnalysisEvidenceTests(AnalysisFixture):
     def setUp(self) -> None:
         super().setUp()
         (self.root / "reference.PNG").write_bytes(pixels())
-        self.options = AnalysisOptions(output_dir=self.root / "analysis", max_main_calls=6, max_tasks=3)
+        self.options = AnalysisOptions(output_dir=self.root / "analysis", max_main_calls=8, max_tasks=3)
         self.response = self.respond_to_analysis
 
     def run_case(self) -> AnalysisOutcome:
@@ -190,7 +206,7 @@ class AnalysisEvidenceTests(GenerationFixture):
                 arguments["report"]["observations"][0].update(basis="measurement_supported", evidence_ids=[numeric["id"]])
                 blocks = request["messages"][-1]["content"]
                 self.assertEqual(sum(block.get("type") == "image_url" for block in blocks), 2)
-            self.assertEqual({item["function"]["name"] for item in request["tools"]}, {"submit_analysis_report"})
+            self.assertEqual({item["function"]["name"] for item in request["tools"]}, {"submit_analysis_report", "repair_analysis_submission"})
             return self.call("submit_analysis_report", arguments)
         if not payload["related_results"]:
             return self.call("run_analysis_batch", {"requests": draft_batch()})
@@ -241,21 +257,23 @@ class AnalysisEvidenceTests(GenerationFixture):
         self.assertEqual(outcome.summary_result.analysis_detail.key_observations[0].basis, "measurement_supported")
         self.assertEqual(len([task for task in outcome.state["tasks"].values() if task.analysis_purpose == "verify"]), 1)
 
-    def test_measurement_before_initial_reports_is_rejected(self) -> None:
-        attempted = False
-
+    def test_measurement_before_initial_reports_is_saved_and_reusable(self) -> None:
         def response(request: dict[str, object]) -> dict[str, object]:
-            nonlocal attempted
             payload = context_payload(request)
-            if payload["task"]["lens_config"] is None and not attempted:
-                attempted = True
-                return self.call("measure_reference", {"requests": [{"question": "Too early", "measurement": measurement()}]})
-            return self.respond_to_analysis(request)
+            if payload["task"]["lens_config"] is not None:
+                return self.call("submit_analysis_report", report_arguments(payload))
+            if not payload["evidence"]:
+                return self.call("measure_reference", {"requests": [{"question": "Base brightness", "measurement": measurement()}]})
+            if not payload["related_results"]:
+                return self.call("run_analysis_batch", {"requests": draft_batch()})
+            return self.call("finish_analysis", synthesis_arguments(payload))
 
         self.response = response
         outcome = self.run_case()
         self.assertEqual(outcome.stop_reason, "completed")
-        self.assertTrue(any("before measuring" in str(tool_results(request)) for request in self.requests))
+        self.assertEqual(len(outcome.state["measurements"]), 1)
+        saved = json.loads((outcome.run_dir / "run.json").read_text())
+        self.assertEqual(saved["measurement_calls"][0]["question"], "Base brightness")
 
     def test_same_turn_cannot_cite_unseen_measurements(self) -> None:
         attempted = False

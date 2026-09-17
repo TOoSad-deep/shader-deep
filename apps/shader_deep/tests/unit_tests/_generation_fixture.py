@@ -95,11 +95,14 @@ class GenerationFixture(TestCase):
             return self.call("render_shader", {"glsl_code": "void mainImage(out vec4 c, in vec2 p) { c = vec4(unknown_symbol); }"})
         return self.render_then_finish(request)
 
+    def response_message(self, request: dict[str, object]) -> dict[str, object]:
+        return self.response(request)
+
     def respond(self, _client: httpx2.Client, request: httpx2.Request, **_kwargs: object) -> httpx2.Response:
         self.assertEqual(str(request.url), "https://shader-deep.invalid/v1/chat/completions")
         payload = json.loads(request.content)
         self.requests.append(payload)
-        message = self.response(payload)
+        message = self.response_message(payload)
         finish_reason = message.pop("_fixture_finish_reason", "tool_calls" if "tool_calls" in message else "stop")
         if payload.get("stream"):
             delta = {**message}

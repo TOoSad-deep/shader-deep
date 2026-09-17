@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import os
+from dataclasses import replace
 from typing import TYPE_CHECKING
 from unittest.mock import patch
 
@@ -13,7 +14,8 @@ from langchain.tools import tool
 from shader_deep.agents.analysis import run_analysis
 from shader_deep.analysis.tool_json import recover_object
 from shader_deep.analysis.types import AnalysisOptions, AnalysisOutcome
-from tests.unit_tests._generation_fixture import GenerationFixture, tool_results
+from tests.unit_tests._analysis_fixture import AnalysisFixture
+from tests.unit_tests._generation_fixture import tool_results
 from tests.unit_tests.test_analysis import context_payload, draft_batch, report_arguments, synthesis_arguments
 
 if TYPE_CHECKING:
@@ -30,11 +32,31 @@ class InterruptedStream(httpx2.SyncByteStream):
         raise httpx2.ReadError(msg)
 
 
-class AnalysisRecoveryTests(GenerationFixture):
+class AnalysisRecoveryTests(AnalysisFixture):
     def setUp(self) -> None:
         super().setUp()
-        self.options = AnalysisOptions(output_dir=self.root / "analysis", max_tasks=2, max_request_retries=1)
+        # 恢复用例显式选择有限模式, 不依赖正式运行的不限调用默认值.
+        self.options = AnalysisOptions(output_dir=self.root / "analysis", max_tasks=2, max_main_calls=8, max_worker_calls=3, max_request_retries=1)
         self.response = self.analyze
+
+    def respond(self, client: httpx2.Client, request: httpx2.Request, **kwargs: object) -> httpx2.Response:
+        pending: set[str] = set()
+        for message in json.loads(request.content)["messages"]:
+            if message["role"] == "tool" and message.get("tool_call_id") in pending:
+                pending.remove(message["tool_call_id"])
+                continue
+            if pending or message["role"] == "tool":
+                return httpx2.Response(400, request=request, json={"error": {"message": "Unpaired tool history", "type": "invalid_request_error"}})
+            if message["role"] == "assistant":
+                calls = message.get("tool_calls", [])
+                if not message.get("content") and not calls:
+                    return httpx2.Response(
+                        400, request=request, json={"error": {"message": "Empty assistant message", "type": "invalid_request_error"}}
+                    )
+                pending.update(call["id"] for call in calls)
+        if pending:
+            return httpx2.Response(400, request=request, json={"error": {"message": "Missing tool responses", "type": "invalid_request_error"}})
+        return super().respond(client, request, **kwargs)
 
     def analyze(self, request: dict[str, object]) -> dict[str, object]:
         payload = context_payload(request)
@@ -65,15 +87,15 @@ class AnalysisRecoveryTests(GenerationFixture):
         outcome, saved = self.run_case()
         self.assertEqual(outcome.stop_reason, "completed", saved)
         self.assertEqual(len(saved["worker_executions"]), 2)
-        self.assertEqual(saved["main_execution"]["model_calls"], 2)
-        self.assertEqual(len(saved["main_execution"]["request_attempts"]), 3)
+        self.assertEqual(saved["main_execution"]["model_calls"], 3)
+        self.assertEqual(len(saved["main_execution"]["request_attempts"]), 4)
         for execution in saved["worker_executions"].values():
             self.assertEqual(execution["model_calls"], 1)
             self.assertEqual(len(execution["request_attempts"]), 2)
             self.assertEqual([item["attempt"] for item in execution["request_attempts"]], [1, 2])
             self.assertIsNotNone(execution["request_attempts"][0]["error_type"])
             self.assertIsNone(execution["request_attempts"][1]["error_type"])
-        self.assertEqual(len(self.requests), 7)  # 不允许 SDK 内部隐式重试 HTTP 请求.
+        self.assertEqual(len(self.requests), 8)  # 不允许 SDK 内部隐式重试 HTTP 请求.
 
     def test_exhausted_connection_attempts_preserve_successful_sibling(self) -> None:
         def response(request: dict[str, object]) -> dict[str, object]:
@@ -90,7 +112,7 @@ class AnalysisRecoveryTests(GenerationFixture):
         self.assertEqual(len(failed), 1)
         self.assertEqual(len(failed[0]["request_attempts"]), 2)
         self.assertEqual(len(outcome.summary_result.analysis_detail.source_result_ids), 1)
-        self.assertEqual(len(self.requests), 5)
+        self.assertEqual(len(self.requests), 6)
 
     def test_local_nontransient_errors_are_not_retried(self) -> None:
         def response(_request: dict[str, object]) -> dict[str, object]:
@@ -142,8 +164,8 @@ class AnalysisRecoveryTests(GenerationFixture):
                     outcome, saved = self.run_case()
                 self.assertEqual(outcome.stop_reason, "completed")
                 self.assertEqual(len(saved["worker_executions"]), 2)
-                self.assertEqual(len(saved["main_execution"]["request_attempts"]), 3)
-                self.assertEqual(len(self.requests), 5)
+                self.assertEqual(len(saved["main_execution"]["request_attempts"]), 4)
+                self.assertEqual(len(self.requests), 6)
 
     def test_deepseek_budget_uses_honored_wire_parameter(self) -> None:
         with patch.dict(
@@ -166,8 +188,8 @@ class AnalysisRecoveryTests(GenerationFixture):
         outcome, saved = self.run_case()
         self.assertEqual(outcome.stop_reason, "completed")
         self.assertEqual(len(saved["worker_executions"]), 2)
-        self.assertEqual(saved["main_execution"]["model_calls"], 3)
-        self.assertEqual(len(saved["main_execution"]["request_attempts"]), 3)
+        self.assertEqual(saved["main_execution"]["model_calls"], 4)
+        self.assertEqual(len(saved["main_execution"]["request_attempts"]), 4)
         self.assertEqual(saved["main_execution"]["tool_feedback"][0]["tool"], "output_budget")
         self.assertTrue(any("更短的结构化结果" in str(request["messages"]) for request in self.requests))
 
@@ -181,10 +203,54 @@ class AnalysisRecoveryTests(GenerationFixture):
         self.response = response
         outcome, saved = self.run_case()
         self.assertEqual(outcome.stop_reason, "completed", saved)
-        self.assertEqual(len(self.requests), 4)
-        self.assertEqual(saved["main_execution"]["model_calls"], 2)
+        self.assertEqual(len(self.requests), 5)
+        self.assertEqual(saved["main_execution"]["model_calls"], 3)
         self.assertEqual(len(outcome.summary_result.analysis_detail.source_result_ids), 2)
         self.assertTrue(any("surplus closing" in item["message"] for item in saved["main_execution"]["tool_feedback"]))
+
+    def test_raw_arguments_cannot_be_accepted_by_partial_or_permissive_parsing(self) -> None:
+        for streaming in (False, True):
+            for corruption in ("missing_closer", "duplicate_key"):
+                with self.subTest(streaming=streaming, corruption=corruption):
+                    self.requests.clear()
+                    self.options = replace(self.options, stream_model_responses=streaming)
+
+                    def response(request: dict[str, object], *, mode: str = corruption) -> dict[str, object]:
+                        message = self.analyze(request)
+                        if len(self.requests) == 1:
+                            call = message["tool_calls"][0]["function"]
+                            raw = call["arguments"]
+                            call["arguments"] = raw[:-1] if mode == "missing_closer" else '{"requests": [],' + raw[1:]
+                        return message
+
+                    self.response = response
+                    outcome, saved = self.run_case()
+                    self.assertEqual(outcome.stop_reason, "completed", saved)
+                    self.assertEqual(saved["main_execution"]["model_calls"], 4)
+                    self.assertEqual(len(saved["worker_executions"]), 2)
+                    self.assertEqual(saved["main_execution"]["tool_feedback"][0]["category"], "json_syntax")
+                    self.assertEqual(saved["main_execution"]["format_repair_calls"], 1)
+                    repair_request = self.requests[1]
+                    self.assertEqual(context_payload(repair_request)["related_results"], [])
+                    self.assertEqual(tool_results(repair_request), [])
+                    rejected = [message for message in repair_request["messages"] if message["role"] == "assistant"]
+                    self.assertTrue(rejected)
+                    self.assertTrue(all(message.get("content") and not message.get("tool_calls") for message in rejected))
+
+    def test_repeated_truncation_stops_after_two_repairs_without_executing_tools(self) -> None:
+        def response(request: dict[str, object]) -> dict[str, object]:
+            message = self.analyze(request)
+            message["_fixture_finish_reason"] = "length"
+            return message
+
+        self.response = response
+        outcome, saved = self.run_case()
+        self.assertIsNone(outcome.summary_result)
+        self.assertEqual(saved["main_execution"]["status"], "stopped")
+        self.assertIn("format-repair budget", saved["main_execution"]["error"])
+        self.assertEqual(saved["main_execution"]["model_calls"], 3)
+        self.assertEqual(saved["main_execution"]["format_repair_calls"], 2)
+        self.assertEqual(saved["worker_executions"], {})
 
     def test_json_recovery_does_not_guess_missing_fields_or_discard_extra_objects(self) -> None:
         @tool

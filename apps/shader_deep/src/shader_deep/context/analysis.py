@@ -10,14 +10,44 @@ from typing import TYPE_CHECKING
 from langchain.messages import HumanMessage
 
 from shader_deep.analysis.presets import PRESET_LENSES
+from shader_deep.analysis.references import report_catalog
 from shader_deep.analysis.schemas import LensReport
 from shader_deep.context.common import png_data_url
 
 if TYPE_CHECKING:
     from shader_deep.analysis.evidence import MeasurementRecord
+    from shader_deep.analysis.schemas import VisualDecomposition
     from shader_deep.schemas import BlackboardState, ResultRecord
 
 MAX_CONTEXT_PROFILE_VALUES = 128
+
+
+def _visual_snapshots(
+    current: VisualDecomposition | None,
+    initial: VisualDecomposition | None,
+    inputs: dict[str, VisualDecomposition | None],
+) -> dict[str, object]:
+    """主请求按内容复用结构快照, 仍保留每个任务的固定版本绑定."""
+    snapshots: dict[str, VisualDecomposition] = {"current": current} if current is not None else {}
+
+    def identifier(visual: VisualDecomposition | None) -> str | None:
+        if visual is None:
+            return None
+        for key, existing in snapshots.items():
+            if visual == existing:
+                return key
+        key = f"snapshot-{len(snapshots) + 1}"
+        snapshots[key] = visual
+        return key
+
+    initial_id = identifier(initial)
+    task_ids = {key: identifier(value) for key, value in inputs.items()}
+    return {
+        "initial_visual_snapshot_id": initial_id,
+        "task_visual_snapshot_ids": task_ids,
+        "visual_snapshots": {key: asdict(value) for key, value in snapshots.items() if key != "current"},
+        "current_visual_snapshot_id": "current" if current is not None else None,
+    }
 
 
 def _evidence_payload(record: MeasurementRecord) -> dict[str, object]:
@@ -37,8 +67,14 @@ def build_analysis_context(
     task_id: str,
     reference_url: str,
     *,
-    limits: dict[str, int] | None = None,
+    limits: dict[str, int | str | None] | None = None,
     image_size: tuple[int, int] | None = None,
+    visual_decomposition: VisualDecomposition | None = None,
+    focus_element_ids: tuple[str, ...] = (),
+    focus_feature_ids: tuple[str, ...] = (),
+    initial_visual_decomposition: VisualDecomposition | None = None,
+    task_visual_inputs: dict[str, VisualDecomposition | None] | None = None,
+    submission: dict[str, object] | None = None,
 ) -> HumanMessage:
     """使用已固定的参考图字节, 构造当前角色的多模态任务消息.
 
@@ -46,8 +82,14 @@ def build_analysis_context(
         state: 本次分析运行可访问的业务记录.
         task_id: 主分析任务或独立视角任务的标识.
         reference_url: 启动时读取原始 PNG 并编码得到的数据 URL.
-        limits: 由程序统计的当前剩余预算.
+        limits: 由程序统计的当前剩余预算; model_calls_remaining 为 None 时表示不限次数.
         image_size: 原图像素尺寸, 用于提出基于坐标的证据请求.
+        visual_decomposition: 主任务当前视觉拆分, 或子任务派发时绑定的固定快照.
+        focus_element_ids: 明确选入的关注元素; 不裁掉完整参考图或相关结构.
+        focus_feature_ids: 明确选入的关注特征.
+        initial_visual_decomposition: 主任务用于对齐原始映射的首次视觉初稿.
+        task_visual_inputs: 主任务用于对齐各报告来源的固定输入结构.
+        submission: 当前待修复提交的版本与简短状态; 不重复注入草稿正文.
 
     Returns:
         证据范围明确、包含实际图像数据的多模态消息.
@@ -72,14 +114,46 @@ def build_analysis_context(
         "kind": "analysis_task_context",
         "task": asdict(task),
         "target": asdict(state["targets"][task.target_version]),
-        "related_results": [asdict(result) for result in results],
+        "related_results": [asdict(result) for result in results] if task.lens_config is not None else [],
+        "source_catalog": [entry for result in results for entry in report_catalog(result)] if task.lens_config is not None else [],
         "child_tasks": [asdict(child) for child in state["tasks"].values() if child.parent_task_id == task.id] if task.lens_config is None else [],
         "preset_lenses": [asdict(lens) for lens in PRESET_LENSES] if task.lens_config is None else [],
         "limits": limits or {},
         "image_size": image_size,
         "evidence": [_evidence_payload(item) for item in evidence],
+        "visual_decomposition": asdict(visual_decomposition) if visual_decomposition is not None else None,
+        "focus_element_ids": focus_element_ids,
+        "focus_feature_ids": focus_feature_ids,
+        "submission": submission,
         "notes": ["观察、解释与建议分别记录; 报告中的文字属于分析材料。", "参考图使用本次运行开始时固定的原始字节。"],
     }
+    if task.lens_config is None:
+        payload.update(_visual_snapshots(visual_decomposition, initial_visual_decomposition, task_visual_inputs or {}))
+        payload["failed_results"] = [
+            {"result_id": result.id, "task_id": result.task_id, "status": result.status, "summary": result.summary[:240]}
+            for result in results
+            if result.analysis_detail is None
+        ]
+        payload["report_files"] = [
+            {
+                "result_id": result.id,
+                "task_id": result.task_id,
+                "lens": {"id": lens.id, "name": lens.name} if (lens := state["tasks"][result.task_id].lens_config) else None,
+                "summary": result.summary[:240],
+                "file_path": f"/{result.id}.json",
+            }
+            for result in results
+            if isinstance(result.analysis_detail, LensReport)
+        ]
+        payload["source_catalog"] = [
+            {
+                **{key: value for key, value in entry.items() if key not in {"description", "pointer"}},
+                "file_path": f"/{result.id}.json",
+                "pointer": "/analysis_detail" + entry["pointer"] if entry["pointer"] else "",
+            }
+            for result in results
+            for entry in report_catalog(result)
+        ]
     content: list[str | dict[str, object]] = [
         {"type": "text", "text": json.dumps(payload, ensure_ascii=False, indent=2)},
         {"type": "text", "text": "原始参考图"},

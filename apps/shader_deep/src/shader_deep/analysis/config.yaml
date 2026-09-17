@@ -1,0 +1,28 @@
+# 分析模块专用运行配置; 默认按模块位置加载, 不依赖启动目录.
+# 可用 --config 指定其他文件.
+# 命令行显式参数优先, 省略字段使用 AnalysisOptions 的内置默认值.
+
+# 视角任务总数, 含首轮、追加复核和失败任务; 至少为 2.
+max_tasks: 6
+# 同时运行的视角子任务数.
+max_parallel: 3
+# 每个子任务的模型调用上限; 0 表示不限次数及格式修复轮次, 仍记录实际调用数.
+max_worker_calls: 0
+# 主 Agent 规划、测量决策和综合共用的模型调用上限; 0 表示不限次数及格式修复轮次.
+max_main_calls: 0
+# 主任务连续同错、同内容且无新材料时的停止阈值; 0 不自动停止.
+max_repeated_no_progress: 0
+# 唯一取证操作上限, 相同规格的缓存命中不重复扣除.
+max_measurements: 8
+
+# 单次逻辑模型调用额外允许的网络重试次数, 可为 0.
+max_request_retries: 2
+# 每次网络请求的超时秒数, 不是整个分析流程的总耗时上限.
+request_timeout_seconds: 240
+# 单次请求的输出 token 预算; 主 Agent 和全部子任务共用此设置.
+max_output_tokens: 163840
+# 是否使用 SSE 流式传输; 收齐并校验响应后才执行工具.
+stream_model_responses: true
+
+# 相对路径基于本 YAML 所在目录; null 表示当前工作目录下的 runs.
+output_dir: null

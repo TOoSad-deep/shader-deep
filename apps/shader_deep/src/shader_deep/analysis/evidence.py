@@ -108,3 +108,9 @@ class MeasurementRecord:
     profile: tuple[float, ...] = ()
     profile_digest: ProfileDigest | None = None
     artifact_path: str | None = None
+    # 旧快照缺少下列字段时表示未提供语义, 不根据 kind 静默赋予新的测量能力.
+    metrics: tuple[str, ...] = ()
+    aggregation: str | None = None
+    samples_per_value: int | None = None
+    units: str | None = None
+    limitations: tuple[str, ...] = ()

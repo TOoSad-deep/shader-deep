@@ -21,19 +21,9 @@ from shader_deep.analysis.schemas import AnalysisTaskRequest, LensReport
 from shader_deep.analysis.types import AnalysisOptions, AnalysisOutcome
 from shader_deep.blackboard import add_result, add_task
 from shader_deep.schemas import ResultRecord, TaskRecord
-from tests.unit_tests._generation_fixture import GenerationFixture, tool_results
+from tests.unit_tests._analysis_fixture import AnalysisFixture, context_payload
+from tests.unit_tests._generation_fixture import tool_results
 from tests.unit_tests.test_context import PNG
-
-
-def context_payload(request: dict[str, object]) -> dict[str, object]:
-    for message in request["messages"]:
-        if not isinstance(message["content"], list):
-            continue
-        for block in message["content"]:
-            if block.get("type") == "text" and block["text"].startswith('{\n  "kind": "analysis_task_context"'):
-                return json.loads(block["text"])
-    msg = "Missing actual analysis context"
-    raise AssertionError(msg)
 
 
 def draft_batch() -> list[dict[str, object]]:
@@ -85,7 +75,7 @@ def synthesis_arguments(payload: dict[str, object]) -> dict[str, object]:
     }
 
 
-class AnalysisTests(GenerationFixture):
+class AnalysisTests(AnalysisFixture):
     def setUp(self) -> None:
         super().setUp()
         self.analysis_options = AnalysisOptions(output_dir=self.root / "analysis", max_tasks=3, max_parallel=2, max_worker_calls=2, max_main_calls=5)
@@ -120,7 +110,7 @@ class AnalysisTests(GenerationFixture):
                 self.assertNotIn("COORDINATOR_PRIVATE_HISTORY", str(request["messages"]))
                 self.assertIn("data:image/png;base64,", str(request["messages"]))
                 names = {item["function"]["name"] for item in request["tools"]}
-                self.assertEqual(names, {"submit_analysis_report"})
+                self.assertEqual(names, {"submit_analysis_report", "repair_analysis_submission"})
             return self.analyze(request)
 
         self.response = response
@@ -132,7 +122,7 @@ class AnalysisTests(GenerationFixture):
         self.assertEqual((outcome.run_dir / "reference.png").read_bytes(), PNG)
         self.assertEqual(list(outcome.run_dir.glob("*.glsl")), [])
         manifest = self.manifest(outcome)
-        self.assertEqual(manifest["main_execution"]["model_calls"], 2)
+        self.assertEqual(manifest["main_execution"]["model_calls"], 3)  # 派发、实际读取、综合.
         self.assertTrue(all(value["model_calls"] == 1 for value in manifest["worker_executions"].values()))
         self.assertNotIn("fixture-key", json.dumps(manifest))
         detail = outcome.summary_result.analysis_detail
@@ -207,7 +197,7 @@ class AnalysisTests(GenerationFixture):
         self.response = response
         outcome = self.run_case()
         self.assertEqual(outcome.stop_reason, "completed", self.manifest(outcome))
-        self.assertEqual(self.manifest(outcome)["main_execution"]["model_calls"], 3)
+        self.assertEqual(self.manifest(outcome)["main_execution"]["model_calls"], 4)
         self.assertTrue(any("Invalid observation reference" in str(tool_results(request)) for request in self.requests))
 
     def test_worker_budget_failure_preserves_other_report_and_marks_partial(self) -> None:
@@ -290,7 +280,7 @@ class AnalysisTests(GenerationFixture):
         self.response = response
         outcome = self.run_case()
         self.assertEqual(outcome.stop_reason, "completed", self.manifest(outcome))
-        self.assertEqual(len(self.requests), 6)
+        self.assertEqual(len(self.requests), 7)
         self.assertTrue(any("未开放此工具" in str(tool_results(request)) for request in self.requests))
 
     def test_main_plain_text_stops_without_fabricating_a_summary(self) -> None:
@@ -300,6 +290,56 @@ class AnalysisTests(GenerationFixture):
         self.assertIsNone(outcome.summary_result)
         self.assertEqual(len(self.requests), 2)
         self.assertEqual(self.manifest(outcome)["worker_executions"], {})
+
+    def test_optional_no_progress_stop_and_live_request_events(self) -> None:
+        def response(_request: dict[str, object]) -> dict[str, object]:
+            event_path = next(self.analysis_options.output_dir.glob("run-*/events.jsonl"))
+            events = [json.loads(line) for line in event_path.read_text().splitlines()]
+            self.assertEqual(events[-1]["event"], "request_started")
+            self.assertGreater(events[-1]["model_call"], 0)
+            return self.call("run_analysis_batch", {"requests": [{"preset_id": "absent", "objective": "bad"}, draft_batch()[1]]})
+
+        self.response = response
+        outcome = self.run_case(max_main_calls=0, max_repeated_no_progress=2)
+        self.assertEqual(outcome.stop_reason, "no_progress", self.manifest(outcome))
+        self.assertIsNone(outcome.summary_result)
+        self.assertEqual(self.manifest(outcome)["main_execution"]["model_calls"], 2)
+        self.assertEqual(self.manifest(outcome)["worker_executions"], {})
+
+    def test_unlimited_main_and_workers_can_repair_past_call_format_and_graph_limits(self) -> None:
+        main_calls = 0
+        worker_calls: dict[str, int] = {}
+        last_rejected_call = 12
+        last_rejected_worker_call = 4
+
+        def response(request: dict[str, object]) -> dict[str, object]:
+            nonlocal main_calls
+            payload = context_payload(request)
+            if payload["task"]["lens_config"] is None:
+                self.assertIsNone(payload["limits"]["model_calls_remaining"])
+                main_calls += 1
+                if payload["related_results"] and main_calls <= last_rejected_call:
+                    return self.call("finish_analysis", {"summary": {}, "text": "Correct the rejected summary"})
+            else:
+                self.assertIsNone(payload["limits"]["model_calls_remaining"])
+                identifier = payload["task"]["id"]
+                worker_calls[identifier] = worker_calls.get(identifier, 0) + 1
+                if worker_calls[identifier] <= last_rejected_worker_call:
+                    return self.call("submit_analysis_report", {"report": {}, "summary": "Correct the rejected report"})
+            return self.analyze(request)
+
+        self.response = response
+        outcome = self.run_case(max_main_calls=0, max_worker_calls=0)
+        saved = self.manifest(outcome)
+        self.assertEqual(outcome.stop_reason, "completed", saved)
+        self.assertEqual(saved["main_execution"]["model_calls"], 14)
+        self.assertEqual(saved["main_execution"]["format_repair_calls"], 11)
+        self.assertEqual(len(saved["worker_executions"]), 2)
+        for worker in saved["worker_executions"].values():
+            self.assertEqual(worker["model_calls"], last_rejected_worker_call + 1)
+            self.assertEqual(worker["format_repair_calls"], last_rejected_worker_call)
+        self.assertEqual(saved["options"]["max_main_calls"], 0)
+        self.assertEqual(saved["options"]["max_worker_calls"], 0)
 
     def test_malformed_inputs_are_rejected_before_running_models(self) -> None:
         with self.assertRaises(ValidationError):
@@ -342,7 +382,7 @@ class AnalysisTests(GenerationFixture):
         self.response = response
         outcome = self.run_case()
         self.assertEqual(outcome.stop_reason, "completed", self.manifest(outcome))
-        self.assertTrue(any("before finishing" in str(tool_results(request)) for request in self.requests))
+        self.assertTrue(any("source_not_presented" in str(tool_results(request)) for request in self.requests))
         self.assertNotEqual(outcome.summary_result.summary, "Blind summary")
 
     def test_invalid_batch_is_atomic_and_can_be_repaired(self) -> None:
@@ -379,7 +419,14 @@ class AnalysisTests(GenerationFixture):
         outcome = self.run_case()
         self.assertEqual(outcome.stop_reason, "completed", self.manifest(outcome))
         self.assertTrue(any("Undeclared source result" in str(tool_results(request)) for request in self.requests))
-        self.assertNotIn("unrelated-report", json.dumps(self.manifest(outcome)))
+        manifest = self.manifest(outcome)
+        self.assertNotIn("unrelated-report", json.dumps(manifest["blackboard"]))
+        self.assertTrue(
+            any(
+                item["category"] == "business_rejection" and "unrelated-report" in item["message"]
+                for item in manifest["main_execution"]["tool_feedback"]
+            )
+        )
 
     def test_coordinator_failure_preserves_completed_reports(self) -> None:
         def response(request: dict[str, object]) -> dict[str, object]:
@@ -428,7 +475,9 @@ class AnalysisTests(GenerationFixture):
         self.assertEqual((outcome.run_dir / "reference.png").read_bytes(), PNG)
 
     def test_cli_emits_real_summary_as_json(self) -> None:
-        arguments = ["shader-deep-analyze", str(self.root / "reference.PNG"), "Inspect", "--output-dir", str(self.analysis_options.output_dir)]
+        config = self.root / "analysis.yaml"
+        config.write_text("max_output_tokens: 2048\nmax_worker_calls: 4\nstream_model_responses: false\noutput_dir: analysis\n", encoding="utf-8")
+        arguments = ["shader-deep-analyze", str(self.root / "reference.PNG"), "Inspect", "--config", str(config)]
         stdout, stderr = io.StringIO(), io.StringIO()
         with patch.object(sys, "argv", arguments), contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr):
             code = analysis_cli.main()
@@ -437,3 +486,8 @@ class AnalysisTests(GenerationFixture):
         manifest = json.loads((Path(payload["run_dir"]) / "run.json").read_text())
         self.assertEqual(payload["result"], manifest["blackboard"]["results"][manifest["summary_result_id"]])
         self.assertIn("Status: completed", stderr.getvalue())
+        self.assertEqual(Path(payload["run_dir"]).parent, self.root / "analysis")
+        self.assertEqual(manifest["options"]["max_worker_calls"], 4)
+        self.assertEqual(manifest["options"]["max_output_tokens"], 2048)
+        self.assertEqual({request["max_completion_tokens"] for request in self.requests}, {2048})
+        self.assertTrue(all(not request.get("stream", False) for request in self.requests))

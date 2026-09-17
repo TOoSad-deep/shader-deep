@@ -81,7 +81,15 @@ class ReferenceMeasurements:
                 folder.mkdir(exist_ok=True)
                 path = folder / f"{identifier}.png"
                 pixels.save(path)
-                return replace(record, artifact_path=str(path.resolve()))
+                return replace(
+                    record,
+                    artifact_path=str(path.resolve()),
+                    metrics=("original_rgba_pixels",),
+                    aggregation="none",
+                    samples_per_value=1,
+                    units="encoded_RGBA_0_255",
+                    limitations=("Visual crop only; does not compute object counts, semantic segmentation or numeric color statistics.",),
+                )
             # 统计明确采用白底合成, 避免透明像素中不可见的 RGB 值误导均值.
             with Image.new("RGBA", pixels.size, "white") as background:
                 background.alpha_composite(pixels)
@@ -118,7 +126,16 @@ def _statistics(record: MeasurementRecord, rgb: Image.Image) -> MeasurementRecor
     """计算区域均值, 或沿选定轴逐行、逐列平均形成一维亮度剖面."""
     means = ImageStat.Stat(rgb).mean
     if record.spec.kind == "region_stats":
-        return replace(record, mean_rgb=(means[0], means[1], means[2]), mean_luma=_luma(means))
+        return replace(
+            record,
+            mean_rgb=(means[0], means[1], means[2]),
+            mean_luma=_luma(means),
+            metrics=("mean_rgb", "mean_encoded_luma"),
+            aggregation="mean_over_all_pixels_in_region",
+            samples_per_value=rgb.width * rgb.height,
+            units="encoded_RGB_0_255",
+            limitations=("Means describe the entire selected ROI, not an isolated object or hole unless the ROI contains only that target.",),
+        )
     # x 剖面逐列平均区域的全部行, y 剖面逐行平均全部列; 不是默认只取中心线.
     horizontal = record.spec.axis == "x"
     values = []
@@ -128,7 +145,19 @@ def _statistics(record: MeasurementRecord, rgb: Image.Image) -> MeasurementRecor
             values.append(_luma(ImageStat.Stat(strip).mean))
     # 将区域内部下标还原成原图坐标, 模型可直接用摘要中的 position 定位.
     offset = record.spec.region.left if horizontal else record.spec.region.top
-    return replace(record, profile=tuple(values), profile_digest=summarize_profile(tuple(values), offset))
+    return replace(
+        record,
+        profile=tuple(values),
+        profile_digest=summarize_profile(tuple(values), offset),
+        metrics=("mean_encoded_luma_profile",),
+        aggregation="mean_over_each_column_in_region" if horizontal else "mean_over_each_row_in_region",
+        samples_per_value=rgb.height if horizontal else rgb.width,
+        units="encoded_luma_0_255",
+        limitations=(
+            "Each value averages the full perpendicular strip inside the ROI; it is not a centerline sample or an isolated hole color.",
+            "No RGB profile, variance, semantic object count or physical mechanism is computed; extrema are local candidates only.",
+        ),
+    )
 
 
 def _luma(rgb: list[float]) -> float:

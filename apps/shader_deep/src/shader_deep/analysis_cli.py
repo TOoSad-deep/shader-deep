@@ -5,10 +5,11 @@ from __future__ import annotations
 import argparse
 import json
 import sys
-from dataclasses import asdict
+from dataclasses import asdict, fields, replace
 from pathlib import Path
 
 from shader_deep.agents.analysis import run_analysis
+from shader_deep.analysis.config import load_analysis_options
 from shader_deep.analysis.types import AnalysisOptions
 
 
@@ -18,39 +19,31 @@ def main() -> int:
     Returns:
         分析完整时返回 0, 部分完成或未完成时返回 1, 输入错误时返回 2.
     """
-    parser = argparse.ArgumentParser(description=__doc__)
+    parser = argparse.ArgumentParser(description=__doc__, argument_default=argparse.SUPPRESS)
     parser.add_argument("png", type=Path, help="Path to a local PNG reference")
     parser.add_argument("prompt", help="User requirements and analysis objective")
+    parser.add_argument("--config", type=Path, help="Analysis YAML path (default: config.yaml bundled with shader_deep.analysis)")
     parser.add_argument("--output-dir", type=Path, help="Parent directory for the unique run folder")
-    parser.add_argument("--max-tasks", type=int, default=6, help="Total lens tasks, including follow-ups and failures")
-    parser.add_argument("--max-parallel", type=int, default=3, help="Maximum concurrent lens workers")
-    parser.add_argument("--max-worker-calls", type=int, default=3, help="Model calls per lens worker")
-    parser.add_argument("--max-main-calls", type=int, default=8, help="Coordinator model calls across planning and synthesis")
-    parser.add_argument("--max-measurements", type=int, default=8, help="Unique coordinator measurements; cached results are free")
-    parser.add_argument("--max-request-retries", type=int, default=2, help="Extra transient transport attempts per model call")
-    parser.add_argument("--request-timeout-seconds", type=int, default=120, help="Network timeout for each model request attempt")
-    parser.add_argument("--max-output-tokens", type=int, default=16384, help="Provider output token budget per request attempt")
+    parser.add_argument("--max-tasks", type=int, help="Total lens tasks, including follow-ups and failures")
+    parser.add_argument("--max-parallel", type=int, help="Maximum concurrent lens workers")
+    parser.add_argument("--max-worker-calls", type=int, help="Model calls per lens worker; 0 means unlimited")
+    parser.add_argument("--max-main-calls", type=int, help="Coordinator model calls across planning and synthesis; 0 means unlimited")
+    parser.add_argument("--max-repeated-no-progress", type=int, help="Stop after identical rejected turns without new material; 0 disables")
+    parser.add_argument("--max-measurements", type=int, help="Unique coordinator measurements; cached results are free")
+    parser.add_argument("--max-request-retries", type=int, help="Extra transient transport attempts per model call")
+    parser.add_argument("--request-timeout-seconds", type=int, help="Network timeout for each model request attempt")
+    parser.add_argument("--max-output-tokens", type=int, help="Provider output token budget per request attempt")
     parser.add_argument(
         "--stream-model-responses",
         action=argparse.BooleanOptionalAction,
-        default=True,
         help="Use SSE transport; complete calls are validated before execution",
     )
-    # 命令行参数先做基本类型转换, AnalysisOptions 再检查范围和布尔值等业务约束.
+    # 仅显式 CLI 参数覆盖 YAML, 避免 argparse 默认值悄悄覆盖文件中的预算.
     args = parser.parse_args()
     try:
-        options = AnalysisOptions(
-            output_dir=args.output_dir,
-            max_tasks=args.max_tasks,
-            max_parallel=args.max_parallel,
-            max_worker_calls=args.max_worker_calls,
-            max_main_calls=args.max_main_calls,
-            max_measurements=args.max_measurements,
-            max_request_retries=args.max_request_retries,
-            request_timeout_seconds=args.request_timeout_seconds,
-            stream_model_responses=args.stream_model_responses,
-            max_output_tokens=args.max_output_tokens,
-        )
+        options = load_analysis_options(getattr(args, "config", None))
+        overrides = {field.name: getattr(args, field.name) for field in fields(AnalysisOptions) if hasattr(args, field.name)}
+        options = replace(options, **overrides)
         outcome = run_analysis(args.png, args.prompt, options=options)
     except (OSError, TypeError, ValueError) as exc:
         sys.stderr.write(f"Error: {exc}\n")

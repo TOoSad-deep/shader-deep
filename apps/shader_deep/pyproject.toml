@@ -12,6 +12,8 @@ dependencies = [
     "langchain-openai>=1.1.14,<2.0.0",
     # 已由 LangChain 安装; 直接声明用于分析工具入参和不可变报告的运行时校验.
     "pydantic>=2.12.3,<3.0.0",
+    # 复用 SDK 已锁定的 YAML 解析器, 使用 safe_load 读取分析参数.
+    "pyyaml>=6.0.3,<7.0.0",
     # 复用已锁定的 PNG 解码器，执行有预算限制的分析测量。
     "pillow>=12.3.0,<13.0.0",
     # 复用 OpenAI 已锁定的传输异常类型，识别 SSE 中断并执行恢复。
@@ -32,6 +34,7 @@ build-backend = "setuptools.build_meta"
 where = ["src"]
 
 [tool.setuptools.package-data]
+"shader_deep.analysis" = ["config.yaml"]
 "shader_deep.rendering" = ["webgl2.js"]
 
 [dependency-groups]

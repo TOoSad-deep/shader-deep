@@ -9,11 +9,12 @@ from deepagents import create_deep_agent
 from langchain.agents.middleware import AgentMiddleware, AgentState, ModelResponse, SummarizationMiddleware
 from langchain.messages import AIMessage, HumanMessage, ToolMessage
 from langchain_core.exceptions import ModelAPIError
-from langchain_core.messages.tool import tool_call
+from langchain_core.messages.tool import invalid_tool_call, tool_call
 from pydantic import TypeAdapter, ValidationError
 
-from shader_deep.analysis.tool_json import recover_object, syntax_feedback
-from shader_deep.analysis.transport import call_with_recovery
+from shader_deep.analysis.events import NoProgressGuard, failure_signature
+from shader_deep.analysis.tool_json import decode_object, recover_object, syntax_feedback
+from shader_deep.analysis.transport import RAW_TOOL_CALLS, call_with_recovery
 from shader_deep.analysis.types import AnalysisLimitError, ToolFeedback
 
 if TYPE_CHECKING:
@@ -23,9 +24,16 @@ if TYPE_CHECKING:
     from langchain.agents.middleware.types import ToolCallRequest
     from langchain.tools import BaseTool
     from langchain_core.language_models import BaseChatModel
+    from langchain_core.messages import BaseMessage
     from langchain_core.runnables import RunnableConfig
 
+    from shader_deep.analysis.events import EventCallback
+    from shader_deep.analysis.submissions import SubmissionHandler
     from shader_deep.analysis.types import AnalysisExecution
+
+
+MAX_FORMAT_REPAIR_CALLS = 2
+FORMAT_ERRORS = {"json_syntax", "schema_validation", "output_limit"}
 
 
 class AnalysisLoop(AgentMiddleware[AgentState[object], None, object]):
@@ -40,20 +48,34 @@ class AnalysisLoop(AgentMiddleware[AgentState[object], None, object]):
         tools: list[BaseTool],
         *,
         request_retries: int = 0,
+        submission_handler: SubmissionHandler | None = None,
+        on_prepared: Callable[[list[BaseMessage]], None] | None = None,
+        on_event: EventCallback | None = None,
+        max_repeated_no_progress: int = 0,
+        progress: Callable[[], object] | None = None,
     ) -> None:
         """绑定当前角色的执行状态、上下文构造入口与工具列表.
 
         Args:
             execution: 由程序维护的计数和执行状态.
-            limit: 应用层逻辑模型调用次数上限.
+            limit: 应用层逻辑模型调用次数上限; 0 同时取消调用和格式修复次数上限.
             context: 构造当前任务消息, 不把临时材料持久追加到历史.
             done: 检查是否已提交通过校验的结果.
             tools: 模型可见且实际允许执行的工具列表.
             request_retries: 每次逻辑调用允许的额外暂时性错误重试次数.
+            submission_handler: 完整提交与局部修复共用的草稿处理器.
+            on_prepared: 请求材料组装后记录实际呈现的读取结果.
+            on_event: 保存当前任务的简短执行事件.
+            max_repeated_no_progress: 相同失败且无有效业务进展的连续阈值; 0 关闭.
+            progress: 提供当前任务的有效业务进展, 不使用草稿版本作为进展.
         """
         self.execution, self.limit = execution, limit
         self.context, self.done, self.tools = context, done, tools
         self.request_retries = request_retries
+        self.submission_handler, self.on_prepared = submission_handler, on_prepared
+        self.on_event, self.progress = on_event, progress
+        self.no_progress = NoProgressGuard(max_repeated_no_progress)
+        self.failure_signature: str | None = None
 
     def _with_context(self, request: ModelRequest, context: HumanMessage) -> ModelRequest:
         """仅重建本次请求, 将新任务材料与上一轮 JSON 诊断一起交给模型."""
@@ -65,7 +87,7 @@ class AnalysisLoop(AgentMiddleware[AgentState[object], None, object]):
         diagnostics = [
             item.message
             for item in self.execution.tool_feedback
-            if item.model_call == self.execution.model_calls - 1 and item.message.startswith("JSON syntax error:")
+            if item.model_call == self.execution.model_calls and item.message.startswith("JSON syntax error:")
         ]
         if diagnostics:
             blocks = [{"type": "text", "text": context.content}] if isinstance(context.content, str) else list(context.content)
@@ -92,79 +114,112 @@ class AnalysisLoop(AgentMiddleware[AgentState[object], None, object]):
         """
         if self.done():
             return ModelResponse(result=[AIMessage(content="分析结果已提交。")])
-        if self.execution.model_calls >= self.limit:
+        if self.limit and self.execution.model_calls >= self.limit:
             msg = "Analysis model-call budget exhausted"
             raise AnalysisLimitError(msg)
+        if any(item.model_call == self.execution.model_calls and item.category in FORMAT_ERRORS for item in self.execution.tool_feedback):
+            if self.limit and self.execution.format_repair_calls >= MAX_FORMAT_REPAIR_CALLS:
+                msg = "Analysis format-repair budget exhausted; no valid report was fabricated"
+                raise AnalysisLimitError(msg)
+            self.execution.format_repair_calls += 1
         context = self.context()
         # 逻辑调用在此计数; 同一调用中的网络重试另存 request_attempts.
         # 恢复函数只包住模型响应获取与完整性校验, 后续工具执行不在重试范围内.
-        self.execution.model_calls += 1
         prepared = self._with_context(request, context)
-        response = call_with_recovery(lambda: _complete_response(handler(prepared)), self.execution, self.request_retries)
+        if self.on_prepared is not None:
+            self.on_prepared(list(prepared.messages))
+        self.no_progress.check(self.failure_signature, self.progress() if self.progress else None)
+        self.failure_signature = None
+        self.execution.model_calls += 1
+        if self.on_event is not None:
+            self.on_event("model_started", {})
+        response = call_with_recovery(lambda: _complete_response(handler(prepared)), self.execution, self.request_retries, on_event=self.on_event)
+        if self.on_event is not None:
+            self.on_event("model_completed", {})
         response = replace(
             response, result=[self._recover_calls(message) if isinstance(message, AIMessage) else message for message in response.result]
         )
         for message in response.result:
-            if isinstance(message, AIMessage):
-                if message.response_metadata.get("finish_reason") == "length":
-                    self.execution.tool_feedback += (
-                        ToolFeedback(
-                            model_call=self.execution.model_calls,
-                            tool="output_budget",
-                            message="Output limit reached; no tool executed. Retry a shorter report within the logical-call budget.",
-                        ),
-                    )
-                for invalid in message.invalid_tool_calls:
-                    self.execution.tool_feedback += (
-                        ToolFeedback(
-                            model_call=self.execution.model_calls,
-                            tool=invalid.get("name") or "unknown",
-                            message=syntax_feedback(invalid.get("args") or ""),
-                        ),
-                    )
+            if isinstance(message, AIMessage) and message.response_metadata.get("finish_reason") == "length":
+                self.failure_signature = failure_signature("output_budget", None, "output_limit")
+                self.execution.tool_feedback += (
+                    ToolFeedback(
+                        model_call=self.execution.model_calls,
+                        tool="output_budget",
+                        category="output_limit",
+                        message="Output limit reached; no tool executed. Retry a shorter report within the logical-call budget.",
+                    ),
+                )
         return response
 
     def _recover_calls(self, message: AIMessage) -> AIMessage:
-        """只恢复正常结束响应中的有限 JSON 尾部错误, 保留无法恢复的调用."""
+        """严格检查原始参数, 即使底层已经把残缺 JSON 解析为有效调用也不能绕过."""
         if message.response_metadata.get("finish_reason") not in {"stop", "tool_calls"}:
             return message
         allowed = {tool.name: tool for tool in self.tools}
-        repaired, remaining = [], []
-        for invalid in message.invalid_tool_calls:
-            selected = allowed.get(invalid.get("name") or "")
-            if selected is None or not invalid.get("id"):
-                remaining.append(invalid)
-                continue
-            value = recover_object(invalid.get("args") or "", selected)
-            if value is None:
-                remaining.append(invalid)
-                continue
-            repaired.append(tool_call(name=selected.name, args=value, id=invalid["id"]))
+        raw_calls = message.additional_kwargs.get(RAW_TOOL_CALLS, [])
+        if not raw_calls and (message.tool_calls or message.invalid_tool_calls):
+            # 缺少原文时拒绝执行, 避免对未审查的客户端解析结果作乐观假设.
+            raw_calls = [{"name": call.get("name"), "id": call.get("id"), "args": ""} for call in message.tool_calls]
+            raw_calls += [{"name": call.get("name"), "id": call.get("id"), "args": call.get("args")} for call in message.invalid_tool_calls]
+        accepted, remaining = [], []
+        for raw_call in raw_calls:
+            name, identifier, raw = raw_call.get("name") or "unknown", raw_call.get("id"), raw_call.get("args")
+            raw = raw if isinstance(raw, str) else ""
+            try:
+                value = decode_object(raw)
+            except (TypeError, ValueError, RecursionError):
+                selected = allowed.get(name)
+                value = recover_object(raw, selected) if selected is not None and identifier else None
+                if value is None:
+                    remaining.append(invalid_tool_call(name=name, args=raw, id=identifier, error=syntax_feedback(raw)))
+                    continue
+                self.execution.tool_feedback += (
+                    ToolFeedback(
+                        model_call=self.execution.model_calls,
+                        tool=name,
+                        category="syntax_recovered",
+                        message=(
+                            "Recovered unchanged schema-valid JSON object by discarding surplus closing delimiters; normal tool checks still apply."
+                        ),
+                    ),
+                )
+            if not identifier:
+                remaining.append(invalid_tool_call(name=name, args=raw, id=identifier, error="Missing tool call ID"))
+            else:
+                accepted.append(tool_call(name=name, args=value, id=identifier))
+        for invalid in remaining:
+            self.failure_signature = failure_signature(invalid.get("name") or "unknown", invalid.get("args"), invalid.get("error"))
+            if self.on_event is not None:
+                self.on_event("tool_rejected", {"tool": invalid.get("name") or "unknown", "category": "json_syntax"})
             self.execution.tool_feedback += (
                 ToolFeedback(
                     model_call=self.execution.model_calls,
-                    tool=selected.name,
-                    message="Recovered unchanged schema-valid JSON object by discarding surplus closing delimiters; normal tool checks still apply.",
+                    tool=invalid.get("name") or "unknown",
+                    category="json_syntax",
+                    message=invalid.get("error") or syntax_feedback(invalid.get("args") or ""),
                 ),
             )
-        if not repaired:
-            return message
-        # 清除兼容字段中的原始调用副本, 让显式更新后的 tool_calls 成为唯一解析结果.
-        # 修复语法不代表允许执行; 后面仍需经过工具白名单和业务规则校验.
-        extra = {key: value for key, value in message.additional_kwargs.items() if key != "tool_calls"}
-        return message.model_copy(
-            update={"tool_calls": [*message.tool_calls, *repaired], "invalid_tool_calls": remaining, "additional_kwargs": extra}
-        )
+        # 未执行的非法调用不能留在历史中: 适配器会将其重新编码为 tool_calls,
+        # 但执行器没有为它生成 ToolMessage, 导致下一次请求出现未配对调用.
+        # 保留短诊断供下一轮上下文读取, 空响应转为普通文本以满足服务端消息约束.
+        content = message.content or ("工具参数无效, 未执行被拒绝的调用。" if remaining and not accepted else "")
+        extra = {key: value for key, value in message.additional_kwargs.items() if key not in {"tool_calls", RAW_TOOL_CALLS}}
+        return message.model_copy(update={"content": content, "tool_calls": accepted, "invalid_tool_calls": [], "additional_kwargs": extra})
 
-    def _tool_error(self, request: ToolCallRequest, message: str) -> ToolMessage:
+    def _tool_error(self, request: ToolCallRequest, message: str, category: str) -> ToolMessage:
         """保存有长度上限的诊断, 并用原调用 ID 返回配对的错误消息."""
         self.execution.tool_feedback += (
             ToolFeedback(
                 model_call=self.execution.model_calls,
                 tool=request.tool_call["name"],
                 message=message[:1400],
+                category=category,
             ),
         )
+        self.failure_signature = failure_signature(request.tool_call["name"], request.tool_call["args"], message)
+        if self.on_event is not None:
+            self.on_event("tool_rejected", {"tool": request.tool_call["name"], "category": category, "message": message[:800]})
         return ToolMessage(content=message[:1400], tool_call_id=request.tool_call["id"], status="error")
 
     def wrap_tool_call(self, request: ToolCallRequest, handler: Callable[[ToolCallRequest], object]) -> ToolMessage:
@@ -178,22 +233,56 @@ class AnalysisLoop(AgentMiddleware[AgentState[object], None, object]):
             工具执行结果或明确的拒绝信息.
         """
         if request.tool_call["name"] not in {tool.name for tool in self.tools}:
-            return self._tool_error(request, "当前分析角色未开放此工具。")
+            return self._tool_error(request, "当前分析角色未开放此工具。", "permission")
         selected = next(tool for tool in self.tools if tool.name == request.tool_call["name"])
+        if self.submission_handler is not None:
+            reply = self.submission_handler.handle(request.tool_call["name"], request.tool_call["args"])
+            if reply is not None:
+                current = reply.saved
+                if self.on_event is not None and current is not None:
+                    self.on_event(
+                        "submission_saved",
+                        {
+                            "draft_id": str(current["draft_id"]),
+                            "revision": cast("int", current["revision"]),
+                            "invoked_tool": request.tool_call["name"],
+                            "submission_tool": str(current["tool_name"]),
+                            "accepted": reply.category is None,
+                        },
+                    )
+                if reply.category is not None:
+                    self._tool_error(request, reply.content, reply.category)
+                    self.failure_signature = reply.signature
+                return ToolMessage(content=reply.content, tool_call_id=request.tool_call["id"], status="error" if reply.category else "success")
         # 先做结构校验, 工具内部再检查业务引用; 两者失败都反馈给模型按预算修正.
         # include_input=False 避免把整个原始报告再次写入错误反馈.
         try:
-            TypeAdapter(selected.get_input_schema()).validate_python(request.tool_call["args"])
+            TypeAdapter(selected.tool_call_schema).validate_python(request.tool_call["args"])
         except ValidationError as exc:
             errors = [f"{'.'.join(str(part) for part in item['loc'])}: {item['msg']}" for item in exc.errors(include_input=False)[:4]]
             message = "参数校验失败, 请修正后完整提交: \n" + "\n".join(errors)
             if any("report.summary" in item for item in errors):
                 message += "\nsummary 是提交工具的顶层参数, 与 report 并列, 不属于 report。"
-            return self._tool_error(request, message)
+            return self._tool_error(request, message, "schema_validation")
+        feedback_count = len(self.execution.tool_feedback)
         try:
-            return cast("ToolMessage", handler(request))
+            result = cast("ToolMessage", handler(request))
         except (KeyError, TypeError, ValueError) as exc:
-            return self._tool_error(request, f"提交被拒绝: {str(exc)[:800]}")
+            return self._tool_error(request, f"提交被拒绝: {str(exc)[:800]}", "business_rejection")
+        if result.status == "error":
+            return self._tool_error(request, str(result.content), "business_rejection")
+        self._record_business_feedback(request, feedback_count)
+        return result
+
+    def _record_business_feedback(self, request: ToolCallRequest, feedback_count: int) -> None:
+        """会话内已保存的普通回执拒绝, 同样参与事件与停滞识别."""
+        # 批次和测量工具沿用结构化普通回执, 业务拒绝由会话先登记到执行记录.
+        # 不改写这些回执, 但其失败同样参与下一轮的停滞识别.
+        for feedback in self.execution.tool_feedback[feedback_count:]:
+            if feedback.category == "business_rejection":
+                self.failure_signature = failure_signature(request.tool_call["name"], request.tool_call["args"], feedback.message)
+                if self.on_event is not None:
+                    self.on_event("tool_rejected", {"tool": feedback.tool, "category": feedback.category, "message": feedback.message[:800]})
 
     def run(self, model: BaseChatModel, prompt: str, config: RunnableConfig) -> None:
         """运行至有效提交、失败或当前角色的调用预算耗尽.
@@ -213,6 +302,8 @@ class AnalysisLoop(AgentMiddleware[AgentState[object], None, object]):
         )
         messages = [HumanMessage(content="完成当前分析任务, 使用本角色的提交工具返回结果。")]
         self.execution.status = "running"
+        if self.on_event is not None:
+            self.on_event("task_started", {})
         # agent.invoke 自身已有模型与工具循环; 外层处理只回复文字、未有效提交的情况.
         # 继续沿用返回的有效历史, 调用预算由本实例跨多次 invoke 累计.
         while not self.done():
@@ -223,6 +314,8 @@ class AnalysisLoop(AgentMiddleware[AgentState[object], None, object]):
                 prompt = "上次响应达到输出预算且未执行工具。直接提交更短的结构化结果, 仅保留最关键的观察和解释, 其他内容保留为未知项。"
             messages = [*result["messages"], HumanMessage(content=prompt)]
         self.execution.status = "completed"
+        if self.on_event is not None:
+            self.on_event("task_completed", {})
 
 
 def _complete_response(response: ModelResponse[object]) -> ModelResponse[object]:
@@ -232,7 +325,11 @@ def _complete_response(response: ModelResponse[object]) -> ModelResponse[object]
     for message in response.result:
         if isinstance(message, AIMessage) and message.response_metadata.get("finish_reason") == "length":
             return ModelResponse(result=[AIMessage(content="输出达到单次预算, 未执行工具。", response_metadata={"finish_reason": "length"})])
-        if isinstance(message, AIMessage) and message.tool_calls and message.response_metadata.get("finish_reason") not in {"stop", "tool_calls"}:
+        if (
+            isinstance(message, AIMessage)
+            and (message.tool_calls or message.invalid_tool_calls or message.additional_kwargs.get(RAW_TOOL_CALLS))
+            and message.response_metadata.get("finish_reason") not in {"stop", "tool_calls"}
+        ):
             msg = "Incomplete model response: no successful finish marker for tool arguments"
             raise ModelAPIError(msg)
     return response
