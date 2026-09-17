@@ -10,7 +10,7 @@ from unittest.mock import patch
 from langchain.messages import ToolMessage
 from pydantic import TypeAdapter
 
-from shader_deep.agents.analysis import run_analysis
+from shader_deep.agents.analysis import run_analysis, run_analysis_task
 from shader_deep.analysis.evidence import MeasurementRequest
 from shader_deep.analysis.report_files import AnalysisReportFiles
 from shader_deep.analysis.schemas import (
@@ -34,6 +34,48 @@ from tests.unit_tests.test_analysis_evidence import measurement, pixels
 
 
 class AnalysisDisclosureTests(GenerationFixture):
+    def test_root_history_is_presented_without_expanding_current_report_scope(self) -> None:
+        historical: list[dict[str, object]] = []
+
+        def respond(request: dict[str, object]) -> dict[str, object]:
+            payload = raw_context_payload(request)
+            if payload["task"]["lens_config"] is not None:
+                self.assertEqual(payload["related_results"], [])
+                self.assertEqual(payload["source_catalog"], [])
+                return self.call("submit_analysis_report", report_arguments(payload))
+            self.assertEqual(payload["related_results"], historical)
+            files = payload["report_files"]
+            historical_ids = {item["id"] for item in historical}
+            self.assertFalse(historical_ids & {item["result_id"] for item in files})
+            self.assertFalse(historical_ids & {item["result_id"] for item in payload["source_catalog"]})
+            if not files:
+                return self.call("run_analysis_batch", {"requests": draft_batch()})
+            if not any(item.get("status") == "read" for item in tool_results(request)):
+                return self.call("read_analysis_file", {"file_path": files[0]["file_path"], "pointer": "/analysis_detail/observations/0"})
+            return self.call(
+                "finish_analysis",
+                {
+                    "text": "Current inspection",
+                    "summary": {
+                        "source_result_ids": [item["result_id"] for item in files],
+                        "key_observations": [{"text": "Visible structure", "source_refs": [{"result_id": files[0]["result_id"], "item_id": "O1"}]}],
+                    },
+                },
+            )
+
+        self.response = respond
+        options = AnalysisOptions(output_dir=self.root / "analysis", max_main_calls=4, max_worker_calls=2)
+        first = run_analysis(self.root / "reference.PNG", "Inspect", options=options)
+        self.assertEqual(first.stop_reason, "completed")
+        selected = (first.summary_result.analysis_detail.source_result_ids[0], first.summary_result.id)
+        historical.extend(json.loads(json.dumps(asdict(first.state["results"][identifier]))) for identifier in selected)
+        state = add_task(
+            first.state, TaskRecord(id="next-root", role="analysis", target_version="T1", objective="Reinspect", related_result_ids=selected)
+        )
+        second = run_analysis_task(state, "next-root", options=options)
+        self.assertEqual(second.stop_reason, "completed", json.loads((second.run_dir / "run.json").read_text()))
+        self.assertFalse(set(first.state["results"]) & set(second.summary_result.analysis_detail.source_result_ids))
+
     def test_actual_request_reads_only_selected_body_and_blocks_same_batch_finish(self) -> None:
         attempted = False
 

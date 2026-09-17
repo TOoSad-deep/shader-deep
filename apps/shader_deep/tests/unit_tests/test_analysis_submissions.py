@@ -183,3 +183,32 @@ class SubmissionTests(TestCase):
         self.assertEqual(self.handler.draft, current)
         self.repair(1, [{"op": "remove", "path": "/a~1b/~0key"}])
         self.assertEqual(self.handler.draft["arguments"]["a/b"], {})
+
+    def test_task_ids_cannot_escape_or_collide_in_submission_storage(self) -> None:
+        run = self.directory / "run"
+        run.mkdir()
+        outside = self.directory / "existing.json"
+        outside.write_text("preserve", encoding="utf-8")
+        identifiers = ("../../existing", str(outside.with_suffix("")), "a/b", "a_b", "分析任务", "x" * 300)
+        for identifier in identifiers:
+            with self.subTest(task_id=identifier):
+                handler = SubmissionHandler(identifier, self.submit_tool, lambda _args: "submitted", lambda: None, Lock(), directory=run)
+                rejected = handler.handle("submit_analysis_report", {"report": {}, "summary": "keep"})
+                self.assertEqual(json.loads(rejected.content)["status"], "invalid_submission")
+                repaired = handler.handle(
+                    "repair_analysis_submission",
+                    {
+                        "draft_id": handler.snapshot()["draft_id"],
+                        "expected_revision": 1,
+                        "changes": [{"op": "set", "path": "/report", "value": {"observation": "visible", "count": 1, "refs": ["O1"]}}],
+                    },
+                )
+                self.assertEqual(repaired.content, "submitted")
+                self.assertEqual(outside.read_text(encoding="utf-8"), "preserve")
+        files = list((run / "submissions").iterdir())
+        saved = [json.loads(path.read_text(encoding="utf-8")) for path in files]
+        self.assertEqual(len(files), len(identifiers))
+        self.assertEqual({item["task_id"] for item in saved}, set(identifiers))
+        for item in saved:
+            self.assertEqual(item["revision"], 2)
+            self.assertEqual(item["status"], "submitted")

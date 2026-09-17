@@ -282,7 +282,7 @@ Blackboard 不保存模型聊天历史、客户端、线程池或锁。图像保
 | --- | --- | --- |
 | `kind` | `analysis_task_context` | 相同 |
 | `task`、`target` | 根任务及绑定目标 | 本子任务及绑定目标 |
-| `related_results` | 空数组，正文按需从文件读取 | 仅本任务 `related_result_ids` 指定的结果；首轮为空 |
+| `related_results` | 仅主任务 `related_result_ids` 显式选入的完整历史结果，含历史综合；本轮子报告正文按需读取 | 仅本任务 `related_result_ids` 指定的结果；首轮为空 |
 | `child_tasks` | 本次全部子任务记录 | 空数组 |
 | `preset_lenses` | 四种预置视角 | 空数组，实际视角在 `task.lens_config` |
 | `limits` | 剩余子任务、主调用、测量额度，以及并发上限、子调用上限 | 本子任务剩余调用额度 |
@@ -291,7 +291,7 @@ Blackboard 不保存模型聊天历史、客户端、线程池或锁。图像保
 | `visual_decomposition` | 当前视觉结构 | 本任务固定的结构快照 |
 | `focus_element_ids`、`focus_feature_ids` | 默认空 | 本任务关注范围 |
 | `visual_snapshots`、`initial_visual_snapshot_id`、`task_visual_snapshot_ids` | 按内容去重的快照和任务绑定；`current` 指当前 `visual_decomposition` | 不暴露其他任务结构 |
-| `report_files`、`source_catalog` | 有效报告目录和条目类型/Pointer，非已读内容 | 仅明确选入的报告来源目录 |
+| `report_files`、`source_catalog` | 本轮子任务的有效报告目录和条目类型/Pointer，非已读内容 | 仅明确选入的报告来源目录 |
 | `failed_results` | 失败任务的简短结果，不提供不存在的报告文件 | 不额外注入 |
 | `submission` | 当前草稿 ID、版本和原工具名 | 本任务草稿状态 |
 | `notes` | 材料使用说明 | 相同 |
@@ -299,6 +299,8 @@ Blackboard 不保存模型聊天历史、客户端、线程池或锁。图像保
 `AnalysisLoop` 每轮用 `request.override` 注入当前材料，不把整份动态上下文持久追加到聊天历史。主 Agent 与各子 Agent 使用独立的循环实例和历史。历史末尾是用户消息时合并材料；否则在完整的模型 / 工具交互后追加多模态用户消息。
 
 报告通过 `FilesystemBackend` 读取本地 JSON，再按 Pointer 取章节或条目；只有原工具调用 ID 下的完整正文出现在下一请求时，才记入 `presented_report_pointers`。已读章节可累计取得父对象/整报告资格；重复或已被父对象覆盖的读取不算新进展。来源存在/类型先校验，再校验实际回读；绑定初稿的映射按已注入快照判断。`presented_evidence` 继续记录实际注入的测量。上述状态不代表模型理解正确或用户验收。
+
+主任务显式选入的历史结果在 `related_results` 中保留完整正文，作为背景材料；它们不加入本轮报告目录或综合的 `source_result_ids`，也不自动传入首轮子任务。
 
 ## 8. 执行控制、状态与最终返回
 
@@ -364,7 +366,7 @@ Blackboard 不保存模型聊天历史、客户端、线程池或锁。图像保
 
 兼容接口扩展：`run_analysis_batch` 增加 `visual_decomposition=None`；`run_lens` 和 `build_analysis_context` 增加默认空的视觉结构与关注范围参数，Context Builder 另接收主任务溯源快照。新增参数均为带默认值的 keyword-only；`run_analysis`、`run_analysis_task` 和通用 `TaskRecord` 不变。
 
-新增 `reports/<result_id>.json` 保存只读子报告；`submissions/<task_id>.json` 保存合法 JSON 的待校验参数、版本及完整错误；`events.jsonl` 以独立写锁实时记录主/子任务、模型/网络请求、拒绝、读取和草稿保存。事件回调不获取协调器批次锁，避免等待工作线程时死锁。
+新增 `reports/<result_id>.json` 保存只读子报告；`submissions/<安全任务文件名>.json` 保存合法 JSON 的待校验参数、版本及完整错误。任务 ID 由 1–120 个 ASCII 字母、数字、下划线、点或连字符组成时沿用原名，其他 ID 使用 `~` 加 SHA-256 摘要；JSON 内保留原始 `task_id` 和 `draft_id`，业务 ID 不作为路径解析。`events.jsonl` 以独立写锁实时记录主/子任务、模型/网络请求、拒绝、读取和草稿保存。事件回调不获取协调器批次锁，避免等待工作线程时死锁。
 
 主、子提交共用 `SubmissionHandler`，在 schema 校验前保留草稿，局部修改只支持 JSON Pointer 的 `set/remove`。补丁先应用到副本，路径或版本错误不改草稿；修复后仍经原业务逻辑提交。锁内先判断已完成，成功后再来的完整提交或修复只返回已有结果。完整错误供本地诊断，模型每次收到至多四条当前错误并可继续修复。非法 JSON 不覆盖已有草稿。
 

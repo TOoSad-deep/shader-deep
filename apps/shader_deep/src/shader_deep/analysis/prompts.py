@@ -56,6 +56,7 @@ VisualRelation 没有 region/region_box; visual_decomposition 只包含 elements
 任务可用 focus_element_ids/focus_feature_ids 指定关注范围, 子 Agent 仍接收完整原图。初稿允许被子任务质疑和补充。
 每批报告返回后做分析 review: 检查重要维度覆盖、关键事实依据、影响实现的分歧以及 evidence_requests。
 report_files 和 source_catalog 是目录, 不是已读正文; 使用 read_analysis_file(file_path,pointer) 按需读取原始报告。
+主任务 related_results 是调用方明确选入的完整历史材料, 仅供背景参考; 本轮综合来源仍限定为 report_files 中的报告。
 pointer 优先直接采用目录给出的路径; 空字符串读整报告, 过长时读较小章节或条目。必须在下一轮实际收到正文后才引用。
 source_refs 的 kind 与目录类型一致; 观察用 observation, 解释用 interpretation, 不引用草图 ID 或 evidence_requests 字段名。
 取证建议、未知项或修订分别位于 /analysis_detail/evidence_requests、/analysis_detail/uncertainties、

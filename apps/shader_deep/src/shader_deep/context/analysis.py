@@ -98,11 +98,13 @@ def build_analysis_context(
     if task.role != "analysis":
         msg = f"Expected analysis task: {task_id}"
         raise ValueError(msg)
-    results: list[ResultRecord] = [state["results"][identifier] for identifier in task.related_result_ids]
-    # 主分析 Agent 汇总本次所有子任务结果; 子任务只收到任务明确指定的历史报告.
+    related_results = [state["results"][identifier] for identifier in task.related_result_ids]
+    results: list[ResultRecord] = related_results
+    # 显式历史输入保留完整正文; 主任务的按需目录仅收录本轮子任务产出.
+    # 历史报告不能混入本轮综合的 source_result_ids 或子任务的显式输入.
     # 首轮 related_result_ids 为空, 因此不会把其他视角的结论当作自己的独立观察.
     if task.lens_config is None:
-        results.extend(result for result in state["results"].values() if state["tasks"][result.task_id].parent_task_id == task.id)
+        results = [result for result in state["results"].values() if state["tasks"][result.task_id].parent_task_id == task.id]
     measurements = state.get("measurements", {})
     # 测量采用相同的可见范围规则: 主任务读取本会话证据, 子任务按 evidence_ids 选入.
     evidence = (
@@ -114,7 +116,7 @@ def build_analysis_context(
         "kind": "analysis_task_context",
         "task": asdict(task),
         "target": asdict(state["targets"][task.target_version]),
-        "related_results": [asdict(result) for result in results] if task.lens_config is not None else [],
+        "related_results": [asdict(result) for result in related_results],
         "source_catalog": [entry for result in results for entry in report_catalog(result)] if task.lens_config is not None else [],
         "child_tasks": [asdict(child) for child in state["tasks"].values() if child.parent_task_id == task.id] if task.lens_config is None else [],
         "preset_lenses": [asdict(lens) for lens in PRESET_LENSES] if task.lens_config is None else [],

@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
+import re
 from copy import deepcopy
 from dataclasses import dataclass, field, replace
 from typing import TYPE_CHECKING, Literal, cast
@@ -317,7 +319,10 @@ class SubmissionHandler:
         """按任务保存完整参数与错误, 原子替换单个文件."""
         if self.directory is None or self.draft is None:
             return
-        destination = self.directory / "submissions" / f"{self.task_id}.json"
+        # 业务 ID 不要求是文件名; 为路径字符、Unicode 和过长 ID 使用有界名称.
+        # ~ 不属于原样保留的字符集, 避免摘要名称与普通任务 ID 相撞.
+        filename = self.task_id if re.fullmatch(r"[A-Za-z0-9_.-]{1,120}", self.task_id) else "~" + hashlib.sha256(self.task_id.encode()).hexdigest()
+        destination = self.directory / "submissions" / f"{filename}.json"
         destination.parent.mkdir(parents=True, exist_ok=True)
         temporary = destination.with_suffix(".json.tmp")
         temporary.write_text(json.dumps(self.draft, ensure_ascii=False, indent=2), encoding="utf-8")
