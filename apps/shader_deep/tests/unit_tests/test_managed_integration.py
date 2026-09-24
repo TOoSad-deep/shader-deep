@@ -147,6 +147,75 @@ class ManagedIntegrationTests(GenerationFixture):
         rows = json.loads((outcome.run_dir / "integration-work.json").read_text())
         self.assertEqual(sum(row["status"] == "modified" for row in rows), feature_count)
 
+    def test_subagent_isolates_outline_history_and_records_its_own_calls(self) -> None:
+        marker = "仅属于初稿会话的临时推理"
+
+        def respond(request: dict[str, object]) -> dict[str, object]:
+            payload = payload_of(request)
+            reply = self.respond_managed(request)
+            if not payload.get("kind") and not payload.get("comparison") and "exploration_direction" not in payload:
+                reply["content"] = marker
+            else:
+                self.assertNotIn(marker, json.dumps(request["messages"], ensure_ascii=False))
+            return reply
+
+        self.response = respond
+        outcome = self.run_default()
+        saved = self.snapshot(outcome)
+        child = json.loads((outcome.run_dir / "integration-subagent.json").read_text())
+        self.assertEqual(outcome.stop_reason, "completed")
+        self.assertEqual(saved["coordinator_execution"]["model_calls"], 1)
+        self.assertEqual(saved["integration_execution"], child["execution"])
+        self.assertEqual(saved["main_execution"]["model_calls"], 1 + child["execution"]["model_calls"])
+        self.assertEqual(child["parent_task_id"], outcome.task_id)
+        self.assertNotEqual(child["task_id"], outcome.task_id)
+        events = [json.loads(line) for line in (outcome.run_dir / "events.jsonl").read_text().splitlines()]
+        integration_requests = [event for event in events if event["role"] == "integration" and event["event"] == "model_started"]
+        self.assertEqual(len(integration_requests), child["execution"]["model_calls"])
+        self.assertEqual({event["task_id"] for event in integration_requests}, {child["task_id"]})
+        self.assertGreater(child["execution"]["model_calls"], 0)
+
+    def test_exhausted_parent_budget_does_not_become_unlimited_in_subagent(self) -> None:
+        self.options = replace(self.options, max_main_calls=1)
+        outcome = self.run_default()
+        saved = self.snapshot(outcome)
+        self.assertEqual(outcome.stop_reason, "partial")
+        self.assertEqual(saved["main_execution"]["model_calls"], 1)
+        self.assertEqual(saved["integration_execution"]["model_calls"], 0)
+        self.assertTrue(all(not payload_of(request).get("comparison") and not payload_of(request).get("kind") for request in self.requests))
+        self.assertTrue(any(gap["reason"] == "global_call_budget_exhausted" for gap in saved["gaps"]))
+        self.assertEqual(len(outcome.summary_result.analysis_detail.feature_library), 2)
+
+    def test_running_snapshot_tracks_subagent_comparisons_and_outline_revision(self) -> None:
+        self.report_issue = True
+        checkpoints = []
+
+        def respond(request: dict[str, object]) -> dict[str, object]:
+            if payload_of(request).get("kind") == "discover-candidates":
+                directory = next(self.options.output_dir.glob("run-*"))
+                saved = json.loads((directory / "run.json").read_text())
+                child = json.loads((directory / "integration-subagent.json").read_text())
+                self.assertIsNone(saved["summary_result_id"])
+                self.assertEqual(saved["stop_reason"], "running")
+                self.assertEqual(saved["main_execution"]["status"], "running")
+                self.assertGreater(saved["integration_execution"]["model_calls"], 0)
+                self.assertEqual(saved["integration_execution"], child["execution"])
+                self.assertEqual(saved["main_execution"]["model_calls"], 1 + child["execution"]["model_calls"])
+                self.assertTrue(saved["integration"]["works"])
+                self.assertEqual(saved["integration"], child["integration"])
+                outlines = TypeAdapter(list[VisualOutline])
+                self.assertEqual(outlines.validate_python(saved["outline_versions"]), outlines.validate_python(child["outline_versions"]))
+                self.assertEqual(len(saved["outline_versions"]), 2)
+                self.assertEqual(saved["issue_resolutions"]["1"]["disposition"], "revised")
+                self.assertEqual(saved["phase_budgets"]["integration"], child["phase_budgets"]["integration"])
+                checkpoints.append(saved)
+            return self.respond_managed(request)
+
+        self.response = respond
+        outcome = self.run_default()
+        self.assertEqual(outcome.stop_reason, "completed", self.snapshot(outcome))
+        self.assertEqual(len(checkpoints), 1)
+
     def test_local_exhaustion_keeps_deferred_work_and_continues_independent_work(self) -> None:
         self.reject_feature = True
         self.options = replace(self.options, max_integration_calls=2)
@@ -158,6 +227,10 @@ class ManagedIntegrationTests(GenerationFixture):
         self.assertEqual(deferred[0]["model_calls"], 2)
         self.assertTrue(any(row["status"] == "preserved" for row in rows))
         self.assertEqual(outcome.summary_result.analysis_detail.elements[0].unresolved, ())
+        saved = self.snapshot(outcome)
+        child = json.loads((outcome.run_dir / "integration-subagent.json").read_text())
+        self.assertEqual(saved["integration"], child["integration"])
+        self.assertEqual(saved["gaps"], child["gaps"])
 
     def test_global_limit_preserves_published_result_without_resetting_calls(self) -> None:
         self.options = replace(self.options, max_main_calls=3)
@@ -167,6 +240,8 @@ class ManagedIntegrationTests(GenerationFixture):
         self.assertEqual(state["main_execution"]["model_calls"], 3)
         self.assertEqual(len(outcome.summary_result.analysis_detail.feature_library), 1)
         self.assertTrue(any(gap["reason"] == "global_call_budget_exhausted" for gap in state["gaps"]))
+        child = json.loads((outcome.run_dir / "integration-subagent.json").read_text())
+        self.assertEqual(state["gaps"], child["gaps"])
 
     def test_revision_requires_separate_presented_verification_and_preserves_original_reports(self) -> None:
         self.report_issue = True
@@ -221,6 +296,9 @@ class ManagedIntegrationTests(GenerationFixture):
         self.assertEqual(outcome.stop_reason, "completed")
         self.assertTrue(all("exploration_direction" not in payload_of(request) for request in self.requests))
         self.assertEqual(len(outcome.summary_result.analysis_detail.feature_library), 1)
+        saved = self.snapshot(outcome)
+        self.assertEqual(saved["coordinator_execution"]["model_calls"], 0)
+        self.assertEqual(saved["integration_execution"]["model_calls"], len(self.requests))
 
     def test_cli_default_uses_managed_flow_and_honors_explicit_transport_budget(self) -> None:
         output, errors = StringIO(), StringIO()

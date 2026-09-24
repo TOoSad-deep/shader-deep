@@ -68,6 +68,11 @@ class IntegrationInterruptTests(GenerationFixture):
         snapshot = json.loads((directory / "run.json").read_text())
         self.assertEqual(snapshot["stop_reason"], stop_reason)
         self.assertNotEqual(snapshot["main_execution"]["status"], "running")
+        child = json.loads((directory / "integration-subagent.json").read_text())
+        self.assertEqual(child["stop_reason"], stop_reason)
+        self.assertEqual(child["execution"], snapshot["integration_execution"])
+        self.assertIn(child["execution"]["status"], {"stopped", "failed"})
+        self.assertTrue(child["execution"]["error"])
         identity = snapshot["summary_result_id"]
         self.assertIsNotNone(identity)
         result = snapshot["blackboard"]["results"][identity]

@@ -158,10 +158,14 @@ class ControlledSession(ExplorationSession):
         self._phase_scope = "outline"
         self._work_explanation = ""
 
+    def remaining_calls(self) -> int | None:
+        """返回全局剩余额度; 独立角色可扣除派发前已消耗的调用."""
+        return max(0, self.options.max_main_calls - self.execution.model_calls) if self.options.max_main_calls else None
+
     def _budget_context(self) -> dict[str, int | None]:
         return {
             "work_calls_remaining": max(0, self._phase_limit - self.execution.model_calls),
-            "total_calls_remaining": max(0, self.options.max_main_calls - self.execution.model_calls) if self.options.max_main_calls else None,
+            "total_calls_remaining": self.remaining_calls(),
         }
 
     def _build_context(
@@ -276,8 +280,9 @@ class ControlledSession(ExplorationSession):
         self.phase_budgets["integration"] = {"max_output_tokens": self.phase_options.max_output_tokens, "source": source}
         self._tools, self._phase_scope = tools, scope
         self._phase_limit = self.execution.model_calls + max_calls
-        if self.options.max_main_calls:
-            self._phase_limit = min(self._phase_limit, self.options.max_main_calls)
+        remaining = self.remaining_calls()
+        if remaining is not None:
+            self._phase_limit = min(self._phase_limit, self.execution.model_calls + remaining)
         loop = AnalysisLoop(
             self.execution,
             self._phase_limit,

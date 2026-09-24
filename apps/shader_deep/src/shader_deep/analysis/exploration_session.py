@@ -1032,6 +1032,9 @@ class ExplorationSession:
             resolution.get("disposition") == "revised" and resolution.get("verified_outline_version") == len(self.outline_versions)
         )
 
+    def _execution_snapshot(self) -> dict[str, object]:
+        return {"main_execution": asdict(self.execution)}
+
     def save(self) -> None:
         """保存派生运行记录; 库版本与批量回执以库快照为权威."""
         options = {**asdict(self.options), "output_dir": str(self.options.output_dir) if self.options.output_dir else None}
@@ -1045,7 +1048,7 @@ class ExplorationSession:
                 "options": options,
                 "phase_budgets": self.phase_budgets,
                 "stop_reason": self.stop_reason,
-                "main_execution": asdict(self.execution),
+                **self._execution_snapshot(),
                 "worker_executions": {key: asdict(value) for key, value in self.workers.items()},
                 "visual_outline": compact_data(self.outline) if self.outline else None,
                 "outline_versions": [compact_data(value) for value in self.outline_versions],
