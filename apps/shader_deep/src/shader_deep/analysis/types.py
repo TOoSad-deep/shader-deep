@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Literal
 
 if TYPE_CHECKING:
@@ -27,8 +27,20 @@ class AnalysisOptions:
         max_request_retries: 每次逻辑模型调用因暂时性错误可增加的请求次数.
         request_timeout_seconds: 每次网络请求尝试的超时设置, 单位为秒.
         stream_model_responses: 以流式接收模型输出, 完整接收后再提交工具调用.
-        max_output_tokens: 每次请求交给模型服务的输出 token 预算.
+        max_output_tokens: 阶段字段缺省时的通用输出 token 预算.
+        outline_max_output_tokens: 初稿阶段输出预算; 未设置时使用通用值.
+        integration_max_output_tokens: 整合阶段输出预算; 未设置时使用通用值.
+        worker_max_output_tokens: 探索子任务输出预算; 未设置时使用通用值.
+        max_comparison_targets: 单组显式比较目标数上限.
+        library_page_chars: 目录和工作索引单页字符预算.
         max_repeated_no_progress: 主任务连续同错同内容的停止阈值; 0 表示关闭.
+        max_context_tokens: 应用估算的完整请求预算, 包含输出预留, 不代表提供方真实窗口.
+        request_image_tokens: 每张图像的保守预算估算, 需按提供方调整.
+        request_token_margin: 请求估算余量.
+        max_integration_calls: 每个比较或发现阶段及初稿阶段的模型调用上限, 包含修复.
+        max_integration_packages: 本轮整合阶段次数上限, 包含发现、比较、刷新、复核和结束.
+        integration_no_progress: 整合阶段重复同错无进展的停止阈值.
+        integration_history_tokens: 选材时为决定及局部修复历史预留的估算 token.
     """
 
     max_tasks: int = 6
@@ -41,7 +53,21 @@ class AnalysisOptions:
     request_timeout_seconds: int = 120
     stream_model_responses: bool = True
     max_output_tokens: int = 16384
+    outline_max_output_tokens: int | None = None
+    integration_max_output_tokens: int | None = None
+    worker_max_output_tokens: int | None = None
+    max_comparison_targets: int = 12
+    library_page_chars: int = 8000
+    # 保存显式输入来源与原值, 使 CLI 通用覆盖优先于 YAML 阶段值.
+    _output_token_sources: tuple[tuple[str, str, int], ...] = field(default=(), repr=False, compare=False)
     max_repeated_no_progress: int = 0
+    max_context_tokens: int = 262144
+    request_image_tokens: int = 4096
+    request_token_margin: int = 2048
+    max_integration_calls: int = 12
+    max_integration_packages: int = 24
+    integration_no_progress: int = 3
+    integration_history_tokens: int = 16384
 
     def __post_init__(self) -> None:
         """在调用模型或操作文件前拒绝无效预算."""
@@ -51,11 +77,21 @@ class AnalysisOptions:
             "max_measurements",
             "request_timeout_seconds",
             "max_output_tokens",
+            "max_comparison_targets",
+            "library_page_chars",
+            "max_context_tokens",
+            "request_image_tokens",
+            "request_token_margin",
+            "max_integration_calls",
+            "max_integration_packages",
+            "integration_no_progress",
+            "integration_history_tokens",
         ):
             value = getattr(self, name)
             if isinstance(value, bool) or not isinstance(value, int) or value < 1:
                 msg = f"{name} must be a positive integer"
                 raise ValueError(msg)
+        self._validate_stage_outputs()
         for name in ("max_main_calls", "max_worker_calls"):
             value = getattr(self, name)
             if isinstance(value, bool) or not isinstance(value, int) or value < 0:
@@ -73,6 +109,14 @@ class AnalysisOptions:
         if not isinstance(self.stream_model_responses, bool):
             msg = "stream_model_responses must be a boolean"
             raise TypeError(msg)
+
+    def _validate_stage_outputs(self) -> None:
+        """可选阶段值只接受正整数, 不把 null 转换成实验默认值."""
+        for name in ("outline_max_output_tokens", "integration_max_output_tokens", "worker_max_output_tokens"):
+            value = getattr(self, name)
+            if value is not None and (isinstance(value, bool) or not isinstance(value, int) or value < 1):
+                msg = f"{name} must be a positive integer or null"
+                raise ValueError(msg)
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -94,6 +138,7 @@ class ToolFeedback:
     tool: str
     message: str
     category: str = "unspecified"
+    repair_scope: str | None = None
 
 
 @dataclass(kw_only=True)
@@ -107,6 +152,10 @@ class AnalysisExecution:
     request_attempts: tuple[RequestAttempt, ...] = ()
     tool_feedback: tuple[ToolFeedback, ...] = ()
     format_repair_calls: int = 0
+    # 作用域绑定阶段或工作身份, 循环重建和暂缓接续均不重置.
+    format_repair_scopes: dict[str, int] = field(default_factory=dict)
+    # 成功提交解决该身份此前的失败反馈; 后续同轮新错误仍需正常修复.
+    format_repair_resolved_through: dict[str, int] = field(default_factory=dict)
 
 
 @dataclass(frozen=True, kw_only=True)

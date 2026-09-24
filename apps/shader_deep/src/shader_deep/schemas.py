@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, Literal, NotRequired, TypedDict
 
 if TYPE_CHECKING:
     from shader_deep.analysis.evidence import MeasurementRecord
+    from shader_deep.analysis.exploration import ExplorationReport, PossibilityLibrary, VisualOutline
     from shader_deep.analysis.schemas import AnalysisSummary, LensConfig, LensReport
 
 # 这些类型描述业务记录, 不是模型 Tool 的参数 schema.
@@ -80,6 +81,8 @@ class TaskRecord:
     analysis_gap: str | None = None
     expected_evidence: str | None = None
     evidence_ids: tuple[str, ...] = ()
+    # 新探索任务绑定统一初稿, 不向模型暴露整个 TaskRecord.
+    analysis_outline: VisualOutline | None = None
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -130,7 +133,8 @@ class ResultRecord:
     hypotheses: tuple[str, ...] = ()
     limitations: tuple[str, ...] = ()
     recommendation: str | None = None
-    analysis_detail: LensReport | AnalysisSummary | None = None
+    analysis_detail: LensReport | AnalysisSummary | ExplorationReport | PossibilityLibrary | None = None
+    analysis_protocol: str | None = None
 
 
 class BlackboardState(TypedDict):

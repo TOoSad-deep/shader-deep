@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from shader_deep.analysis.exploration import ExplorationReport, PossibilityLibrary, validate_exploration, validate_library
 from shader_deep.analysis.references import report_catalog
 from shader_deep.analysis.schemas import AnalysisSummary, AnalysisValidationError as AnalysisValidationError, LensReport
 
@@ -204,6 +205,22 @@ def _summary_report_issues(state: BlackboardState, task: TaskRecord, detail: Ana
     return issues
 
 
+def _validate_new_analysis(detail: ExplorationReport | PossibilityLibrary, task: TaskRecord) -> None:
+    if isinstance(detail, ExplorationReport):
+        if task.lens_config is None or task.parent_task_id is None or task.analysis_outline is None:
+            msg = "Exploration reports require an independent task with its fixed visual outline"
+            raise ValueError(msg)
+        if task.related_result_ids or task.evidence_ids:
+            msg = "Exploration tasks cannot inherit reports or measurements"
+            raise ValueError(msg)
+        validate_exploration(detail, task.analysis_outline)
+    else:
+        if task.lens_config is not None or task.parent_task_id is not None:
+            msg = "Possibility libraries require a root analysis task"
+            raise ValueError(msg)
+        validate_library(detail)
+
+
 def validate_analysis_result(state: BlackboardState, result: ResultRecord, task: TaskRecord) -> None:
     """校验报告归属, 以及综合陈述的来源链路.
 
@@ -219,7 +236,9 @@ def validate_analysis_result(state: BlackboardState, result: ResultRecord, task:
     if task.role != "analysis" or result.observations or result.hypotheses or result.limitations or result.recommendation:
         msg = "Analysis content belongs only in analysis_detail on an analysis task"
         raise ValueError(msg)
-    if isinstance(detail, LensReport):
+    if isinstance(detail, (ExplorationReport, PossibilityLibrary)):
+        _validate_new_analysis(detail, task)
+    elif isinstance(detail, LensReport):
         if task.lens_config is None or task.parent_task_id is None:
             msg = "Lens reports require a lens task"
             raise ValueError(msg)

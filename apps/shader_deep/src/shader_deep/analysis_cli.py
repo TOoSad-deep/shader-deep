@@ -5,11 +5,12 @@ from __future__ import annotations
 import argparse
 import json
 import sys
-from dataclasses import asdict, fields, replace
+from dataclasses import asdict, fields
 from pathlib import Path
 
 from shader_deep.agents.analysis import run_analysis
-from shader_deep.analysis.config import load_analysis_options
+from shader_deep.analysis.config import apply_analysis_overrides, load_analysis_options
+from shader_deep.analysis.exploration import PossibilityLibrary, compact_data
 from shader_deep.analysis.types import AnalysisOptions
 
 
@@ -33,6 +34,8 @@ def main() -> int:
     parser.add_argument("--max-request-retries", type=int, help="Extra transient transport attempts per model call")
     parser.add_argument("--request-timeout-seconds", type=int, help="Network timeout for each model request attempt")
     parser.add_argument("--max-output-tokens", type=int, help="Provider output token budget per request attempt")
+    for stage in ("outline", "integration", "worker"):
+        parser.add_argument(f"--{stage}-max-output-tokens", type=int, help=f"Provider output token budget for {stage}; overrides generic CLI budget")
     parser.add_argument(
         "--stream-model-responses",
         action=argparse.BooleanOptionalAction,
@@ -43,7 +46,7 @@ def main() -> int:
     try:
         options = load_analysis_options(getattr(args, "config", None))
         overrides = {field.name: getattr(args, field.name) for field in fields(AnalysisOptions) if hasattr(args, field.name)}
-        options = replace(options, **overrides)
+        options = apply_analysis_overrides(options, overrides)
         outcome = run_analysis(args.png, args.prompt, options=options)
     except (OSError, TypeError, ValueError) as exc:
         sys.stderr.write(f"Error: {exc}\n")
@@ -51,6 +54,8 @@ def main() -> int:
     sys.stderr.write(f"Run: {outcome.run_dir}\nStatus: {outcome.stop_reason}\n")
     # 诊断信息写到 stderr; stdout 只输出一份 JSON, 便于脚本重定向和读取部分结果.
     result = asdict(outcome.summary_result) if outcome.summary_result is not None else None
+    if result is not None and outcome.summary_result is not None and isinstance(outcome.summary_result.analysis_detail, PossibilityLibrary):
+        result["analysis_detail"] = compact_data(outcome.summary_result.analysis_detail)
     sys.stdout.write(
         json.dumps({"status": outcome.stop_reason, "run_dir": str(outcome.run_dir), "result": result}, ensure_ascii=False, indent=2) + "\n"
     )

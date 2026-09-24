@@ -2,12 +2,13 @@
 
 from __future__ import annotations
 
+import json
 from dataclasses import replace
 from typing import TYPE_CHECKING, cast
 
 from deepagents import create_deep_agent
 from langchain.agents.middleware import AgentMiddleware, AgentState, ModelResponse, SummarizationMiddleware
-from langchain.messages import AIMessage, HumanMessage, ToolMessage
+from langchain.messages import AIMessage, HumanMessage, SystemMessage, ToolMessage
 from langchain_core.exceptions import ModelAPIError
 from langchain_core.messages.tool import invalid_tool_call, tool_call
 from pydantic import TypeAdapter, ValidationError
@@ -16,6 +17,7 @@ from shader_deep.analysis.events import NoProgressGuard, failure_signature
 from shader_deep.analysis.tool_json import decode_object, recover_object, syntax_feedback
 from shader_deep.analysis.transport import RAW_TOOL_CALLS, call_with_recovery
 from shader_deep.analysis.types import AnalysisLimitError, ToolFeedback
+from shader_deep.analysis.usage import request_sizes
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -24,8 +26,9 @@ if TYPE_CHECKING:
     from langchain.agents.middleware.types import ToolCallRequest
     from langchain.tools import BaseTool
     from langchain_core.language_models import BaseChatModel
-    from langchain_core.messages import BaseMessage
+    from langchain_core.messages import AnyMessage, BaseMessage
     from langchain_core.runnables import RunnableConfig
+    from pydantic import JsonValue
 
     from shader_deep.analysis.events import EventCallback
     from shader_deep.analysis.submissions import SubmissionHandler
@@ -33,7 +36,7 @@ if TYPE_CHECKING:
 
 
 MAX_FORMAT_REPAIR_CALLS = 2
-FORMAT_ERRORS = {"json_syntax", "schema_validation", "output_limit"}
+FORMAT_ERRORS = {"json_syntax", "schema_validation"}
 
 
 class AnalysisLoop(AgentMiddleware[AgentState[object], None, object]):
@@ -53,12 +56,20 @@ class AnalysisLoop(AgentMiddleware[AgentState[object], None, object]):
         on_event: EventCallback | None = None,
         max_repeated_no_progress: int = 0,
         progress: Callable[[], object] | None = None,
+        role_prompt_only: bool = False,
+        before_request: Callable[[ModelRequest], None] | None = None,
+        available_tools: Callable[[], list[BaseTool]] | None = None,
+        on_history: Callable[[list[BaseMessage]], None] | None = None,
+        repair_scope: Callable[[], str] | None = None,
+        repair_scope_active: Callable[[str], bool] | None = None,
+        prepare_history: Callable[[list[BaseMessage]], list[BaseMessage]] | None = None,
+        on_tool_result: Callable[[dict[str, JsonValue]], None] | None = None,
     ) -> None:
         """绑定当前角色的执行状态、上下文构造入口与工具列表.
 
         Args:
             execution: 由程序维护的计数和执行状态.
-            limit: 应用层逻辑模型调用次数上限; 0 同时取消调用和格式修复次数上限.
+            limit: 应用层逻辑调用上限; 0 取消调用上限, 未提供 repair_scope 时也取消格式修复上限.
             context: 构造当前任务消息, 不把临时材料持久追加到历史.
             done: 检查是否已提交通过校验的结果.
             tools: 模型可见且实际允许执行的工具列表.
@@ -68,6 +79,14 @@ class AnalysisLoop(AgentMiddleware[AgentState[object], None, object]):
             on_event: 保存当前任务的简短执行事件.
             max_repeated_no_progress: 相同失败且无有效业务进展的连续阈值; 0 关闭.
             progress: 提供当前任务的有效业务进展, 不使用草稿版本作为进展.
+            role_prompt_only: 只发送当前业务角色指令, 不附带未开放的框架文件/委派说明.
+            before_request: 检查完整请求预算, 在实际呈现登记和发送前执行.
+            available_tools: 按剩余能力同步控制模型可见工具与执行白名单.
+            on_history: 在工具执行前统计当前响应, 并在返回时统计工具回执.
+            repair_scope: 返回稳定阶段或工作身份; 提供时独立限制各身份的格式修复额度.
+            repair_scope_active: 判断失败身份是否仍属于当前待修复阶段; 跳过旧阶段反馈但保留已用额度.
+            prepare_history: 在构造当前上下文、检查预算和登记呈现前整理请求历史.
+            on_tool_result: 保存完整工具参数与回执的制品回调, 不向模型注入记录.
         """
         self.execution, self.limit = execution, limit
         self.context, self.done, self.tools = context, done, tools
@@ -76,6 +95,18 @@ class AnalysisLoop(AgentMiddleware[AgentState[object], None, object]):
         self.on_event, self.progress = on_event, progress
         self.no_progress = NoProgressGuard(max_repeated_no_progress)
         self.failure_signature: str | None = None
+        self.role_prompt_only = role_prompt_only
+        self.role_prompt: str | None = None
+        self.before_request = before_request
+        self.available_tools = available_tools
+        self.on_history = on_history
+        self.repair_scope = repair_scope
+        self.repair_scope_active = repair_scope_active
+        self.prepare_history = prepare_history
+        self.on_tool_result = on_tool_result
+
+    def _active_tools(self) -> list[BaseTool]:
+        return self.available_tools() if self.available_tools is not None else list(self.tools)
 
     def _with_context(self, request: ModelRequest, context: HumanMessage) -> ModelRequest:
         """仅重建本次请求, 将新任务材料与上一轮 JSON 诊断一起交给模型."""
@@ -100,7 +131,9 @@ class AnalysisLoop(AgentMiddleware[AgentState[object], None, object]):
             messages[-1] = current.model_copy(update={"content": [*current_blocks, *context_blocks]})
         else:
             messages.append(context)
-        return request.override(messages=messages, tools=list(self.tools))
+        if self.role_prompt_only and self.role_prompt is not None:
+            return request.override(messages=messages, tools=list(self._active_tools()), system_message=SystemMessage(content=self.role_prompt))
+        return request.override(messages=messages, tools=list(self._active_tools()))
 
     def wrap_model_call(self, request: ModelRequest, handler: Callable[[ModelRequest], ModelResponse[object]]) -> ModelResponse[object]:
         """刷新实际图像输入, 并在请求前累计逻辑模型调用次数.
@@ -117,28 +150,34 @@ class AnalysisLoop(AgentMiddleware[AgentState[object], None, object]):
         if self.limit and self.execution.model_calls >= self.limit:
             msg = "Analysis model-call budget exhausted"
             raise AnalysisLimitError(msg)
-        if any(item.model_call == self.execution.model_calls and item.category in FORMAT_ERRORS for item in self.execution.tool_feedback):
-            if self.limit and self.execution.format_repair_calls >= MAX_FORMAT_REPAIR_CALLS:
-                msg = "Analysis format-repair budget exhausted; no valid report was fabricated"
-                raise AnalysisLimitError(msg)
-            self.execution.format_repair_calls += 1
+        repair = self._pending_repair()
+        if self.prepare_history is not None:
+            request = request.override(messages=cast("list[AnyMessage]", self.prepare_history(list(request.messages))))
         context = self.context()
         # 逻辑调用在此计数; 同一调用中的网络重试另存 request_attempts.
         # 恢复函数只包住模型响应获取与完整性校验, 后续工具执行不在重试范围内.
         prepared = self._with_context(request, context)
-        if self.on_prepared is not None:
-            self.on_prepared(list(prepared.messages))
+        self._check_request(prepared)
         self.no_progress.check(self.failure_signature, self.progress() if self.progress else None)
         self.failure_signature = None
         self.execution.model_calls += 1
         if self.on_event is not None:
             self.on_event("model_started", {})
-        response = call_with_recovery(lambda: _complete_response(handler(prepared)), self.execution, self.request_retries, on_event=self.on_event)
+            self.on_event("request_sizes", dict(request_sizes(prepared, self._active_tools())))
+        response = call_with_recovery(
+            lambda: _complete_response(handler(prepared)),
+            self.execution,
+            self.request_retries,
+            on_event=self.on_event,
+            before_attempt=self._attempt_guard(prepared, repair),
+        )
         if self.on_event is not None:
             self.on_event("model_completed", {})
+            self._record_usage(response)
         response = replace(
             response, result=[self._recover_calls(message) if isinstance(message, AIMessage) else message for message in response.result]
         )
+        self._record_new_history(list(response.result))
         for message in response.result:
             if isinstance(message, AIMessage) and message.response_metadata.get("finish_reason") == "length":
                 self.failure_signature = failure_signature("output_budget", None, "output_limit")
@@ -151,6 +190,61 @@ class AnalysisLoop(AgentMiddleware[AgentState[object], None, object]):
                     ),
                 )
         return response
+
+    def _attempt_guard(self, prepared: ModelRequest, repair: str | None) -> Callable[[], None]:
+        """同一逻辑调用的网络尝试共用一次修复扣费, 每次仍先检查发送预算."""
+        charged = False
+        presented = False
+
+        def before_attempt() -> None:
+            nonlocal charged, presented
+            self._check_request(prepared)
+            if not presented and self.on_prepared is not None:
+                self.on_prepared(list(prepared.messages))
+                presented = True
+            if repair is not None and not charged:
+                self.execution.format_repair_calls += 1
+                if self.repair_scope is not None:
+                    self.execution.format_repair_scopes[repair] = self.execution.format_repair_scopes.get(repair, 0) + 1
+                charged = True
+
+        return before_attempt
+
+    def _pending_repair(self) -> str | None:
+        """按失败时的身份检查额度, 实际发送前的其他检查不消耗修复次数."""
+        default_scope = self.repair_scope() if self.repair_scope is not None else "execution"
+        errors = [
+            item
+            for index, item in enumerate(self.execution.tool_feedback)
+            if item.model_call == self.execution.model_calls
+            and item.category in FORMAT_ERRORS
+            and index >= self.execution.format_repair_resolved_through.get(item.repair_scope or default_scope, 0)
+            and (self.repair_scope_active is None or self.repair_scope_active(item.repair_scope or default_scope))
+        ]
+        if not errors:
+            return None
+        scope = errors[0].repair_scope or default_scope
+        used = self.execution.format_repair_scopes.get(scope, 0) if self.repair_scope is not None else self.execution.format_repair_calls
+        if (self.limit or self.repair_scope is not None) and used >= MAX_FORMAT_REPAIR_CALLS:
+            msg = "Analysis format-repair budget exhausted; no valid report was fabricated"
+            raise AnalysisLimitError(msg)
+        return scope
+
+    def _record_new_history(self, messages: list[BaseMessage]) -> None:
+        """将本轮新增响应交给调用方计入选材预算."""
+        if self.on_history is not None:
+            self.on_history(messages)
+
+    def _check_request(self, prepared: ModelRequest) -> None:
+        """预算检查在呈现登记前运行, 不把未发送材料计入已读状态."""
+        if self.before_request is not None:
+            self.before_request(prepared)
+
+    def _record_usage(self, response: ModelResponse[object]) -> None:
+        if self.on_event is not None:
+            for message in response.result:
+                if isinstance(message, AIMessage) and message.usage_metadata is not None:
+                    self.on_event("model_usage", cast("dict[str, JsonValue]", dict(message.usage_metadata)))
 
     def _recover_calls(self, message: AIMessage) -> AIMessage:
         """严格检查原始参数, 即使底层已经把残缺 JSON 解析为有效调用也不能绕过."""
@@ -190,6 +284,7 @@ class AnalysisLoop(AgentMiddleware[AgentState[object], None, object]):
                 accepted.append(tool_call(name=name, args=value, id=identifier))
         for invalid in remaining:
             self.failure_signature = failure_signature(invalid.get("name") or "unknown", invalid.get("args"), invalid.get("error"))
+            self._record_invalid_call(invalid.get("name") or "unknown", invalid.get("id"), invalid.get("args"), invalid.get("error"))
             if self.on_event is not None:
                 self.on_event("tool_rejected", {"tool": invalid.get("name") or "unknown", "category": "json_syntax"})
             self.execution.tool_feedback += (
@@ -198,6 +293,7 @@ class AnalysisLoop(AgentMiddleware[AgentState[object], None, object]):
                     tool=invalid.get("name") or "unknown",
                     category="json_syntax",
                     message=invalid.get("error") or syntax_feedback(invalid.get("args") or ""),
+                    repair_scope=self.repair_scope() if self.repair_scope is not None else None,
                 ),
             )
         # 未执行的非法调用不能留在历史中: 适配器会将其重新编码为 tool_calls,
@@ -207,7 +303,21 @@ class AnalysisLoop(AgentMiddleware[AgentState[object], None, object]):
         extra = {key: value for key, value in message.additional_kwargs.items() if key not in {"tool_calls", RAW_TOOL_CALLS}}
         return message.model_copy(update={"content": content, "tool_calls": accepted, "invalid_tool_calls": [], "additional_kwargs": extra})
 
-    def _tool_error(self, request: ToolCallRequest, message: str, category: str) -> ToolMessage:
+    def _record_invalid_call(self, name: str, identity: str | None, arguments: str | None, error: str | None) -> None:
+        """未执行的非法 JSON 也留存原始参数, 便于对照语法拒绝与业务拒绝."""
+        details: dict[str, JsonValue] = {
+            "tool": name,
+            "call_id": identity,
+            "outcome": "rejected",
+            "category": "json_syntax",
+            "scope": self.repair_scope() if self.repair_scope is not None else None,
+        }
+        if self.on_event is not None:
+            self.on_event("tool_result", details)
+        if self.on_tool_result is not None:
+            self.on_tool_result({**details, "arguments": arguments, "response": error})
+
+    def _tool_error(self, request: ToolCallRequest, message: str, category: str, scope: str | None) -> ToolMessage:
         """保存有长度上限的诊断, 并用原调用 ID 返回配对的错误消息."""
         self.execution.tool_feedback += (
             ToolFeedback(
@@ -215,6 +325,7 @@ class AnalysisLoop(AgentMiddleware[AgentState[object], None, object]):
                 tool=request.tool_call["name"],
                 message=message[:1400],
                 category=category,
+                repair_scope=scope,
             ),
         )
         self.failure_signature = failure_signature(request.tool_call["name"], request.tool_call["args"], message)
@@ -232,8 +343,37 @@ class AnalysisLoop(AgentMiddleware[AgentState[object], None, object]):
         Returns:
             工具执行结果或明确的拒绝信息.
         """
-        if request.tool_call["name"] not in {tool.name for tool in self.tools}:
-            return self._tool_error(request, "当前分析角色未开放此工具。", "permission")
+        scope = self.repair_scope() if self.repair_scope is not None else None
+        result = self._execute_tool(request, handler, scope)
+        self._record_tool_result(request, result, scope)
+        self._record_new_history([result])
+        return result
+
+    def _record_tool_result(self, request: ToolCallRequest, result: ToolMessage, scope: str | None) -> None:
+        """完整交互交给制品回调, 事件仅保留身份和结果类别."""
+        try:
+            payload = json.loads(result.content) if isinstance(result.content, str) else {}
+        except (ValueError, TypeError):
+            payload = {}
+        payload = payload if isinstance(payload, dict) else {}
+        rejected = result.status == "error" or payload.get("status") in {"error", "rejected", "invalid_submission", "not_selected"}
+        omitted = payload.get("not_provided_ids")
+        outcome = "rejected" if rejected else "partial" if omitted else "success"
+        details: dict[str, JsonValue] = {
+            "tool": request.tool_call["name"],
+            "call_id": request.tool_call["id"],
+            "outcome": outcome,
+            "scope": scope,
+        }
+        if self.on_event is not None:
+            self.on_event("tool_result", details)
+        if self.on_tool_result is not None:
+            self.on_tool_result({**details, "arguments": request.tool_call["args"], "response": result.content})
+
+    def _execute_tool(self, request: ToolCallRequest, handler: Callable[[ToolCallRequest], object], scope: str | None) -> ToolMessage:
+        """执行一次工具, 由外层统一统计成功或拒绝回执的历史大小."""
+        if request.tool_call["name"] not in {tool.name for tool in self._active_tools()}:
+            return self._tool_error(request, "当前分析角色未开放此工具。", "permission", scope)
         selected = next(tool for tool in self.tools if tool.name == request.tool_call["name"])
         if self.submission_handler is not None:
             reply = self.submission_handler.handle(request.tool_call["name"], request.tool_call["args"])
@@ -251,8 +391,10 @@ class AnalysisLoop(AgentMiddleware[AgentState[object], None, object]):
                         },
                     )
                 if reply.category is not None:
-                    self._tool_error(request, reply.content, reply.category)
+                    self._tool_error(request, reply.content, reply.category, scope)
                     self.failure_signature = reply.signature
+                else:
+                    self.execution.format_repair_resolved_through[scope or "execution"] = len(self.execution.tool_feedback)
                 return ToolMessage(content=reply.content, tool_call_id=request.tool_call["id"], status="error" if reply.category else "success")
         # 先做结构校验, 工具内部再检查业务引用; 两者失败都反馈给模型按预算修正.
         # include_input=False 避免把整个原始报告再次写入错误反馈.
@@ -263,14 +405,14 @@ class AnalysisLoop(AgentMiddleware[AgentState[object], None, object]):
             message = "参数校验失败, 请修正后完整提交: \n" + "\n".join(errors)
             if any("report.summary" in item for item in errors):
                 message += "\nsummary 是提交工具的顶层参数, 与 report 并列, 不属于 report。"
-            return self._tool_error(request, message, "schema_validation")
+            return self._tool_error(request, message, "schema_validation", scope)
         feedback_count = len(self.execution.tool_feedback)
         try:
             result = cast("ToolMessage", handler(request))
         except (KeyError, TypeError, ValueError) as exc:
-            return self._tool_error(request, f"提交被拒绝: {str(exc)[:800]}", "business_rejection")
+            return self._tool_error(request, f"提交被拒绝: {str(exc)[:800]}", "business_rejection", scope)
         if result.status == "error":
-            return self._tool_error(request, str(result.content), "business_rejection")
+            return self._tool_error(request, str(result.content), "business_rejection", scope)
         self._record_business_feedback(request, feedback_count)
         return result
 
@@ -292,6 +434,7 @@ class AnalysisLoop(AgentMiddleware[AgentState[object], None, object]):
             prompt: 当前角色的系统指令.
             config: 追踪元数据与框架执行配置.
         """
+        self.role_prompt = prompt
         # 此分析循环在预算内保留完整短历史, 关闭自动调用模型生成摘要的机制,
         # 避免摘要模型请求绕过当前角色的模型调用计数.
         agent = create_deep_agent(
@@ -311,7 +454,7 @@ class AnalysisLoop(AgentMiddleware[AgentState[object], None, object]):
             last = result["messages"][-1]
             prompt = "尚未提交有效结果, 请按工具反馈修正或继续分析。"
             if isinstance(last, AIMessage) and last.response_metadata.get("finish_reason") == "length":
-                prompt = "上次响应达到输出预算且未执行工具。直接提交更短的结构化结果, 仅保留最关键的观察和解释, 其他内容保留为未知项。"
+                prompt = "上次响应达到输出预算且未执行工具。直接提交更短的结构化结果, 仅保留必要的业务条目, 未解决内容保留为具体未知项。"
             messages = [*result["messages"], HumanMessage(content=prompt)]
         self.execution.status = "completed"
         if self.on_event is not None:

@@ -1,27 +1,21 @@
-"""使用无网络模型传输替身, 验证真实 Deep Agents 流程与工具参数结构."""
+"""旧报告协议回归: 使用无网络模型传输替身, 验证真实 Deep Agents 流程与工具参数结构."""
 
 from __future__ import annotations
 
-import contextlib
-import io
 import json
-import sys
 import threading
 from dataclasses import replace
 from itertools import pairwise
-from pathlib import Path
-from unittest.mock import patch
 
 from pydantic import TypeAdapter, ValidationError
 
-from shader_deep import analysis_cli
 from shader_deep.agents.analysis import run_analysis
 from shader_deep.analysis.presets import PRESET_LENSES
 from shader_deep.analysis.schemas import AnalysisTaskRequest, LensReport
 from shader_deep.analysis.types import AnalysisOptions, AnalysisOutcome
 from shader_deep.blackboard import add_result, add_task
 from shader_deep.schemas import ResultRecord, TaskRecord
-from tests.unit_tests._analysis_fixture import AnalysisFixture, context_payload
+from tests.unit_tests._analysis_fixture import AnalysisFixture, context_payload, run_legacy_analysis
 from tests.unit_tests._generation_fixture import tool_results
 from tests.unit_tests.test_context import PNG
 
@@ -92,7 +86,7 @@ class AnalysisTests(AnalysisFixture):
         return message
 
     def run_case(self, **changes: object) -> AnalysisOutcome:
-        return run_analysis(self.root / "reference.PNG", "Analyze the structure", options=replace(self.analysis_options, **changes))
+        return run_legacy_analysis(self.root / "reference.PNG", "Analyze the structure", options=replace(self.analysis_options, **changes))
 
     def manifest(self, outcome: AnalysisOutcome) -> dict[str, object]:
         return json.loads((outcome.run_dir / "run.json").read_text())
@@ -382,7 +376,24 @@ class AnalysisTests(AnalysisFixture):
         self.response = response
         outcome = self.run_case()
         self.assertEqual(outcome.stop_reason, "completed", self.manifest(outcome))
-        self.assertTrue(any("source_not_presented" in str(tool_results(request)) for request in self.requests))
+        blind_replies = [
+            json.loads(message["content"])
+            for request in self.requests
+            for message in request["messages"]
+            if message["role"] == "tool" and message.get("tool_call_id") == "call-blind-summary"
+        ]
+        self.assertTrue(blind_replies)
+        for reply in blind_replies:
+            self.assertEqual(reply["status"], "invalid_submission")
+            # 同批工具并行争锁: finish 先执行时尚无报告, batch 先执行时报告尚未呈现.
+            self.assertTrue(
+                any(
+                    error["code"] == "source_not_presented"
+                    or (error["code"] == "business_rejection" and error["message"] == "Run at least two lens tasks before finishing")
+                    for error in reply["errors"]
+                ),
+                reply,
+            )
         self.assertNotEqual(outcome.summary_result.summary, "Blind summary")
 
     def test_invalid_batch_is_atomic_and_can_be_repaired(self) -> None:
@@ -473,21 +484,3 @@ class AnalysisTests(AnalysisFixture):
         outcome = self.run_case()
         self.assertEqual(outcome.stop_reason, "completed", self.manifest(outcome))
         self.assertEqual((outcome.run_dir / "reference.png").read_bytes(), PNG)
-
-    def test_cli_emits_real_summary_as_json(self) -> None:
-        config = self.root / "analysis.yaml"
-        config.write_text("max_output_tokens: 2048\nmax_worker_calls: 4\nstream_model_responses: false\noutput_dir: analysis\n", encoding="utf-8")
-        arguments = ["shader-deep-analyze", str(self.root / "reference.PNG"), "Inspect", "--config", str(config)]
-        stdout, stderr = io.StringIO(), io.StringIO()
-        with patch.object(sys, "argv", arguments), contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr):
-            code = analysis_cli.main()
-        self.assertEqual(code, 0)
-        payload = json.loads(stdout.getvalue())
-        manifest = json.loads((Path(payload["run_dir"]) / "run.json").read_text())
-        self.assertEqual(payload["result"], manifest["blackboard"]["results"][manifest["summary_result_id"]])
-        self.assertIn("Status: completed", stderr.getvalue())
-        self.assertEqual(Path(payload["run_dir"]).parent, self.root / "analysis")
-        self.assertEqual(manifest["options"]["max_worker_calls"], 4)
-        self.assertEqual(manifest["options"]["max_output_tokens"], 2048)
-        self.assertEqual({request["max_completion_tokens"] for request in self.requests}, {2048})
-        self.assertTrue(all(not request.get("stream", False) for request in self.requests))

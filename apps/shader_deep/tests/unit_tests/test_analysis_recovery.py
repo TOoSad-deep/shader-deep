@@ -1,4 +1,4 @@
-"""通过真实工具验证暂时性错误恢复预算及简短的参数校验反馈."""
+"""旧报告协议回归: 通过真实工具验证暂时性错误恢复预算及简短的参数校验反馈."""
 
 from __future__ import annotations
 
@@ -11,10 +11,9 @@ from unittest.mock import patch
 import httpx2
 from langchain.tools import tool
 
-from shader_deep.agents.analysis import run_analysis
 from shader_deep.analysis.tool_json import recover_object
 from shader_deep.analysis.types import AnalysisOptions, AnalysisOutcome
-from tests.unit_tests._analysis_fixture import AnalysisFixture
+from tests.unit_tests._analysis_fixture import AnalysisFixture, run_legacy_analysis
 from tests.unit_tests._generation_fixture import tool_results
 from tests.unit_tests.test_analysis import context_payload, draft_batch, report_arguments, synthesis_arguments
 
@@ -68,7 +67,7 @@ class AnalysisRecoveryTests(AnalysisFixture):
 
     def run_case(self) -> tuple[AnalysisOutcome, dict[str, object]]:
         with patch("shader_deep.analysis.transport.time.sleep"):
-            outcome = run_analysis(self.root / "reference.PNG", "Analyze", options=self.options)
+            outcome = run_legacy_analysis(self.root / "reference.PNG", "Analyze", options=self.options)
         return outcome, json.loads((outcome.run_dir / "run.json").read_text())
 
     def test_transient_failure_recovers_without_new_tasks_or_replaying_siblings(self) -> None:
@@ -237,7 +236,7 @@ class AnalysisRecoveryTests(AnalysisFixture):
                     self.assertTrue(rejected)
                     self.assertTrue(all(message.get("content") and not message.get("tool_calls") for message in rejected))
 
-    def test_repeated_truncation_stops_after_two_repairs_without_executing_tools(self) -> None:
+    def test_repeated_truncation_uses_call_budget_without_executing_tools(self) -> None:
         def response(request: dict[str, object]) -> dict[str, object]:
             message = self.analyze(request)
             message["_fixture_finish_reason"] = "length"
@@ -247,9 +246,9 @@ class AnalysisRecoveryTests(AnalysisFixture):
         outcome, saved = self.run_case()
         self.assertIsNone(outcome.summary_result)
         self.assertEqual(saved["main_execution"]["status"], "stopped")
-        self.assertIn("format-repair budget", saved["main_execution"]["error"])
-        self.assertEqual(saved["main_execution"]["model_calls"], 3)
-        self.assertEqual(saved["main_execution"]["format_repair_calls"], 2)
+        self.assertIn("model-call budget", saved["main_execution"]["error"])
+        self.assertEqual(saved["main_execution"]["model_calls"], self.options.max_main_calls)
+        self.assertEqual(saved["main_execution"]["format_repair_calls"], 0)
         self.assertEqual(saved["worker_executions"], {})
 
     def test_json_recovery_does_not_guess_missing_fields_or_discard_extra_objects(self) -> None:

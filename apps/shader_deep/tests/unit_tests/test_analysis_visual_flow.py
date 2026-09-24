@@ -1,4 +1,4 @@
-"""验证视觉初稿、前置取证及实际子任务材料的固定范围."""
+"""旧报告协议回归: 验证视觉初稿、前置取证及实际子任务材料的固定范围."""
 
 from __future__ import annotations
 
@@ -8,14 +8,13 @@ from dataclasses import asdict, replace
 
 from pydantic import TypeAdapter
 
-from shader_deep.agents.analysis import run_analysis
 from shader_deep.analysis.evidence import MeasurementRequest
 from shader_deep.analysis.schemas import AnalysisTaskRequest, AnalysisValidationError, VisualDecomposition
 from shader_deep.analysis.session import AnalysisSession
 from shader_deep.analysis.types import AnalysisOptions
 from shader_deep.blackboard import add_target, add_task, new_blackboard
 from shader_deep.schemas import TargetRecord, TaskRecord
-from tests.unit_tests._analysis_fixture import AnalysisFixture
+from tests.unit_tests._analysis_fixture import AnalysisFixture, run_legacy_analysis
 from tests.unit_tests._generation_fixture import tool_results
 from tests.unit_tests.test_analysis import context_payload, draft_batch, report_arguments, synthesis_arguments
 from tests.unit_tests.test_analysis_evidence import measurement, pixels
@@ -121,7 +120,7 @@ class AnalysisVisualFlowTests(AnalysisFixture):
             return self.call("finish_analysis", synthesis_arguments(payload))
 
         self.response = respond
-        outcome = run_analysis(self.root / "reference.PNG", "Inspect", options=self.analysis_options)
+        outcome = run_legacy_analysis(self.root / "reference.PNG", "Inspect", options=self.analysis_options)
         manifest = json.loads((outcome.run_dir / "run.json").read_text())
         self.assertEqual(outcome.stop_reason, "completed", manifest)
         inputs = list(manifest["task_inputs"].values())

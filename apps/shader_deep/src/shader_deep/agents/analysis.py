@@ -6,9 +6,7 @@ import base64
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from shader_deep.analysis.loop import AnalysisLoop
-from shader_deep.analysis.prompts import MAIN_PROMPT
-from shader_deep.analysis.session import AnalysisSession
+from shader_deep.analysis.managed_integration import ManagedIntegrationSession
 from shader_deep.analysis.transport import configure_analysis_model
 from shader_deep.analysis.types import AnalysisLimitError, AnalysisNoProgressError, AnalysisOptions, AnalysisOutcome
 from shader_deep.artifacts import create_run_directory
@@ -49,6 +47,9 @@ def run_analysis_task(
     if any(child.parent_task_id == task.id for child in state["tasks"].values()):
         msg = "Create a fresh root task for each analysis run"
         raise ValueError(msg)
+    if task.related_result_ids:
+        msg = "The possibility-library protocol starts from the reference image; historical reports require an explicit conversion"
+        raise ValueError(msg)
     root = asset_root if asset_root is not None else Path.cwd()
     reference_url = png_data_url(root / state["targets"][task.target_version].reference_path)
     model = build_model()  # 创建输出目录前先校验模型配置.
@@ -58,23 +59,13 @@ def run_analysis_task(
     # 启动时只读取一次原始图像, 后续主任务、子任务和测量都使用这份固定字节.
     # 即使调用方之后替换输入文件, 本次分析证据仍对应保存的 reference.png.
     (directory / "reference.png").write_bytes(base64.b64decode(reference_url.split(",", 1)[1]))
-    session = AnalysisSession(state, task_id, options, directory, reference_url)
-    loop = AnalysisLoop(
-        session.execution,
-        options.max_main_calls,
-        session.context,
-        lambda: session.summary_result is not None,
-        session.tools(),
-        request_retries=options.max_request_retries,
-        submission_handler=session.submission_handler,
-        on_prepared=session.on_prepared,
-        on_event=session.event,
-        max_repeated_no_progress=options.max_repeated_no_progress,
-        progress=session.progress,
-    )
+    session = ManagedIntegrationSession(state, task_id, options, directory, reference_url)
     session.save()
     try:
-        loop.run(model, MAIN_PROMPT, session.config(task_id))
+        session.run(model)
+    except KeyboardInterrupt:
+        session.stop_reason, session.execution.status, session.execution.error = "interrupted", "stopped", "Interrupted by caller"
+        raise
     except AnalysisLimitError as exc:
         session.stop_reason, session.execution.status, session.execution.error = "model_limit", "stopped", str(exc)
     except AnalysisNoProgressError as exc:
@@ -83,6 +74,7 @@ def run_analysis_task(
         session.stop_reason, session.execution.status, session.execution.error = "error", "failed", f"{type(exc).__name__}: {exc}"
     finally:
         # 正常结束、预算耗尽和执行失败都落盘, 调用方可从 outcome 定位已完成的部分.
+        session.finalize()
         session.save()
         session.event("run_finished", {"status": session.stop_reason, "error": session.execution.error})
     return session.outcome()

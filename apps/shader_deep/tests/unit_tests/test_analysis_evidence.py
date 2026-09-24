@@ -1,4 +1,4 @@
-"""验证测量计算、协调器的执行权限及证据可见范围."""
+"""旧报告协议回归: 验证测量计算、协调器的执行权限及证据可见范围."""
 
 from __future__ import annotations
 
@@ -12,7 +12,6 @@ from unittest import TestCase
 from PIL import Image
 from pydantic import TypeAdapter, ValidationError
 
-from shader_deep.agents.analysis import run_analysis
 from shader_deep.analysis.evidence import ImageRegion, MeasurementRecord, MeasurementRequest, MeasurementSpec
 from shader_deep.analysis.measurements import ReferenceMeasurements
 from shader_deep.analysis.profiles import summarize_profile
@@ -21,7 +20,7 @@ from shader_deep.analysis.types import AnalysisOptions, AnalysisOutcome
 from shader_deep.blackboard import add_result, add_target, add_task, new_blackboard
 from shader_deep.context.analysis import build_analysis_context
 from shader_deep.schemas import ResultRecord, TargetRecord, TaskRecord
-from tests.unit_tests._analysis_fixture import AnalysisFixture
+from tests.unit_tests._analysis_fixture import AnalysisFixture, run_legacy_analysis
 from tests.unit_tests._generation_fixture import tool_results
 from tests.unit_tests.test_analysis import context_payload, draft_batch, report_arguments, synthesis_arguments
 
@@ -188,7 +187,7 @@ class AnalysisEvidenceTests(AnalysisFixture):
         self.response = self.respond_to_analysis
 
     def run_case(self) -> AnalysisOutcome:
-        return run_analysis(self.root / "reference.PNG", "Analyze this image", options=self.options)
+        return run_legacy_analysis(self.root / "reference.PNG", "Analyze this image", options=self.options)
 
     def respond_to_analysis(self, request: dict[str, object]) -> dict[str, object]:
         payload = context_payload(request)

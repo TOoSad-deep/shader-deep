@@ -16,6 +16,7 @@ if TYPE_CHECKING:
     from collections.abc import Callable, Iterator
 
     from langchain_core.callbacks import CallbackManagerForLLMRun
+    from langchain_core.language_models import LanguageModelInput
     from langchain_core.messages import BaseMessage
     from langchain_core.outputs import ChatGenerationChunk, ChatResult
     from openai import BaseModel
@@ -28,8 +29,27 @@ MAX_CAUSE_DEPTH = 5
 RAW_TOOL_CALLS = "analysis_raw_tool_calls"
 
 
+def _explicit_required(schema: object) -> object:
+    """显式发送空 required 数组, 避免兼容服务将缺省值解释为 null."""
+    if isinstance(schema, list):
+        return [_explicit_required(item) for item in schema]
+    if not isinstance(schema, dict):
+        return schema
+    result = {key: _explicit_required(value) for key, value in schema.items()}
+    if result.get("type") == "object" and result.get("required") is None:
+        result["required"] = []
+    return result
+
+
 class AnalysisChatOpenAI(ChatOpenAI):
     """保留原始参数供执行前审查, 防止流式解析器补齐非法 JSON 后丢失原文."""
+
+    def _get_request_payload(self, input_: LanguageModelInput, *, stop: list[str] | None = None, **kwargs: object) -> dict:
+        """保持参数可选性, 只补全模型工具 Schema 的合法空 required."""
+        payload = super()._get_request_payload(input_, stop=stop, **kwargs)
+        if "tools" in payload:
+            payload["tools"] = _explicit_required(payload["tools"])
+        return payload
 
     def _stream(
         self,
@@ -93,7 +113,12 @@ def configure_analysis_model(model: ChatOpenAI, options: AnalysisOptions) -> Cha
 
 
 def call_with_recovery(
-    call: Callable[[], Response], execution: AnalysisExecution, retries: int, *, on_event: EventCallback | None = None
+    call: Callable[[], Response],
+    execution: AnalysisExecution,
+    retries: int,
+    *,
+    on_event: EventCallback | None = None,
+    before_attempt: Callable[[], None] | None = None,
 ) -> Response:
     """只重试暂时性模型请求错误, 并保留任务身份与每次尝试记录.
 
@@ -102,6 +127,7 @@ def call_with_recovery(
         execution: 当前角色的调用计数与审计记录.
         retries: 本次逻辑调用允许的额外请求尝试次数.
         on_event: 可选的短事件回调, 用于观察请求和重试进度.
+        before_attempt: 每次网络尝试前检查取消, 被取消的尝试不计作已发送请求.
 
     Returns:
         首次成功返回的响应.
@@ -110,6 +136,8 @@ def call_with_recovery(
         Exception: 不可重试的服务错误, 或请求尝试次数耗尽时的最后一次错误.
     """
     for attempt in range(retries + 1):
+        if before_attempt is not None:
+            before_attempt()
         # monotonic 不受系统时钟校准影响; 成功和失败都记录耗时, 便于区分逻辑轮与请求次数.
         began = time.monotonic()
         if on_event is not None:

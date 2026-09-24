@@ -4,7 +4,7 @@
 
 当前已连接内存黑板、Context Builder、真实 WebGL2 渲染工具和有预算的生成循环。每次尝试保存代码、预览或错误, 完成时明确选择已渲染且已向模型展示预览的候选。
 
-独立多视角分析已提供 `shader-deep-analyze` 命令: 主 Agent 选择预置视角或创建新视角配置, 执行器并行运行独立分析实例, 保存原始报告与带证据来源的综合结果。分析到交付报告为止; 持续决策、独立视觉评审和分析到生成的自动交接尚未接入。最终视觉效果仍由用户验收。
+独立分析提供 `shader-deep-analyze` 命令：主 Agent 建立统一视觉初稿，子 Agent 独立探索三个候选库，后端根据主 Agent 的增量整合组装四库。输出协议为 `possibility_library_v1`。分析到生成的自动交接尚未接入，候选仍需编码、渲染与用户视觉验收。
 
 ## 安装与配置
 
@@ -108,7 +108,9 @@ uv run --no-sync --env-file .env python -m shader_deep.analysis_cli /absolute/pa
 uv run --no-sync --env-file .env shader-deep-analyze test_pic/2d-physics-balls.png "分析构图、元素组织和可能机制" --config src/shader_deep/analysis/config.yaml --max-worker-calls 5
 ```
 
-YAML 使用平铺字段名, 例如 `max_output_tokens: 16384`、`max_worker_calls: 3`、`stream_model_responses: true`。当前模块 YAML 将主、子 Agent 调用上限均设为 0（不限次数）、输出上限设为 163840、请求超时设为 240 秒; 下表列出的是 `AnalysisOptions` 内置默认值, 实际额度以有效配置为准。单次输出上限对主 Agent 和全部子任务统一生效; 实际可用上限仍取决于模型服务。
+YAML 使用平铺字段名, 例如 `max_output_tokens: 16384`、`max_worker_calls: 3`、`stream_model_responses: true`。当前模块 YAML 将主、子 Agent 的累计调用上限均设为 0, 主任务仍受每阶段及比较组预算限制; 通用输出上限设为 163840、请求超时设为 240 秒. `outline_max_output_tokens`、`integration_max_output_tokens`、`worker_max_output_tokens` 可分别覆盖初稿、整合和子任务输出上限, 默认均为 `null`, 回退通用值.
+
+阶段输出的优先级为 **阶段专用 CLI > 通用 `--max-output-tokens` CLI > 阶段 YAML > 通用 YAML > 内置默认值**. 对应阶段 CLI 为 `--outline-max-output-tokens`、`--integration-max-output-tokens`、`--worker-max-output-tokens`. 同一有效值用于模型请求参数、上下文输出预留和阶段预算记录; 实际可用上限仍取决于模型服务. 文档中的回放示例值不会自动成为默认配置.
 
 未传 `--config` 时读取模块内的 `config.yaml`, 不自动读取当前目录的同名文件; 模块内文件缺失时使用内置默认值。显式指定的文件不存在、字段拼错、YAML 类型或预算范围错误时, 在调用模型前以退出码 2 报错。YAML 中的相对 `output_dir` 基于配置文件所在目录, CLI 的 `--output-dir` 仍基于当前工作目录; 默认配置的 `output_dir: null` 使用当前工作目录下的 `runs`, 避免把运行产物写入源码目录。最终有效参数继续写入 `run.json` 的 `options`。
 
@@ -125,63 +127,64 @@ outcome = run_analysis(Path("test_pic/2d-physics-balls.png"), "分析参考图",
 
 配置读取使用已由 SDK 锁定并安装的 PyYAML `safe_load`, 本应用将其声明为直接依赖, 不引入新的解析器或升级现有版本。
 
-主、子 Agent 的 `max_main_calls` 与 `max_worker_calls` 默认均为 0, 表示不限调用和格式修复次数; YAML 与 Python 默认值一致, CLI 对应参数可显式覆盖。正整数仍可选择有限调用模式。计数与诊断照常保存; 任务、测量、并发、单次输出和网络重试保留各自限制。网络重试仍最多额外 2 次, 独立测量总额仍为 8。
+主、子 Agent 的 `max_main_calls` 与 `max_worker_calls` 默认均为 0, 表示没有额外的对应累计调用上限; YAML 与 Python 默认值一致, CLI 对应参数可显式覆盖. 主任务仍受下面的每阶段、每比较组、无进展和完整请求预算约束. 网络重试最多额外 2 次, 独立测量总额为 8; 正整数调用上限可进一步限制整体调用数.
 
 ### 分析执行与预算
 
-程序固定本次参考 PNG 字节, 为每个子任务创建独立 Deep Agent 和图像上下文。主 Agent 使用 `run_analysis_batch` 选择预置视角或创建新视角配置, 在首批前或后续批次间通过 `measure_reference` 统一取证, 用 `finish_analysis` 提交综合结果; 子 Agent 使用 `submit_analysis_report` 完整提交, 被拒绝时可用 `repair_analysis_submission` 局部修复, 可在报告的 `evidence_requests` 中提出取证需求。视角不能自行开放测量、代码、文件操作或递归委派工具。
+主 Agent 分为初稿规划和受控整合两个阶段. 首次接收用户要求和完整原图, 一次 `submit_visual_outline(outline, directions)` 提交统一初稿和至少两个中性探索问题. 后端冻结本轮元素与实例组身份, 按方向运行独立探索批次; 所有子任务终止后进入整合. 子任务只接收原始要求、统一初稿、探索方向和完整图像, 不传递兄弟报告或测量.
 
-主 Agent 在观察和按需取证的 ReAct 循环中形成可修订的 `VisualDecomposition`, 通过 `run_analysis_batch` 的可选 `visual_decomposition` 参数提交。首轮至少两个互补视角, 通常选择 2–3 个, 接收完整原图、固定视觉初稿及明确选入且主 Agent 已回读的基础证据, 不读取其他首轮报告。这是共享初稿和指定证据条件下的独立分析。主 Agent 收到一批报告后检查覆盖、关键判断和取证需求, 按重要性合并测量。追加任务声明 `purpose="supplement"` 或 `"verify"`, 填写具体缺口 `gap` 和预期新依据 `expected_evidence`, 通过 `related_result_ids`、`evidence_ids` 显式选择材料。单图无法判定的机制可作为未知项正常交付; 无需为了用满预算继续派发。
+子任务以三个顶层参数提交 `sketch_library`、`feature_library`、`relation_library`, 不再套 `report`. 后端校验后直接入统一库, 在短写锁中串行发布; 同一成功提交重放不重复入库, 不同内容不能覆盖原报告.
 
-视觉结构包含元素、可关联多个元素的特征和关系。子报告可提交 `visual_additions`、`visual_revisions`, 观察和解释通过对象 ID 定位。综合保留 `visual_decomposition` 和 `visual_mappings`, `hypotheses` 的 ID 供 `implementation_sketches.hypothesis_ids` 引用; 草图附可调变量和渲染检查点, 不自动调用生成。旧记录缺少结构表示未提供, 不表示没有元素。
+默认完整入口与 `analysis.replay` 共用 `ManagedIntegrationSession`. 主整合先处理初稿问题, 再发现拥有者比较组, 顺序执行特征、关系、草图比较; 最后根据实际归并后的规范身份发现候选比较组. 发现阶段用 `plan_comparisons` 一次提出有依据的同类型小组, 每组 2 至 6 个本轮真实 ID; 程序绑定工作身份、材料和版本. 未选条目原样保留, 不宣称整库已去重. 完整发现材料放不下时记录缺口, 不截断后冒充全量发现.
 
-测量支持原图像素区域裁剪、区域 RGB/编码亮度均值、水平/垂直亮度剖面。区域使用左上原点的 `left/top/right/bottom`, 右、下边界排除。相同操作、区域和有效参数在同一冻结图像会话内复用同一个证据 ID, 不重复扣测量额度; 不同区域不会被强行合并。程序记录原图 SHA-256、方法版本、坐标及结果, 并附实际指标、聚合范围、单位与局限, 子 Agent 只能读取明确选入的证据。裁剪图通过真实图像内容进入上下文, 并非仅提供文件名。
+比较步骤只开放 `submit_integration` 与局部修复, 字段限于当前类型的 `merges`、`preserve`、整组 `deferred_work`. 程序提供目标正文及候选的直接必要前提, 请求通过预算检查并实际发送后才登记呈现. 普通比较使用纯文本, 不开放测量、扩大范围、元素未决修改或任意引用更新. 特征按范围和外观判断, 候选按机制及必要前提判断; 合并拥有者保留全部候选. 后端继续校验引用、来源和整笔事务, 无法合法发布的工作明确暂缓.
 
-批次工具返回简短回执, 主 Agent 下一轮收到 `report_files` 和带类型的 `source_catalog`, 通过 `read_analysis_file(file_path, pointer)` 按需读取报告。程序复用 Deep Agents `FilesystemBackend`, 在本地解析 JSON, 只把选中部分交给模型。读取工具的完整正文进入下一轮请求后才允许引用; 目录不算已读, 同批读取后不能立即跳过回读提交。完整原图、测量数值和裁剪仍按原方式注入, 子任务仍接收冻结的明确输入。分析模型默认使用 SSE 传输, 仍等待完整响应及正常结束标记后再校验和执行工具; 子任务与测量的批次时序保持同步。流中断或缺少结束标记时有限重试, 不执行半截工具参数。
+初稿问题由 `review_outline` 逐项提出驳回、暂缓或受限修订. 修订只允许已有元素的 `salient_features` 和已有关系的描述文字, 不改身份、范围、实例或端点, 原探索输入与报告保留. 整个初稿和完整库材料实际呈现后才接受修订, 保存新初稿版本, 然后由下一次独立请求调用 `verify_outline` 复核. 提案本身不能关闭问题; 复核未确认、缺预算或需要新增/拆分对象的情况仍保留 `partial`.
 
-超过 128 点的剖面在模型上下文中显示 `profile_digest`: 带原图坐标的均匀采样点与明暗峰谷候选。候选必须为半径 3 像素内的实际极值, 且相对左右两侧邻点的方向差均达到编码亮度阈值 1; 每种最多保留 16 个并注明截断情况。`contrast` 是双侧方向差的较小值, `neighbor_level` 是选用的保守邻点值, 不能当作相对未遮挡背景的亮度差。候选不自动等同于网格线。完整逐点数组保存在证据记录中, 窄范围测量可再次检查局部值。主 Agent 无需手工数长数组的索引。
+工作预算耗尽或无法判断时暂缓本项并继续其他独立项, 不自动重新领取暂缓项. 总调用或阶段数额度耗尽时停止安排新项, 保留已发布结果. 每次请求提供工作和全局剩余调用额度; `max_main_calls=0` 仅取消全局总次数限制, 不取消每阶段限制. 全部安排结束后由程序检查必要工作、失败任务、初稿问题和覆盖缺口, 自动形成真实终态. `integration-work.json` 保存各阶段和工作的实际调用、回执及失败原因. 原按需读取和测量实现仍保留底层兼容回归, 不是默认模型工具列表.
 
-观察和综合条目的 `basis` 默认为 `visual`; 引用数值证据时可标为 `measurement_supported` 并填写 `evidence_ids`。裁剪放大仍是目测。测量只描述选定区域, 不自动证明取样位置正确、整体视觉结论正确或唯一物理成因。透明像素在统计时合成到白底; 编码亮度使用 `0.2126R + 0.7152G + 0.0722B`, 不等于线性物理亮度。
+主任务格式修复按初稿、发现阶段或稳定 `work_id` 分别计数, 每个作用域最多两次修复调用; 同组刷新、重建循环或暂缓后接续不重置额度, 全局仍累计统计. 已消费目录回执在请求副本中替换为有界计数和游标, 保留工具调用配对. 当前完整草稿与错误由控制上下文提供, 被替代的旧提交参数不重复驻留; 草稿仍无法完整容纳时保存 `repair_context_exceeded` 并暂缓工作, 不截断草稿或发布部分操作.
 
-每次模型调用将最新图像与任务资料合并到当前用户消息; 若前面是完整的 assistant/tool 交互, 则在其后追加本轮多模态消息。这样既保留工具调用与反馈配对, 也避免连续用户消息。在当前 DeepSeek 中转通道的真实对照中, 连续用户消息虽然在请求与追踪里包含图片, 模型仍无法识图; 合并后恢复了主要视觉特征识别。该兼容性结论来自本地实测, 不代表所有提供方都具有同一限制。
+原有 YAML / CLI 配额继续有效, 阶段切换不重置主调用数. 新增配置可通过 YAML 或 `AnalysisOptions` 设置:
 
-| 参数 | 默认值 | 含义 |
+| 参数 | 默认值 | 约束 |
 | --- | --- | --- |
-| `--max-tasks` | 6 | 累计分析子任务数量, 包括失败和补充分析 |
-| `--max-parallel` | 3 | 同时执行的子 Agent 上限 |
-| `--max-worker-calls` | 0 | 每个子 Agent 的模型调用上限; 0 不限次数 |
-| `--max-repeated-no-progress` | 0 | 连续同错同内容且无新材料的停止阈值; 0 关闭 |
-| `--max-main-calls` | 0 | 主 Agent 规划、修正和综合的模型调用总上限; 0 不限次数 |
-| `--max-measurements` | 8 | 本次分析唯一测量操作上限, 缓存复用不扣额度 |
-| `--max-request-retries` | 2 | 每次逻辑模型调用额外允许的瞬时请求重试次数 |
-| `--request-timeout-seconds` | 120 | 每次请求尝试的网络超时, 不代表整个分析的墙钟截止时间 |
-| `--stream-model-responses` / `--no-stream-model-responses` | 开启 | 模型传输使用 SSE; 收齐响应并校验后才执行工具 |
-| `--max-output-tokens` | 16384 | 向提供方声明的单次请求输出预算 |
-| `--output-dir` | `runs` | 独立 `run-*` 目录的父目录 |
+| `max_context_tokens` | 262144 | 主任务完整请求的应用估算预算, 包括输出预留 |
+| `request_image_tokens` | 4096 | 每图估算预留 |
+| `request_token_margin` | 2048 | 请求编码和估算余量 |
+| `max_comparison_targets` | 12 | 单组显式目标上限; 超限必要工作保持未完成, 不静默拆分 |
+| `library_page_chars` | 8000 | 库目录、工作和问题索引的单页 JSON 字符上限 |
+| `max_integration_calls` | 12 | 每个比较或发现阶段及初稿阶段的最大调用数, 包含修复 |
+| `max_integration_packages` | 24 | 整合阶段次数, 包括发现、初稿复核和每项比较 |
+| `integration_no_progress` | 3 | 未配置正数全局无进展阈值时的阶段停止阈值 |
 
-DeepSeek 模型通过 `max_tokens` 传递输出预算。当前中转接口的 128-token 对照发现 SDK 默认生成的 `max_completion_tokens` 被忽略，因此在分析客户端中做显式映射；其他模型沿用 SDK 参数方式。该设置和 SSE 仅影响分析客户端，既有 `.env` 和生成 Agent 的配置保持原样。
+主请求发送前检查系统提示、工具 Schema、材料、测量图像、修复历史和输出预留. 文本按每字符一个估算 token 加图像与额外余量计算; 这是应用的保守估算策略, 不是提供方 tokenizer 的精确计数或上下文窗口声明. 真实用量仍从提供方响应读取. 子任务保留自己的调用预算, 不套用主整合预算.
 
-原始工具参数在流式与非流式响应中均单独保留并严格解析, 不接受底层自动补齐的残缺 JSON；仅允许完整合法对象尾部多出的 1–2 个闭合符恢复。有限调用模式的格式修复最多两次且仍计入原有调用预算; 不限次数的主 Agent 同时取消格式修复次数上限, 失败保留诊断和已取得材料。业务拒绝记录工具、轮次、类别和原因。
+当前结果外层为 `analysis_protocol="possibility_library_v1"`, `analysis_detail` 为 `elements` 加三个库. 旧 `LensReport` / `AnalysisSummary` 可识别和校验, 不自动转换; 公开入口拒绝未经转换的历史报告输入. 公开函数签名及 CLI 调用方式不变.
 
-格式错误、引用修正和纯文本回复都消耗逻辑调用次数。分析角色关闭自动模型摘要和客户端内部 HTTP 重试, 由分析执行器对可恢复的连接、超时、限流和服务端错误作有限重试。每次传输尝试记录耗时、错误类型和异常链类型, 与 `model_calls` 分开统计; 重试保持任务 ID, 不重复执行工具或消耗新视角名额。认证、配置及已识别的本地客户端错误不重试。最大传输尝试次数受逻辑调用上限与重试上限共同约束; 当前没有 token 总额或整个分析的硬墙钟截止时间。到限保留已有报告并明确返回未完成状态。
+失败任务、未解决初稿问题、未覆盖元素、预算出口和 `deferred_work` 均保留, 交付可为 `partial`. 没有合法子报告时保留失败状态. `completed` 不证明跨包语义比较全部完成、候选机制真实或视觉效果被验收. 运行目录保留原图、原报告、版本、来源、提交回执、材料队列与缺口; 库快照是批量发布的权威记录, 不宣称可恢复完整模型会话. 新版真实两图测试和用量对照仍需单独验证, 不依据无网络测试声称视觉或 token 收益.
 
-`SourceRef.kind` 可选标明真实来源类型, 缺省保持旧调用兼容。`hypothesis_links` 的每项 `hypothesis_id` 关联综合假设, `derived_from` 指向子报告解释; 程序列出未关联项, 不要求填处置台账, 不将未关联视为舍弃。
+`tools.jsonl` 保存主任务工具调用参数及成功或拒绝回执; `events.jsonl` 保存阶段有效输出额度、请求大小和提供方实际用量等记录. 冻结探索输入可单独回放主整合, 无需再次运行探索:
 
-合法 JSON 的失败提交保存在 `submissions/<task_id>.json`, 返回 `draft_id`、`revision` 和带 JSON Pointer 的错误。`repair_analysis_submission` 接收期望版本及 `set/remove` 修改, 自动复用原 schema 和业务校验; 失败草稿不算有效报告, 成功后的重复提交或修复不会改动结果。非法 JSON 继续走语法反馈。
+```sh
+uv run --no-sync --env-file .env python -m shader_deep.analysis.replay /absolute/path/source-run \
+  --output-dir runs/replay --max-main-calls 8 --integration-max-output-tokens 32768
+```
 
-`run-*/events.jsonl` 实时记录主/子任务、请求尝试、工具拒绝、读取和草稿保存等离散事件。`--max-repeated-no-progress` 默认 0, 主 Agent 仍不限次数；显式设置正值后才将连续同错同内容且无新材料的运行停为 `no_progress`。这是精确重复检查, 不判断语义绕圈。恢复执行和强制取消正在进行的网络请求尚未实现。
+源目录须包含受支持的 `run.json` 和原始 `reference.png`; 回放校验原图哈希并恢复冻结初稿、原探索报告、问题和失败状态, 创建独立目录, 不继承旧整合决定或计数. 它会调用配置的模型服务, 只验证固定输入下的整合行为, 不代表完整单图实测或已经取得成本收益.
 
-`run-*/reference.png` 保存固定参考, `run-*/run.json` 保存全部视角配置快照、父子任务、原始报告、综合结果、请求尝试与失败记录。`blackboard.measurements` 保存程序证据, `measurement_calls` 记录调用及缓存命中, `evidence/` 保存局部图像, `reports/` 保存只读子报告, `submissions/` 保存提交草稿。并行结果由执行器集中登记, 原报告在补充分析后仍保留。快照不是可恢复完整模型会话的 checkpoint。
+固定样本的受控去重实验使用独立入口, 依次执行卡片投影特征比较、依赖其拥有者合并的四个候选比较、独立的底场晕影特征比较:
 
-标准输出为 JSON, 包含 `status`、`run_dir` 和实际 `ResultRecord`（没有综合结果时为 `null`）。`completed` 退出码为 0; 子任务缺失但已有综合结果时为 `partial`, 主 Agent 到限为 `model_limit`, 启用的停滞检查触发为 `no_progress`, 运行失败为 `error`, 均退出码为 1; 输入错误为 2。未确定的机制可以出现在正常完成的报告中。所有子任务均失败时没有可综合的证据, 不会伪造报告。
+```sh
+uv run --no-sync --env-file .env python -m shader_deep.analysis.controlled_replay \
+  runs/real-business-budget-balls-20260922-54CxRg/run-avu0ozrm \
+  --output-dir runs/controlled-dedup --max-main-calls 12 --max-work-calls 4 \
+  --integration-max-output-tokens 65536
+```
 
-Python 入口为 `shader_deep.agents.analysis.run_analysis(path, prompt, options=...)`。已有黑板可登记一条全新的根分析任务, 再调用 `run_analysis_task(state, task_id, asset_root=..., options=...)`。选项类型在 `shader_deep.analysis.types.AnalysisOptions`。两者都是同步接口, 内部使用受限线程池并行执行子任务。
+这是绑定该来源对象身份的实验路径. 每项仅提供完整文本材料及合并、保留、暂缓工具, 不重新探索或测量; 依赖不满足时跳过候选比较, 剩余额度允许时继续独立项. 特征按对象范围和外观等价判断, 合并保留全部候选; 候选按机制与必要前提等价另行判断, 不因外观相似而吞并不同机制. `controlled-summary.json` 分别记录三项结果, 暂缓项不自动重入. 原失败任务与初稿问题继续保留, 因而局部三步通过时全运行仍可为 `partial`; 语义判断须对照原文检查, 不以数量下降证明正确或宣称完成整库去重.
 
-启用既有 LangSmith 配置时, 主分析追踪名为 `shader-deep.analysis`, 子分析为 `shader-deep.analysis.lens`; `session_id` 关联本次运行, `task_id`、`parent_task_id` 标明归属。图像、任务与报告会随模型和工具输入进入追踪。
-
-Pydantic 用于工具入参和报告校验, 使用其[可校验 dataclass](https://docs.pydantic.dev/latest/concepts/dataclasses/)保留不可变记录与标准库 `asdict` 序列化。测量复用已锁定的 Pillow PNG 解码器, 从测试依赖提升为运行时依赖; 显式声明 OpenAI 已使用的 httpx2, 用于识别 SSE 中途直接抛出的传输异常。没有新增已安装包或升级现有第三方包。
-
-流程图、各 Agent 输入输出和字段契约维护在[analysis/README.md](/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/apps/shader_deep/src/shader_deep/analysis/README.md)。背景说明和源码导航见[多视角分析实现](../../documents/png-to-shader/多视角分析.md)。
+详细契约与工具见 [独立探索与可能性库](src/shader_deep/analysis/EXPLORATION.md). [旧协议记录](src/shader_deep/analysis/README.md)保留历史, 不代表当前工具接口.
 
 ## 单 Agent 生成闭环
 
@@ -381,7 +384,7 @@ if outcome.selected_candidate is not None:
 
 提示词要求先渲染, 再对照真实预览进行修正或结束。候选选择只结束当前生成任务, 不修改原任务的基线, 也不自动建立全局采用或用户接受记录。
 
-生成角色的选材与每轮注入继续使用上述入口。独立分析的 Builder 在 `context/analysis.py`; 评审角色、领域 token 预算、材料截断策略及自定义历史摘要尚未实现。生成角色的聊天历史管理沿用 Deep Agents; 独立分析保留完整任务历史, 主 Agent 支持有限或不限次数配置。
+生成角色的选材与每轮注入继续使用上述入口. 当前独立分析的 Builder 在 `context/exploration.py`, 按初稿、独立探索和按需整合分别构建输入; `context/analysis.py` 保留旧协议逻辑. 主分析具有完整请求的应用估算预算, 保留同组必要修复材料; 通过确定性规则整理已消费索引和已被当前完整草稿替代的历史参数, 保留调用配对, 不截断判断正文, 不额外调用模型生成摘要. 生成角色的聊天历史管理沿用 Deep Agents; 独立视觉评审尚未接入.
 
 ## 开发检查
 

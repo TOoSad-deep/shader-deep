@@ -1,12 +1,44 @@
-# 分析模块：流程图与数据结构
+> **协议更新（2026-09-21）**：公开分析入口已切换为 `possibility_library_v1`。当前输入输出、工具和状态见 [独立探索与可能性库](EXPLORATION.md)。下文保留旧协议的实现记录，不能作为当前公开入口的工具契约。
 
-最近按源码核对：2026-09-17。
+# 分析模块：运行、数据流与提交契约
+
+源码核对基线：`3ef57863`，2026-09-17。本文描述已合入主分支的实现，不把设计提案或历史测试结果当作当前版本的完整验收。
 
 本文件随 `analysis/` 的实现维护，集中说明各流程、Agent 的输入输出和数据契约。字段及执行行为以源码为准；修改工具参数、上下文选材、结构字段、预算或结束状态时，同步更新对应章节。
 
-当前范围：参考 PNG 和用户要求 → 可修订视觉拆分与按需基础取证 → 多视角细化与多假设 → 按需复核 → 结构化综合报告。分析到生成的自动交接、独立视觉评审和持续决策尚未接入。
+当前流程：参考 PNG 和用户要求 → 主 Agent 在 ReAct 循环中修订视觉拆分、按需基础取证 → 独立多视角报告 → 文件按需读取与复核 → 保留多假设及其实现草图的综合报告。主、子提交均支持合法 JSON 草稿的局部修复；引用先校验身份、类型与归属，再校验实际呈现。
+
+主、子模型调用默认均不设固定次数上限，网络重试和测量仍分别受限。分析到生成的自动交接、独立拆分／评审 Agent、运行恢复和自动生成调度未接入。工程完成不代表视觉效果验收或所有重要假设已完整覆盖。
 
 运行预算、并发、超时和重试等模块参数维护在同目录的 [config.yaml](config.yaml)。分析 CLI 默认按模块位置加载该文件, 与启动目录无关; `--config` 可指定其他文件, 显式命令行参数优先。Python 调用方通过 `config.py` 的 `load_analysis_options()` 加载后传入 `options`。模型连接和凭据仍使用应用 `.env`, 配置用法见[应用 README](../../../README.md#yaml-运行配置)。
+
+## 快速运行
+
+在 `apps/shader_deep/` 下、依赖已安装的环境中运行：
+
+```sh
+uv run --no-sync --env-file .env python -m shader_deep.analysis_cli \
+  test_pic/2d-physics-balls.png "分析视觉结构，保留竞争假设与渲染检查点"
+```
+
+默认读取模块 [config.yaml](config.yaml)。显式 CLI 参数覆盖 YAML，YAML 缺省项使用 `AnalysisOptions` 默认值；自定义配置用 `--config`，运行目录用 `--output-dir`。YAML 中相对输出目录以该 YAML 所在目录为基准，CLI 相对输出目录以当前目录为基准；`output_dir: null` 使用当前目录下的 `runs/`。不自动读取工作目录里的同名配置，模型连接和凭据不写入运行 YAML。
+
+Python 入口不自动加载 YAML；需要与 CLI 相同配置时显式加载：
+
+```python
+from pathlib import Path
+from shader_deep.agents.analysis import run_analysis
+from shader_deep.analysis.config import load_analysis_options
+
+outcome = run_analysis(
+    Path("test_pic/2d-physics-balls.png"),
+    "分析参考图，区分观察、测量和机制假设",
+    options=load_analysis_options(),
+)
+print(outcome.stop_reason, outcome.run_dir)
+```
+
+已有黑板可调用 `run_analysis_task(state, task_id, *, asset_root=None, options=None)`，但必须是尚未建立子任务的新根分析任务。CLI 的 stdout 只输出 `{status, run_dir, result}` JSON，诊断写 stderr；退出码 `0` 为 `completed`，`1` 为部分完成或执行未完成，`2` 为 CLI 捕获的输入／配置错误。
 
 ## 1. 角色与职责
 
@@ -43,7 +75,7 @@ flowchart TD
     finishTool --> outcome["保存综合结果，返回 AnalysisOutcome"]
 ```
 
-流程图表示有效请求的主路径。无效工具参数会返回错误，模型可在剩余调用预算内修正；主调用预算耗尽或执行异常时，保存已有记录并返回未完成结果，详见第 8 节。
+流程图表示有效请求的主路径。无效工具参数会返回错误，模型可继续纠正；只有显式选择有限调用模式时才会按次数到限停止。网络请求失败、显式启用的停滞检查等仍可使流程结束，已有成果随运行记录保留，详见第 8 节。
 
 关键时序：
 
@@ -72,13 +104,13 @@ flowchart TD
 | 工具 | 模型提交的参数 | 程序返回 |
 | --- | --- | --- |
 | `run_analysis_batch` | `{requests: AnalysisTaskRequest[], visual_decomposition?: VisualDecomposition}` | 简短结果回执；下一轮提供文件目录和来源索引 |
-| `submit_analysis_report`、`repair_analysis_submission` | `{report: LensReport, summary: Text}` | 接收状态、结果 ID；`summary` 与 `report` 并列 |
+| `submit_analysis_report` | `{report: LensReport, summary: Text}` | 接收状态、结果 ID；`summary` 与 `report` 并列 |
 | `measure_reference` | `{requests: MeasurementRequest[]}` | 每项的 `measured` / `cached` 与证据 ID，或 `invalid_measurement`；完整证据进入下一轮上下文 |
-| `finish_analysis` | `{summary: AnalysisSummary, text: Text}` | `completed` / `partial` 与综合结果 ID |
+| `finish_analysis` | `{summary: AnalysisSummary, text: Text}` | `completed` / `partial`、结果 ID、未关联解释数与清单位置 |
 | `read_analysis_file` | `{file_path: str, pointer: str = ""}` | 完整选中 JSON、来源和位置；过长时提示缩小范围 |
 | `repair_analysis_submission` | `{draft_id: str, expected_revision: int, changes: [{op, path, value?}]}` | 修复后自动重新校验并提交，或下一批尚存错误 |
 
-完整提交的失败统一返回 `invalid_submission`、草稿版本及带路径错误；批次和测量仍保留原拒绝回执。结构或引用校验失败不等于任务已经成功登记或报告已经接受。
+已解析为合法 JSON 的完整提交在 schema／业务校验失败时返回 `invalid_submission`、草稿版本及带路径错误；非法 JSON、批次和测量保留各自的拒绝路径。结构或引用校验失败不等于任务已经成功登记或报告已经接受。
 
 ## 4. 黑板记录与任务绑定
 
@@ -152,7 +184,7 @@ Blackboard 不保存模型聊天历史、客户端、线程池或锁。图像保
 | --- | --- | --- |
 | `LensDraft` | `name: Text`、`focus: Text`；`method_notes: Text[] = ()`、`default_questions: Text[] = ()` | 主 Agent 创建新视角时提供内容，不提供 ID 或来源 |
 | `LensConfig` | 继承 `LensDraft`，增加 `id: Text`、`origin: preset / generated` | 程序从预置配置选择，或为新视角分配标识，绑定到子任务 |
-| `AnalysisTaskRequest` | `objective: Text`；`preset_id: Text \| None = None`、`lens: LensDraft \| None = None`；`related_result_ids: Text[] = ()`；`purpose: initial / supplement / verify = initial`；`gap: Text \| None = None`、`expected_evidence: Text \| None = None`；`evidence_ids: Text[] = ()` | `preset_id` 和 `lens` 必须恰好提供一个；其他阶段规则由会话检查 |
+| `AnalysisTaskRequest` | `objective: Text`；`preset_id: Text \| None = None`、`lens: LensDraft \| None = None`；`related_result_ids: Text[] = ()`；`purpose: initial / supplement / verify = initial`；`gap: Text \| None = None`、`expected_evidence: Text \| None = None`；`evidence_ids`、`focus_element_ids`、`focus_feature_ids` 各为 `Text[] = ()` | `preset_id` 和 `lens` 必须恰好提供一个；其他阶段规则由会话检查 |
 
 首批要求至少两个请求，全部为 `initial`，报告引用为空；证据可选入本会话已进入主模型请求的基础测量。后续请求必须为 `supplement` 或 `verify`，同时提供非空 `gap` 和 `expected_evidence`。整批请求全部合法后才提交登记，失败任务仍占总任务预算。
 
@@ -197,13 +229,17 @@ Blackboard 不保存模型聊天历史、客户端、线程池或锁。图像保
 
 | 结构 | 字段 | 语义与校验 |
 | --- | --- | --- |
-| `SourceRef` | `result_id: Text`；`item_id: Text \| None = None` | 引用原始视角报告中的具体条目；空 `item_id` 表示整份报告；可选 `kind` 声明真实类型，缺省按目录解析 |
+| `SourceRef` | `result_id: Text`；`item_id: Text \| None = None`；`kind: SourceKind \| None = None` | 引用原始视角报告中的具体条目；空 `item_id` 表示整份报告；可选 `kind` 声明真实类型，缺省按目录解析 |
 | `SourcedStatement` | `text: Text`、`source_refs: SourceRef[]`（至少一项）；`basis: visual / measurement_supported = visual`；`evidence_ids: Text[] = ()` | 一个带原始报告来源及可选测量依据的综合陈述 |
 | `AnalysisSummary` | `source_result_ids: Text[]`、`key_observations: SourcedStatement[]`（均至少一项）；`kind = analysis_summary`；`relationships`、`hypotheses`、`disagreements`、`open_questions`、`implementation_hints` 各为 `SourcedStatement[] = ()`；`missing_task_ids: Text[] = ()` | 综合内容和未知项；`missing_task_ids` 在接收时由程序重新计算 |
 
 综合增加 `visual_decomposition`、`visual_mappings`、`implementation_sketches`；`SourcedStatement` 增加默认空的对象引用和可选 `id`，供假设关联。原始报告和初稿始终保留。
 
-`hypothesis_links` 默认空，每项 `hypothesis_id` 关联当前综合假设，`derived_from` 只引用子报告解释。未关联列表由程序派生，不推断舍弃、不强制处置。
+`SourceKind` 可取 `report`、`observation`、`interpretation`、`visual_element`、`visual_feature`、`visual_relation`。这些是目录中的真实类型，不表示每个引用位置都允许全部类型；草图和输入初稿不作为新的通用来源类型。
+
+`hypothesis_links: HypothesisLink[] = ()` 独立记录继承关系。每项包含 `hypothesis_id: Text` 和非空 `derived_from: SourceRef[]`，来源仅允许子报告的 `interpretation`；它与陈述的 `source_refs` 依据关系分开。一个综合假设可以继承多个解释，一个解释也可被多条假设关联。
+
+未关联解释由程序按 `(result_id, item_id)` 派生，保存在 `run.json.unlinked_interpretations`。未关联不表示已否定或被舍弃，不因此拒绝提交或将运行判为 `partial`；失败草稿不计入有效解释清单。原始报告始终保留。
 
 综合字段的用途：
 
@@ -218,7 +254,7 @@ Blackboard 不保存模型聊天历史、客户端、线程池或锁。图像保
 | `implementation_hints` | 后续实现候选和建议，不会自动启动生成 |
 | `missing_task_ids` | 执行状态不是 `completed` 的子任务，由程序填写，不能省略失败 |
 
-其他综合条目可以引用观察、解释、报告本地 `visual_additions` 中的视觉对象或整份报告；不能把输入初稿冒充子报告新增来源。新增对象 ID 不得与本报告观察/解释 ID 冲突。视觉结构自身的 `source_refs` 仍只能引用观察，不能用机制解释充当可见事实。综合映射校验一次返回全部来源与目标错误，并标明 `visual_mappings[index]`。`measurement_supported` 必须引用本任务可见的数值测量；仅有裁剪不满足。合法引用仍不证明一句话中的所有判断都被数值支持，这是当前需要继续优化的语义边界。
+其他综合条目可以引用观察、解释、报告本地 `visual_additions` 中的视觉对象或整份报告；不能把输入初稿冒充子报告新增来源。新增对象 ID 不得与本报告观察/解释 ID 冲突。视觉结构自身的 `source_refs` 仍只能引用观察，不能用机制解释充当可见事实。综合映射在前置结构合法后聚合同阶段独立错误，并定位到 `/summary/visual_mappings/<index>/source_id`、`target_id` 等实际字段。`measurement_supported` 必须引用本任务可见的数值测量；仅有裁剪不满足。合法引用仍不证明一句话中的所有判断都被数值支持，这是已知语义边界，不代表本模块已验证全部解释。
 
 ## 6. 统一测量的数据结构
 
@@ -298,7 +334,17 @@ Blackboard 不保存模型聊天历史、客户端、线程池或锁。图像保
 
 `AnalysisLoop` 每轮用 `request.override` 注入当前材料，不把整份动态上下文持久追加到聊天历史。主 Agent 与各子 Agent 使用独立的循环实例和历史。历史末尾是用户消息时合并材料；否则在完整的模型 / 工具交互后追加多模态用户消息。
 
-报告通过 `FilesystemBackend` 读取本地 JSON，再按 Pointer 取章节或条目；只有原工具调用 ID 下的完整正文出现在下一请求时，才记入 `presented_report_pointers`。已读章节可累计取得父对象/整报告资格；重复或已被父对象覆盖的读取不算新进展。来源存在/类型先校验，再校验实际回读；绑定初稿的映射按已注入快照判断。`presented_evidence` 继续记录实际注入的测量。上述状态不代表模型理解正确或用户验收。
+报告文件是不可变 `ResultRecord` 的 JSON 副本，正文位于 `analysis_detail`。主目录给出虚拟 `file_path` 和 Pointer，如 `/analysis_detail/observations/0`；空 Pointer 读取整个记录。`FilesystemBackend` 的虚拟根限定到本次 `reports/`，模型只有封装的只读工具，不开放文件写入或 Shell。
+
+- **已知材料：** 文件／条目在目录中，不表示它适用于某个引用字段。
+- **来源合法：** 身份存在，真实类型符合字段约束，任务及目标归属合法。修改 `kind` 标签不能改变真实类型。
+- **已呈现：** 原工具调用 ID 下的完整正文确实保留在下一轮准备好的模型请求中。磁盘存在、读取工具返回成功或同批刚读取都不能代替此检查。
+
+具体条目按完整内容覆盖判断，整报告也可通过分段完整覆盖累计取得资格。当前读取回执上限为 76,000 字符；超过时返回 `too_large`、`complete=false` 及可选择的小范围 Pointer，不静默截断后记为已读。正文若被 SDK 替换为外置路径，也不会按原正文登记。
+
+普通来源、测量引用和视觉映射的可见性错误在合法性检查通过后聚合，全部通过才发布正式结果。报告新增对象检查文件正文；任务绑定初稿检查对应任务和版本的实际注入快照。`presented_evidence` 保留原有测量／裁剪注入路径。以上只说明材料进入请求，不证明模型理解正确。
+
+主请求不再每轮全量注入本轮子报告，但读取内容仍进入工具历史，显式历史材料和测量也仍会占上下文。自动模型摘要关闭，文件按需读取并不保证无限运行下的固定上下文大小。
 
 主任务显式选入的历史结果在 `related_results` 中保留完整正文，作为背景材料；它们不加入本轮报告目录或综合的 `source_result_ids`，也不自动传入首轮子任务。
 
@@ -308,22 +354,27 @@ Blackboard 不保存模型聊天历史、客户端、线程池或锁。图像保
 
 ### 8.1 `AnalysisOptions`
 
-| 字段 | 类型 / 默认值 | 作用 |
-| --- | --- | --- |
-| `max_tasks` | `int = 6` | 全部子任务累计上限，包含首轮、追加和失败任务 |
-| `max_parallel` | `int = 3` | 同时运行的视角工作线程上限 |
-| `max_worker_calls` | `int = 0` | 每个子任务逻辑模型调用上限; 0 不限次数 |
-| `max_main_calls` | `int = 0` | 主 Agent 规划、review、纠错和综合共用的逻辑调用上限; 0 不限次数 |
-| `output_dir` | `Path \| None = None` | 本次独立运行目录的父目录 |
-| `max_measurements` | `int = 8` | 唯一测量操作上限，复用不重复扣除 |
-| `max_request_retries` | `int = 2` | 每次逻辑调用可增加的网络重试次数 |
-| `request_timeout_seconds` | `int = 120` | 每次网络尝试的超时设置，不是整个分析的截止时间 |
-| `stream_model_responses` | `bool = True` | 流式接收，完整输出后再执行工具 |
-| `max_output_tokens` | `int = 16384` | 单次模型请求的输出 token 预算 |
+| 字段 | Python 默认值 | 模块 YAML | 计数范围 |
+| --- | --- | --- | --- |
+| `max_tasks` | `6` | `6` | 首轮、追加与失败子任务总数 |
+| `max_parallel` | `3` | `3` | 同时运行的子任务数 |
+| `max_worker_calls` | `0` | `0` | 每个子 Agent 的模型调用；0 不限次数 |
+| `max_main_calls` | `0` | `0` | 主 Agent 的规划、取证决策、纠错与综合；0 不限次数 |
+| `max_request_retries` | `2` | `2` | 每次逻辑模型请求最多额外重试 2 次，即最多 3 次网络尝试 |
+| `max_measurements` | `8` | `8` | 整次运行独立测量总额，首批前后共用，缓存命中不扣除 |
+| `max_repeated_no_progress` | `0` | `0` | 默认关闭；只作用于主 Agent 的确切重复无进展检查 |
+| `request_timeout_seconds` | `120` | `240` | 传给模型客户端的网络超时设置，不是整个分析的硬截止时间 |
+| `max_output_tokens` | `16384` | `163840` | 提交给提供商的单次输出上限，不保证提供商支持该长度 |
+| `stream_model_responses` | `True` | `true` | SSE 流式接收，收齐并校验后执行工具 |
+| `output_dir` | `None` | `null` | 未指定时在启动目录的 `runs/` 下创建独立运行目录 |
 
-模块 YAML 与 Python 默认均设置主、子调用为 0，表示不限调用和格式修复次数。CLI 的 `--max-main-calls 0`、`--max-worker-calls 0` 等价；显式正整数仍可选择有限调用模式。不限次数时上下文 `limits.model_calls_remaining` 为 `null`，仍累计并保存真实调用次数。LangGraph 必须接收正整数步数，程序沿用 `sys.maxsize` 代替常规轮数推导的图上限。网络重试仍最多额外 2 次，独立测量总额仍为 8，其他资源限制不变。
+主、子模型调用均默认不限固定次数，分析、纯文本重答、完整重交和局部修复仍照常计数；对应格式修复次数也不单独设限。显式正整数仍可选择有限调用模式。不限时上下文中的 `model_calls_remaining` 为 `null`，主上下文的 `max_worker_calls` 为 `0`；图步数沿用 `sys.maxsize`，避免框架默认步数先截断。
 
-`max_repeated_no_progress` 为新增非负整数配置（CLI 同名连字符参数），默认 0 关闭。启用后仅主 Agent 连续相同拒绝、相同有效参数且没有新报告/测量/已读内容时停止；草稿版本不充当进展。
+网络重试只处理可恢复的请求故障，不重复执行工具，也不用于纠正模型的业务参数。调用不限不取消测量、重试、任务总数、并发或单次输出限制。没有独立的总 token 额度或整个运行的硬墙钟截止时间。
+
+测量仍只有一个预算与缓存。提示词建议前置阶段少量取证、保留余量，但没有硬性预留，也没有双预算池。
+
+主任务显式启用 `max_repeated_no_progress` 后，只有同一工具、相同失败内容且无有效材料变化连续达到阈值才停止。有效阅读进展从已有覆盖记录计算完整业务正文条目数；元数据、重复或重叠读取不增加进展，草稿版本号本身也不算进展。该功能不判断语义质量，不扩展到子任务，默认保持关闭。
 
 ### 8.2 执行记录
 
@@ -358,19 +409,60 @@ Blackboard 不保存模型聊天历史、客户端、线程池或锁。图像保
 
 | 制品 | 内容 |
 | --- | --- |
-| `reference.png` | 本次启动时固定的原图字节 |
-| `evidence/*.png` | 局部裁剪，证据记录保存其路径 |
-| `run.json` | `blackboard` 与运行信息：`kind`、`task_id`、`options`、`reference_snapshot`、`stop_reason`、`main_execution`、`worker_executions`、`summary_result_id`、`measurement_calls`、`reference_sha256`、`initial_visual_decomposition`、`visual_decomposition`、`task_inputs` |
+| `reference.png` | 本次固定的原图字节 |
+| `evidence/*.png` | 局部裁剪；证据记录包含路径、坐标和原图哈希 |
+| `reports/<result_id>.json` | 本轮有效子报告的只读完整 `ResultRecord`；失败记录不生成报告正文 |
+| `submissions/<安全任务文件名>.json` | 每个任务当前草稿的完整参数、版本和最新错误；成功后标记 `submitted` |
+| `events.jsonl` | 即时任务、模型请求、网络尝试、拒绝、读取、保存和结束事件 |
+| `run.json` | 完整业务黑板、实际配置、主／子执行记录、测量调用、结构快照、任务输入及综合结果 ID |
 
-`task_inputs` 逐任务保存完整请求（含关注对象、报告和证据引用）及固定视觉结构。结构自身引用的报告或证据也必须明确选入每个接收任务，不能通过初稿旁路传入。遗漏时批次反馈一次列出各请求的 `request_index`（从零开始）、`missing_evidence_ids` 和 `missing_related_result_ids`，不自动补选。
+`run.json` 另保存 `presented_report_pointers`、主任务 `submission` 索引和 `unlinked_interpretations`。子任务执行记录在返回后合并；正在运行时应同时查看事件文件，不能仅凭快照中的 `pending` 判断子任务尚未开始。
 
-兼容接口扩展：`run_analysis_batch` 增加 `visual_decomposition=None`；`run_lens` 和 `build_analysis_context` 增加默认空的视觉结构与关注范围参数，Context Builder 另接收主任务溯源快照。新增参数均为带默认值的 keyword-only；`run_analysis`、`run_analysis_task` 和通用 `TaskRecord` 不变。
+`task_inputs` 保存每个子任务的原始请求和固定视觉结构。初稿依赖必须显式选入每个接收任务；缺项现在定位到 `/requests/<index>/evidence_ids` 或 `related_result_ids`，不再使用旧的 `request_index`／`missing_*` 回执格式，也不自动补选。
 
-新增 `reports/<result_id>.json` 保存只读子报告；`submissions/<安全任务文件名>.json` 保存合法 JSON 的待校验参数、版本及完整错误。任务 ID 由 1–120 个 ASCII 字母、数字、下划线、点或连字符组成时沿用原名，其他 ID 使用 `~` 加 SHA-256 摘要；JSON 内保留原始 `task_id` 和 `draft_id`，业务 ID 不作为路径解析。`events.jsonl` 以独立写锁实时记录主/子任务、模型/网络请求、拒绝、读取和草稿保存。事件回调不获取协调器批次锁，避免等待工作线程时死锁。
+任务 ID 符合 `[A-Za-z0-9_.-]{1,120}` 时沿用原名加 `.json`；其余使用 `~` 加 SHA-256 摘要作为文件名。JSON 内的 `task_id`、`draft_id` 保留原始业务 ID。一个任务只维护当前草稿，不建立草稿分支或完整版本档案。
 
-主、子提交共用 `SubmissionHandler`，在 schema 校验前保留草稿，局部修改只支持 JSON Pointer 的 `set/remove`。补丁先应用到副本，路径或版本错误不改草稿；修复后仍经原业务逻辑提交。锁内先判断已完成，成功后再来的完整提交或修复只返回已有结果。完整错误供本地诊断，模型每次收到至多四条当前错误并可继续修复。非法 JSON 不覆盖已有草稿。
+单个快照或草稿通过同目录临时文件替换写入；这不构成多个制品之间的事务。当前没有从 `run.json` 恢复模型历史的入口或可靠的强制取消机制。调用方可创建新根任务并显式提供历史结果作为背景；这不是恢复旧任务或从检查点继续运行。
 
-快照用于追溯业务记录和执行状态，不是可恢复完整模型聊天会话的 checkpoint。取消与从旧材料重新综合仍是后续工作。
+### 8.5 完整提交与局部修复
+
+完整报告使用 `submit_analysis_report(report, summary)` 或 `finish_analysis(summary, text)`。共享 `SubmissionHandler` 在严格 JSON 解析后、schema 校验前保存完整参数；非法 JSON 不覆盖已有草稿。草稿不是黑板结果，只有全部必要校验通过才登记正式结果。
+
+| 路径 | 行为 |
+| --- | --- |
+| 可解析 JSON，但 schema／业务错误 | 保存草稿，返回 `invalid_submission`、`draft_id`、`revision`、`tool_name`、`errors`、`remaining_errors` 与阶段说明 |
+| `set` | 添加／替换对象字段，替换已有数组位置；显式 `null` 与没有 `value` 区分；根替换必须是对象 |
+| `remove` | 删除已存在字段或数组位置；不存在的路径不会被静默忽略 |
+| 修复请求 | 提供 `draft_id`、`expected_revision` 与非空 `changes`；按顺序修改副本，任一操作失败整组不生效 |
+| 修改已应用但校验仍失败 | 保存新版本及最新错误，继续局部修复；不算正式提交成功 |
+| 修复通过全部校验 | 自动沿原提交逻辑登记结果，不需要额外的提交工具调用 |
+| 已成功后的重复完整提交／修复 | 在同一任务锁内先检查终态，返回已有结果，不改草稿或重复计成功 |
+
+Pointer 支持 `~0`、`~1` 转义。复杂数组重排可替换对应数组，不提供完整 JSON Patch 的 `move/copy`。完整重交会替换当前草稿并推进版本；补丁引用旧版本不能覆盖新内容。
+
+同阶段可独立检查的结构／引用错误会聚合；重复 ID、无效绑定初稿等前置失败时，不继续推断依赖它的错误。报告错误定位到 `/report/...` 或 `/summary/...`；补丁自身错误定位到 `/changes/<index>/path`、`/changes/<index>/value`、`/draft_id` 或 `/expected_revision`，并说明实际目标 Pointer。不是所有入口异常都有可修复的报告字段路径，固定输入或前置条件错误仍按原因返回。
+
+工具最多展示 4 条已检出错误，`remaining_errors` 只统计已检出但未展示的条数；`0` 不表示后续业务校验已经执行或全部通过。当前草稿文件保存完整已检出列表；成功后清空错误，不能把它当作所有历史失败的档案。
+
+语法错误、重复 JSON 键等仍走严格解析及有限尾部恢复，无法获得合法对象时要求重新提交。批次派发和测量不接入草稿补丁或副作用自动重放；局部修复只覆盖两类报告提交。
+
+### 8.6 事件如何解释
+
+每行事件含 `time`、`task_id`、`role`、`model_call`、`event`、`details`。写入使用独立锁，不获取主批次工具锁；事件即时追加，`run.json` 是业务快照，两者不宣称跨文件事务。
+
+`submission_saved.details` 包含 `draft_id`、`revision`、`invoked_tool`、`submission_tool`、`accepted`。保存归属由提交入口在原任务锁内随回执返回，不能在锁外比较前后快照推断，以免并行终态重复调用冒领成功。
+
+| 记录 | 正确含义 |
+| --- | --- |
+| `invoked_tool=repair_analysis_submission` 且 `accepted=true` | 一次局部修复使正式提交通过 |
+| 原完整提交工具且 `accepted=true` | 完整提交成功，不计入局部修复成功次数 |
+| `submission_saved` 且 `accepted=false` | 草稿写入成功，但报告仍未通过；通常同时有 `tool_rejected` |
+| 无效路径／版本的 `tool_rejected` | 补丁未应用，不产生保存事件 |
+| 终态重复回执 | 不再保存，不新增成功提交计数 |
+
+因此不能将草稿版本数、所有保存事件或“保存数＋拒绝数”当作成功率分母；同一次修改可能既保存又被业务校验拒绝。`accepted=true` 也不表示整次运行所有子任务成功。
+
+`materials_presented.details.new_pointers` 是新增阅读路径数量；主任务停滞判定用完整业务正文条目覆盖，二者不能混为同一种进展计数。`request_retry` 与 `model_started` 分别表示网络重试和新逻辑调用。最终是否完整交付，应同时查看 `stop_reason`、各 `worker_executions` 和 `missing_task_ids`。
 
 ## 9. 维护入口与检查范围
 
@@ -380,37 +472,75 @@ Blackboard 不保存模型聊天历史、客户端、线程池或锁。图像保
 | 任务派发、review 规则、工具回执、结束条件 | [session.py][session]、[prompts.py][prompts]、[worker.py][worker] |
 | 任务与结果记录、引用校验 | [shader_deep/schemas.py][business-schemas]、[blackboard.py][blackboard]、[analysis/schemas.py][analysis-schemas]、[validation.py][validation] |
 | 测量结构、方法或缓存键 | [evidence.py][evidence]、[measurements.py][measurements]、[profiles.py][profiles] |
-| 上下文可见范围及消息组合 | [context/analysis.py][context]、[loop.py][loop] |
-| 预算、传输和格式恢复 | [types.py][types]、[transport.py][transport]、[tool_json.py][tool-json] |
+| 上下文、报告目录及阅读覆盖 | [context/analysis.py][context]、[report_files.py][report-files]、[references.py][references]、[loop.py][loop] |
+| 草稿、补丁与提交事件 | [submissions.py][submissions]、[events.py][events]、[loop.py][loop] |
+| 配置、预算、传输和格式恢复 | [config.py][config]、[config.yaml](config.yaml)、[types.py][types]、[transport.py][transport]、[tool_json.py][tool-json] |
 
-对应行为案例位于 [test_analysis.py][test-analysis]、[test_analysis_evidence.py][test-evidence] 和 [test_analysis_recovery.py][test-recovery]。本文件描述实现，不把测试存在等同于测试已经通过。
+对应行为案例包括 [流程与预算][test-analysis]、[测量证据][test-evidence]、[恢复][test-recovery]、[配置][test-config]、[视觉引用][test-visual]、[视觉流程][test-visual-flow]、[局部修复][test-submissions] 和 [渐进披露][test-disclosure]。本文件描述实现，不把用例存在等同于已经运行或通过。
 
-运行方式见[应用 README][app-readme]。背景说明见[多视角分析文档][architecture]；已发现的问题和待优化项统一放在[问题与优化目录][issues]，不混入本文件作为已实现能力。
+运行方式见[应用 README][app-readme]。背景说明见[多视角分析文档][architecture]；历史设计与分阶段记录见[01—03 方案][plan-first]、[04—06 方案][plan-second]；更广泛的问题收录在[问题与优化目录][issues]。本文仅保留影响当前使用的已知限制。
 
 纯文档更新核对流程、字段、默认值和链接即可；涉及实际契约或行为变化时，再按应用 AGENTS.md 执行对应检查。不要为更新本文自动追加真实模型测试。
 
-[entry]: /Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/apps/shader_deep/src/shader_deep/agents/analysis.py
-[session]: /Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/apps/shader_deep/src/shader_deep/analysis/session.py
-[worker]: /Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/apps/shader_deep/src/shader_deep/analysis/worker.py
-[prompts]: /Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/apps/shader_deep/src/shader_deep/analysis/prompts.py
-[presets]: /Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/apps/shader_deep/src/shader_deep/analysis/presets.py
-[business-schemas]: /Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/apps/shader_deep/src/shader_deep/schemas.py
-[blackboard]: /Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/apps/shader_deep/src/shader_deep/blackboard.py
-[analysis-schemas]: /Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/apps/shader_deep/src/shader_deep/analysis/schemas.py
-[validation]: /Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/apps/shader_deep/src/shader_deep/analysis/validation.py
-[evidence]: /Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/apps/shader_deep/src/shader_deep/analysis/evidence.py
-[measurements]: /Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/apps/shader_deep/src/shader_deep/analysis/measurements.py
-[profiles]: /Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/apps/shader_deep/src/shader_deep/analysis/profiles.py
-[context]: /Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/apps/shader_deep/src/shader_deep/context/analysis.py
-[loop]: /Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/apps/shader_deep/src/shader_deep/analysis/loop.py
-[types]: /Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/apps/shader_deep/src/shader_deep/analysis/types.py
-[transport]: /Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/apps/shader_deep/src/shader_deep/analysis/transport.py
-[tool-json]: /Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/apps/shader_deep/src/shader_deep/analysis/tool_json.py
-[test-analysis]: /Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/apps/shader_deep/tests/unit_tests/test_analysis.py
-[test-evidence]: /Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/apps/shader_deep/tests/unit_tests/test_analysis_evidence.py
-[test-recovery]: /Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/apps/shader_deep/tests/unit_tests/test_analysis_recovery.py
-[app-readme]: /Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/apps/shader_deep/README.md
-[architecture]: /Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/documents/png-to-shader/多视角分析.md
-[issues]: /Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/documents/问题与优化/README.md
+## 10. 已有验证记录与已知限制
 
-成功保存事件 `submission_saved` 区分实际调用工具 `invoked_tool` 与原提交工具 `submission_tool`。仅局部修复工具的 `accepted=true` 表示修复后正式提交通过；保存未通过草稿不算成功，终态重复回执不重复计数。
+以下是 2026-09-17 的 **8 项最小工程修正阶段**记录，不是长期固定的测试数量，也不代表当前 HEAD 的所有后续修改已重新验证：
+
+- 当时 126 项无网络测试、lint、格式及类型检查通过，扩展原有行为用例，没有新增测试函数。
+- 原两张图各运行一次；以下结论逐项读取子任务状态，未以“有综合报告”代替全部子任务成功。
+
+| 图片／运行 ID | 最终状态 | 子任务 | 主调用 | 子调用 a001→a005 | 局部修复写入／正式成功 | 未关联解释 |
+| --- | --- | --- | ---: | --- | --- | ---: |
+| `supah-frosted-glass.png`／`run-80u7fw8w` | completed | 5／5 completed | 11 | 2、2、1、6、3 | 8／4，另有 1 次无效补丁未写入 | 6 |
+| `2d-physics-balls.png`／`run-_l9ncwg8` | completed | 5／5 completed | 15 | 3、2、1、2、1 | 5／4 | 21 |
+
+记录在应用的 `runs/analysis-eight-fixes-2026-09-17/`：`summary.json`、`tests.log`、`lint.log` 及各 `run-*/run.json`、`events.jsonl`。这些是本地制品，未随源码提交；迁移环境后可能不存在，方案中保留了结果摘要。此前两次 `partial` 运行是另一阶段的记录，不被本次完成结果覆盖。
+
+后续提交 `239948cb` 已加入主任务显式历史输入保留和安全草稿文件名，并新增相应用例；上述两图与 126 项检查发生在这些补修之前。本文维护只核对源码、字段、命令和链接，不新增当前 HEAD 的测试或图片验证结论。
+
+已知限制继续保留：
+
+1. 两图都在首批前用完 8 项测量，后续为 0；软提示没有保证余量，没有双预算池、预留参数或自动配额调度。
+2. 未关联解释不等于被舍弃；继承关系可追溯不证明所有重要替代解释都已覆盖。
+3. 格式、来源和补丁错误仍可能发生；模型可继续修复不代表协议错误被消除。
+4. 同一子报告的多个支持／反对引用冲突聚合未在该次两图中触发，只有本地回归证据。并行终态重复与根替换非法值也不能因两图完成就称为已被图片覆盖。
+5. 真实 SDK 大输出外置后的完整请求链未专项验证，已有用例模拟正文被替换；渐进披露不保证无限历史下固定上下文大小。
+6. 运行快照不含可恢复的完整模型对话；无专用取消／恢复流程，也不自动生成或评审 Shader。
+
+用户阶段性确认仅覆盖这 8 项工程修正，不代表视觉效果验收或全部假设语义覆盖。
+
+[entry]: ../agents/analysis.py
+[session]: session.py
+[worker]: worker.py
+[prompts]: prompts.py
+[presets]: presets.py
+[business-schemas]: ../schemas.py
+[blackboard]: ../blackboard.py
+[analysis-schemas]: schemas.py
+[validation]: validation.py
+[evidence]: evidence.py
+[measurements]: measurements.py
+[profiles]: profiles.py
+[context]: ../context/analysis.py
+[loop]: loop.py
+[types]: types.py
+[transport]: transport.py
+[tool-json]: tool_json.py
+[test-analysis]: ../../../tests/unit_tests/test_analysis.py
+[test-evidence]: ../../../tests/unit_tests/test_analysis_evidence.py
+[test-recovery]: ../../../tests/unit_tests/test_analysis_recovery.py
+[app-readme]: ../../../README.md
+[architecture]: ../../../../../documents/png-to-shader/多视角分析.md
+[issues]: ../../../../../documents/问题与优化/README.md
+[config]: config.py
+[report-files]: report_files.py
+[references]: references.py
+[submissions]: submissions.py
+[events]: events.py
+[test-config]: ../../../tests/unit_tests/test_analysis_config.py
+[test-visual]: ../../../tests/unit_tests/test_analysis_visual.py
+[test-visual-flow]: ../../../tests/unit_tests/test_analysis_visual_flow.py
+[test-submissions]: ../../../tests/unit_tests/test_analysis_submissions.py
+[test-disclosure]: ../../../tests/unit_tests/test_analysis_disclosure.py
+[plan-first]: ../../../../../documents/png-to-shader/分析模块优化实施方案-01至03-引用修复与假设追踪-2026-09-17.md
+[plan-second]: ../../../../../documents/png-to-shader/分析模块优化实施方案-04至06-渐进披露与运行控制-2026-09-17.md

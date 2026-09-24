@@ -1,4 +1,4 @@
-"""保护渐进披露的真实请求、条目回读与固定输入边界."""
+"""旧报告协议回归: 保护渐进披露的真实请求、条目回读与固定输入边界."""
 
 from __future__ import annotations
 
@@ -10,7 +10,6 @@ from unittest.mock import patch
 from langchain.messages import ToolMessage
 from pydantic import TypeAdapter
 
-from shader_deep.agents.analysis import run_analysis, run_analysis_task
 from shader_deep.analysis.evidence import MeasurementRequest
 from shader_deep.analysis.report_files import AnalysisReportFiles
 from shader_deep.analysis.schemas import (
@@ -27,7 +26,7 @@ from shader_deep.analysis.session import AnalysisSession
 from shader_deep.analysis.types import AnalysisOptions
 from shader_deep.blackboard import add_result, add_target, add_task, new_blackboard
 from shader_deep.schemas import ResultRecord, TargetRecord, TaskRecord
-from tests.unit_tests._analysis_fixture import raw_context_payload
+from tests.unit_tests._analysis_fixture import raw_context_payload, run_legacy_analysis, run_legacy_analysis_task
 from tests.unit_tests._generation_fixture import GenerationFixture, tool_results
 from tests.unit_tests.test_analysis import draft_batch, report_arguments
 from tests.unit_tests.test_analysis_evidence import measurement, pixels
@@ -65,14 +64,14 @@ class AnalysisDisclosureTests(GenerationFixture):
 
         self.response = respond
         options = AnalysisOptions(output_dir=self.root / "analysis", max_main_calls=4, max_worker_calls=2)
-        first = run_analysis(self.root / "reference.PNG", "Inspect", options=options)
+        first = run_legacy_analysis(self.root / "reference.PNG", "Inspect", options=options)
         self.assertEqual(first.stop_reason, "completed")
         selected = (first.summary_result.analysis_detail.source_result_ids[0], first.summary_result.id)
         historical.extend(json.loads(json.dumps(asdict(first.state["results"][identifier]))) for identifier in selected)
         state = add_task(
             first.state, TaskRecord(id="next-root", role="analysis", target_version="T1", objective="Reinspect", related_result_ids=selected)
         )
-        second = run_analysis_task(state, "next-root", options=options)
+        second = run_legacy_analysis_task(state, "next-root", options=options)
         self.assertEqual(second.stop_reason, "completed", json.loads((second.run_dir / "run.json").read_text()))
         self.assertFalse(set(first.state["results"]) & set(second.summary_result.analysis_detail.source_result_ids))
 
@@ -116,7 +115,9 @@ class AnalysisDisclosureTests(GenerationFixture):
             return finish
 
         self.response = respond
-        outcome = run_analysis(self.root / "reference.PNG", "Inspect", options=AnalysisOptions(output_dir=self.root / "analysis", max_main_calls=4))
+        outcome = run_legacy_analysis(
+            self.root / "reference.PNG", "Inspect", options=AnalysisOptions(output_dir=self.root / "analysis", max_main_calls=4)
+        )
         manifest = json.loads((outcome.run_dir / "run.json").read_text())
         self.assertEqual(outcome.stop_reason, "completed", manifest)
         self.assertEqual(manifest["main_execution"]["model_calls"], 3)

@@ -19,10 +19,29 @@ max_measurements: 8
 max_request_retries: 2
 # 每次网络请求的超时秒数, 不是整个分析流程的总耗时上限.
 request_timeout_seconds: 240
-# 单次请求的输出 token 预算; 主 Agent 和全部子任务共用此设置.
+# 通用输出 token 预算; 阶段值未设置时回退此值, 通用 CLI 优先于阶段 YAML.
 max_output_tokens: 163840
+# 可选阶段覆盖; null 保持通用回退, 不自动启用文档中的实验值.
+outline_max_output_tokens: null
+integration_max_output_tokens: null
+worker_max_output_tokens: null
+# 显式比较目标上限与目录/工作索引单页字符预算.
+max_comparison_targets: 12
+library_page_chars: 8000
 # 是否使用 SSE 流式传输; 收齐并校验响应后才执行工具.
 stream_model_responses: true
 
 # 相对路径基于本 YAML 所在目录; null 表示当前工作目录下的 runs.
 output_dir: null
+
+# 完整请求的应用估算预算, 包含输出预留; 不是提供方窗口声明.
+# 文本按每字符一个估算 token, 图像另加预留; 实际用量仍读取服务返回值.
+max_context_tokens: 262144
+request_image_tokens: 4096
+request_token_margin: 2048
+# 每比较组或发现阶段/初稿阶段最多调用次数, 包含修复; 阶段总数包含刷新、复核及最终结束.
+max_integration_calls: 12
+max_integration_packages: 24
+integration_no_progress: 3
+# 为本包决定与局部修复历史保留的估算 token; 不占用候选数量额度.
+integration_history_tokens: 16384
