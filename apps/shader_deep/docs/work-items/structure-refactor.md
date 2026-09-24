@@ -3,13 +3,19 @@
 ## 当前状态
 
 - 更新日期: 2026-09-24, Asia/Shanghai.
-- 状态: 结构重构及仓库记录已实现, 本地检查完成; 待最终 review、提交和合并. 锁文件漂移尚未解决.
+- 状态: 结构重构及仓库记录已实现, 本地检查完成, 实现已提交并推送到工作分支; 待最终 review 和合并. 锁文件漂移尚未解决.
 - 工作分支: `TOoSad-deep/repo/structure-refactor`.
 - 起点提交: `8535e429adaf5c75c2372e391eed439a7a8fee8a`.
-- Git 状态: 改动仍在工作区, 包含未跟踪的新文件; 尚未提交、推送或合并这次重构.
+- Git 交付: 实现提交 `86af5e8c1b5d8bd6d9c555af60004bddc49e8f56` 已推送到 `origin/TOoSad-deep/repo/structure-refactor`, 并通过远端 SHA 核对; 尚未合并主分支.
 - 设计依据: [ADR 0001](../decisions/0001-agent-oriented-layout.md).
 
 这里记录截至更新日期的状态. 后续接手先核对 `git status --short`、`git branch --show-current` 和 `git log -1`, 不把本文件当作自动更新的 Git 状态.
+
+## 交付记录
+
+2026-09-24, 根据用户的 commit and push 指令, 创建实现提交 [86af5e8c](https://github.com/TOoSad-deep/shader-deep/commit/86af5e8c1b5d8bd6d9c555af60004bddc49e8f56), 包含结构重构、模块说明、仓库检查和验证记录. 推送到 `TOoSad-deep/repo/structure-refactor` 后, `git ls-remote origin refs/heads/TOoSad-deep/repo/structure-refactor` 返回同一完整 SHA.
+
+本节随后以文档提交补记已确认的交付结果. 证据附件中的“未提交工作区”描述的是验证发生时的状态, 保留为历史证据; 其代码输入指纹已在提交前重新核对. 本次没有提交 SDK 或锁文件变更, 也没有执行主分支合并.
 
 ## 目标与范围
 
@@ -30,7 +36,8 @@
 - [x] 修复重构收尾时旧 `context` 转发入口中的语法遗漏, 补充旧上下文与工具包导出回归.
 - [x] 完成本轮验证并保存结果、代码输入指纹和失败历史; 未通过的锁文件检查单独列明.
 - [ ] 完成重构的最终代码 review, 处理可确认的问题.
-- [ ] 提交、推送和合并; 每个交付步骤以 Git 或远端核对结果为准.
+- [x] 提交并推送重构实现, 核对远端 SHA 与本地实现提交一致.
+- [ ] 合并到个人主分支; 合并状态以 Git 或远端核对结果为准.
 
 ## 验收条件
 
@@ -74,8 +81,8 @@
 
 1. 先核对分支和差异, 阅读[架构说明](../architecture.md)与 ADR, 沿关键入口 review 工作流和状态所有权.
 2. 如修改代码, 执行 `make check`; 涉及渲染或预览链路时补 `make integration_test`, 涉及打包/入口时补包验证.
-3. 确认差异中只包含本任务内容; 提交前更新本记录的验证范围, 提交后由 Git 历史提供实际提交身份.
-4. 发布或合并后更新本记录的交付状态. 另立依赖维护任务处理锁文件, 不把它静默算作已解决.
+3. 如 review 后继续修正, 确认差异仅包含本任务内容, 更新验证范围并提交; Git 历史提供实际提交身份.
+4. 合并后更新本记录的交付状态. 另立依赖维护任务处理锁文件, 不把它静默算作已解决.
 
 ## 不依赖聊天的阅读入口
 
