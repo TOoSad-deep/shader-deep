@@ -10,7 +10,7 @@
 
 主、子模型调用默认均不设固定次数上限，网络重试和测量仍分别受限。分析到生成的自动交接、独立拆分／评审 Agent、运行恢复和自动生成调度未接入。工程完成不代表视觉效果验收或所有重要假设已完整覆盖。
 
-运行预算、并发、超时和重试等模块参数维护在同目录的 [config.yaml](config.yaml)。分析 CLI 默认按模块位置加载该文件, 与启动目录无关; `--config` 可指定其他文件, 显式命令行参数优先。Python 调用方通过 `config.py` 的 `load_analysis_options()` 加载后传入 `options`。模型连接和凭据仍使用应用 `.env`, 配置用法见[应用 README](../../../README.md#yaml-运行配置)。
+运行预算、并发、超时和重试等模块参数维护在同目录的 [当前默认配置](../resources/analysis.yaml)。分析 CLI 默认按模块位置加载该文件, 与启动目录无关; `--config` 可指定其他文件, 显式命令行参数优先。Python 调用方通过 `config.py` 的 `load_analysis_options()` 加载后传入 `options`。模型连接和凭据仍使用应用 `.env`, 配置用法见[应用 README](../../../README.md#yaml-运行配置)。
 
 ## 快速运行
 
@@ -21,7 +21,7 @@ uv run --no-sync --env-file .env python -m shader_deep.analysis_cli \
   test_pic/2d-physics-balls.png "分析视觉结构，保留竞争假设与渲染检查点"
 ```
 
-默认读取模块 [config.yaml](config.yaml)。显式 CLI 参数覆盖 YAML，YAML 缺省项使用 `AnalysisOptions` 默认值；自定义配置用 `--config`，运行目录用 `--output-dir`。YAML 中相对输出目录以该 YAML 所在目录为基准，CLI 相对输出目录以当前目录为基准；`output_dir: null` 使用当前目录下的 `runs/`。不自动读取工作目录里的同名配置，模型连接和凭据不写入运行 YAML。
+默认读取模块 [当前默认配置](../resources/analysis.yaml)。显式 CLI 参数覆盖 YAML，YAML 缺省项使用 `AnalysisOptions` 默认值；自定义配置用 `--config`，运行目录用 `--output-dir`。YAML 中相对输出目录以该 YAML 所在目录为基准，CLI 相对输出目录以当前目录为基准；`output_dir: null` 使用当前目录下的 `runs/`。不自动读取工作目录里的同名配置，模型连接和凭据不写入运行 YAML。
 
 Python 入口不自动加载 YAML；需要与 CLI 相同配置时显式加载：
 
@@ -474,7 +474,7 @@ Pointer 支持 `~0`、`~1` 转义。复杂数组重排可替换对应数组，�
 | 测量结构、方法或缓存键 | [evidence.py][evidence]、[measurements.py][measurements]、[profiles.py][profiles] |
 | 上下文、报告目录及阅读覆盖 | [context/analysis.py][context]、[report_files.py][report-files]、[references.py][references]、[loop.py][loop] |
 | 草稿、补丁与提交事件 | [submissions.py][submissions]、[events.py][events]、[loop.py][loop] |
-| 配置、预算、传输和格式恢复 | [config.py][config]、[config.yaml](config.yaml)、[types.py][types]、[transport.py][transport]、[tool_json.py][tool-json] |
+| 配置、预算、传输和格式恢复 | [config.py][config]、[当前默认配置](../resources/analysis.yaml)、[types.py][types]、[transport.py][transport]、[tool_json.py][tool-json] |
 
 对应行为案例包括 [流程与预算][test-analysis]、[测量证据][test-evidence]、[恢复][test-recovery]、[配置][test-config]、[视觉引用][test-visual]、[视觉流程][test-visual-flow]、[局部修复][test-submissions] 和 [渐进披露][test-disclosure]。本文件描述实现，不把用例存在等同于已经运行或通过。
 
@@ -526,9 +526,9 @@ Pointer 支持 `~0`、`~1` 转义。复杂数组重排可替换对应数组，�
 [types]: types.py
 [transport]: transport.py
 [tool-json]: tool_json.py
-[test-analysis]: ../../../tests/unit_tests/test_analysis.py
-[test-evidence]: ../../../tests/unit_tests/test_analysis_evidence.py
-[test-recovery]: ../../../tests/unit_tests/test_analysis_recovery.py
+[test-analysis]: ../../../tests/unit_tests/compatibility/test_analysis.py
+[test-evidence]: ../../../tests/unit_tests/compatibility/test_analysis_evidence.py
+[test-recovery]: ../../../tests/unit_tests/compatibility/test_analysis_recovery.py
 [app-readme]: ../../../README.md
 [architecture]: ../../../../../documents/png-to-shader/多视角分析.md
 [issues]: ../../../../../documents/问题与优化/README.md
@@ -537,10 +537,10 @@ Pointer 支持 `~0`、`~1` 转义。复杂数组重排可替换对应数组，�
 [references]: references.py
 [submissions]: submissions.py
 [events]: events.py
-[test-config]: ../../../tests/unit_tests/test_analysis_config.py
-[test-visual]: ../../../tests/unit_tests/test_analysis_visual.py
-[test-visual-flow]: ../../../tests/unit_tests/test_analysis_visual_flow.py
-[test-submissions]: ../../../tests/unit_tests/test_analysis_submissions.py
-[test-disclosure]: ../../../tests/unit_tests/test_analysis_disclosure.py
+[test-config]: ../../../tests/unit_tests/workflows/test_analysis_config.py
+[test-visual]: ../../../tests/unit_tests/domain/test_analysis_visual.py
+[test-visual-flow]: ../../../tests/unit_tests/compatibility/test_analysis_visual_flow.py
+[test-submissions]: ../../../tests/unit_tests/runtime/test_analysis_submissions.py
+[test-disclosure]: ../../../tests/unit_tests/compatibility/test_analysis_disclosure.py
 [plan-first]: ../../../../../documents/png-to-shader/分析模块优化实施方案-01至03-引用修复与假设追踪-2026-09-17.md
 [plan-second]: ../../../../../documents/png-to-shader/分析模块优化实施方案-04至06-渐进披露与运行控制-2026-09-17.md

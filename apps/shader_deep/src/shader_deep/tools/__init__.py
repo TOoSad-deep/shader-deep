@@ -1,9 +1,6 @@
-"""生成任务的工具包, 保留会话、运行结果与预算异常的统一导入入口."""
+"""旧生成工具导入入口; 实现位于 agents/generation/tools."""
 
-# session.py 是模型工具的绑定入口; render.py / finish.py 是普通 Python 执行逻辑.
-# 对外仅暴露会话和结果类型, Agent 无需自己管理底层浏览器.
-
-from shader_deep.tools.session import RenderSession
-from shader_deep.tools.types import GenerationLimitError, GenerationOutcome
+from shader_deep.agents.generation.contracts import GenerationLimitError, GenerationOutcome
+from shader_deep.agents.generation.tools.session import RenderSession
 
 __all__ = ["GenerationLimitError", "GenerationOutcome", "RenderSession"]

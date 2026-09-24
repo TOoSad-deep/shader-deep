@@ -1,0 +1,91 @@
+{
+  "schema_version": 1,
+  "recorded_at_utc": "2026-09-24T06:07:53+00:00",
+  "git": {
+    "branch": "TOoSad-deep/repo/structure-refactor",
+    "base_head": "8535e429adaf5c75c2372e391eed439a7a8fee8a",
+    "state": "uncommitted worktree; this evidence is not a commit, push, or merge receipt"
+  },
+  "tested_inputs": {
+    "scope": "src/**/*.{py,yaml,js}, tests/**/*.py, scripts/**/*.py, main.py, Makefile, pyproject.toml, uv.lock; caches and Markdown excluded",
+    "file_count": 233,
+    "sha256": "d64d0c78d44a81eea9ca972b119f50106fbe1b7bc3680ca2903a1b8558a5197e",
+    "algorithm": "SHA256 of UTF-8 lines sorted by relative POSIX path: path + NUL + SHA256(file bytes) + newline",
+    "note": "Excluding Markdown avoids a self-referential evidence hash. Link checks are rerun after the task record is updated."
+  },
+  "environment": {
+    "python": "3.12.13",
+    "platform": "macOS-27.0-arm64-arm-64bit",
+    "installed_distribution_metadata": {
+      "deepagents": "0.7.13",
+      "langchain-core": "1.6.2",
+      "langchain-openai": "1.6.0",
+      "pydantic": "2.13.5"
+    },
+    "editable_sdk_source_version": "0.7.14",
+    "sdk_metadata_sha256": "d805202bb3340a081864bf5e3d76091e62b6f51706d2d54cf3e1283ac7b661bf",
+    "sdk_tracked_changes": []
+  },
+  "checks": [
+    {
+      "command": "make check",
+      "cwd": "apps/shader_deep",
+      "exit_code": 0,
+      "result": "367 unit tests, repository checks, Ruff, formatting, and ty passed",
+      "output": "/Applications/Xcode-beta.app/Contents/Developer/usr/bin/make repository_check\nuv run --no-sync python scripts/check_repository.py\nRepository checks: OK (0 findings)\n/Applications/Xcode-beta.app/Contents/Developer/usr/bin/make test\nuv run --no-sync python -W error -m unittest discover -s tests/unit_tests -q\n----------------------------------------------------------------------\nRan 367 tests in 11.966s\n\nOK\n/Applications/Xcode-beta.app/Contents/Developer/usr/bin/make lint\nuv run --no-sync ruff check .\nAll checks passed!\nuv run --no-sync ruff format --check .\n228 files already formatted\n/Applications/Xcode-beta.app/Contents/Developer/usr/bin/make type\nuv run --no-sync ty check src main.py scripts\nAll checks passed!\n"
+    },
+    {
+      "command": "make integration_test",
+      "cwd": "apps/shader_deep",
+      "exit_code": 0,
+      "result": "1 browser readiness check and the 13-test browser suite passed; model transport is mocked",
+      "output": "# 先用现有最小渲染测试检查浏览器, 失败即停止, 避免整组测试反复启动失败.\nuv run --no-sync python -W error -m unittest tests.integration_tests.test_renderer.WebGL2RenderTests.test_solid_color_and_exact_dimensions -q\n----------------------------------------------------------------------\nRan 1 test in 1.015s\n\nOK\nuv run --no-sync python -W error -m unittest discover -s tests/integration_tests -q -f\n----------------------------------------------------------------------\nRan 13 tests in 3.970s\n\nOK\n"
+    },
+    {
+      "command": "uv build --out-dir /private/tmp/shader-deep-structure-dist",
+      "cwd": "apps/shader_deep",
+      "exit_code": 0,
+      "result": "sdist and wheel built",
+      "output_tail": "Successfully built /private/tmp/shader-deep-structure-dist/shader_deep_app-0.1.0.tar.gz\nSuccessfully built /private/tmp/shader-deep-structure-dist/shader_deep_app-0.1.0-py3-none-any.whl"
+    },
+    {
+      "command": "uv run --no-sync python scripts/check_distribution.py /private/tmp/shader-deep-structure-dist/shader_deep_app-0.1.0-py3-none-any.whl",
+      "cwd": "apps/shader_deep",
+      "exit_code": 0,
+      "output": "Wheel checks: OK (resources, import isolation, compatibility imports, 6 CLI modules)\n"
+    },
+    {
+      "command": "uv lock --check --offline",
+      "cwd": "apps/shader_deep",
+      "exit_code": 1,
+      "classification": "known pre-refactor lock drift, unresolved; original lock retained",
+      "output": "Resolved 67 packages in 28ms\nThe lockfile at `uv.lock` needs to be updated, but `--check` was provided. To update the lockfile, run `uv lock`.\n",
+      "baseline_reproduction": {
+        "setup": "Original application pyproject.toml and uv.lock from base HEAD in a temporary layout pointing to the same SDK source, using the same uv cache",
+        "command": "uv lock --check --offline",
+        "exit_code": 1,
+        "output": "Using CPython 3.12.13\nResolved 67 packages in 16ms\nThe lockfile at `uv.lock` needs to be updated, but `--check` was provided. To update the lockfile, run `uv lock`.\n"
+      }
+    }
+  ],
+  "failures_found_and_fixed": [
+    {
+      "issue": "same-response stop and submission could race under the tool executor",
+      "first_check_output": "/Applications/Xcode-beta.app/Contents/Developer/usr/bin/make repository_check\nuv run --no-sync python scripts/check_repository.py\nRepository checks: OK (0 findings)\n/Applications/Xcode-beta.app/Contents/Developer/usr/bin/make test\nuv run --no-sync python -W error -m unittest discover -s tests/unit_tests -q\n======================================================================\nFAIL: test_stop_rejects_later_outline_submission_in_the_same_response (compatibility.test_exploration_flow.OnDemandCompatibilityTests.test_stop_rejects_later_outline_submission_in_the_same_response)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"${APP_ROOT}/tests/unit_tests/compatibility/test_exploration_flow.py\", line 510, in test_stop_rejects_later_outline_submission_in_the_same_response\n    self.assertIsNone(snapshot[\"visual_outline\"])\nAssertionError: {'elements': [{'id': 'E1', 'name': '条带', 'scope': '画面中部', 'salient_features': ['边缘较亮']}], 'relations': []} is not None\n\n----------------------------------------------------------------------\nRan 366 tests in 10.760s\n\nFAILED (failures=1)\nmake[1]: *** [test] Error 1\nmake: *** [check] Error 2\n",
+      "before_fix_delayed_stop_output": "F\n======================================================================\nFAIL: test_stop_rejects_later_outline_submission_in_the_same_response (tests.unit_tests.compatibility.test_exploration_flow.OnDemandCompatibilityTests.test_stop_rejects_later_outline_submission_in_the_same_response)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"${APP_ROOT}/tests/unit_tests/compatibility/test_exploration_flow.py\", line 510, in test_stop_rejects_later_outline_submission_in_the_same_response\n    self.assertIsNone(snapshot[\"visual_outline\"])\nAssertionError: {'elements': [{'id': 'E1', 'name': '条带', 'scope': '画面中部', 'salient_features': ['边缘较亮']}], 'relations': []} is not None\n\n----------------------------------------------------------------------\nRan 1 test in 0.210s\n\nFAILED (failures=1)\n",
+      "after_fix_delayed_stop_output": ".\n----------------------------------------------------------------------\nRan 1 test in 0.222s\n\nOK\n",
+      "fix": "Per-role invoke max_concurrency=1; independent exploration batch executor unchanged",
+      "regression_test": "tests/unit_tests/compatibility/test_exploration_flow.py::test_stop_rejects_later_outline_submission_in_the_same_response"
+    },
+    {
+      "issue": "syntax error in a historical context package forwarding import, left during the preceding refactor cleanup",
+      "fix": "Removed the invalid leftover line and exercised historical context/tool package imports",
+      "regression_test": "tests/unit_tests/compatibility/test_public_api.py::test_previous_context_and_tool_packages_keep_their_exports"
+    }
+  ],
+  "not_verified": [
+    "Real-provider model quality, semantic integration quality, visual acceptance, and token savings",
+    "Independent fresh-agent comprehension evaluation",
+    "Git commit, push, and merge of this refactor"
+  ]
+}

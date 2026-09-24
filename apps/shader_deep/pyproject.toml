@@ -23,8 +23,8 @@ dependencies = [
 ]
 
 [project.scripts]
-shader-deep = "shader_deep.cli:main"
-shader-deep-analyze = "shader_deep.analysis_cli:main"
+shader-deep = "shader_deep.cli.generation:main"
+shader-deep-analyze = "shader_deep.cli.analysis:main"
 
 [build-system]
 requires = ["setuptools>=83.0.0", "wheel"]
@@ -34,7 +34,7 @@ build-backend = "setuptools.build_meta"
 where = ["src"]
 
 [tool.setuptools.package-data]
-"shader_deep.analysis" = ["config.yaml"]
+"shader_deep.resources" = ["analysis.yaml"]
 "shader_deep.rendering" = ["webgl2.js"]
 
 [dependency-groups]

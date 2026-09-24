@@ -1,4 +1,4 @@
-.PHONY: help sync browsers test integration_test lint format type
+.PHONY: help sync browsers test integration_test lint format type check repository_check
 .DEFAULT_GOAL := help
 
 help:
@@ -9,6 +9,16 @@ help:
 	@echo "make lint    - check code, formatting and types"
 	@echo "make format  - format application Python files"
 	@echo "make type    - check application types"
+	@echo "make repository_check - check local documentation links and import boundaries"
+	@echo "make check   - run repository checks, unit tests and lint (no network or browser)"
+
+check:
+	$(MAKE) repository_check
+	$(MAKE) test
+	$(MAKE) lint
+
+repository_check:
+	uv run --no-sync python scripts/check_repository.py
 
 sync:
 	uv sync --locked --all-groups
@@ -33,4 +43,4 @@ format:
 	uv run --no-sync ruff format .
 
 type:
-	uv run --no-sync ty check src main.py
+	uv run --no-sync ty check src main.py scripts

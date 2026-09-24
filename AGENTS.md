@@ -100,6 +100,10 @@ Do not use `eval()`, `exec()`, or `pickle` on user-controlled input. Avoid bare 
 
 ## Repository routing
 
+### Shader Deep application
+
+For Shader Deep work, start with [`apps/shader_deep/AGENTS.md`](apps/shader_deep/AGENTS.md). It links to the application's current architecture, decisions, work records, and verification commands. The upstream SDK guides below do not describe the application's implementation status.
+
 ### SDK and dependencies
 
 For SDK architecture and common starting points, use [`libs/ARCHITECTURE.md`](libs/ARCHITECTURE.md). Deep Agents delegates graph assembly to LangChain's `create_agent`; when investigating dependency internals, locate and read the installed dependency source directly.

@@ -8,6 +8,13 @@
 
 先阅读本次任务涉及的源码和测试。运行方式见 [README.md](README.md)，命令以 [Makefile](Makefile) 为准，依赖和检查配置以 [pyproject.toml](pyproject.toml) 为准。设计文档用于理解背景；实现状态以当前源码和验证结果为准。
 
+## 知识与任务入口
+
+- 当前结构与依赖方向: [架构说明](docs/architecture.md); 选择理由: [ADR 0001](docs/decisions/0001-agent-oriented-layout.md).
+- 本轮重构的进度、已知问题和验证证据: [任务记录](docs/work-items/structure-refactor.md). 接手时先核对 Git 状态, 不依赖先前聊天或把记录日期当作实时状态.
+- 修改架构边界时更新相应决策与说明; 有意义的进度、失败和交付变化写入对应任务记录. 验证记录要标明命令、代码状态、结果与未覆盖范围.
+- 设计目标、代码已实现、本地验证、提交、推送和合并分别记录. 每项事实只保留一个主要记录位置, 其他入口用链接引用.
+
 ## 应用范围
 
 - 当前有两条独立流程：`shader-deep` 执行生成、渲染、查看预览与选择候选；`shader-deep-analyze` 执行多视角分析、按需测量与报告综合。
@@ -21,17 +28,19 @@
 
 | 路径 | 职责 |
 | --- | --- |
-| `src/shader_deep/cli.py`、`analysis_cli.py` | 参数解析、输出格式和退出码 |
-| `src/shader_deep/config.py` | 模型配置组选择、客户端创建和生成选项 |
-| `src/shader_deep/schemas.py`、`blackboard.py` | 业务记录、固定任务绑定、引用校验和状态更新 |
-| `src/shader_deep/context/` | 按角色选择材料、读取制品、构造多模态消息 |
-| `src/shader_deep/middleware.py` | 生成流程逐轮注入上下文、限制工具和预算 |
-| `src/shader_deep/agents/` | 分析与生成的公开执行入口 |
-| `src/shader_deep/tools/` | 生成工具、候选登记、选择条件和渲染会话生命周期 |
-| `src/shader_deep/analysis/` | 分析契约、视角配置、独立执行、批次调度、测量与请求恢复 |
+| `src/shader_deep/api.py`、`cli/` | 稳定调用入口、参数、输出与退出码 |
+| `src/shader_deep/workflows/` | 运行创建、阶段推进、并行调度、主进度与最终交付 |
+| `src/shader_deep/agents/` | 初稿、探索、整合、生成角色的提示词、上下文与受限工具 |
+| `src/shader_deep/domain/` | 任务、黑板、证据和四库业务规则; 不依赖模型框架或 IO |
+| `src/shader_deep/runtime/` | 角色执行、预算、历史、提交与局部修复 |
+| `src/shader_deep/infrastructure/` | 模型客户端、网络恢复、配置读取、存储和追踪 |
+| `src/shader_deep/imaging/` | 固定参考图、裁剪、统计与剖面 |
 | `src/shader_deep/rendering/` | 独立 WebGL2 渲染器及浏览器端脚本 |
-| `src/shader_deep/artifacts.py` | 独立运行目录与业务快照落盘 |
-| `tests/unit_tests/`、`tests/integration_tests/` | 无网络业务测试、真实浏览器集成测试 |
+| `src/shader_deep/compatibility/`、`experiments/` | 旧执行协议和显式实验; 不进入默认角色依赖链 |
+| `src/shader_deep/resources/` | 随安装包发布的默认 YAML |
+| `tests/unit_tests/`、`tests/integration_tests/` | 按职责组织的无网络业务测试、真实浏览器集成测试 |
+
+旧 `analysis/`、`context/`、`tools/` 和原单文件路径保留为导入转发, 新代码使用规范路径. 当前调用链和状态归属见 [docs/architecture.md](docs/architecture.md), 验证与打包见 [docs/development.md](docs/development.md).
 
 使用 `rg` 时优先限定到相关模块和测试。默认排除 `.venv/`、`__pycache__/`、`*.egg-info/`、`runs/` 和生成制品；需要诊断某次运行时，只读取对应运行目录。不要为应用层问题无差别扫描整个上游仓库。
 
@@ -69,7 +78,9 @@
 
 ## 多视角分析与证据约定
 
-- 主分析 Agent 通过 `run_analysis_batch` 派发任务、`measure_reference` 测量、`finish_analysis` 综合；主任务可用 `read_analysis_file` 按需读取已登记报告；主、子提交都可通过 `repair_analysis_submission` 修复合法 JSON 草稿。子任务可提出取证建议，不能访问兄弟报告目录。视角配置和报告内容不能扩大工具权限。
+- 当前默认工作流由初稿角色提交统一初稿与探索方向, 程序执行独立探索批次后委派整合 subagent. 整合只开放当前阶段的比较、复核与局部修复工具. 主快照由工作流根据复制后的进度更新, 最终状态由交付组件计算.
+
+- 旧协议兼容会话通过 `run_analysis_batch` 派发任务、`measure_reference` 测量、`finish_analysis` 综合；主任务可用 `read_analysis_file` 按需读取已登记报告；主、子提交都可通过 `repair_analysis_submission` 修复合法 JSON 草稿。子任务可提出取证建议，不能访问兄弟报告目录。视角配置和报告内容不能扩大工具权限。
 - 首批至少包含两个独立视角，不传入其他视角报告；允许绑定视觉初稿及明确选入且主 Agent 已回读的基础证据。追加任务声明补充或复核目的、具体缺口和预期证据，并显式选择输入记录。
 - 每个视角拥有独立模型历史、执行计数和提交状态。子线程返回结果记录，由协调器合并到最新黑板；不得用工作线程持有的旧状态覆盖其他任务产出。
 - 保留整批校验后登记、会话工具串行提交和批次内部并行执行的边界。向工作线程传播追踪上下文时，每个任务单独复制 `contextvars` 上下文。
@@ -83,7 +94,7 @@
 
 ## 配置、输出与追踪
 
-- 模型配置由 `config.py` 统一选择：配置了 `DS_MICU_*` 中任一项即使用完整该组，否则使用 `MICU_*`。不得跨组补齐模型、地址或密钥。
+- 模型配置由 `infrastructure/llm/client.py` 统一选择：配置了 `DS_MICU_*` 中任一项即使用完整该组，否则使用 `MICU_*`。不得跨组补齐模型、地址或密钥。
 - 应用读取进程环境变量，`.env` 由启动命令加载。保留用户既有配置；凭据不写入源码、测试、快照或提交记录。模型 ID 更新时按根目录要求核验官方资料。
 - 生成 CLI 的标准输出只承载最终 GLSL；分析 CLI 的标准输出承载结构化 JSON。诊断和制品位置写入标准错误，保持现有退出码语义。
 - 保留运行、任务及父子任务的追踪关联。启用 LangSmith 会传输模型和工具输入中的图像、代码及报告；沿用用户的追踪配置，不在普通测试中启用真实外部追踪。
@@ -100,6 +111,8 @@
 | `make lint` | 检查 Ruff 规则、格式和 ty 类型 |
 | `make format` | 格式化应用 Python 文件 |
 | `make type` | 单独检查应用类型 |
+| `make repository_check` | 离线检查当前文档本地链接和关键导入边界 |
+| `make check` | 顺序执行仓库检查、单元测试和 lint |
 | `make integration_test` | 先做最小浏览器检查，通过后运行真实 WebGL2 集成测试 |
 
 - 本包使用 `unittest`，不照搬上游 pytest 命令或新增测试依赖。常规检查通过 `uv run --no-sync` 使用已安装环境；缺少依赖时先明确执行 `make sync`。

@@ -1,10 +1,12 @@
 # Shader Deep
 
+维护入口: [当前架构](docs/architecture.md) · [设计决策](docs/decisions/0001-agent-oriented-layout.md) · [重构进度与验证](docs/work-items/structure-refactor.md) · [开发检查](docs/development.md).
+
 输入本地 PNG 和文字要求, 通过单个 Deep Agent 生成、渲染、查看预览并修正 Shader, 将选定候选的实际 GLSL 写入标准输出。
 
 当前已连接内存黑板、Context Builder、真实 WebGL2 渲染工具和有预算的生成循环。每次尝试保存代码、预览或错误, 完成时明确选择已渲染且已向模型展示预览的候选。
 
-独立分析提供 `shader-deep-analyze` 命令：主 Agent 建立统一视觉初稿，子 Agent 独立探索三个候选库，后端根据主 Agent 的增量整合组装四库。输出协议为 `possibility_library_v1`。分析到生成的自动交接尚未接入，候选仍需编码、渲染与用户视觉验收。
+独立分析提供 `shader-deep-analyze` 命令：主 Agent 建立统一视觉初稿，子 Agent 独立探索三个候选库，独立整合 subagent 处理比较与复核, 后端校验并发布四库。输出协议为 `possibility_library_v1`。分析到生成的自动交接尚未接入，候选仍需编码、渲染与用户视觉验收。
 
 ## 安装与配置
 
@@ -15,7 +17,7 @@ cd /Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/apps/shader_deep
 make sync
 ```
 
-应用以可编辑包安装到本目录的 `.venv`。`deepagents` 继续使用 `../../libs/deepagents` 的本地可编辑依赖。应用直接声明 LangChain 依赖以使用其消息和 middleware 接口, 版本范围与当前 SDK 一致。渲染模块使用 Microsoft 维护的 Playwright 及其配套 Chromium; Pillow 仅用于测试中解码 PNG、核对像素。构建采用 setuptools, Ruff 和 ty 仅作为开发检查工具。
+应用以可编辑包安装到本目录的 `.venv`。`deepagents` 继续使用 `../../libs/deepagents` 的本地可编辑依赖。应用直接声明 LangChain 依赖以使用其消息和 middleware 接口, 版本范围与当前 SDK 一致。渲染模块使用 Microsoft 维护的 Playwright 及其配套 Chromium; Pillow 用于参考图测量、裁剪及测试中的像素核对。构建采用 setuptools, Ruff 和 ty 仅作为开发检查工具。
 
 使用渲染模块前, 安装与锁定 Playwright 版本匹配的浏览器:
 
@@ -100,12 +102,12 @@ uv run --no-sync --env-file .env python -m shader_deep.analysis_cli /absolute/pa
 
 ### YAML 运行配置
 
-分析模块专用配置位于 [analysis/config.yaml](src/shader_deep/analysis/config.yaml), 默认按模块位置加载, 不依赖启动目录, 并随应用打包。可直接修改其中的输出 token、主/子 Agent 调用次数、任务数、并发、取证、重试、超时和流式开关; 模型地址与密钥仍由 `.env` 提供。
+分析模块专用配置位于 [resources/analysis.yaml](src/shader_deep/resources/analysis.yaml), 默认按模块位置加载, 不依赖启动目录, 并随应用打包。可直接修改其中的输出 token、主/子 Agent 调用次数、任务数、并发、取证、重试、超时和流式开关; 模型地址与密钥仍由 `.env` 提供。
 
 优先级为 **命令行显式参数 > YAML > `AnalysisOptions` 内置默认值**。也可以选择其他配置文件, 并临时覆盖个别参数:
 
 ```sh
-uv run --no-sync --env-file .env shader-deep-analyze test_pic/2d-physics-balls.png "分析构图、元素组织和可能机制" --config src/shader_deep/analysis/config.yaml --max-worker-calls 5
+uv run --no-sync --env-file .env shader-deep-analyze test_pic/2d-physics-balls.png "分析构图、元素组织和可能机制" --config src/shader_deep/resources/analysis.yaml --max-worker-calls 5
 ```
 
 YAML 使用平铺字段名, 例如 `max_output_tokens: 16384`、`max_worker_calls: 3`、`stream_model_responses: true`。当前模块 YAML 将主、子 Agent 的累计调用上限均设为 0, 主任务仍受每阶段及比较组预算限制; 通用输出上限设为 163840、请求超时设为 240 秒. `outline_max_output_tokens`、`integration_max_output_tokens`、`worker_max_output_tokens` 可分别覆盖初稿、整合和子任务输出上限, 默认均为 `null`, 回退通用值.
@@ -118,7 +120,7 @@ Python 调用方可显式使用同一加载器, 现有 `run_analysis` 接口保�
 
 ```python
 from pathlib import Path
-from shader_deep.agents.analysis import run_analysis
+from shader_deep.api import run_analysis
 from shader_deep.analysis.config import load_analysis_options
 
 options = load_analysis_options()  # 默认读取分析模块内的 config.yaml.
@@ -171,7 +173,7 @@ outcome = run_analysis(Path("test_pic/2d-physics-balls.png"), "分析参考图",
 `tools.jsonl` 保存主任务工具调用参数及成功或拒绝回执; `events.jsonl` 保存阶段有效输出额度、请求大小和提供方实际用量等记录. 冻结探索输入可单独回放主整合, 无需再次运行探索:
 
 ```sh
-uv run --no-sync --env-file .env python -m shader_deep.analysis.replay /absolute/path/source-run \
+uv run --no-sync --env-file .env python -m shader_deep.cli.replay /absolute/path/source-run \
   --output-dir runs/replay --max-main-calls 8 --integration-max-output-tokens 32768
 ```
 
@@ -180,7 +182,7 @@ uv run --no-sync --env-file .env python -m shader_deep.analysis.replay /absolute
 固定样本的受控去重实验使用独立入口, 依次执行卡片投影特征比较、依赖其拥有者合并的四个候选比较、独立的底场晕影特征比较:
 
 ```sh
-uv run --no-sync --env-file .env python -m shader_deep.analysis.controlled_replay \
+uv run --no-sync --env-file .env python -m shader_deep.experiments.controlled_replay \
   runs/real-business-budget-balls-20260922-54CxRg/run-avu0ozrm \
   --output-dir runs/controlled-dedup --max-main-calls 12 --max-work-calls 4 \
   --integration-max-output-tokens 65536
@@ -188,7 +190,7 @@ uv run --no-sync --env-file .env python -m shader_deep.analysis.controlled_repla
 
 这是绑定该来源对象身份的实验路径. 每项仅提供完整文本材料及合并、保留、暂缓工具, 不重新探索或测量; 依赖不满足时跳过候选比较, 剩余额度允许时继续独立项. 特征按对象范围和外观等价判断, 合并保留全部候选; 候选按机制与必要前提等价另行判断, 不因外观相似而吞并不同机制. `controlled-summary.json` 分别记录三项结果, 暂缓项不自动重入. 原失败任务与初稿问题继续保留, 因而局部三步通过时全运行仍可为 `partial`; 语义判断须对照原文检查, 不以数量下降证明正确或宣称完成整库去重.
 
-详细契约与工具见 [独立探索与可能性库](src/shader_deep/analysis/EXPLORATION.md). [旧协议记录](src/shader_deep/analysis/README.md)保留历史, 不代表当前工具接口.
+详细契约与工具见 [独立探索与可能性库](docs/analysis-protocol.md). [旧协议记录](src/shader_deep/analysis/README.md)保留历史, 不代表当前工具接口.
 
 ## 单 Agent 生成闭环
 
@@ -219,50 +221,29 @@ run-*/
 
 `run.json` 的 `selected_candidate_id` 在未完成时为空, `stop_reason` 记录 `completed`、`attempt_limit`、`model_limit` 或 `error`。快照更新采用临时文件替换, 不保存模型连接配置或 API 密钥。
 
-## 当前目录
+## 当前目录与源码入口
 
 ```text
-shader_deep/
-├── main.py                  # 兼容原脚本启动和导入名称
-├── pyproject.toml           # 依赖、打包和 shader-deep 命令入口
-├── uv.lock
-├── Makefile
-├── .env.example
-├── src/shader_deep/
-│   ├── __init__.py
-│   ├── cli.py               # 参数解析、标准输出与退出码
-│   ├── analysis_cli.py      # 独立多视角分析命令和 JSON 输出
-│   ├── analysis/           # 视角、报告类型、验证、角色循环与并行执行
-│   ├── config.py            # 环境变量和模型创建
-│   ├── schemas.py           # 四类业务记录、黑板状态和任务材料
-│   ├── blackboard.py        # 登记、引用校验和按任务读取
-│   ├── context/             # 按 Agent 组织上下文构造
-│   │   ├── __init__.py      # 统一公开导入入口
-│   │   ├── generation.py   # 生成任务选材、代码加载和材料清单
-│   │   ├── analysis.py     # 主分析和独立视角的图像与证据选材
-│   │   └── common.py       # 共用 PNG 读取与 data URL 转换
-│   ├── middleware.py        # 每轮模型调用前刷新任务上下文
-│   ├── tools/
-│   │   ├── __init__.py      # 统一导出 RenderSession、GenerationOutcome、GenerationLimitError
-│   │   ├── session.py       # 工具绑定、串行线程、浏览器生命周期与运行快照
-│   │   ├── render.py        # 渲染候选、保存 GLSL/PNG、登记成功或失败结果
-│   │   ├── finish.py        # 检查候选选择条件、保存自检结论并结束
-│   │   └── types.py         # 运行结果数据类型与预算异常
-│   ├── artifacts.py         # 唯一运行目录和业务快照保存
-│   ├── rendering/
-│   │   ├── __init__.py      # WebGL2Renderer、RenderError
-│   │   ├── renderer.py      # Python API、浏览器生命周期、PNG 字节
-│   │   └── webgl2.js        # WebGL2 编译、链接、绘制和 PNG 导出
-│   └── agents/
-│       ├── __init__.py
-│       ├── analysis.py      # 独立多视角分析公开入口
-│       └── generation.py    # 有预算的生成、渲染和选择循环
-└── tests/
-    ├── unit_tests/          # 业务规则、Context Builder、模型模拟和渲染入参
-    └── integration_tests/
-        ├── test_renderer.py # 真实 Chromium WebGL2 像素验收
-        └── test_generation.py # 模拟模型 + 真实编译修复与预览反馈
+src/shader_deep/
+├── api.py                  # 稳定 Python API
+├── cli/                    # 分析、生成、回放命令
+├── workflows/              # 调度、阶段推进、主进度与最终交付
+├── agents/                 # outline / exploration / integration / generation
+├── domain/                 # 业务记录、引用、四库与发布规则
+├── runtime/                # 调用循环、预算、历史、提交与修复
+├── infrastructure/         # 模型传输、配置读取、制品存储与追踪
+├── imaging/                # 图像读取、测量与剖面
+├── rendering/              # 独立 WebGL2 渲染器
+├── resources/              # 默认 YAML
+├── compatibility/          # 显式保留的旧流程
+└── experiments/            # 固定样本回放实验
 ```
+
+从 [当前架构](docs/architecture.md) 阅读完整职责、调用链和状态归属; 修改与验证方法见 [开发指南](docs/development.md). `analysis/`、旧 `context/`、`tools/` 及旧模块路径是兼容转发, 新实现不从这些路径导入.
+
+`workflows/coordinator.py` 组合初稿、探索和整合执行; `workflows/dispatch.py` 管理批次, `workflows/delivery.py` 检查整轮交付, `workflows/progress.py` 更新主快照. 整合角色不再继承历史探索会话.
+
+测试按业务和执行职责组织在 `tests/unit_tests/` 的子目录中. `tests/integration_tests/` 保留真实浏览器渲染检查.
 
 ## 独立 WebGL2 渲染
 
@@ -345,7 +326,7 @@ records = read_task(state, "G1")
 
 结果中的观察、假设、限制和建议分别保存。部分完成与后续完成可以登记为不同结果记录。登记结果不会自动采用候选, 已有任务的基线继续保持原值。
 
-黑板接口只处理 Python 业务数据与引用, 不读取或写入制品文件, 不验证代码或预览有效性, 也不解析模型返回的 JSON。`read_task` 返回业务记录, `context/generation.py` 在此基础上加载生成所需的材料; 共用的 PNG 读取放在 `context/common.py`。
+黑板接口只处理 Python 业务数据与引用, 不读取或写入制品文件, 不验证代码或预览有效性, 也不解析模型返回的 JSON。`read_task` 返回业务记录, `agents/generation/context.py` 在此基础上加载生成所需的材料; 共用的 PNG 读取放在 `infrastructure/llm/messages.py`。
 
 源码职责、调用链、后续多 Agent 扩展建议和本轮验证见[源码结构与审查](../../documents/png-to-shader/源码结构与审查-2026-09-11.md)。
 
@@ -362,7 +343,7 @@ records = read_task(state, "G1")
 ```python
 from pathlib import Path
 
-from shader_deep.agents.generation import run_generation
+from shader_deep.api import run_generation
 from shader_deep.config import GenerationOptions
 from shader_deep.context import build_generation_context
 
@@ -388,7 +369,7 @@ if outcome.selected_candidate is not None:
 
 提示词要求先渲染, 再对照真实预览进行修正或结束。候选选择只结束当前生成任务, 不修改原任务的基线, 也不自动建立全局采用或用户接受记录。
 
-生成角色的选材与每轮注入继续使用上述入口. 当前独立分析的 Builder 在 `context/exploration.py`, 按初稿、独立探索和按需整合分别构建输入; `context/analysis.py` 保留旧协议逻辑. 主分析具有完整请求的应用估算预算, 保留同组必要修复材料; 通过确定性规则整理已消费索引和已被当前完整草稿替代的历史参数, 保留调用配对, 不截断判断正文, 不额外调用模型生成摘要. 生成角色的聊天历史管理沿用 Deep Agents; 独立视觉评审尚未接入.
+生成角色的选材与每轮注入继续使用上述入口. 初稿与探索的 Builder 分别在 `agents/outline/context.py`、`agents/exploration/context.py`; 整合角色按当前阶段构造受限材料. `compatibility/` 保留旧协议及按需整合逻辑. 主分析具有完整请求的应用估算预算, 保留同组必要修复材料; 通过确定性规则整理已消费索引和已被当前完整草稿替代的历史参数, 保留调用配对, 不截断判断正文, 不额外调用模型生成摘要. 生成角色的聊天历史管理沿用 Deep Agents; 独立视觉评审尚未接入.
 
 ## 开发检查
 

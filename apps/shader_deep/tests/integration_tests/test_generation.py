@@ -6,9 +6,9 @@ from pathlib import Path
 
 from PIL import Image
 
-from shader_deep.agents.generation import run_generation
-from tests.unit_tests._generation_fixture import GenerationFixture, task_payloads, tool_results
-from tests.unit_tests.test_context import BASE_CODE
+from shader_deep.workflows.generation import run_generation
+from tests.unit_tests.agents.test_context import BASE_CODE
+from tests.unit_tests.fixtures._generation_fixture import GenerationFixture, task_payloads, tool_results
 
 
 class GenerationIntegrationTests(GenerationFixture):

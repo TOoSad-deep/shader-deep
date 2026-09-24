@@ -1,0 +1,32 @@
+{
+  "recorded_at_utc": "2026-09-24T06:26:52+00:00",
+  "base_head": "8535e429adaf5c75c2372e391eed439a7a8fee8a",
+  "git_state": "uncommitted worktree, not a commit/push/merge receipt",
+  "scope": "Four module guides, architecture navigation, source README link coverage and its regression test; one stale forwarding-module docstring corrected; no business behavior changed",
+  "document_hashes": {
+    "src/shader_deep/domain/library/README.md": "0e91dcb9702bb2aaa7b945c2cc7c3f3448553a26dac6d5052eb44ca549c14373",
+    "src/shader_deep/runtime/README.md": "d63777080f60995a5d207a7566e026a271f528106b588b0ac61fc192d0740b33",
+    "src/shader_deep/agents/integration/README.md": "f436e3c2f104397565000e07afb4537263398ce371929cad87fc24f43fddbcf6",
+    "src/shader_deep/compatibility/README.md": "1af34dc4aac7b5aa6dfd1b7deddceab7c81dcd79fa3aa0fc6ab89979f242548e",
+    "docs/architecture.md": "02042f207db28d0902efcb455e748b174ccd44180b10d24636c3b6f58a54dbbe",
+    "docs/development.md": "59e292e2536b43b1df7765343a238537f58c638989f45deae23a653d00c29c62"
+  },
+  "tested_executable_inputs": {
+    "sha256": "63889a75a87d9d897f682a2f0e26cb33f388031f50aea92906a7daa7f047dc34",
+    "file_count": 233,
+    "scope": "src/**/*.{py,yaml,js}, tests/**/*.py, scripts/**/*.py, main.py, Makefile, pyproject.toml, uv.lock; caches excluded",
+    "algorithm": "SHA256 of UTF-8 lines sorted by relative POSIX path: path + NUL + SHA256(file bytes) + newline"
+  },
+  "verification": {
+    "command": "make check",
+    "cwd": "apps/shader_deep",
+    "exit_code": 0,
+    "result": "368 unit tests, repository links/import boundaries, Ruff, formatting and ty passed",
+    "output": "/Applications/Xcode-beta.app/Contents/Developer/usr/bin/make repository_check\nuv run --no-sync python scripts/check_repository.py\nRepository checks: OK (0 findings)\n/Applications/Xcode-beta.app/Contents/Developer/usr/bin/make test\nuv run --no-sync python -W error -m unittest discover -s tests/unit_tests -q\n----------------------------------------------------------------------\nRan 368 tests in 11.660s\n\nOK\n/Applications/Xcode-beta.app/Contents/Developer/usr/bin/make lint\nuv run --no-sync ruff check .\nAll checks passed!\nuv run --no-sync ruff format --check .\n228 files already formatted\n/Applications/Xcode-beta.app/Contents/Developer/usr/bin/make type\nuv run --no-sync ty check src main.py scripts\nAll checks passed!\n"
+  },
+  "earlier_evidence": "structure-refactor-2026-09-24.json",
+  "not_rerun": [
+    "Browser suite and wheel checks; this update does not modify their behavior. Earlier results remain recorded separately.",
+    "Real-model quality or independent fresh-agent comprehension evaluation"
+  ]
+}
