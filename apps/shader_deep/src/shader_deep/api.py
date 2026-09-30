@@ -2,6 +2,7 @@
 
 from shader_deep.agents.generation.contracts import GenerationOutcome
 from shader_deep.agents.generation.options import GenerationOptions
+from shader_deep.infrastructure.storage.report_package import read_report_package, read_sketch
 from shader_deep.workflows.analysis import run_analysis, run_analysis_task
 from shader_deep.workflows.generation import GenerationIncompleteError, generate_shader, generate_task, run_generation, run_shader
 from shader_deep.workflows.options import AnalysisOptions
@@ -15,6 +16,8 @@ __all__ = [
     "GenerationOutcome",
     "generate_shader",
     "generate_task",
+    "read_report_package",
+    "read_sketch",
     "run_analysis",
     "run_analysis_task",
     "run_generation",

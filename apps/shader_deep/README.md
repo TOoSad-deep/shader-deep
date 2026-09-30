@@ -6,7 +6,7 @@
 
 当前已连接内存黑板、Context Builder、真实 WebGL2 渲染工具和有预算的生成循环。每次尝试保存代码、预览或错误, 完成时明确选择已渲染且已向模型展示预览的候选。
 
-独立分析提供 `shader-deep-analyze` 命令：主 Agent 建立统一视觉初稿，子 Agent 独立探索三个候选库，独立整合 subagent 处理比较与复核, 后端校验并发布四库。输出协议为 `possibility_library_v1`。分析到生成的自动交接尚未接入，候选仍需编码、渲染与用户视觉验收。
+独立分析提供 `shader-deep-analyze` 命令: 主 Agent 确定一个目标元素与范围, 默认三个独立探索 worker 产出特征、关系、机制和草图, 异步整合 worker 仅合并 F/R/M. 程序维护引用并交付 `five_libraries_v1` 完整文件包、短入口及按草图读取视图. 分析到生成的自动交接尚未接入, 候选仍需编码、渲染与用户视觉验收.
 
 ## 安装与配置
 
@@ -86,111 +86,75 @@ PNG 字节保持原样, 任务说明与实际加载的图像一起进入多模�
 
 退出码: 完成并选定已渲染候选时为 `0`; 预算耗尽未完成时为 `1`, 不输出未经确认的 GLSL; 输入、配置或文件错误为 `2`。模型服务异常会向调用方抛出, 已开始运行的记录保存在运行目录中。
 
-## 独立多视角分析
-
-在本目录执行 `make sync` 注册新命令, 然后沿用现有 `.env`:
+## 单元素多视角分析
 
 ```sh
-uv run --no-sync --env-file .env shader-deep-analyze /absolute/path/reference.png "分析构图、元素组织和可能机制" > analysis.json
+uv run --no-sync --env-file .env shader-deep-analyze /absolute/path/reference.png "只分析中央粉色圆形本体" --output-dir runs > analysis-index.json
 ```
 
-模块入口也可直接运行:
+默认一批三个独立视角, `--max-tasks 2` 可以减少到两个. 第四个视角或结果返回后的新探索批次会被拒绝. 重试保持原目标、方向和输入, 不增加视角. 主 Agent 只定位元素与确定范围, 不预填特征观察或机制答案. 探索的共同材料是固定原图、用户要求、目标元素与范围, 每个 worker 使用自己的方向和模型历史.
 
-```sh
-uv run --no-sync --env-file .env python -m shader_deep.analysis_cli /absolute/path/reference.png "分析参考图"
+整合使用独立线程和历史, 从不可变 V0 目录按 ID 读取正文, 只合并已有特征、关系和机制. 程序拒绝改变方案含义的映射, 草图直接汇集且仅更新引用. 合法 V0 在整合启动前持久保存; 整合或 V1 发布失败后交付 V0、`partial` 和具体缺口. 无合法可用观察基线时返回 `failed`, 不发布空包.
+
+### 文件包与读取
+
+CLI 标准输出只返回 JSON 状态、运行目录、`report_dir` 和短结果索引, 标准错误显示入口位置. `AnalysisOutcome.report_dir` 是新增的可选返回属性, 公开函数签名保持不变; 结果协议及交付载体已从四库切换为五库.
+
+```text
+run-*/
+  reference.png
+  commit.json       # 任务、回执、结果和版本指针的唯一权威发布记录
+  results/          # 不可变原始产物、V0/V1; 来源与恢复信息保留在运行记录
+  run.json          # 从权威记录生成的可读投影
+  report/
+    README.md       # 目标、状态、草图目录、缺口和读取导航
+    manifest.json   # 本轮公共 state 与格式版本
+    elements.json
+    features.json
+    relations.json
+    mechanisms.json
+    sketches.json
+    reference.png
 ```
-
-### YAML 运行配置
-
-分析模块专用配置位于 [resources/analysis.yaml](src/shader_deep/resources/analysis.yaml), 默认按模块位置加载, 不依赖启动目录, 并随应用打包。可直接修改其中的输出 token、主/子 Agent 调用次数、任务数、并发、取证、重试、超时和流式开关; 模型地址与密钥仍由 `.env` 提供。
-
-优先级为 **命令行显式参数 > YAML > `AnalysisOptions` 内置默认值**。也可以选择其他配置文件, 并临时覆盖个别参数:
-
-```sh
-uv run --no-sync --env-file .env shader-deep-analyze test_pic/2d-physics-balls.png "分析构图、元素组织和可能机制" --config src/shader_deep/resources/analysis.yaml --max-worker-calls 5
-```
-
-YAML 使用平铺字段名, 例如 `max_output_tokens: 16384`、`max_worker_calls: 3`、`stream_model_responses: true`。当前模块 YAML 将主、子 Agent 的累计调用上限均设为 0, 主任务仍受每阶段及比较组预算限制; 通用输出上限设为 163840、请求超时设为 240 秒. `outline_max_output_tokens`、`integration_max_output_tokens`、`worker_max_output_tokens` 可分别覆盖初稿、整合和子任务输出上限, 默认均为 `null`, 回退通用值.
-
-阶段输出的优先级为 **阶段专用 CLI > 通用 `--max-output-tokens` CLI > 阶段 YAML > 通用 YAML > 内置默认值**. 对应阶段 CLI 为 `--outline-max-output-tokens`、`--integration-max-output-tokens`、`--worker-max-output-tokens`. 同一有效值用于模型请求参数、上下文输出预留和阶段预算记录; 实际可用上限仍取决于模型服务. 文档中的回放示例值不会自动成为默认配置.
-
-未传 `--config` 时读取模块内的 `config.yaml`, 不自动读取当前目录的同名文件; 模块内文件缺失时使用内置默认值。显式指定的文件不存在、字段拼错、YAML 类型或预算范围错误时, 在调用模型前以退出码 2 报错。YAML 中的相对 `output_dir` 基于配置文件所在目录, CLI 的 `--output-dir` 仍基于当前工作目录; 默认配置的 `output_dir: null` 使用当前工作目录下的 `runs`, 避免把运行产物写入源码目录。最终有效参数继续写入 `run.json` 的 `options`。
-
-Python 调用方可显式使用同一加载器, 现有 `run_analysis` 接口保持不变:
 
 ```python
 from pathlib import Path
-from shader_deep.api import run_analysis
-from shader_deep.analysis.config import load_analysis_options
+from shader_deep.api import run_analysis, read_report_package, read_sketch
+from shader_deep.workflows.configuration import load_analysis_options
 
-options = load_analysis_options()  # 默认读取分析模块内的 config.yaml.
-outcome = run_analysis(Path("test_pic/2d-physics-balls.png"), "分析参考图", options=options)
+outcome = run_analysis(Path("/absolute/path/reference.png"), "分析中央圆形", options=load_analysis_options())
+if outcome.report_dir is not None:
+    manifest, libraries = read_report_package(outcome.report_dir)
+    # 草图 ID 来自目录, 没有自动排名或全局默认草图.
+    if libraries.sketches:
+        materials = read_sketch(outcome.report_dir, libraries.sketches[0].id)
+        # 局部备选须显式选择, 不会自动叠加多个备选.
+        # materials = read_sketch(outcome.report_dir, "S1", alternative=0)
 ```
 
-配置读取使用已由 SDK 锁定并安装的 PyYAML `safe_load`, 本应用将其声明为直接依赖, 不引入新的解析器或升级现有版本。
+按草图返回的是有范围的取材视图, 保留整轮状态、全部缺口和未知项. 视图提供有效选择及必要正文, 其他候选继续从完整包读取, 不声称视图是自包含小包. 完整文件包可整体移动, 原图哈希和全部引用可校验. 已发布包不可覆盖.
 
-主、子 Agent 的 `max_main_calls` 与 `max_worker_calls` 默认均为 0, 表示没有额外的对应累计调用上限; YAML 与 Python 默认值一致, CLI 对应参数可显式覆盖. 主任务仍受下面的每阶段、每比较组、无进展和完整请求预算约束. 网络重试最多额外 2 次, 独立测量总额为 8; 正整数调用上限可进一步限制整体调用数.
+### 配置与恢复
 
-### 分析执行与预算
+配置文件为 [resources/analysis.yaml](src/shader_deep/resources/analysis.yaml), 按模块位置加载. 显式 CLI 参数优先于 YAML, YAML 优先于 `AnalysisOptions` 内置值; 相对 YAML 输出路径基于配置文件所在目录. `--config` 可选其他文件, 显式文件不存在或字段错误会在模型调用前报错. Python 直接调用使用 `AnalysisOptions`, 可显式调用 `load_analysis_options` 加载 YAML.
 
-主 Agent 负责初稿规划, 独立整合 subagent 负责后续受控整合. 主 Agent 首次接收用户要求和完整原图, 一次 `submit_visual_outline(outline, directions)` 提交统一初稿和至少两个中性探索问题. 后端冻结本轮元素与实例组身份, 按方向运行独立探索批次; 所有探索子任务终止后, 协调器同步委派一次 `IntegrationSubagent`. 探索子任务只接收原始要求、统一初稿、探索方向和完整图像, 不传递兄弟报告或测量.
+`max_main_calls` 由规划、主恢复诊断与整合共用, 并发扣费读取持久计数; `max_main_calls` / `max_worker_calls` 默认 0, 不设总模型调用限额; 提供方单次输出容量、请求超时和上下文检查继续生效. 阶段输出覆盖顺序保持: 阶段 CLI > 通用 CLI > 阶段 YAML > 通用 YAML > 内置值. `outline_max_output_tokens` 在新流程用于目标规划, `worker_max_output_tokens` 用于探索, `integration_max_output_tokens` 用于整合.
 
-子任务以三个顶层参数提交 `sketch_library`、`feature_library`、`relation_library`, 不再套 `report`. 后端校验后直接入统一库, 在短写锁中串行发布; 同一成功提交重放不重复入库, 不同内容不能覆盖原报告.
+网络暂时错误默认额外重试两次, 只重试请求、不重放工具. 每个逻辑任务最多两次提交修复, 跨重派不重置; 每个任务初次执行加一次自动重派; 自动恢复失败后由主 agent 在独立受限上下文诊断, 决定最后重派原任务或结束. 恢复决策自身失败不会递归恢复, 也不能改变目标、方向或加入兄弟结论. 连续三轮没有新的有效读取或接受的提交会结束当前实例并进入恢复策略. 永久配置、认证和输入容量错误直接报告.
 
-默认完整入口与 `analysis.replay` 共用 `ManagedIntegrationSession` 协调器和 `IntegrationSubagent` 整合角色. 整合子 Agent 先处理初稿问题, 再发现拥有者比较组, 顺序执行特征、关系、草图比较; 最后根据实际归并后的规范身份发现候选比较组. 发现阶段用 `plan_comparisons` 一次提出有依据的同类型小组, 每组 2 至 6 个本轮真实 ID; 程序绑定工作身份、材料和版本. 未选条目原样保留, 不宣称整库已去重. 完整发现材料放不下时记录缺口, 不截断后冒充全量发现.
+运行状态和结果回执一起原子发布. 完成事件只用于唤醒, 协调器等待期间补查持久状态; 相同成功提交在封存后重试仍返回旧回执. 取消、替换和封存撤销新提交权限. 每轮进程锁和运行代次阻止两个协调器同时写入; 恢复任务状态不承诺恢复旧模型推理或聊天会话.
 
-整合通过 `IntegrationInput` 接收业务快照、初稿版本、探索反馈、原图和受控库服务, 不继承主 Agent 的聊天历史或修复草稿. 子角色拥有独立执行计数和 `A1-integration` 等追踪身份, 返回 `IntegrationOutcome` 中的比较结果、修订和缺口; 协调器负责最终交付. 库服务在探索终止后交给整合串行使用, 修改继续经过原有引用、呈现、版本和幂等校验.
+草图最低产出要求继续另议. 当前按已表达的业务缺口计算部分完成, 不增加每个 worker 的草图数量门槛. `completed` 只说明本轮流程与已知必要工作完成, 不证明视觉效果、机制正确或上下文成本收益.
 
-新增 `integration-subagent.json` 保存子角色状态, `integration-work.json` 保留各工作回执. 子角色每次检查点落盘后通过进度回调通知协调器刷新主 `run.json`, 同步调用计数、比较进度、初稿修订和缺口; 累计进度按快照替换, 不重复追加缺口. `run.json` 的 `coordinator_execution` 和 `integration_execution` 分别记录两种角色, `main_execution` 为兼容既有统计保留初稿加整合的累计口径. 整合事件和工具记录标明子角色及父任务; 失败或中断时先保存子角色结果, 再由协调器交付已发布的部分库.
+### 四库兼容与历史回放
 
-比较步骤只开放 `submit_integration` 与局部修复, 字段限于当前类型的 `merges`、`preserve`、整组 `deferred_work`. 程序提供目标正文及候选的直接必要前提, 请求通过预算检查并实际发送后才登记呈现. 普通比较使用纯文本, 不开放测量、扩大范围、元素未决修改或任意引用更新. 特征按范围和外观判断, 候选按机制及必要前提判断; 合并拥有者保留全部候选. 后端继续校验引用、来源和整笔事务, 无法合法发布的工作明确暂缓.
-
-初稿问题由 `review_outline` 逐项提出驳回、暂缓或受限修订. 修订只允许已有元素的 `salient_features` 和已有关系的描述文字, 不改身份、范围、实例或端点, 原探索输入与报告保留. 整个初稿和完整库材料实际呈现后才接受修订, 保存新初稿版本, 然后由下一次独立请求调用 `verify_outline` 复核. 提案本身不能关闭问题; 复核未确认、缺预算或需要新增/拆分对象的情况仍保留 `partial`.
-
-工作预算耗尽或无法判断时暂缓本项并继续其他独立项, 不自动重新领取暂缓项. 总调用或阶段数额度耗尽时停止安排新项, 保留已发布结果. 每次请求提供工作和全局剩余调用额度; `max_main_calls=0` 仅取消全局总次数限制, 不取消每阶段限制. 全部安排结束后由程序检查必要工作、失败任务、初稿问题和覆盖缺口, 自动形成真实终态. `integration-work.json` 保存各阶段和工作的实际调用、回执及失败原因. 原按需读取和测量实现仍保留底层兼容回归, 不是默认模型工具列表.
-
-初稿与整合分别维护格式修复状态, 按初稿、发现阶段或稳定 `work_id` 分别计数, 每个作用域最多两次修复调用; 同组刷新、重建循环或暂缓后接续不重置额度, 全局仍累计统计. 已消费目录回执在请求副本中替换为有界计数和游标, 保留工具调用配对. 当前完整草稿与错误由控制上下文提供, 被替代的旧提交参数不重复驻留; 草稿仍无法完整容纳时保存 `repair_context_exceeded` 并暂缓工作, 不截断草稿或发布部分操作.
-
-原有 YAML / CLI 配额继续有效. `max_main_calls` 约束初稿与整合调用之和, 派发时扣除初稿已经使用的额度; 剩余为零不会被解释为无限制. 探索调用仍由 `max_worker_calls` 独立限制. 新增配置可通过 YAML 或 `AnalysisOptions` 设置:
-
-| 参数 | 默认值 | 约束 |
-| --- | --- | --- |
-| `max_context_tokens` | 262144 | 主任务完整请求的应用估算预算, 包括输出预留 |
-| `request_image_tokens` | 4096 | 每图估算预留 |
-| `request_token_margin` | 2048 | 请求编码和估算余量 |
-| `max_comparison_targets` | 12 | 单组显式目标上限; 超限必要工作保持未完成, 不静默拆分 |
-| `library_page_chars` | 8000 | 库目录、工作和问题索引的单页 JSON 字符上限 |
-| `max_integration_calls` | 12 | 每个比较或发现阶段及初稿阶段的最大调用数, 包含修复 |
-| `max_integration_packages` | 24 | 整合阶段次数, 包括发现、初稿复核和每项比较 |
-| `integration_no_progress` | 3 | 未配置正数全局无进展阈值时的阶段停止阈值 |
-
-主请求发送前检查系统提示、工具 Schema、材料、测量图像、修复历史和输出预留. 文本按每字符一个估算 token 加图像与额外余量计算; 这是应用的保守估算策略, 不是提供方 tokenizer 的精确计数或上下文窗口声明. 真实用量仍从提供方响应读取. 探索子任务保留自己的调用预算, 不套用整合预算.
-
-当前结果外层为 `analysis_protocol="possibility_library_v1"`, `analysis_detail` 为 `elements` 加三个库. 旧 `LensReport` / `AnalysisSummary` 可识别和校验, 不自动转换; 公开入口拒绝未经转换的历史报告输入. 公开函数签名及 CLI 调用方式不变.
-
-失败任务、未解决初稿问题、未覆盖元素、预算出口和 `deferred_work` 均保留, 交付可为 `partial`. 没有合法子报告时保留失败状态. `completed` 不证明跨包语义比较全部完成、候选机制真实或视觉效果被验收. 运行目录保留原图、原报告、版本、来源、提交回执、材料队列与缺口; 库快照是批量发布的权威记录, 不宣称可恢复完整模型会话. 新版真实两图测试和用量对照仍需单独验证, 不依据无网络测试声称视觉或 token 收益.
-
-`tools.jsonl` 保存主任务工具调用参数及成功或拒绝回执; `events.jsonl` 保存阶段有效输出额度、请求大小和提供方实际用量等记录. 冻结探索输入可单独回放主整合, 无需再次运行探索:
+旧 `possibility_library_v1` 实现保留于 `workflows/legacy_analysis.py`、旧角色和 `domain/library/`. 旧数据不自动转换为五库. 历史回放继续使用四库链路, 不计作新默认流程的验证:
 
 ```sh
-uv run --no-sync --env-file .env python -m shader_deep.cli.replay /absolute/path/source-run \
-  --output-dir runs/replay --max-main-calls 8 --integration-max-output-tokens 32768
+uv run --no-sync --env-file .env python -m shader_deep.cli.replay /absolute/path/four-library-source-run --output-dir runs/replay --max-main-calls 8
 ```
 
-源目录须包含受支持的 `run.json` 和原始 `reference.png`; 回放校验原图哈希并恢复冻结初稿、原探索报告、问题和失败状态, 创建独立目录, 不继承旧整合决定或计数. 它会调用配置的模型服务, 只验证固定输入下的整合行为, 不代表完整单图实测或已经取得成本收益.
-
-固定样本的受控去重实验使用独立入口, 依次执行卡片投影特征比较、依赖其拥有者合并的四个候选比较、独立的底场晕影特征比较:
-
-```sh
-uv run --no-sync --env-file .env python -m shader_deep.experiments.controlled_replay \
-  runs/real-business-budget-balls-20260922-54CxRg/run-avu0ozrm \
-  --output-dir runs/controlled-dedup --max-main-calls 12 --max-work-calls 4 \
-  --integration-max-output-tokens 65536
-```
-
-这是绑定该来源对象身份的实验路径. 每项仅提供完整文本材料及合并、保留、暂缓工具, 不重新探索或测量; 依赖不满足时跳过候选比较, 剩余额度允许时继续独立项. 特征按对象范围和外观等价判断, 合并保留全部候选; 候选按机制与必要前提等价另行判断, 不因外观相似而吞并不同机制. `controlled-summary.json` 分别记录三项结果, 暂缓项不自动重入. 原失败任务与初稿问题继续保留, 因而局部三步通过时全运行仍可为 `partial`; 语义判断须对照原文检查, 不以数量下降证明正确或宣称完成整库去重.
-
-详细契约与工具见 [独立探索与可能性库](docs/analysis-protocol.md). [旧协议记录](src/shader_deep/analysis/README.md)保留历史, 不代表当前工具接口.
+当前实现地图见[架构说明](docs/architecture.md); 数据契约见[五库设计](docs/analysis-five-libraries.md); 角色与恢复契约见[分析架构设计](docs/analysis-architecture-design.md). 本轮实施及实际验证记录见[五库实施记录](docs/work-items/five-library-implementation.md).
 
 ## 单 Agent 生成闭环
 
@@ -228,8 +192,8 @@ src/shader_deep/
 ├── api.py                  # 稳定 Python API
 ├── cli/                    # 分析、生成、回放命令
 ├── workflows/              # 调度、阶段推进、主进度与最终交付
-├── agents/                 # outline / exploration / integration / generation
-├── domain/                 # 业务记录、引用、四库与发布规则
+├── agents/                 # five_analysis / generation / 四库兼容角色
+├── domain/                 # 业务记录、五库契约与四库兼容规则
 ├── runtime/                # 调用循环、预算、历史、提交与修复
 ├── infrastructure/         # 模型传输、配置读取、制品存储与追踪
 ├── imaging/                # 图像读取、测量与剖面
@@ -241,7 +205,7 @@ src/shader_deep/
 
 从 [当前架构](docs/architecture.md) 阅读完整职责、调用链和状态归属; 修改与验证方法见 [开发指南](docs/development.md). `analysis/`、旧 `context/`、`tools/` 及旧模块路径是兼容转发, 新实现不从这些路径导入.
 
-`workflows/coordinator.py` 组合初稿、探索和整合执行; `workflows/dispatch.py` 管理批次, `workflows/delivery.py` 检查整轮交付, `workflows/progress.py` 更新主快照. 整合角色不再继承历史探索会话.
+`workflows/five_analysis.py` 组合目标规划、独立探索和异步整合; `domain/five_libraries/` 集中维护字段与引用; `runtime/task_store/` 管理持久生命周期; `infrastructure/storage/report_package.py` 发布和读取文件包. 旧协调器只服务四库兼容及回放.
 
 测试按业务和执行职责组织在 `tests/unit_tests/` 的子目录中. `tests/integration_tests/` 保留真实浏览器渲染检查.
 

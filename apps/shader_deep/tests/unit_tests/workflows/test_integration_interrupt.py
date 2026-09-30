@@ -11,7 +11,7 @@ from pydantic import TypeAdapter
 from shader_deep.agents.exploration.contracts import ExplorationOutcome
 from shader_deep.domain.library.models import ExplorationReport
 from shader_deep.runtime.execution import AnalysisExecution
-from shader_deep.workflows.analysis import run_analysis
+from shader_deep.workflows.legacy_analysis import run_analysis
 from shader_deep.workflows.options import AnalysisOptions
 from tests.unit_tests.fixtures._generation_fixture import GenerationFixture
 

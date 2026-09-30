@@ -1,6 +1,8 @@
 # 独立探索与可能性库
 
-当前公开入口 `run_analysis` / `run_analysis_task` 和 `shader-deep-analyze` 使用 `possibility_library_v1`. 公开 Python 参数和 CLI 用法保持不变. 旧报告类型仍可识别与校验, 但公开入口不运行旧的观察/解释综合流程, 也不自动转换旧报告.
+本文保留四库 `possibility_library_v1` 的兼容契约. 默认五库入口见[当前架构](architecture.md), 新对象与交付字段见[五库数据设计](analysis-five-libraries.md).
+
+四库兼容入口 `workflows.legacy_analysis.run_analysis` / `run_analysis_task` 使用 `possibility_library_v1`. 默认公开入口与 CLI 已使用五库文件包. 旧报告类型仍可识别与校验, 但公开入口不运行旧的观察/解释综合流程, 也不自动转换旧报告.
 
 ## 角色与阶段
 

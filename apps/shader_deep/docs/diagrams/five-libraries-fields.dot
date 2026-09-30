@@ -1,0 +1,108 @@
+digraph FiveLibraries {
+  graph [rankdir=TB, bgcolor="#f8fafc", pad="0.45", nodesep="0.55", ranksep="0.8", splines=polyline,
+    fontname="PingFang SC", fontsize=26, fontcolor="#14213d", labelloc=t,
+    label="五库字段与本轮分析 State\n首版设计基线 · five_libraries_v1 · 尚未实现\n? 表示可选；[] 表示数组；箭头表示引用，不表示执行顺序",
+    outputorder=edgesfirst];
+  node [shape=plain, fontname="PingFang SC", fontsize=20];
+  edge [fontname="PingFang SC", fontsize=15, color="#718096", fontcolor="#46546c", penwidth=1.5, arrowsize=0.8];
+
+  runState [label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="12" COLOR="#cad4e3" BGCOLOR="#ffffff">
+      <TR><TD BGCOLOR="#e5ebf4" COLSPAN="2"><B>本轮公共业务 state · 交付时投影到报告</B></TD></TR>
+      <TR><TD ALIGN="LEFT">reference</TD><TD ALIGN="LEFT">{ path: string, sha256: string }<BR ALIGN="LEFT"/>本轮固定参考图；由程序绑定</TD></TR>
+      <TR><TD PORT="target" ALIGN="LEFT">target_element_id</TD><TD ALIGN="LEFT">元素 ID · 一个主分析目标</TD></TR>
+      <TR><TD ALIGN="LEFT">status</TD><TD ALIGN="LEFT">completed | partial · 程序判定</TD></TR>
+      <TR><TD ALIGN="LEFT">open_questions</TD><TD ALIGN="LEFT">[{ refs: ID[], description: string }]<BR ALIGN="LEFT"/>已分析但仍不确定；可为空</TD></TR>
+      <TR><TD ALIGN="LEFT">gaps</TD><TD ALIGN="LEFT">[{ refs: ID[], description: string }]<BR ALIGN="LEFT"/>必要工作未完成；可为空</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f1f5f9">格式元数据</TD><TD ALIGN="LEFT" BGCOLOR="#f1f5f9">schema_version: "five_libraries_v1"<BR ALIGN="LEFT"/>不属于五项业务 state</TD></TR>
+    </TABLE>
+  >];
+
+  elements [label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="12" COLOR="#bbcfe8" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="2" BGCOLOR="#e3efff"><B>元素库 · elements[]</B></TD></TR>
+      <TR><TD PORT="id" ALIGN="LEFT">id</TD><TD ALIGN="LEFT">string · 如 E1</TD></TR>
+      <TR><TD ALIGN="LEFT">name</TD><TD ALIGN="LEFT">string · 对象名称</TD></TR>
+      <TR><TD ALIGN="LEFT">region</TD><TD ALIGN="LEFT">string · 图中位置与范围</TD></TR>
+      <TR><TD PORT="features" ALIGN="LEFT">feature_ids</TD><TD ALIGN="LEFT">特征 ID[]</TD></TR>
+    </TABLE>
+  >];
+
+  features [label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="12" COLOR="#bbcfe8" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="2" BGCOLOR="#e3efff"><B>特征库 · features[]</B></TD></TR>
+      <TR><TD PORT="id" ALIGN="LEFT">id</TD><TD ALIGN="LEFT">string · 如 F3</TD></TR>
+      <TR><TD ALIGN="LEFT">description</TD><TD ALIGN="LEFT">string · 本图观察及位置</TD></TR>
+      <TR><TD PORT="mechanisms" ALIGN="LEFT">mechanism_refs</TD><TD ALIGN="LEFT">[{ id: 机制 ID,<BR ALIGN="LEFT"/>   reason?: string }]<BR ALIGN="LEFT"/>候选方法及可选适用理由</TD></TR>
+    </TABLE>
+  >];
+
+  relations [label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="12" COLOR="#bbcfe8" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="2" BGCOLOR="#e3efff"><B>关系库 · relations[]</B></TD></TR>
+      <TR><TD PORT="id" ALIGN="LEFT">id</TD><TD ALIGN="LEFT">string · 如 R1</TD></TR>
+      <TR><TD PORT="participants" ALIGN="LEFT">participants</TD><TD ALIGN="LEFT">[{ ref: 元素或特征 ID,<BR ALIGN="LEFT"/>   role?: string }]<BR ALIGN="LEFT"/>至少两个不同参与者</TD></TR>
+      <TR><TD ALIGN="LEFT">description</TD><TD ALIGN="LEFT">string · 可见联系</TD></TR>
+      <TR><TD PORT="mechanisms" ALIGN="LEFT">mechanism_refs</TD><TD ALIGN="LEFT">[{ id: 机制 ID,<BR ALIGN="LEFT"/>   reason?: string }]<BR ALIGN="LEFT"/>候选方法及可选适用理由</TD></TR>
+    </TABLE>
+  >];
+
+  mechanisms [label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="12" COLOR="#ddc69d" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="2" BGCOLOR="#fff0d7"><B>实现机制库 · mechanisms[]</B></TD></TR>
+      <TR><TD PORT="id" ALIGN="LEFT">id</TD><TD ALIGN="LEFT">string · 如 M4</TD></TR>
+      <TR><TD ALIGN="LEFT">name</TD><TD ALIGN="LEFT">string · 方法名称</TD></TR>
+      <TR><TD ALIGN="LEFT">method</TD><TD ALIGN="LEFT">string · 构造、输入/调节量、输出</TD></TR>
+      <TR><TD ALIGN="LEFT">conditions?</TD><TD ALIGN="LEFT">string[] · 方法内在前提</TD></TR>
+      <TR><TD COLSPAN="2" ALIGN="LEFT" BGCOLOR="#fff8eb">可跨图复用；不保存具体 F/R 的 targets</TD></TR>
+    </TABLE>
+  >];
+
+  sketches [label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="12" COLOR="#cbbce5" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="2" BGCOLOR="#eee6ff"><B>草图库 · sketches[] · 可有多个方案</B></TD></TR>
+      <TR><TD ALIGN="LEFT">id</TD><TD ALIGN="LEFT">string · 如 S1、S2</TD></TR>
+      <TR><TD PORT="element" ALIGN="LEFT">element_id</TD><TD ALIGN="LEFT">元素 ID · 本方案针对的对象</TD></TR>
+      <TR><TD ALIGN="LEFT">name</TD><TD ALIGN="LEFT">string · 方案名称</TD></TR>
+      <TR><TD PORT="selection" ALIGN="LEFT">default</TD><TD ALIGN="LEFT">{ 特征或关系 ID: 机制 ID[] }<BR ALIGN="LEFT"/>键 → F/R；值 → 共同采用的 M</TD></TR>
+      <TR><TD ALIGN="LEFT">composition</TD><TD ALIGN="LEFT">string · 裁切、叠加、依赖<BR ALIGN="LEFT"/>以及机制的实际应用次数</TD></TR>
+      <TR><TD ALIGN="LEFT">alternatives?</TD><TD ALIGN="LEFT">局部备选数组；单项字段如下</TD></TR>
+      <TR><TD ALIGN="LEFT">　choices</TD><TD ALIGN="LEFT">{ 特征或关系 ID: 机制 ID[] }<BR ALIGN="LEFT"/>联合替换列出的默认选择</TD></TR>
+      <TR><TD ALIGN="LEFT">　reason</TD><TD ALIGN="LEFT">string · 保留该备选的原因</TD></TR>
+      <TR><TD ALIGN="LEFT">　conditions?</TD><TD ALIGN="LEFT">string[] · 本次替换的必要条件</TD></TR>
+      <TR><TD ALIGN="LEFT">　composition?</TD><TD ALIGN="LEFT">string · 必要时替换<BR ALIGN="LEFT"/>整段组织说明</TD></TR>
+    </TABLE>
+  >];
+
+  guide [label=<
+    <TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="10" BGCOLOR="#edf2f7">
+      <TR><TD ALIGN="LEFT"><B>阅读约定</B></TD></TR>
+      <TR><TD ALIGN="LEFT">蓝线：候选机制；紫线：实际选择</TD></TR>
+      <TR><TD ALIGN="LEFT">普通文字字段均为 string；? 以外为必填</TD></TR>
+      <TR><TD ALIGN="LEFT">default / choices 的机制数组非空</TD></TR>
+      <TR><TD ALIGN="LEFT">多次引用 M ≠ 应用次数；看 composition</TD></TR>
+      <TR><TD ALIGN="LEFT">备选未列出的目标沿用默认<BR ALIGN="LEFT"/>不同备选不自动组合</TD></TR>
+      <TR><TD ALIGN="LEFT">completed 可保留未知项，不表示机制已经验证</TD></TR>
+      <TR><TD ALIGN="LEFT">观察属于本图；短 ID 属于本报告<BR ALIGN="LEFT"/>共享来源由程序记录</TD></TR>
+      <TR><TD ALIGN="LEFT">问题项 refs 可引用 E / F / R / M / S</TD></TR>
+    </TABLE>
+  >];
+
+  {rank=same; sketches; relations;}
+  {rank=same; elements; features;}
+  {rank=same; mechanisms; guide;}
+
+  runState:target:s -> elements:id:n [label="主目标", minlen=2];
+  runState -> sketches [style=invis, weight=12];
+  runState -> relations [style=invis, weight=12];
+  sketches:element:s -> elements:id:n [label="针对元素"];
+  elements:features:e -> features:id:w [label="feature_ids", constraint=false];
+  relations:participants:s -> elements:id:n [xlabel="参与者可为 E"];
+  relations:participants:s -> features:id:n [label="参与者可为 F"];
+  features:mechanisms:s -> mechanisms:id:n [label="候选", color="#2864b4", fontcolor="#2864b4"];
+  relations:mechanisms:e -> mechanisms:id:e [label="候选", color="#2864b4", fontcolor="#2864b4", constraint=false];
+  sketches:selection:s -> features:id:n [label="键：特征目标", color="#7950a8", fontcolor="#7950a8", constraint=false];
+  sketches:selection:e -> relations:id:w [label="键：关系目标", color="#7950a8", fontcolor="#7950a8", constraint=false];
+  sketches:selection:w -> mechanisms:id:w [label="值：所选机制", color="#7950a8", fontcolor="#7950a8"];
+  features -> guide [style=invis, weight=4];
+}

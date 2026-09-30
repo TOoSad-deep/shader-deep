@@ -1,4 +1,4 @@
-"""实际默认入口按本轮身份发现、执行和复核, 不用旧样本固定 ID."""
+"""四库兼容入口按本轮身份发现、执行和复核, 不用旧样本固定 ID."""
 
 from __future__ import annotations
 
@@ -15,7 +15,7 @@ from pydantic import TypeAdapter
 
 from shader_deep.cli.analysis import main
 from shader_deep.domain.library.models import VisualOutline
-from shader_deep.workflows.analysis import run_analysis
+from shader_deep.workflows.legacy_analysis import run_analysis
 from shader_deep.workflows.options import AnalysisOptions
 from shader_deep.workflows.replay import run_replay
 from tests.unit_tests.compatibility.test_exploration_flow import outline_arguments, report_arguments
@@ -42,6 +42,9 @@ def payload_of(request: dict[str, object]) -> dict[str, object]:
 class ManagedIntegrationTests(GenerationFixture):
     def setUp(self) -> None:
         super().setUp()
+        legacy_cli = patch("shader_deep.cli.analysis.run_analysis", run_analysis)
+        legacy_cli.start()
+        self.addCleanup(legacy_cli.stop)
         self.options = AnalysisOptions(output_dir=self.root / "managed", max_main_calls=40, max_integration_calls=3, max_parallel=1)
         self.report_issue = False
         self.confirm_revision = True

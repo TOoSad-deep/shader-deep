@@ -20,3 +20,4 @@ class AnalysisOutcome:
     summary_result: ResultRecord | None
     run_dir: Path
     stop_reason: str
+    report_dir: Path | None = None

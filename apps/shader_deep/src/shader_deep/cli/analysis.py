@@ -25,7 +25,7 @@ def main() -> int:
     parser.add_argument("prompt", help="User requirements and analysis objective")
     parser.add_argument("--config", type=Path, help="Analysis YAML path (default: analysis.yaml bundled with shader_deep.resources)")
     parser.add_argument("--output-dir", type=Path, help="Parent directory for the unique run folder")
-    parser.add_argument("--max-tasks", type=int, help="Total lens tasks, including follow-ups and failures")
+    parser.add_argument("--max-tasks", type=int, help="Perspectives in the single exploration batch: 2 or 3 (default: 3)")
     parser.add_argument("--max-parallel", type=int, help="Maximum concurrent lens workers")
     parser.add_argument("--max-worker-calls", type=int, help="Model calls per lens worker; 0 means unlimited")
     parser.add_argument("--max-main-calls", type=int, help="Coordinator model calls across planning and synthesis; 0 means unlimited")
@@ -52,12 +52,24 @@ def main() -> int:
         sys.stderr.write(f"Error: {exc}\n")
         return 2
     sys.stderr.write(f"Run: {outcome.run_dir}\nStatus: {outcome.stop_reason}\n")
+    if outcome.report_dir is not None:
+        sys.stderr.write(f"Report: {outcome.report_dir / 'README.md'}\n")
     # 诊断信息写到 stderr; stdout 只输出一份 JSON, 便于脚本重定向和读取部分结果.
     result = asdict(outcome.summary_result) if outcome.summary_result is not None else None
     if result is not None and outcome.summary_result is not None and isinstance(outcome.summary_result.analysis_detail, PossibilityLibrary):
         result["analysis_detail"] = compact_data(outcome.summary_result.analysis_detail)
     sys.stdout.write(
-        json.dumps({"status": outcome.stop_reason, "run_dir": str(outcome.run_dir), "result": result}, ensure_ascii=False, indent=2) + "\n"
+        json.dumps(
+            {
+                "status": outcome.stop_reason,
+                "run_dir": str(outcome.run_dir),
+                "report_dir": str(outcome.report_dir) if outcome.report_dir is not None else None,
+                "result": result,
+            },
+            ensure_ascii=False,
+            indent=2,
+        )
+        + "\n"
     )
     return 0 if outcome.stop_reason == "completed" else 1
 

@@ -8,17 +8,18 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from pathlib import Path
 MIN_ANALYSIS_TASKS = 2
+MAX_ANALYSIS_PERSPECTIVES = 3
 
 
 @dataclass(frozen=True, kw_only=True)
 class AnalysisOptions:
-    """分析预算覆盖追加任务、失败任务和无效模型响应.
+    """默认五库与四库兼容流程共用的执行配置.
 
     Attributes:
-        max_tasks: 独立任务总数上限, 包含失败任务和追加任务.
+        max_tasks: 五库单批固定视角数, 默认 3, 公开入口接受 2 或 3; 旧流程仍作为总任务上限.
         max_parallel: 同时执行的分析工作线程数上限.
         max_worker_calls: 每个子任务的模型调用上限, 包含修正报告的调用; 0 表示不限次数.
-        max_main_calls: 主分析 Agent 在规划和综合阶段共享的调用上限; 0 表示不限次数.
+        max_main_calls: 规划、主恢复诊断和整合共享的可选调用上限; 0 表示不限次数.
         output_dir: 独立运行目录的父目录.
         max_measurements: 协调器执行不同图像测量操作的次数上限.
         max_request_retries: 每次逻辑模型调用因暂时性错误可增加的请求次数.
@@ -34,13 +35,13 @@ class AnalysisOptions:
         max_context_tokens: 应用估算的完整请求预算, 包含输出预留, 不代表提供方真实窗口.
         request_image_tokens: 每张图像的保守预算估算, 需按提供方调整.
         request_token_margin: 请求估算余量.
-        max_integration_calls: 每个比较或发现阶段及初稿阶段的模型调用上限, 包含修复.
+        max_integration_calls: 四库兼容的比较、发现及初稿阶段上限, 新默认流程不使用该阶段配额.
         max_integration_packages: 本轮整合阶段次数上限, 包含发现、比较、刷新、复核和结束.
         integration_no_progress: 整合阶段重复同错无进展的停止阈值.
         integration_history_tokens: 选材时为决定及局部修复历史预留的估算 token.
     """
 
-    max_tasks: int = 6
+    max_tasks: int = MAX_ANALYSIS_PERSPECTIVES
     max_parallel: int = 3
     max_worker_calls: int = 0
     max_main_calls: int = 0

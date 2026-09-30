@@ -1,4 +1,4 @@
-"""保留原按需会话的读取、测量及事务兼容回归; 默认流程见 test_managed_integration."""
+"""保留原按需会话的读取、测量及事务兼容回归; 四库整合见 test_managed_integration; 默认五库另有端到端验证."""
 
 from __future__ import annotations
 
@@ -28,7 +28,7 @@ from shader_deep.compatibility.ondemand.session import ExplorationSession
 from shader_deep.domain.blackboard import add_result, add_target, add_task, new_blackboard
 from shader_deep.domain.library.models import ExplorationReport, PossibilityLibrary
 from shader_deep.domain.tasks import ResultRecord, TargetRecord, TaskRecord
-from shader_deep.workflows.analysis import run_analysis, run_analysis_task
+from shader_deep.workflows.legacy_analysis import run_analysis, run_analysis_task
 from shader_deep.workflows.options import AnalysisOptions
 from tests.unit_tests.fixtures._generation_fixture import GenerationFixture, tool_results
 
@@ -96,8 +96,11 @@ def report_arguments(direction: str) -> dict[str, object]:
 class OnDemandCompatibilityTests(GenerationFixture):
     def setUp(self) -> None:
         super().setUp()
+        legacy_cli = patch("shader_deep.cli.analysis.run_analysis", run_analysis)
+        legacy_cli.start()
+        self.addCleanup(legacy_cli.stop)
         # 这些用例专门保护仍被底层复用的按需协议; 不再把它们计作新默认编排的验证.
-        session = patch("shader_deep.workflows.analysis.ManagedIntegrationSession", ExplorationSession)
+        session = patch("shader_deep.workflows.legacy_analysis.ManagedIntegrationSession", ExplorationSession)
         session.start()
         self.addCleanup(session.stop)
         self.analysis_options = AnalysisOptions(output_dir=self.root / "analysis", max_main_calls=30, max_worker_calls=3, max_parallel=2)
