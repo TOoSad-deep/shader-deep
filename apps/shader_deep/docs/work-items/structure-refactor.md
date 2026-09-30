@@ -2,11 +2,11 @@
 
 ## 当前状态
 
-- 更新日期: 2026-09-24, Asia/Shanghai.
-- 状态: 结构重构及仓库记录已实现, 本地检查完成, 实现已提交并推送到工作分支; 待最终 review 和合并. 锁文件漂移尚未解决.
+- 更新日期: 2026-09-30, Asia/Shanghai.
+- 状态: 结构重构及仓库记录已实现, 最终分支 review 完成且发现的问题已修复; 已合并到个人仓库默认主分支. 锁文件漂移尚未解决.
 - 工作分支: `TOoSad-deep/repo/structure-refactor`.
 - 起点提交: `8535e429adaf5c75c2372e391eed439a7a8fee8a`.
-- Git 交付: 实现提交 `86af5e8c1b5d8bd6d9c555af60004bddc49e8f56` 已推送到 `origin/TOoSad-deep/repo/structure-refactor`, 并通过远端 SHA 核对; 尚未合并主分支.
+- Git 交付: 实现提交 `86af5e8c1b5d8bd6d9c555af60004bddc49e8f56` 已推送到工作分支, 并随后合并到 `origin/TOoSad-deep/repo/shader-deep-main`; 最新合并依据见[五库实施记录](five-library-implementation.md#git-交付).
 - 设计依据: [ADR 0001](../decisions/0001-agent-oriented-layout.md).
 
 这里记录截至更新日期的状态. 后续接手先核对 `git status --short`、`git branch --show-current` 和 `git log -1`, 不把本文件当作自动更新的 Git 状态.
@@ -15,7 +15,9 @@
 
 2026-09-24, 根据用户的 commit and push 指令, 创建实现提交 [86af5e8c](https://github.com/TOoSad-deep/shader-deep/commit/86af5e8c1b5d8bd6d9c555af60004bddc49e8f56), 包含结构重构、模块说明、仓库检查和验证记录. 推送到 `TOoSad-deep/repo/structure-refactor` 后, `git ls-remote origin refs/heads/TOoSad-deep/repo/structure-refactor` 返回同一完整 SHA.
 
-本节随后以文档提交补记已确认的交付结果. 证据附件中的“未提交工作区”描述的是验证发生时的状态, 保留为历史证据; 其代码输入指纹已在提交前重新核对. 本次没有提交 SDK 或锁文件变更, 也没有执行主分支合并.
+2026-09-24 随后以文档提交补记已确认的交付结果. 证据附件中的“未提交工作区”描述的是验证发生时的状态, 保留为历史证据; 其代码输入指纹已在提交前重新核对. 当时没有提交 SDK 或锁文件变更, 也没有执行主分支合并.
+
+2026-09-30, 在完成独立分支 review 和用户输入修复后, 用户授权合并到个人主分支. 默认主分支已快进到包含结构重构与五库实现的工作分支快照, 远端 SHA 已核对; 合并细节及新阶段的 462 项测试证据由[五库实施记录](five-library-implementation.md)维护, 不覆盖本文件的历史验证数据.
 
 ## 目标与范围
 
@@ -35,9 +37,9 @@
 - [x] 在验证中发现并修复同一响应内停止/提交工具的执行顺序竞争; 保留延迟停止工具的回归用例.
 - [x] 修复重构收尾时旧 `context` 转发入口中的语法遗漏, 补充旧上下文与工具包导出回归.
 - [x] 完成本轮验证并保存结果、代码输入指纹和失败历史; 未通过的锁文件检查单独列明.
-- [ ] 完成重构的最终代码 review, 处理可确认的问题.
+- [x] 完成重构的最终代码 review, 处理可确认的问题.
 - [x] 提交并推送重构实现, 核对远端 SHA 与本地实现提交一致.
-- [ ] 合并到个人主分支; 合并状态以 Git 或远端核对结果为准.
+- [x] 合并到个人主分支; 合并状态以 Git 或远端核对结果为准.
 
 ## 验收条件
 

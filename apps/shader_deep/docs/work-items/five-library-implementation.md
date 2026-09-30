@@ -54,7 +54,9 @@
 
 2026-09-30 用户授权 commit and push 后, 五库实现、设计图表、回归测试及用户输入修复提交为 [16a2a862](https://github.com/TOoSad-deep/shader-deep/commit/16a2a862c8a379bc5c44cd99af41e30b1491557e), 消息为 `feat(repo): add single-element five-library analysis`. 已推送到 `origin/TOoSad-deep/repo/structure-refactor`; `git ls-remote --heads origin TOoSad-deep/repo/structure-refactor` 返回的完整 SHA 与实现提交一致. 本节记录已核实的实现提交, 不将随后的文档记录提交混为实现提交.
 
-仅暂存本轮明确的 50 个实现、测试、设计及验证文件. 单独生成的 `docs/discussions/` 讨论归档保留在工作区, 未纳入此次提交. 尚未合并到主分支.
+仅暂存本轮明确的 50 个实现、测试、设计及验证文件. 单独生成的 `docs/discussions/` 讨论归档保留在工作区, 未纳入此次提交.
+
+2026-09-30 用户授权合并到个人仓库 main 后, 核实 `origin` 仓库的实际默认主分支为 `TOoSad-deep/repo/shader-deep-main`. 将该分支从 `8535e429adaf5c75c2372e391eed439a7a8fee8a` 快进到包含结构重构、五库实现与用户输入修复的 `f692ec2623e089d5e97d438db2310dc37b347c0d`, 并推送成功. `git ls-remote --heads origin TOoSad-deep/repo/shader-deep-main` 返回同一 SHA. 快进后的代码树与已验证工作分支相同, 没有重新组合代码或创建冲突修复; 后续文档提交仅补记这一已确认的主分支交付事实.
 
 ## 后续边界
 
