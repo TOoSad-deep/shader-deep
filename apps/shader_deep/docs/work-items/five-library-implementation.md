@@ -2,7 +2,7 @@
 
 日期: 2026-09-30.
 
-状态: 用户授权驱动 subagents 实施, 首版代码已接入, 本地验收通过; 未提交、推送或合并. 本记录只描述实施证据, 数据字段和角色契约分别由[五库设计](../analysis-five-libraries.md)与[架构设计](../analysis-architecture-design.md)维护.
+状态: 首版代码与用户输入修复已完成并通过本地验收; Git 交付见下文. 本记录只描述实施证据, 数据字段和角色契约分别由[五库设计](../analysis-five-libraries.md)与[架构设计](../analysis-architecture-design.md)维护.
 
 ## 范围与职责
 
@@ -48,7 +48,13 @@
 
 2026-09-30 只读分支审查发现 `run_analysis_task` 只传递 `TaskRecord.objective`, 丢失绑定目标的 `request`、`constraints` 和 `protected_features`. 已恢复原用户要求、显式约束、保护特征的完整装配, 不同的任务 objective 作为补充; 相同提示词不重复拼接. 装配使用 `task.target_version` 对应目标, 不改变已登记黑板记录.
 
-新增回归测试经真实无网络角色链核对规划及三个探索请求, 覆盖不同目标的排除、完整用户要求传递、固定输入保存与简单 PNG 入口的去重. 修复前该回归明确失败, 修复后 `make check` 通过: 462 项单元测试、0 个文档/导入问题、Ruff、格式和 ty 全部通过, `git diff --check` 通过. 完整失败输出及新代码输入指纹见[修复验证证据](evidence/five-library-user-input-fix-2026-09-30.json). 本次未重跑真实模型、浏览器或 wheel 构建, 首版构建证据继续对应其原始代码状态. 未暂存、提交或推送.
+新增回归测试经真实无网络角色链核对规划及三个探索请求, 覆盖不同目标的排除、完整用户要求传递、固定输入保存与简单 PNG 入口的去重. 修复前该回归明确失败, 修复后 `make check` 通过: 462 项单元测试、0 个文档/导入问题、Ruff、格式和 ty 全部通过, `git diff --check` 通过. 完整失败输出及新代码输入指纹见[修复验证证据](evidence/five-library-user-input-fix-2026-09-30.json). 本次未重跑真实模型、浏览器或 wheel 构建, 首版构建证据继续对应其原始代码状态. 验证证据记录修复当时的未提交工作区, 后续 Git 交付另记.
+
+## Git 交付
+
+2026-09-30 用户授权 commit and push 后, 五库实现、设计图表、回归测试及用户输入修复提交为 [16a2a862](https://github.com/TOoSad-deep/shader-deep/commit/16a2a862c8a379bc5c44cd99af41e30b1491557e), 消息为 `feat(repo): add single-element five-library analysis`. 已推送到 `origin/TOoSad-deep/repo/structure-refactor`; `git ls-remote --heads origin TOoSad-deep/repo/structure-refactor` 返回的完整 SHA 与实现提交一致. 本节记录已核实的实现提交, 不将随后的文档记录提交混为实现提交.
+
+仅暂存本轮明确的 50 个实现、测试、设计及验证文件. 单独生成的 `docs/discussions/` 讨论归档保留在工作区, 未纳入此次提交. 尚未合并到主分支.
 
 ## 后续边界
 
