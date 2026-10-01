@@ -129,6 +129,44 @@ class FivePublicApiTests(TestCase):
         self.assertTrue((Path(output["report_dir"]) / "mechanisms.json").is_file())
         self.assertIsNone(output["result"]["analysis_detail"])
         self.assertIn("README.md", stderr.getvalue())
+        self.assertIn("元素 E1: 圆形", stderr.getvalue())
+        self.assertIn("features F1: 目标的圆形轮廓", stderr.getvalue())
+        self.assertIn("报告包已发布并封存", stderr.getvalue())
+        log = (Path(output["run_dir"]) / "analysis.log").read_text()
+        self.assertIn("完整业务提交与回执", log)
+        for task_id in ("planning", "exploration-1", "exploration-2", "exploration-3", "integration"):
+            self.assertIn(f"/{task_id} attempt=", log)
+
+    def test_cli_error_level_keeps_complete_file_log_and_clean_stdout(self) -> None:
+        stdout, stderr = io.StringIO(), io.StringIO()
+        with (
+            patch.object(
+                sys,
+                "argv",
+                ["shader-deep-analyze", str(self.reference), "分析圆形", "--output-dir", str(self.root / "quiet"), "--log-level", "ERROR"],
+            ),
+            patch("shader_deep.workflows.analysis.build_model", return_value=RoutingFakeModel()),
+            contextlib.redirect_stdout(stdout),
+            contextlib.redirect_stderr(stderr),
+        ):
+            self.assertEqual(main(), 0)
+        output = json.loads(stdout.getvalue())
+        self.assertNotIn("元素 E1", stderr.getvalue())
+        log = (Path(output["run_dir"]) / "analysis.log").read_text()
+        self.assertIn("元素 E1: 圆形", log)
+        self.assertIn("完整五库版本", log)
+        self.assertEqual(output["status"], "completed")
+
+    def test_failed_worker_is_visible_without_discarding_other_results(self) -> None:
+        with patch("shader_deep.workflows.analysis.build_model", return_value=RoutingFakeModel(permanent_direction="检查色彩")):
+            outcome = run_analysis(self.reference, "分析圆形", options=self.options)
+        self.assertEqual(outcome.stop_reason, "partial")
+        log = (outcome.run_dir / "analysis.log").read_text()
+        self.assertIn("任务执行失败", log)
+        self.assertIn("model connection failed", log)
+        self.assertIn("/exploration-2 attempt=", log)
+        self.assertIn("五库版本已发布", log)
+        self.assertIn('"status": "partial"', log)
 
     def test_keyboard_interrupt_preserves_partial_package_and_projection(self) -> None:
         with (

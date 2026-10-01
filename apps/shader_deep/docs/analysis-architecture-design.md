@@ -1,6 +1,6 @@
 # 分析架构与 Agent 工作流设计
 
-更新日期: 2026-09-30.
+更新日期: 2026-10-01.
 
 状态: 角色职责边界已收口, review 的 R1-R3 已修复为第 8.2 节的正式设计契约. 草图最低产出要求另行讨论. 用户随后授权驱动 subagents 实施; 五库默认链路已接入工作区, 实施与验证范围见[五库实施记录](work-items/five-library-implementation.md). skill 具体加载仍待确定. 当前已实现架构见[架构说明](architecture.md).
 
@@ -64,7 +64,9 @@
 
 对粉色圆形, 不同视角可以都观察到同一左上亮斑, 分别提出局部遮罩或曲面法线与光照的候选. 整合时可能合并这条观察, 同时保留不同机制与草图. 这是讨论示例, 不预设固定视角名称, 也不要求某个视角必须得出指定机制.
 
-## 4. 主 agent + skill: 候选实现方式, 待讨论
+## 4. 主 agent + skill: 方向已确认, 具体加载待实现
+
+2026-10-01 用户再次确认由独立主 agent 按 skill 编排流程, 先拆分元素再派发. 下文保留既有方法封装讨论; 当前实现差距和具体改造提案见第 10 节.
 
 主 agent 的编排职责已经明确, 是否以及如何用 skill 封装仍按本节候选方式细化. 本节按 skill 为可加载的工作流程包理解, 包含说明、参考材料及可选脚本; 不预设迁移到某一产品或框架. [Agent Skills 格式说明](https://agentskills.io/home)与[Deep Agents 的 skill 文档](https://docs.langchain.com/oss/python/deepagents/skills)提供了这类封装及按需加载机制的参考, 不代表本应用已接入 skill 运行能力.
 
@@ -284,3 +286,209 @@ V0 一经发布即保持不可变; 失败的整合暂存目录不能被读作当
 | 2026-09-30 | 用户明确本轮只修设计契约; 将 R1-R3 落实为正式规则, 同步正文引用语法与示例、V0/V1 发布及回退、提交幂等与异步终态控制 | 三处设计缺口已闭合; `make repository_check` 通过, 0 findings; `git diff --check` 通过; 6 段 JSON 示例可解析, 草图文本标记与结构目标一致, 两路只读契约复核通过. 业务实现与行为验收仍未完成; 草图最低产出继续另议, 未修改业务代码 |
 
 | 2026-09-30 | 用户授权驱动 subagents 实施五库默认流程及 R1-R3, 保留旧四库兼容回放 | 代码已接入工作区; 实测状态与复核修复由[五库实施记录](work-items/five-library-implementation.md)维护. 草图最低数量和 skill 具体加载仍待讨论 |
+
+## 10. 2026-10-01 核对: 独立主 agent 与编排 skill 改造方案
+
+状态: 用户再次明确独立主 agent 由 skill 指导流程编排, 并要求先划分元素、再派发子 agent. 本节记录当前实现核对及改造建议; 工具名、文件布局和实施步骤是方案, 尚未实现. 此次仅更新设计文档. 关于主 agent + skill 的历史原话见[讨论来源 T008](discussions/2026-09-29-163823-main-agent-skill-orchestration/sources.md#t008).
+
+### 10.1 当前架构与控制权
+
+当前默认五库链路是“Python 协调器组织多个受限角色”. 每个角色内部确实运行 Agent 模型—工具循环, 但没有一个贯穿规划、派发、回读、整合与交付的主 agent 会话. 上下文独立的探索和整合已经实现; 主 agent 的持续编排及方法 skill 加载尚未实现.
+
+| 模块 | 当前职责与实际控制点 |
+| --- | --- |
+| `cli/analysis.py`, `api.py`, `workflows/analysis.py` | 读取参数、构造公开任务、固定原图、创建 run 目录、构造模型客户端及交付回调 |
+| `workflows/five_analysis.py` | `execute_five_analysis` 打开 TaskStore 并处理恢复/异常/封存; `_stages` 固定顺序调用规划、探索、汇集和整合 |
+| `agents/five_analysis/agent.py` | 四个角色入口 `run_planning`, `run_exploration`, `run_integration`, `run_recovery`; 每次 `_run` 创建本角色循环和独立上下文 |
+| `agents/five_analysis/contracts.py` | `TargetPlan` 同时承载全部元素、唯一目标和两个或三个方向, 无独立的“元素已登记”操作 |
+| `runtime/runner.py`, `agents/five_analysis/loop.py` | 通过 `create_deep_agent` 运行模型—工具循环; 控制请求预算、网络重试、白名单、结构检查、工具反馈与停滞 |
+| `runtime/task_store/` | `commit.json` 是任务/attempt/计数/回执/版本/封存的权威记录; 不可变结果文件承载正文 |
+| `domain/five_libraries/` | 五库字段、引用、范围、机械汇集、合并与方案保持校验 |
+| `infrastructure/` | 模型配置与传输、审计日志、文件包保存和读取 |
+
+当前主调用链:
+
+```text
+run_analysis / run_analysis_task
+  → execute_five_analysis
+    → _stages                          [Python 决定阶段顺序]
+      → _planning
+        → run_planning
+          → submit_target_plan        [模型一次提交 elements + target + directions]
+      → _explore                      [Python 自动决定开始探索]
+        → register exploration-1..N
+        → _wait_workers
+          → ThreadPoolExecutor
+          → _execute_task → run_exploration → submit_exploration
+      → collect_explorations          [Python 汇集已接受产物]
+      → _integrate                    [Python 自动决定开始整合]
+        → 发布 V0
+        → register integration
+        → 独立线程 run_integration → read_* → submit_merges
+        → apply_merges / rewrite_issues → 发布 V1 或回退 V0
+    → 最终投影 → 交付回调 → 文件包与封存
+```
+
+核心源码入口: [公开分析入口](../src/shader_deep/workflows/analysis.py)、[五库协调器](../src/shader_deep/workflows/five_analysis.py)、[角色定义](../src/shader_deep/agents/five_analysis/agent.py)、[提交契约](../src/shader_deep/agents/five_analysis/contracts.py)、[角色循环](../src/shader_deep/runtime/runner.py).
+
+当前角色与工具:
+
+| 角色 | 模型可执行的业务动作 | 何时结束 |
+| --- | --- | --- |
+| planning | `submit_target_plan` | 有效提交使 planning 任务成为 succeeded |
+| exploration | `submit_exploration` | 有效提交本方向 F/R/M/S |
+| integration | LibraryReader 提供的读取工具、`submit_merges` | 回读全部必要 F/R/M 后提交合并建议 |
+| recovery | `submit_recovery_decision` | 对指定失败任务提交最后一次重派或结束的决定 |
+
+规划提示词明确要求“一次提交目标和两个或三个独立开放探索方向”. `submit_target_plan` 还检查方向数必须等于本轮配置, 默认三个; `TargetPlan` 检查元素 ID 唯一、目标存在、feature_ids 为空、方向非空且文本不完全重复. 这些检查不验证元素名称和范围是否有可用的视觉含义, 也不能证明两个不同文本方向在语义上互补.
+
+**两层循环不能混淆.** `AnalysisLoop.run` 创建 Deep Agent, 框架内部执行模型与工具循环; 对纯文本未提交情况, 外层继续携带返回历史调用同一个角色图. `_run` 的 done 条件却是“本角色任务 succeeded”. 因而规划提交被接受后就退出规划角色, 后续由 `_stages` 接管. 修改工具名或把提示词放进 Markdown 都不会自动产生贯穿整轮的主 agent.
+
+**派发与等待.** `_explore` 根据规划方向构造固定任务 payload, 逐个登记, 再由 `_wait_workers` 创建线程池. 单个角色的图执行使用 `max_concurrency=1`, 独立探索任务在线程池内并行. `_wait_workers` 循环等待完成并补查持久状态; 整合也在独立线程执行, 但上层工作流仍等待它返回. 这不等于主 agent 在整合期间继续自主编排.
+
+**恢复.** `_execute_task` 执行初次和一次自动重派; 需要第三次时, `_decide_last_attempt` 再创建独立 recovery 角色. 它只接收原任务材料和错误, 决定是否最后重派. 这是程序触发的局部恢复决策, 不共享一个持续主 agent 的历史. 逻辑任务最多三个 attempt, 修复次数跨 attempt 持久累计; 网络重试只包模型请求, 不重放已执行工具.
+
+**状态与交付.** `TaskStore.submit` 是任务最终提交, 会结束对应逻辑任务, 不适合直接拿来保存持续主 agent 的每个中间动作. `run.json` 是公开投影, 日志是审计信息; 二者不能成为第二套调度状态. 完整图像上下文和模型会话历史并未持久恢复, 当前恢复能力主要覆盖任务、结果、计数、版本和代次.
+
+**skill 接入现状.** `AnalysisLoop.run` 没有传入 `skills`, 没有装载编排 skill. `_run` 使用 `role_prompt_only=True`, `_with_context` 会把最终 system_message 替换成角色提示词; 请求工具和执行白名单也只保留角色工具. 即使添加 SDK 的 skills 参数, 仍须处理 skill 提示被覆盖及读取工具不可用的问题. 仓库 SDK 支持 `skills` / `SkillsMiddleware`, 最终委托 LangChain `create_agent` 构图; SDK 提供能力不代表应用已经接入.
+
+### 10.2 本次五图实测提供的证据
+
+运行制品位于仓库根目录 `runs/element-split-20261001/`, 入口 `results.md`. 使用既有模型配置, 探针复用真实 `_planning` 与 `_explore`, 在 `_wait_workers` 创建线程之前截停. 结果如下:
+
+| 图片 | 结果 | 对架构问题的启示 |
+| --- | --- | --- |
+| hypnotic-ripples | 三次实际规划请求被拒绝, 未形成派发 | 元素、目标引用和方向处于同一修复单元; 某次已有详细拆分, 却因缺少 plan 包装层未被接受 |
+| auroras | 一次提交通过, 三个任务待派发; name/region 为 x | schema 通过不等于拆分可用 |
+| drive-home | 一次提交通过, 三个任务待派发; name/region 为 b/g | 当前没有独立的元素质量检查点 |
+| 2d-physics-balls | 提交五个元素, 三个任务待派发 | 当前可以生成具体拆分, 但元素登记与任务制定仍是同次提交 |
+| windows-95 | 提交三个元素, 三个任务待派发 | 同上 |
+
+正式运行共登记十二个探索任务, 子角色 attempt 和模型调用均为零. 前两项占位输出不能作为可用分析结果; 后两项具体输出仍不等于用户完成视觉验收. 本次证据能定位流程合并及校验缺口, 尚不能证明占位内容由“一次提交”单独导致; 模型/提供方返回和解析链仍需独立分析. 多步编排的效果必须用同样图片复测.
+
+### 10.3 目标架构: 同一主 agent 按 skill 连续工作
+
+已确认方向:
+
+1. 主 agent 拥有独立上下文和持续执行循环, 正常运行中贯穿本轮业务编排.
+2. 编排 skill 描述工作步骤、拆分方法、派发策略、回读要求、异常处置和结束条件; 主 agent 根据 skill 与真实工具回执选择动作.
+3. 元素登记与探索派发成为两次独立业务操作, 主 agent 在取得第一步回执后才制定并提交第二步.
+4. 探索与整合仍由独立子 agent 执行. 探索只看固定原图、用户要求、唯一目标与范围、自己的方向; 不带主 agent 全部历史或兄弟报告.
+5. 程序负责合法动作、执行实例、并发、持久状态、恢复、引用校验与发布. skill 不直接成为状态数据库或线程调度器.
+
+建议目标结构:
+
+```text
+CLI / API
+  → 分析运行宿主: 输入、模型、TaskStore、执行器、审计
+    → MainAgentSession                 [同一主 agent 的模型—工具循环]
+      ← 编排 SKILL.md + 所需方法材料
+      ← 固定原图、要求、当前权威状态、工具回执
+      → 受限业务工具
+        → 元素目录登记与版本
+        → 受控批次派发 → 独立探索 workers
+        → 等待/读取结果 → 原有领域汇集得到 V0
+        → 整合派发 → 独立 integration worker → V1 或 V0 回退
+        → 申请结束 → 运行层校验、交付与封存
+```
+
+MainAgentSession 是建议模块名称, 尚无对应实现. 正常执行的一个主会话可以包含很多次模型调用; “独立 agent”不要求另一个进程、另一款模型或额外规划 agent. 对进程重启, 首版从已接受的工具回执和持久状态重建主上下文, 明确记录恢复事件, 不承诺恢复旧的全部推理或聊天历史.
+
+### 10.4 主 agent 的建议工具与前置条件
+
+以下名称均为提案, 不声称已经存在. 数量按职责分离, 不给主 agent 开放任意任务、Shell 或任意文件写入.
+
+| 建议工具 | 关键输入/回执 | 程序前置条件与副作用 |
+| --- | --- | --- |
+| `submit_elements` | elements; 回执含 catalog_version、元素 ID、登记结果 | 只接受元素定位与范围, feature_ids 为空; 保存不可变目录版本; 不登记探索任务、不结束主会话 |
+| `dispatch_exploration` | catalog_version、target_element_id、directions; 回执含 batch_id、task_ids | 必须引用已接受目录; 本轮一批、配置为二或三个方向; 固定原图/目标/范围由程序装配, 主 agent 不重复提交目标正文 |
+| `read_analysis_state` | 本轮索引、阶段事实、任务状态、版本、恢复待办 | 返回 TaskStore 的有限投影, 不隐式回读兄弟正文、不改变业务进度 |
+| `wait_analysis_tasks` | task_ids; 返回已完成或需主决策的事件与状态 | 运行层等待/补查, 不消耗模型调用轮询; 无新状态时继续等待, 可响应取消 |
+| `read_analysis_result` | 已接受的结果/版本及对象 ID | 按需提供有来源的正文或索引; 主会话不接收子 agent 全部历史 |
+| `resolve_failed_task` | task_id、失败 attempt_id、retry 或 end、理由 | 只能处理固定任务的合法恢复待办; 检查代次、次数与状态; 不新增方向、不改输入 |
+| `dispatch_integration` | 固定 baseline_version | 探索批次已结束恢复且 V0 合法; 唯一整合任务读取固定 V0, 只提交 F/R/M 合并建议 |
+| `finish_analysis` | 交付请求与说明 | 程序核对全部必要任务和选定版本, 计算 completed/partial/failed, 发布与封存; 主 agent 无权自报覆盖最终状态 |
+
+完整元素目录用于本轮规划, 最终分析仍只围绕所选元素. 未选元素不会自动成为待分析任务, 也不冒充全部场景已分析. 首版继续使用现有 Element 字段, 运行目录版本/回执属于控制记录; 若以后改为结构化坐标, 在五库数据设计中单独变更契约.
+
+元素目录在派发前可以基于当前版本提交修订, 通过预期版本校验避免覆盖并发变化; 派发后冻结绑定版本. `submit_elements` 成功只代表登记完成, 主 agent 继续收到回执. 新增中间动作记录不能复用会终结主任务的 `TaskStore.submit`.
+
+**真正保证分两步.** 每个模型请求固定该轮允许调用的工具快照. 第一次登记前不提供派发工具; 同一响应即使同时夹带登记和派发, 后者仍按请求时的权限拒绝, 不能因前一个工具刚改变状态而临时放行. 下一次主模型请求中包含 catalog_version 回执, 再开放派发. 主 agent 工具串行执行, 独立 workers 继续并行.
+
+### 10.5 skill 的职责与实际加载
+
+建议首版增加一个应用内的 `analysis-orchestration/SKILL.md`, 随应用打包. 系统提示词保留主 agent 身份、权限及必须读取编排 skill 的要求; 易迭代的业务方法写在 skill 中. 选择顺序如下:
+
+1. 复用当前仓库 SDK 的 SkillsMiddleware/skills 发现能力, 将 skill 文件映射到只读、限定路径的后端. 记录 skill 名称、内容哈希和本轮使用版本; 运行途中不自动切换文件内容.
+2. 主 agent 读取完整编排 skill 后才开放业务操作; skill 缺失或读取不完整时明确失败. 若文件分段, 跟踪实际已呈现部分, 不能仅凭“文件路径进入提示词”视为加载成功.
+3. 调整主 agent 专用提示词合成, 避免 `role_prompt_only` 覆盖 skill 元数据/指令; 验证最终送给模型的请求同时包含身份、skill 正文/已读取材料和当前工具.
+4. 为 skill 读取开放限定的读取能力, 同时保持模型可见工具与执行白名单一致. 不沿用默认通用委派来绕过应用 TaskStore; 子 agent 仍经专用派发工具执行.
+5. 探索和整合的方法 skill 可在后续独立迁移. 第一版优先落实主 agent 编排, 复用现有探索/整合契约.
+
+编排 skill 建议内容:
+
+- 元素拆分: 根据当前图像记录可定位对象和范围; 不夹带共同特征清单或实现机制; 名称与范围必须具有实际描述意义.
+- 元素登记: 调用 `submit_elements`, 按回执修复后再进入派发; 不把草稿当作已接受目录.
+- 派发: 根据已登记目录选定唯一目标, 制定相互独立的观察方向; 只执行本轮一批.
+- 收集: 等待真实状态, 按需读取结果和缺口; 保留失败任务, 不自己补写独立 worker 结果.
+- 恢复: 根据指定任务错误处理合法恢复待办, 不改变首批材料或新增探索方向.
+- 整合与交付: 委派独立整合角色, 根据回执申请交付; 接受程序计算的 partial/failed.
+
+修改拆分尺度、方向组织、回读策略等方法, 可以主要改 skill. 新增工具、第二批探索、改变权限或状态转换, 仍需程序支持. 首版不因主 agent 接管编排而自动开放多批或多目标.
+
+### 10.6 运行层必须保留与新增的能力
+
+**状态统一.** 继续以同一 TaskStore 提交记录为权威. 增加元素目录版本、业务动作幂等回执、探索批次及待主决策事项; 主 agent 历史只提供上下文. 建议状态事实包括 elements_ready、exploration_prepared、exploring、recovery_required、exploration_settled、baseline_ready、integrating、ready_to_finish. 它们表示动作的合法前置条件, 不由 Python 在到达状态时自动替主 agent 调用下一项业务工具.
+
+**原子派发.** 当前 `_explore` 逐个 register, 需要新增整批校验后一次登记批次及全部任务的能力. `dispatch_exploration` 先持久化派发意图和任务 payload, 再交给执行器启动. 相同 batch/action 身份重放返回既有回执; 不同 tool_call_id 不能绕过本轮唯一批次约束. 崩溃在登记后启动前时可接管 pending; 已成功任务不会重启. 若配置为测试截停, 接管也不得自动启动准备中的任务.
+
+**等待与恢复.** 将 `_wait_workers` 中执行/等待/补查能力下沉为运行工具, 不再由 `_stages` 决定业务后继. 先保留现有网络重试、任务内修复和一次自动重派; 再次失败时持久化 recovery_required 并唤醒同一个主 agent, 由它调用 `resolve_failed_task`. 主 agent 崩溃由宿主恢复并重建上下文, 不递归创建一个新的“主恢复 agent”. 线程句柄、取消、过期 attempt 和迟到提交仍由运行层处理.
+
+**进展和调用计数.** 主会话不能以任意工具成功作为 done, 只在最终交付已确认或明确终止后结束. 进展依据新接受的元素版本、派发/恢复回执、首次有效回读及任务/版本状态变化; 重复读取同一状态不算进展, 程序等待不触发“模型无进展”. 当前通用五库循环的三次空进展判断与任务级两次修复额度不能直接照搬给整轮主会话; 修复按稳定业务动作身份/版本划分并持久化, 重试不能通过换调用 ID 重置. 现有显式总调用预算继续有效, 各角色独立计数; `max_main_calls` 的兼容聚合口径需随迁移明确记录, 不默默扩大或缩小额度.
+
+**五库汇集与发布.** 探索终态后, 程序机械汇集有效结果并发布 V0 可作为运行层后处理; 主 agent 读取 baseline_ready 回执后决定请求整合. 继续复用原 F/R/M 合并、草图保留、引用重写、V1 全量验证、V0 回退、完整文件包和终态封存. 主 agent 接管调度不接管五库语义合并或引用维护算法.
+
+**质量检查.** skill 要求具体名称、可定位范围和开放方向; 程序拒绝空白、明确占位模板、无效引用等可判定错误. 不用字符长度或禁用所有单字符名称冒充视觉质量判断. 真实图片复测中单独审查拆分的覆盖、层级、范围、重叠、是否夹带特征结论和方向独立性. 当前占位输出的提供方/解析来源问题单独留证, 不把架构改造承诺为质量问题已解决.
+
+### 10.7 文件改造范围与实施顺序
+
+建议范围如下, 新路径均为提案:
+
+| 路径或模块 | 改造内容 |
+| --- | --- |
+| `agents/main/` | 主 agent 图与持续会话、身份提示词、工具和上下文装配; 不再复用“一次最终提交就退出”的 planning 生命周期 |
+| `resources/skills/analysis-orchestration/` | 编排 SKILL.md 和少量按需参考材料; 增加应用打包声明 |
+| `runtime/orchestration/` | 元素目录与动作回执的控制逻辑、受控任务派发和事件等待; 复用 TaskStore 与现有角色执行器 |
+| `runtime/task_store/` | 中间动作/批次事务、恢复待办、准备但未启动的持久语义; 沿用单协调器和原子提交原则 |
+| `workflows/five_analysis.py` | 缩为运行宿主、主 agent 启动、生命周期及异常交付; 移出固定 `_stages` 业务控制 |
+| `agents/five_analysis/` | 保留探索与整合, 逐步退役旧 planning/recovery 入口; 私有调用方和测试同步迁移 |
+| `runtime/runner.py` | 复用传输、审计、白名单等基础能力; 主会话专用进展/结束/skill 合成另行封装, 避免影响旧角色与兼容链路 |
+| `workflows/options.py`, `configuration.py`, `cli/analysis.py` | 增加显式派发前截停选项及运行状态表达, 更新帮助和配置校验; 现有公开函数参数签名保持兼容 |
+| 相关测试与维护文档 | 按可观察行为更新, 保留引用、恢复、发布和兼容回归 |
+
+推荐四个可验证切片, 每片完成后才扩大范围:
+
+1. **持续主会话 + skill + 两步业务操作.** 加入元素登记和派发回执, 用受控执行器截停在任何 worker 启动前. 证明同一主会话收到元素回执后才发起派发, 同时验证 skill 确实进入请求.
+2. **真实探索执行与回读.** 接入现有 worker、单批并行、等待/补查、结果读取、V0 机械汇集; 验证共享材料和上下文隔离.
+3. **整合、异常与交付.** 主 agent 发起整合和结束, 接入恢复待办; 保留合法 V0 回退、取消/迟到提交、崩溃恢复与封存.
+4. **切换默认入口并复测.** 更新 CLI/API 入口及文档, 移除默认链路对旧 `_stages` 的依赖, 用同样五张图和既有模型配置复测. 逐步放开运行到探索、整合和交付; 不用只跑通前两步声称整套改造完成.
+
+### 10.8 正式截停能力与验收
+
+建议提供运行配置 `stop_before_worker_start` (名称待实施时确定, 默认关闭). 它作用于运行层, 不作为模型提示要求. 正常业务仍只有 `submit_elements` 和 `dispatch_exploration` 两步; 后者内部“接受并持久化派发”与“获得启动许可”之间设置截停点.
+
+测试模式中, 在派发意图和任务已接受后暂停主会话, 记录 `paused_before_worker_start`, 不消耗 worker 调用、不创建 worker attempt, 不发布五库最终包, 不把暂停当 completed 或 failed. 重新启动相同测试记录不自动恢复执行; 显式继续才发放启动许可. 控制信号必须绕过业务失败/自动重派路径, CLI 输出暂停状态与制品位置. 公开 outcome/CLI 状态兼容需随选项一并验证.
+
+| 验收维度 | 可观察证据 |
+| --- | --- |
+| 同一主 agent 持续编排 | 元素回执出现在下一次主模型请求; 两步共用主会话身份; 登记成功后主会话仍未结束 |
+| 阶段工具约束 | 未登记、错误目录版本、同一响应夹带派发都不会启动任务; 校验错误回到主 agent 修复 |
+| skill 实际生效 | 完整内容/所需参考材料出现在实际请求材料中, 记录版本哈希; 不被 role_prompt_only 覆盖; 未读完则不执行业务动作 |
+| 派发截停 | 五图逐次保存元素提交、回执、派发指令、模型输出、日志和状态; worker attempts/model_calls 均为零 |
+| 幂等与恢复 | 重复派发、登记后崩溃、启动后崩溃均不形成第二批或重复已完成任务; 测试暂停不会被接管自动执行 |
+| 子 agent 隔离 | 实际 worker 请求只含允许材料和自己的方向, 不含主会话历史/兄弟结果 |
+| 等待与预算 | 无新结果时无模型轮询; 正常多步进展不被三轮停滞机制错误中止; 修复计数按动作持久化 |
+| 交付与失败 | 整合失败仍有合法 V0 + partial; 无合法基线 failed; 不隐藏失败任务或未完成整合 |
+| 元素质量 | 单独记录名称/范围可用性、覆盖和拆分层级; 字段通过率与人工语义评价分别呈现 |
+
+实施时执行应用 `make test`、`make lint`、`make repository_check`; 五图真实服务复测属于额外证据, 不能由固定模型测试替代. 本节仅为设计核对, 不宣称上述新增验收已经通过.

@@ -35,7 +35,13 @@ make browsers
 | `DS_MICU_BASE_URL` | 该配置组的 API 地址 |
 | `DS_MICU_API_KEY` | 该配置组的 API 密钥 |
 
-默认优先使用 `DS_MICU_*` 整组配置。只有这三个变量全部未配置或为空白时, 才使用既有的 `MICU_MODEL`、`MICU_BASE_URL`、`MICU_API_KEY`。选中 `DS_MICU_*` 后缺少任一项会直接报错, 不会从 `MICU_*` 借用密钥或地址。这样可以在同一 `.env` 中保留不同模型通道的两套凭证。
+配置优先级为 `OPENROUTER_*` → `DS_MICU_*` → `MICU_*`。一组中任一项非空即整组选用, 缺少任一项会直接报错, 不会跨组借用密钥或地址; 全部为空白的占位组会跳过。
+
+使用 OpenRouter 时填写 `OPENROUTER_MODEL`、`OPENROUTER_BASE_URL` 和 `OPENROUTER_API_KEY`, 地址为 `https://openrouter.ai/api/v1`。模型须支持图像输入及工具调用, ID 以 [OpenRouter 模型目录](https://openrouter.ai/models)为准。客户端使用 Chat Completions 并要求提供方支持实际请求参数; 分析适配层发送网关 `max_tokens`, 并保留、汇集和回传工具调用历史中的 `reasoning_details`。流式和非流式请求均保留原始工具参数的执行前检查。
+
+可选 `OPENROUTER_REASONING_EFFORT` 显式控制推理强度, 未配置时沿用模型默认; 所选值必须受模型支持, 必须推理的模型不能设为 `none`。OpenRouter 重复的相同 SSE 结束标记会去重, 冲突或缺失标记仍被拒绝, 不降低工具执行的完整性检查。
+
+可选 `OPENROUTER_PROVIDER_SORT` 使用 `price`、`throughput` 或 `latency` 优先选路, 未配置时沿用网关默认。分析请求为函数工具声明 `strict: true`, 保留原 Schema 中动态选择字典的键和值约束; 提供方返回仍须经过本地字段、引用与业务校验, 严格模式不替代这些检查。
 
 程序读取进程环境变量, `.env` 由运行命令中的 `--env-file` 加载。实际 `.env` 文件继续由 Git 忽略。
 
@@ -98,7 +104,7 @@ uv run --no-sync --env-file .env shader-deep-analyze /absolute/path/reference.pn
 
 ### 文件包与读取
 
-CLI 标准输出只返回 JSON 状态、运行目录、`report_dir` 和短结果索引, 标准错误显示入口位置. `AnalysisOutcome.report_dir` 是新增的可选返回属性, 公开函数签名保持不变; 结果协议及交付载体已从四库切换为五库.
+CLI 标准输出只返回 JSON 状态、运行目录、`report_dir` 和短结果索引, 标准错误实时显示关键步骤和入口位置. `AnalysisOutcome.report_dir` 是新增的可选返回属性, 公开函数签名保持不变; 结果协议及交付载体已从四库切换为五库.
 
 ```text
 run-*/
@@ -106,6 +112,9 @@ run-*/
   commit.json       # 任务、回执、结果和版本指针的唯一权威发布记录
   results/          # 不可变原始产物、V0/V1; 来源与恢复信息保留在运行记录
   run.json          # 从权威记录生成的可读投影
+  analysis.log      # 全级别可读日志, 包含完整业务提交与 V0/V1 正文
+  events.jsonl      # 模型调用、网络尝试、用量与执行事件
+  tools.jsonl       # 原有工具参数和回执审计
   report/
     README.md       # 目标、状态、草图目录、缺口和读取导航
     manifest.json   # 本轮公共 state 与格式版本
@@ -133,6 +142,21 @@ if outcome.report_dir is not None:
 ```
 
 按草图返回的是有范围的取材视图, 保留整轮状态、全部缺口和未知项. 视图提供有效选择及必要正文, 其他候选继续从完整包读取, 不声称视图是自包含小包. 完整文件包可整体移动, 原图哈希和全部引用可校验. 已发布包不可覆盖.
+
+### 实时运行日志
+
+默认 `--log-level INFO` 将运行开始、元素拆分、探索方向、每个子 Agent 的提交摘要、拒绝原因、请求耗时与 token 用量、版本发布和最终状态输出到 stderr. 每条记录带 UTC 时间、run/task/attempt 身份及模型调用序号, 并行结果可按任务区分. INFO 摘要会显式标记长文本截断; 完整正文另写入本轮 `analysis.log`.
+
+```sh
+# JSON 索引保存到文件, 关键进度仍显示在终端.
+uv run --no-sync --env-file .env shader-deep-analyze /absolute/path/reference.png "分析中央圆形" > analysis-index.json
+# 终端也查看完整业务提交; 文件日志始终包含 DEBUG 记录.
+uv run --no-sync --env-file .env shader-deep-analyze /absolute/path/reference.png "分析中央圆形" --log-level DEBUG > analysis-index.json
+```
+
+`--log-level WARNING` 或 `ERROR` 可减少终端信息, 不减少文件日志. 后台执行时可将 stderr 重定向到控制台日志并使用 `tail -f` 查看; 也可直接查看运行目录的 `analysis.log`. Python API 始终保存文件日志, 控制台输出沿用宿主对 `shader_deep.analysis` logger 的配置.
+
+日志区分尚未校验的模型响应、被接受或拒绝的工具提交、已发布版本. 执行成功不等于内容质量或视觉验收通过. 文本日志不记录图片 Base64、推理字段和客户端密钥; 写入故障会报告警告, 不改变业务提交和报告发布. 日志属于诊断材料, 权威恢复状态仍为 `commit.json`.
 
 ### 配置与恢复
 

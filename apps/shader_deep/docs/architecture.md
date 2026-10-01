@@ -87,7 +87,7 @@ CLI / Python API
 
 ## 配置和依赖
 
-`infrastructure/configuration.py` 只安全读取 YAML. `workflows/configuration.py` 校验允许字段、处理相对路径并应用既有覆盖优先级. 模型地址与凭据仍由外部环境提供, 不进入快照.
+`infrastructure/configuration.py` 只安全读取 YAML. `workflows/configuration.py` 校验允许字段、处理相对路径并应用既有覆盖优先级. 模型地址与凭据仍由外部环境提供, 不进入快照. 模型客户端按 `OPENROUTER_*`、`DS_MICU_*`、`MICU_*` 顺序整组选用; OpenRouter 分析保留推理块的流式汇集与工具历史回传, 不新增独立模型 SDK.
 
 `AnalysisOptions` 保留旧字段, 默认 `max_tasks` 改为 3; 新入口只接受一批 2 或 3 个方向. 主/子总调用上限默认 0, 固定修复/重派次数与无进展规则继续生效. 四库特有比较阶段参数仅由兼容链路使用. 模型传输与请求检查只依赖 `runtime/options.py` 中的最小只读协议, 不需要了解探索数量等业务配置. 生成参数由 `agents/generation/options.py` 管理.
 

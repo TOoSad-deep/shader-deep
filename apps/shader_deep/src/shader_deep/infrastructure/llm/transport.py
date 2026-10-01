@@ -10,6 +10,7 @@ from langchain_core.exceptions import ModelError
 from langchain_core.messages import AIMessage, AIMessageChunk
 from langchain_openai import ChatOpenAI
 
+from shader_deep.infrastructure.llm.openrouter import RAW_REASONING, ReasoningBuffer, StreamTerminal, is_openrouter, restore_reasoning
 from shader_deep.runtime.execution import RequestAttempt
 
 if TYPE_CHECKING:
@@ -50,7 +51,25 @@ class AnalysisChatOpenAI(ChatOpenAI):
         payload = super()._get_request_payload(input_, stop=stop, **kwargs)
         if "tools" in payload:
             payload["tools"] = _explicit_required(payload["tools"])
+        if is_openrouter(self.openai_api_base):
+            for entry in payload.get("tools", []):
+                if entry.get("type") == "function":
+                    # 保留动态 F/R 选择键的原 Schema, 不将字典的 additionalProperties 改为 false.
+                    entry["function"]["strict"] = True
+            restore_reasoning(payload, self._convert_input(input_).to_messages())
         return payload
+
+    def _convert_chunk_to_generation_chunk(
+        self, chunk: dict, default_chunk_class: type, base_generation_info: dict | None
+    ) -> ChatGenerationChunk | None:
+        """先保留网关推理增量, 完整汇集后才交给框架消息历史."""
+        converted = super()._convert_chunk_to_generation_chunk(chunk, default_chunk_class, base_generation_info)
+        choices = chunk.get("choices", [])
+        if converted is not None and choices and is_openrouter(self.openai_api_base):
+            details = (choices[0].get("delta") or {}).get("reasoning_details")
+            if isinstance(details, list):
+                converted.message.additional_kwargs[RAW_REASONING] = details
+        return converted
 
     def _stream(
         self,
@@ -60,7 +79,14 @@ class AnalysisChatOpenAI(ChatOpenAI):
         **kwargs: object,
     ) -> Iterator[ChatGenerationChunk]:
         """随流式片段保存参数原文, 由框架按 index 合并而不重新序列化参数."""
+        reasoning = ReasoningBuffer()
+        terminal = StreamTerminal()
         for chunk in super()._stream(messages, stop=stop, run_manager=run_manager, **kwargs):
+            details = chunk.message.additional_kwargs.pop(RAW_REASONING, [])
+            reasoning.append(details)
+            finished = terminal.accept(chunk.generation_info) if is_openrouter(self.openai_api_base) else False
+            if finished and reasoning.blocks:
+                chunk.message.additional_kwargs["reasoning_details"] = reasoning.details()
             if isinstance(chunk.message, AIMessageChunk) and chunk.message.tool_call_chunks:
                 chunk.message.additional_kwargs[RAW_TOOL_CALLS] = [dict(call) for call in chunk.message.tool_call_chunks]
             yield chunk
@@ -71,6 +97,9 @@ class AnalysisChatOpenAI(ChatOpenAI):
         data = response if isinstance(response, dict) else response.model_dump()
         for generation, choice in zip(result.generations, data.get("choices", []), strict=True):
             if isinstance(generation.message, AIMessage):
+                details = choice.get("message", {}).get("reasoning_details")
+                if is_openrouter(self.openai_api_base) and isinstance(details, list):
+                    generation.message.additional_kwargs["reasoning_details"] = details
                 generation.message.additional_kwargs[RAW_TOOL_CALLS] = [
                     {"id": call.get("id"), "name": call.get("function", {}).get("name"), "args": call.get("function", {}).get("arguments")}
                     for call in choice.get("message", {}).get("tool_calls", []) or []
@@ -91,10 +120,10 @@ def configure_analysis_model(model: ChatOpenAI, options: ModelOptions) -> ChatOp
     # with_options 共享 LangChain 缓存的 HTTP 连接; 此处不能关闭连接,
     # 因为其他并发子任务可能仍在使用该连接发送请求.
     client = model.root_client.with_options(max_retries=0, timeout=float(options.request_timeout_seconds))
-    legacy_tokens = model.model_name.lower().startswith("deepseek")
+    legacy_tokens = model.model_name.lower().startswith("deepseek") or is_openrouter(model.openai_api_base)
     extra_body = dict(model.extra_body or {})
     if legacy_tokens:
-        # 已有联调注释记录: 当前 DeepSeek 接口忽略 max_completion_tokens,
+        # OpenRouter 使用网关 max_tokens; 当前 DeepSeek 接口忽略 max_completion_tokens,
         # 曾以 128 token 对照请求确认 max_tokens 生效, 因此在 extra_body 中设置它.
         extra_body["max_tokens"] = options.max_output_tokens
     # 从已校验实例复制字段与共享客户端, 不重新构造网络资源或改动用户配置.

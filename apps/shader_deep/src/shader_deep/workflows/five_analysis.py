@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import contextvars
 import hashlib
+import logging
 from concurrent.futures import ThreadPoolExecutor, wait
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Literal
@@ -23,6 +24,7 @@ from shader_deep.domain.five_libraries import (
     merge_mapping,
     rewrite_issues,
 )
+from shader_deep.infrastructure.analysis_logging import log_analysis
 from shader_deep.infrastructure.llm.client import build_model
 from shader_deep.infrastructure.llm.transport import _retryable
 from shader_deep.runtime.budgets import RequestBudgetError
@@ -116,6 +118,27 @@ def _decide_last_attempt(store: TaskStore, task_id: str, model: BaseChatModel, o
     return decision.retry
 
 
+def _log_task(
+    store: TaskStore,
+    attempt: Attempt,
+    execution: AnalysisExecution,
+    message: str,
+    *,
+    level: int = logging.INFO,
+    details: dict[str, JsonValue] | None = None,
+) -> None:
+    """统一任务日志身份, 保留调用序号并避免记录完整模型请求."""
+    log_analysis(
+        store.directory,
+        message,
+        task_id=attempt.task_id,
+        attempt_id=attempt.attempt_id,
+        model_call=execution.model_calls,
+        level=level,
+        details=details,
+    )
+
+
 def _execute_task(
     store: TaskStore,
     task_id: str,
@@ -132,12 +155,36 @@ def _execute_task(
             store.cancel(task_id, "主 agent 决定结束任务或恢复决策未成功")
             return
         attempt = store.start_attempt(task_id)
+        payload = object_value(store.task(task_id)["payload"])
+        _log_task(
+            store,
+            attempt,
+            execution,
+            "任务执行开始",
+            details={"direction": payload.get("direction"), "input_version": attempt.input_version},
+        )
+        _log_task(store, attempt, execution, "任务固定输入", level=logging.DEBUG, details=payload)
         try:
             run(attempt, execution)
             _require_terminal(store, task_id)
+            _log_task(
+                store,
+                attempt,
+                execution,
+                "任务执行结束",
+                details={"status": store.task(task_id)["status"], "model_calls": execution.model_calls},
+            )
         except Exception as error:  # noqa: BLE001  # 保留模型、图执行和写入错误, 按逻辑任务恢复策略收口.
             if store.is_active(attempt):
                 store.fail_attempt(attempt, f"{type(error).__name__}: {error}", permanent=not redispatch or _permanent(error))
+            _log_task(
+                store,
+                attempt,
+                execution,
+                "任务执行失败",
+                level=logging.WARNING,
+                details={"error": f"{type(error).__name__}: {error}", "status": store.task(task_id)["status"]},
+            )
 
 
 def _wait_workers(
@@ -252,6 +299,13 @@ def _explore(
     return reports, tuple(gaps)
 
 
+def _log_version(store: TaskStore, version: str, libraries: FiveLibraries) -> None:
+    """发布后再打印版本和库计数, 不将准备产物描述为已发布."""
+    counts = {name: len(getattr(libraries, name)) for name in ("elements", "features", "relations", "mechanisms", "sketches")}
+    log_analysis(store.directory, "五库版本已发布", details={"version": version, **counts})
+    log_analysis(store.directory, "完整五库版本", level=logging.DEBUG, details={"version": version, "libraries": libraries.model_dump(mode="json")})
+
+
 def _integrate(
     store: TaskStore,
     model: BaseChatModel,
@@ -270,6 +324,7 @@ def _integrate(
         "gaps": [item.model_dump(mode="json") for item in gaps],
     }
     baseline_path = store.publish_version("V0", payload)
+    _log_version(store, "V0", baseline)
     store.register(
         "integration",
         "V0",
@@ -295,6 +350,7 @@ def _integrate(
         _wait_workers(store, jobs, 1, recover=lambda task_id: _decide_last_attempt(store, task_id, model, options))
     if store.task("integration")["status"] != "succeeded":
         failure = Issue(refs=(), description=f"整合未完成, 保留 V0: {store.task('integration').get('error')}")
+        log_analysis(store.directory, "整合未完成, 回退 V0", level=logging.WARNING, details={"error": failure.description})
         return FiveAnalysisResult(
             target_element_id=target, libraries=baseline, open_questions=questions, gaps=(*gaps, failure), status="partial", selected_version="V0"
         )
@@ -312,7 +368,9 @@ def _integrate(
             "gaps": [item.model_dump(mode="json") for item in final_gaps],
         }
         store.publish_version("V1", payload)
+        _log_version(store, "V1", integrated)
     except (ValueError, OSError) as error:
+        log_analysis(store.directory, "V1 发布失败, 回退 V0", level=logging.WARNING, details={"error": str(error)})
         return FiveAnalysisResult(
             target_element_id=target,
             libraries=baseline,
@@ -487,24 +545,49 @@ def execute_five_analysis(
         raise ValueError(msg)
     input_version = hashlib.sha256((user_request + reference_url).encode()).hexdigest()
     with TaskStore(directory) as store:
+        model_name = getattr(selected_model, "model_name", None)
+        log_analysis(
+            directory,
+            "分析运行开始",
+            details={
+                "model": model_name if isinstance(model_name, str) else type(selected_model).__name__,
+                "user_request": user_request,
+                "max_tasks": options.max_tasks,
+                "max_parallel": options.max_parallel,
+                "log_path": str(directory / "analysis.log"),
+            },
+        )
         # 快速恢复交付投影前仍核对原始业务输入, 不能复用另一张图或要求.
         store.register("planning", input_version, _planning_input(user_request, reference_url))
         interrupted: KeyboardInterrupt | None = None
         try:
             if "final_projection" in object_value(store.snapshot()["versions"]):
+                log_analysis(directory, "恢复已有最终交付投影")
                 result = _read_projection(store)
             else:
                 result = _stages(store, selected_model, options, user_request, reference_url, input_version)
         except KeyboardInterrupt as error:
+            log_analysis(directory, "分析运行被中断, 保存可用基线", level=logging.WARNING)
             interrupted = error
             result = _exception_result(store, error)
         except Exception as error:  # noqa: BLE001  # 在明确持久基线上交付异常部分结果, 不发布整合暂存内容.
+            log_analysis(directory, "分析流程异常", level=logging.ERROR, details={"error": f"{type(error).__name__}: {error}"})
             result = _exception_result(store, error)
         _publish_projection(store, result)
         if on_delivery is not None:
             on_delivery(result, store)
         if not store.snapshot()["sealed"]:
             store.seal()
+        log_analysis(
+            directory,
+            "分析运行结束",
+            details={
+                "status": result.status,
+                "selected_version": result.selected_version,
+                "gaps": [item.model_dump(mode="json") for item in result.gaps],
+                "open_questions": [item.model_dump(mode="json") for item in result.open_questions],
+            },
+        )
         if interrupted is not None:
             raise interrupted
         return result

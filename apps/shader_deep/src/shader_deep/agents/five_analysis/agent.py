@@ -120,6 +120,7 @@ def _run(
         on_prepared=reader.mark_presented if reader is not None else None,
         on_event=audit.event,
         on_tool_result=audit.tool,
+        on_history=audit.history,
     )
     loop.repair_charge = lambda: store.consume_repair(attempt)
     loop.model_charge = lambda: _charge_model(store, attempt, options, phase)

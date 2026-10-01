@@ -10,6 +10,7 @@ from pathlib import Path
 
 from shader_deep.api import run_analysis
 from shader_deep.domain.library.models import PossibilityLibrary, compact_data
+from shader_deep.infrastructure.analysis_logging import analysis_console
 from shader_deep.workflows.configuration import apply_analysis_overrides, load_analysis_options
 from shader_deep.workflows.options import AnalysisOptions
 
@@ -25,6 +26,12 @@ def main() -> int:
     parser.add_argument("prompt", help="User requirements and analysis objective")
     parser.add_argument("--config", type=Path, help="Analysis YAML path (default: analysis.yaml bundled with shader_deep.resources)")
     parser.add_argument("--output-dir", type=Path, help="Parent directory for the unique run folder")
+    parser.add_argument(
+        "--log-level",
+        choices=("DEBUG", "INFO", "WARNING", "ERROR"),
+        default="INFO",
+        help="Console diagnostics level (stderr); analysis.log keeps full diagnostics",
+    )
     parser.add_argument("--max-tasks", type=int, help="Perspectives in the single exploration batch: 2 or 3 (default: 3)")
     parser.add_argument("--max-parallel", type=int, help="Maximum concurrent lens workers")
     parser.add_argument("--max-worker-calls", type=int, help="Model calls per lens worker; 0 means unlimited")
@@ -47,7 +54,8 @@ def main() -> int:
         options = load_analysis_options(getattr(args, "config", None))
         overrides = {field.name: getattr(args, field.name) for field in fields(AnalysisOptions) if hasattr(args, field.name)}
         options = apply_analysis_overrides(options, overrides)
-        outcome = run_analysis(args.png, args.prompt, options=options)
+        with analysis_console(sys.stderr, args.log_level):
+            outcome = run_analysis(args.png, args.prompt, options=options)
     except (OSError, TypeError, ValueError) as exc:
         sys.stderr.write(f"Error: {exc}\n")
         return 2

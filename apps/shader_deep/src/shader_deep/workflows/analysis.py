@@ -11,6 +11,7 @@ from typing import TYPE_CHECKING
 
 from shader_deep.domain.blackboard import add_result, add_target, add_task, new_blackboard
 from shader_deep.domain.tasks import ResultRecord, TargetRecord, TaskRecord
+from shader_deep.infrastructure.analysis_logging import log_analysis
 from shader_deep.infrastructure.llm.client import build_model
 from shader_deep.infrastructure.llm.messages import png_data_url
 from shader_deep.infrastructure.storage.artifacts import create_run_directory, save_run
@@ -74,6 +75,9 @@ def _delivery(directory: Path, reference: bytes, result: FiveAnalysisResult, sto
     else:
         write_report_package(package, result.libraries, manifest, reference)
     store.seal(package_path="report")
+    log_analysis(
+        directory, "报告包已发布并封存", details={"status": manifest.status, "report_dir": str(package), "selected_version": result.selected_version}
+    )
 
 
 def run_analysis_task(
