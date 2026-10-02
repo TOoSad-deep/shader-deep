@@ -6,7 +6,9 @@ from pathlib import Path
 
 from PIL import Image
 
+from shader_deep.domain.generation_comparison import GenerationPlan
 from shader_deep.workflows.generation import run_generation
+from shader_deep.workflows.generation_comparison import run_generation_comparison
 from shader_deep.workflows.generation_from_report import run_generation_from_report
 from tests.unit_tests.agents.test_context import BASE_CODE
 from tests.unit_tests.fixtures._generation_fixture import GenerationFixture, generation_report, task_payloads, tool_results
@@ -67,3 +69,32 @@ class GenerationIntegrationTests(GenerationFixture):
         self.assertEqual(len(list(outcome.run_dir.glob("*.glsl"))), 2)
         self.assertEqual(list(outcome.run_dir.glob("*.png")), [])
         self.assertEqual(json.loads((outcome.run_dir / "run.json").read_text())["stop_reason"], "attempt_limit")
+
+    def test_two_plans_deliver_independent_real_previews(self) -> None:
+        report = generation_report(self.root)
+        comparison = run_generation_comparison(
+            report,
+            (GenerationPlan(name="默认", sketch_id="S1"), GenerationPlan(name="高斯备选", sketch_id="S1", alternative=0)),
+            "只实现粉色圆形",
+            background="透明",
+            max_attempts=1,
+            output_dir=self.options.output_dir,
+        )
+        self.assertIsNone(comparison.selected_item)
+        self.assertEqual(len({item.run_dir for item in comparison.items}), 2)
+        self.assertTrue((Path(comparison.directory) / "comparison.json").is_file())
+        for index, item in enumerate(comparison.items):
+            self.assertEqual(item.stop_reason, "completed")
+            self.assertEqual(Path(item.code_path).read_text(), BASE_CODE)
+            with Image.open(item.preview_path) as image:
+                self.assertEqual(image.size, (32, 24))
+            request = self.requests[index * 2 + 1]
+            expected = "data:image/png;base64," + base64.b64encode(Path(item.preview_path).read_bytes()).decode("ascii")
+            images = [
+                block["image_url"]["url"]
+                for message in request["messages"]
+                if isinstance(message["content"], list)
+                for block in message["content"]
+                if block.get("type") == "image_url"
+            ]
+            self.assertIn(expected, images)

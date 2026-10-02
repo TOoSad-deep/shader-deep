@@ -2,7 +2,7 @@
 
 本应用从参考图建立可追溯的分析结果, 或通过实际渲染生成 Shader. 两条流程保持独立, 不自动把分析结果送入生成. 本文描述重构后的实际代码; 历史设计与旧协议文档不替代当前入口.
 
-生成开发的目录、模块和四个实施分支见[生成整体架构与模块设计](generation-architecture.md), 选择理由见[宏观分析](generation-execution-design.md). 01 的输入准备与 02 的报告执行已接入, 多方案比较和整图组合尚未实施.
+生成开发的目录、模块和四个实施分支见[生成整体架构与模块设计](generation-architecture.md), 选择理由见[宏观分析](generation-execution-design.md). 01 的输入准备、02 的报告执行和 03 的两方案比较已接入, 整图组合尚未实施.
 
 结构选择及取舍见 [ADR 0001](decisions/0001-agent-oriented-layout.md); 实现的验证与交付状态见[结构重构任务](work-items/structure-refactor.md).
 
@@ -80,6 +80,14 @@ CLI / Python API
 
 `stop_generation` 经过正常结果引用校验后保存 `blocked` 结果及下一步建议, 无候选也能结束; 成功选择、受阻、逻辑预算耗尽和异常以会话终态统一判断. 同批工具按响应顺序进入单线程, 结束后不再改写候选. 自动模型摘要在应用层关闭; `model_calls` 统计普通逻辑请求, 不包含 SDK 有限网络重试. 执行及资源关闭异常保留 `error` 诊断和目录注释后继续抛出. 验证范围见[阶段 02 记录](work-items/generation-02-execution-loop.md#实施记录).
 
+## 两方案比较
+
+[generation_comparison.py](../src/shader_deep/workflows/generation_comparison.py) 的 `run_generation_comparison` 只接受同一报告中的两项显式 `GenerationPlan`. 先完成两项准备, 第一项捕获原文件, 第二项复用固定报告副本与内存基线; 无效第二项不会在第一项已经调用模型后才暴露. 各自从调用方原始黑板建立新任务, 互不带入对方的新增任务、候选或结论.
+
+比较调用一次 `build_model` 固定客户端配置, 将它交给两个独立 `_run_session`; `_execute` 各自创建 Agent 与消息历史. 只扩展内部模型传参, 旧公开生成入口签名保持不变. 普通运行异常成为该项的错误索引, 另一项继续; 取消则停止批次并保留已有子运行. 没有崩溃恢复或隐式重试整项能力.
+
+[比较存储](../src/shader_deep/infrastructure/storage/generation_comparison.py) 写入 `comparison.json` 与 README 产物导航; [比较领域记录](../src/shader_deep/domain/generation_comparison.py) 只保存共同条件、两项索引和独立人工选择. 读取按调用方给定目录定位; 人工选择核对该项已完成、候选 ID 和子运行当前选择一致, 仅更新比较索引. 子运行内的生成自检与人工选择分开保存. 实施与证据见[阶段 03 记录](work-items/generation-03-plan-comparison.md#实施记录).
+
 ## 状态由谁持有
 
 | 状态 | 唯一责任方 |
@@ -91,6 +99,7 @@ CLI / Python API
 | 完整交付文件和按草图读取 | `infrastructure/storage/report_package.py`, 来自同一选定版本 |
 | 分析 `run.json` | 公开入口从权威提交记录生成的投影, 不接受提交、不承担恢复指针 |
 | 生成 `run.json` | RenderSession 保存黑板、固定输入引用、计数与终态; 不是可恢复的模型会话 |
+| `comparison.json` | 顺序比较工作流发布共同条件与子运行索引; 人工选择入口只更新该索引 |
 
 结果文件先写齐、验证, 再原子替换一份提交记录发布任务终态、结果路径与回执. 完成事件只用于唤醒, 协调器补查持久状态. 相同提交成功后重试返回原回执, 终结/取消/替换/封存阻止迟到的新提交. 进程锁及代次管理恢复无执行者的旧 `running`, 保留已提交结果及恢复计数.
 

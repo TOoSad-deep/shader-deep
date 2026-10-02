@@ -4,7 +4,7 @@
 
 本文讨论如何把五库分析结果接入 Shader 生成, 覆盖整体流程、角色分工、执行输入、模块、技术选型和分阶段验收. 建议保留现有分析系统, 通过固定方案和输入的执行任务, 复用已有生成、渲染、预览回读与修正闭环.
 
-**状态: 保留实施前审查依据的宏观分析.** 本文的基础盘点和提案对应实施前快照, 01、02 的最新进展见[整体架构与模块设计](generation-architecture.md)及阶段记录. 本文保留流程选择理由; 当前能力以[架构说明](architecture.md)及源码为准, 五库对象定义以[数据设计](analysis-five-libraries.md)为准, 分析职责以[分析架构设计](analysis-architecture-design.md)为准.
+**状态: 保留实施前审查依据的宏观分析.** 本文的基础盘点和提案对应实施前快照, 01 至 03 的最新进展见[整体架构与模块设计](generation-architecture.md)及阶段记录. 本文保留流程选择理由; 当前能力以[架构说明](architecture.md)及源码为准, 五库对象定义以[数据设计](analysis-five-libraries.md)为准, 分析职责以[分析架构设计](analysis-architecture-design.md)为准.
 
 ## 实施前基础与设计目标
 

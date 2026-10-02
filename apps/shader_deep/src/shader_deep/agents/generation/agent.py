@@ -13,6 +13,7 @@ from shader_deep.agents.generation.prompts import SYSTEM_PROMPT
 from shader_deep.infrastructure.llm.client import build_model
 
 if TYPE_CHECKING:
+    from langchain_core.language_models import BaseChatModel
     from langchain_core.runnables import RunnableConfig
 
     from shader_deep.agents.generation.tools import RenderSession
@@ -40,10 +41,11 @@ def _run_config(session: RenderSession) -> RunnableConfig:
     }
 
 
-def _execute(session: RenderSession) -> None:
+def _execute(session: RenderSession, *, model: BaseChatModel | None = None) -> None:
     # tools() 将绑定会话的方法包装成模型 Tool; 模型只需提交业务参数.
     tools = session.tools()
-    model = build_model()
+    # 比较流程共用一次构造的客户端配置, 每项仍创建独立 Agent 和消息历史.
+    model = model if model is not None else build_model()
     agent = create_deep_agent(
         model=model,
         tools=tools,

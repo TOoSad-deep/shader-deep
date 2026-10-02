@@ -18,6 +18,8 @@ from shader_deep.domain.blackboard import add_target, add_task, new_blackboard
 from shader_deep.domain.tasks import TargetRecord, TaskRecord
 
 if TYPE_CHECKING:
+    from langchain_core.language_models import BaseChatModel
+
     from shader_deep.domain.tasks import BlackboardState
     from shader_deep.infrastructure.storage.generation_inputs import CapturedGenerationInputs
 
@@ -87,12 +89,16 @@ def _run_session(
     *,
     run_dir: Path | None = None,
     inputs: CapturedGenerationInputs | None = None,
+    model: BaseChatModel | None = None,
 ) -> GenerationOutcome:
     # PNG 与报告入口共用循环、预算退出和异常保存; 报告沿用准备时的唯一目录.
     session = RenderSession(state, task_id, options, root, run_dir=run_dir, inputs=inputs)
     try:
         with session:
-            _execute(session)
+            if model is None:
+                _execute(session)
+            else:
+                _execute(session, model=model)
     except GenerationLimitError:
         # 达到次数预算是可预期的停止方式, 仍返回已有尝试供调用方检查.
         pass

@@ -6,7 +6,7 @@ import base64
 import hashlib
 import io
 import json
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import TYPE_CHECKING, cast
 
@@ -170,6 +170,10 @@ def _capture_baseline(baseline: CandidateRecord | None, directory: Path, root: P
     code = (root / baseline.code_path).read_bytes()
     preview = _preview_bytes(baseline.preview_path, root)
     # 先读取必需材料, 预览缺失不会被默默当作未提供; 原本没有预览仍是合法基线.
+    return _write_baseline(baseline.id, code, preview, directory)
+
+
+def _write_baseline(candidate_id: str, code: bytes, preview: bytes | None, directory: Path) -> CapturedBaseline:
     text = code.decode("utf-8")
     directory.mkdir(parents=True)
     code_path = directory / "baseline.glsl"
@@ -178,11 +182,36 @@ def _capture_baseline(baseline: CandidateRecord | None, directory: Path, root: P
     if preview_path is not None and preview is not None:
         preview_path.write_bytes(preview)
     return CapturedBaseline(
-        candidate_id=baseline.id,
+        candidate_id=candidate_id,
         code=text,
         code_path=str(code_path),
         preview_url=_png_url(preview) if preview is not None else None,
         preview_path=str(preview_path) if preview_path is not None else None,
+    )
+
+
+def _reuse_generation_inputs(
+    source: CapturedGenerationInputs, run_dir: Path, sketch_id: str, *, alternative: int | None = None
+) -> CapturedGenerationInputs:
+    # 只用于模型执行前准备同批另一方案; 读取已固定的报告副本, 不重读用户原始文件.
+    report_path = (run_dir / "inputs" / "report").resolve()
+    _copy_report(Path(source.binding.report_path), report_path)
+    manifest, libraries = read_report_package(report_path)
+    scheme = _scheme(report_path, sketch_id, alternative, manifest, libraries)
+    baseline = source.baseline
+    captured = None
+    files = [str(report_path / name) for name in REPORT_FILES]
+    if baseline is not None:
+        preview = base64.b64decode(baseline.preview_url.split(",", 1)[1]) if baseline.preview_url is not None else None
+        captured = _write_baseline(baseline.candidate_id, baseline.code.encode("utf-8"), preview, (run_dir / "inputs" / "baseline").resolve())
+        files.extend(path for path in (captured.code_path, captured.preview_path) if path is not None)
+    return replace(
+        source,
+        binding=replace(source.binding, report_path=str(report_path), sketch_id=sketch_id, alternative=alternative),
+        reference_path=str(report_path / "reference.png"),
+        scheme_json=scheme,
+        files=tuple(files),
+        baseline=captured,
     )
 
 
@@ -198,7 +227,7 @@ def capture_generation_inputs(
     """固定报告和可选基线, 在副本上校验后返回可复用材料.
 
     !!! warning "实验性接口"
-        返回工作流内部的准备材料, 尚未接入公开生成执行入口.
+        返回工作流内部固定材料, 供单方案生成和同批方案比较复用.
 
     Args:
         report_dir: 调用方明确选定的完整五库报告目录.
