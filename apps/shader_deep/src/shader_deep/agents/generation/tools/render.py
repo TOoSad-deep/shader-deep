@@ -28,9 +28,11 @@ def render_candidate(session: RenderSession, glsl_code: str) -> str:
     Returns:
         JSON 格式的候选状态、预览路径或错误和剩余预算.
     """
-    # 已选定候选后不再产生新版本; 超出预算的调用也不会增加次数或写新的源码.
-    if session.selected is not None:
-        return json.dumps({"status": "already_finished", "candidate_id": session.selected.id})
+    # 在线程实际执行时检查终态, 同批排队的后续调用不能重开会话.
+    if session.is_finished:
+        return json.dumps(
+            {"status": "already_finished", "stop_reason": session.stop_reason, "candidate_id": session.selected.id if session.selected else None}
+        )
     if session.attempts >= session.options.max_attempts:
         session.save()
         return json.dumps({"status": "attempt_limit", "message": "渲染尝试预算已用完"})

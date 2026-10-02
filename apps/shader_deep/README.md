@@ -2,7 +2,7 @@
 
 维护入口: [当前架构](docs/architecture.md) · [设计决策](docs/decisions/0001-agent-oriented-layout.md) · [重构进度与验证](docs/work-items/structure-refactor.md) · [开发检查](docs/development.md).
 
-下游开发设计: [整体架构与模块设计](docs/generation-architecture.md)提供目录、接口与四个实施分支入口; [宏观分析](docs/generation-execution-design.md)说明流程选择和审查依据. [01 输入绑定与上下文](docs/work-items/generation-01-input-binding.md)已实现内部准备与逐轮装配, 报告生成 API/CLI 和执行接线仍待 02.
+下游开发设计: [整体架构与模块设计](docs/generation-architecture.md)提供目录、接口与四个实施分支入口; [宏观分析](docs/generation-execution-design.md)说明流程选择和审查依据. 01 的输入绑定与[02 的生成执行闭环](docs/work-items/generation-02-execution-loop.md)已接入, 多方案比较和整图组合仍待后续阶段.
 
 输入本地 PNG 和文字要求, 通过单个 Deep Agent 生成、渲染、查看预览并修正 Shader, 将选定候选的实际 GLSL 写入标准输出。
 
@@ -84,6 +84,29 @@ uv run --no-sync --env-file .env shader-deep /absolute/path/reference.png "根�
 uv run --no-sync --env-file .env python main.py /absolute/path/reference.png "根据参考图生成 Shader" > output.glsl
 ```
 
+从完整五库报告执行一个明确方案:
+
+```sh
+uv run --no-sync --env-file .env shader-deep "只实现所选元素, 保持原画布位置" \
+  --report /absolute/path/report --sketch S1 --background "透明" \
+  --alternative 0 --max-attempts 3 --output-dir runs > output.glsl
+```
+
+`--alternative` 是可选的零基索引, 省略时采用所选草图的默认方案. 报告模式要求本次提示词、草图和背景, 不再传 PNG 位置参数. 未指定的宽高采用捕获原图对应尺寸, 只覆盖宽度时高度保持原图值; 旧 PNG 模式仍默认 512 x 512. 报告、原图和可选基线在启动模型前固定, 与候选共用一个运行目录.
+
+Python 调用入口为 `run_generation_from_report`; 基线来自调用方已有黑板, CLI 首版只执行无基线的新报告任务:
+
+```python
+from pathlib import Path
+from shader_deep.api import run_generation_from_report
+
+outcome = run_generation_from_report(
+    Path("/absolute/path/report"), "S1", "只实现所选元素",
+    background="透明", alternative=0, max_attempts=3, output_dir=Path("runs"),
+)
+print(outcome.stop_reason, outcome.run_dir)
+```
+
 查看帮助无需模型配置:
 
 ```sh
@@ -92,7 +115,7 @@ uv run --no-sync shader-deep --help
 
 PNG 字节保持原样, 任务说明与实际加载的图像一起进入多模态任务消息。模型连接沿用原来的 Chat Completions 配置。标准错误输出运行目录和最终预览位置; 标准输出只包含选定候选文件中的实际代码。
 
-退出码: 完成并选定已渲染候选时为 `0`; 预算耗尽未完成时为 `1`, 不输出未经确认的 GLSL; 输入、配置或文件错误为 `2`。模型服务异常会向调用方抛出, 已开始运行的记录保存在运行目录中。
+退出码: 完成并选定已渲染候选时为 `0`; 主动受阻或预算耗尽未完成时为 `1`, 不输出未经确认的 GLSL; 输入、配置或文件错误为 `2`. 执行异常向调用方抛出, 已有制品、错误类型与消息保留在运行目录, 异常注释标明目录.
 
 ## 单元素多视角分析
 
@@ -186,18 +209,21 @@ uv run --no-sync --env-file .env python -m shader_deep.cli.replay /absolute/path
 
 ## 单 Agent 生成闭环
 
-本轮只开放并允许执行两个工具:
+本轮只开放并允许执行三个工具:
 
 | 工具 | 行为 |
 | --- | --- |
 | `render_shader(glsl_code)` | 保存本次代码, 使用固定 width、height、time 进行真实 WebGL2 编译和渲染, 登记候选与成功或失败结果 |
 | `finish_shader(candidate_id, assessment)` | 选择本轮成功渲染且预览已进入后续模型上下文的候选, 保存自检说明并结束 |
+| `stop_generation(reason, next_action, candidate_ids=None)` | 保存受阻原因和关联候选; 建议补充输入或另建任务改试方案, 不自动派发或选择候选 |
 
 编译错误以工具反馈和结果记录返回。渲染成功后, 工具返回候选 ID, 下一次 Context Builder 会实际加载该 PNG, 与参考、基线、代码和相关结果一起交给模型。图片通过多模态任务消息提供, 不仅返回文件路径。
 
 结束工具不能选择未渲染的代码, 也不能在首次渲染的同一批工具调用中跳过预览检查。完成后直接读取已选候选文件作为最终代码, 无需模型再生成一份可能不同的代码。模型自检和选择不代表用户已接受视觉效果。
 
-默认最多渲染 3 个候选, 编译失败也计数。模型调用轮数上限为 `max_attempts + 2`, 不含客户端内部网络重试。即使模型反复请求渲染或只返回普通文字, 运行也会到限停止, 保留已有文件与停止原因。
+默认最多渲染 3 个候选, 编译失败也计数. 普通逻辑模型请求上限为 `max_attempts + 2`, 自动模型摘要已关闭; 当前 SDK 每轮最多再做 2 次网络重试, 不计入 `model_calls`, 该字段不代表 HTTP 请求数或费用预算. 无效工具调用和纯文本回复仍受逻辑轮数限制.
+
+`stop_generation` 的 `next_action` 只能为 `provide_input` 或 `try_another_scheme`. 受阻原因与建议保存在本任务 `blocked` 结果中; 同一响应里的后续工具也会遵守终态, 不再渲染或改写选择.
 
 浏览器在一个专用执行线程中创建、使用和关闭。多个工具请求经过该线程串行处理, 浏览器可跨尝试复用, 尺寸、时间和尝试次数由代码控制。
 
@@ -211,7 +237,7 @@ run-*/
 └── run.json                # 固定条件、计数、选择、停止原因和黑板快照
 ```
 
-`run.json` 的 `selected_candidate_id` 在未完成时为空, `stop_reason` 记录 `completed`、`attempt_limit`、`model_limit` 或 `error`。快照更新采用临时文件替换, 不保存模型连接配置或 API 密钥。
+`run.json` 的 `stop_reason` 记录 `completed`、`blocked`、`attempt_limit`、`model_limit` 或 `error`. 未选中候选时 `selected_candidate_id` 为空; 若选择后清理资源失败, 保留已选候选供检查, 运行状态仍记为 `error` 且调用抛错. `error` 字段保留运行异常诊断. 报告模式额外保存 `inputs/report/` 和可选 `inputs/baseline/`, 基线副本映射位于 `run.json.inputs.baseline`. 快照更新采用临时文件替换, 不保存模型连接配置或 API 密钥.
 
 ## 当前目录与源码入口
 
@@ -361,7 +387,7 @@ if outcome.selected_candidate is not None:
 
 提示词要求先渲染, 再对照真实预览进行修正或结束。候选选择只结束当前生成任务, 不修改原任务的基线, 也不自动建立全局采用或用户接受记录。
 
-生成角色的选材与每轮注入继续使用上述入口. 初稿与探索的 Builder 分别在 `agents/outline/context.py`、`agents/exploration/context.py`; 整合角色按当前阶段构造受限材料. `compatibility/` 保留旧协议及按需整合逻辑. 主分析具有完整请求的应用估算预算, 保留同组必要修复材料; 通过确定性规则整理已消费索引和已被当前完整草稿替代的历史参数, 保留调用配对, 不截断判断正文, 不额外调用模型生成摘要. 生成角色的聊天历史管理沿用 Deep Agents; 独立视觉评审尚未接入.
+未绑定报告的任务沿用上述 Context Builder 入口. 报告生成由公开 `run_generation_from_report` 统一准备, 内部每轮复用固定原图、有效方案和基线材料, 并刷新候选与错误; 不把带报告绑定的任务直接交给旧 `run_generation`. 初稿与探索的 Builder 分别在 `agents/outline/context.py`、`agents/exploration/context.py`; 整合角色按当前阶段构造受限材料. `compatibility/` 保留旧协议及按需整合逻辑. 分析和生成均不额外调用模型生成摘要; 生成保留有限轮数下的完整有效历史. 独立视觉评审尚未接入.
 
 ## 开发检查
 

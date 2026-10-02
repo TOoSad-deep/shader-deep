@@ -17,6 +17,8 @@ from langsmith import Client
 
 from shader_deep import cli
 from shader_deep.agents.generation.options import GenerationOptions
+from shader_deep.domain.blackboard import add_candidate, add_task
+from shader_deep.domain.tasks import CandidateRecord, TaskRecord
 from shader_deep.rendering import RenderError
 from shader_deep.workflows.generation import GenerationIncompleteError, generate_shader, generate_task, run_generation
 from tests.unit_tests.agents.test_context import BASE_CODE, PNG
@@ -107,7 +109,62 @@ class GenerationTests(GenerationFixture):
         self.assertEqual(code, BASE_CODE)
         self.assertEqual(len(self.requests), 2)
         names = {item["function"]["name"] for item in self.requests[0]["tools"]}
-        self.assertEqual(names, {"render_shader", "finish_shader"})
+        self.assertEqual(names, {"render_shader", "finish_shader", "stop_generation"})
+
+    def test_active_stop_preserves_reason_without_candidate_or_extra_model_call(self) -> None:
+        self.response = lambda _request: self.call("stop_generation", {"reason": "需要明确背景", "next_action": "provide_input"})
+        outcome = run_generation(self.state, "G1", asset_root=self.root, options=self.options)
+        self.assertEqual(outcome.stop_reason, "blocked")
+        self.assertIsNone(outcome.selected_candidate)
+        self.assertEqual(outcome.model_calls, 1)
+        self.assertEqual(outcome.attempts, 0)
+        self.assertEqual(len(self.requests), 1)
+        self.assertEqual(ThreadBoundRenderer.renders, [])
+        manifest = json.loads((outcome.run_dir / "run.json").read_text())
+        self.assertEqual(manifest["stop_reason"], "blocked")
+        result = next(iter(manifest["blackboard"]["results"].values()))
+        self.assertEqual(result["status"], "blocked")
+        self.assertEqual(result["summary"], "需要明确背景")
+        self.assertEqual(result["recommendation"], "provide_input")
+        self.assertEqual(result["candidate_ids"], [])
+
+    def test_stop_rejects_later_tools_in_same_batch(self) -> None:
+        def response(_request: dict[str, object]) -> dict[str, object]:
+            message = self.call("stop_generation", {"reason": "固定方案无法实现该效果", "next_action": "try_another_scheme"})
+            calls = (
+                self.call("render_shader", {"glsl_code": BASE_CODE}),
+                self.call("finish_shader", {"candidate_id": "B7", "assessment": "不能重开已停止会话"}),
+                self.call("stop_generation", {"reason": "不能覆盖原原因", "next_action": "provide_input"}),
+            )
+            for index, other in enumerate(calls):
+                other["tool_calls"][0]["id"] = f"after-stop-{index}"
+                message["tool_calls"].extend(other["tool_calls"])
+            return message
+
+        self.response = response
+        outcome = run_generation(self.state, "G1", asset_root=self.root, options=self.options)
+        self.assertEqual(outcome.stop_reason, "blocked")
+        self.assertIsNone(outcome.selected_candidate)
+        self.assertEqual(outcome.attempts, 0)
+        self.assertEqual(len(self.requests), 1)
+        self.assertEqual(ThreadBoundRenderer.renders, [])
+        self.assertEqual(list(outcome.run_dir.glob("*.glsl")), [])
+        self.assertEqual([result.summary for result in outcome.state["results"].values()], ["固定方案无法实现该效果"])
+
+    def test_invalid_stop_does_not_end_task_or_bypass_model_budget(self) -> None:
+        self.state = add_task(self.state, TaskRecord(id="other", role="generation", target_version="T1", objective="另一任务"))
+        self.state = add_candidate(self.state, CandidateRecord(id="other", task_id="other", code_path="unrelated.glsl"))
+        self.response = lambda _request: self.call(
+            "stop_generation",
+            {"reason": " " if len(self.requests) == 1 else "错误引用其他任务", "next_action": "provide_input", "candidate_ids": ["other"]},
+        )
+        outcome = run_generation(self.state, "G1", asset_root=self.root, options=replace(self.options, max_attempts=1))
+        self.assertEqual(outcome.stop_reason, "model_limit")
+        self.assertIsNone(outcome.selected_candidate)
+        self.assertEqual(outcome.model_calls, 3)
+        self.assertEqual(outcome.attempts, 0)
+        self.assertEqual(outcome.state["results"], {})
+        self.assertTrue(all(result["status"] == "invalid_stop" for result in tool_results(self.requests[-1])))
 
     def test_plain_text_cannot_bypass_rendering_and_stops_at_model_limit(self) -> None:
         self.response = lambda _request: {"role": "assistant", "content": BASE_CODE}
@@ -166,9 +223,9 @@ class GenerationTests(GenerationFixture):
                 [
                     "shader-deep",
                     str(self.root / "reference.PNG"),
-                    "生成粉色圆形",
                     "--width",
                     "64",
+                    "生成粉色圆形",
                     "--height",
                     "32",
                     "--time",

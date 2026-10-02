@@ -124,23 +124,24 @@ class GenerationLoopMiddleware(AgentMiddleware[AgentState[object], None, object]
                 ensure_ascii=False,
             )
         )
-        # 向模型公开的工具定义只保留本轮两个工具; 执行时还会再检查一次名字.
+        # 向模型公开的工具定义只保留本轮三个工具; 执行时还会再检查一次名字.
         return request.override(messages=[*request.messages, conditions], tools=list(self.allowed_tools))
 
     def wrap_model_call(self, request: ModelRequest, handler: Callable[[ModelRequest], ModelResponse[object]]) -> ModelResponse[object]:
-        """选定候选后直接交付其代码, 否则在预算内调用模型.
+        """会话结束后直接返回结果, 否则在预算内调用模型.
 
         Args:
             request: 已含任务材料和工具反馈的请求.
             handler: 后续模型调用入口.
 
         Returns:
-            模型响应, 或已选定且实际渲染过的代码.
+            模型响应, 或会话终态与已选代码.
         """
-        if self.session.selected is not None:
-            # finish 工具之后, 图可能再次走到模型节点; 直接返回已渲染源码, 节省一次请求.
-            code = Path(self.session.selected.code_path).read_text(encoding="utf-8")
-            return ModelResponse(result=[AIMessage(content=code)])
+        if self.session.is_finished:
+            # 结束工具之后图可能再次走到模型节点; 主动受阻时没有已选代码.
+            selected = self.session.selected
+            content = Path(selected.code_path).read_text(encoding="utf-8") if selected is not None else self.session.stop_reason
+            return ModelResponse(result=[AIMessage(content=content)])
         return handler(self._prepare(request))
 
     def wrap_tool_call(self, request: ToolCallRequest, handler: Callable[[ToolCallRequest], object]) -> ToolMessage:
@@ -155,6 +156,8 @@ class GenerationLoopMiddleware(AgentMiddleware[AgentState[object], None, object]
         """
         if request.tool_call["name"] not in {tool.name for tool in self.allowed_tools}:
             # 即使模型猜到框架内置工具名, 也在执行前返回错误, 不调用对应 handler.
-            return ToolMessage(content="本轮只允许 render_shader 和 finish_shader", tool_call_id=request.tool_call["id"], status="error")
-        # 这两个工具只返回字符串, 因此本流程的 handler 返回 ToolMessage.
+            return ToolMessage(
+                content="本轮只允许 render_shader、finish_shader 和 stop_generation", tool_call_id=request.tool_call["id"], status="error"
+            )
+        # 这些工具只返回字符串, 因此本流程的 handler 返回 ToolMessage.
         return cast("ToolMessage", handler(request))

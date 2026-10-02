@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -11,12 +12,25 @@ from unittest import TestCase
 from unittest.mock import patch
 
 import httpx2
+from PIL import Image
 
 from shader_deep.agents.generation.options import GenerationOptions
+from shader_deep.infrastructure.storage.report_package import ReferenceAsset, ReportManifest, write_report_package
 from tests.unit_tests.agents.test_context import BASE_CODE, fixture_state
+from tests.unit_tests.infrastructure.test_report_package import package_libraries
 
 if TYPE_CHECKING:
     from collections.abc import Callable
+
+
+def generation_report(root: Path) -> Path:
+    """创建可真实解码的原图及含局部备选的完整报告, 不调用模型."""
+    reference = root / "report-reference.png"
+    with Image.new("RGBA", (32, 24), (255, 160, 200, 255)) as image:
+        image.save(reference)
+    content = reference.read_bytes()
+    manifest = ReportManifest(reference=ReferenceAsset(sha256=hashlib.sha256(content).hexdigest()), target_element_id="E1", status="completed")
+    return write_report_package(root / "report", package_libraries(), manifest, content)
 
 
 def task_payloads(request: dict[str, object]) -> list[dict[str, object]]:

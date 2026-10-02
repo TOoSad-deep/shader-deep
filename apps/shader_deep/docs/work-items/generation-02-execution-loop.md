@@ -4,7 +4,7 @@
 
 ## 状态与目标
 
-状态: 待实施. 本文是第二个分支的实施方案, 当前没有据此调用模型或浏览器.
+状态: 代码已接入, 收口验证见文末记录. 按本轮用户要求, 只做离线及真实浏览器验证, 真实模型样例仍待验收.
 
 目标: 把 01 固定的五库方案接入现有 DeepAgents 生成、渲染、预览、自检与选择循环, 交付实际 GLSL、预览和可解释的结束原因. 本分支完成后才形成单方案闭环.
 
@@ -102,4 +102,16 @@
 
 ## 实施记录
 
-待填: 实际代码状态、改动、验证命令与结果、真实样本结果和未覆盖范围.
+2026-10-03:
+
+- 分支: `TOoSad-deep/repo/generation-execution-loop`, 基点 `9e6b655f`. 按用户要求直接从已推送的 01 提交建立, 不表示前序已合并. 本记录保留实施与验证证据, 提交及远端交付状态以 Git 记录为准.
+- 新公开入口 `run_generation_from_report` 已从 `shader_deep.api` 导出; 接收报告、草图、本次要求及背景, 以关键字参数指定可选备选、基线、宽高、时间、预算与输出目录. 未指定宽高使用一次捕获的原图对应尺寸. 旧生成函数签名和 PNG 默认值保留; `RenderSession` 仅新增默认空的关键字参数 `run_dir`、`inputs`.
+- 两条入口共用 `_run_session`. 报告准备和执行共用一个目录, 每次保存保留输入绑定和基线副本映射, 阶段状态改为 `generation`. 普通运行及资源关闭异常保存 `error` 类型与消息, 在原异常上附加运行目录后抛出; 已有候选仍可追溯.
+- `stop_generation` 已接入模型可见工具与执行白名单, 通过黑板引用校验后登记 `blocked` 结果及 `provide_input`/`try_another_scheme` 建议. 它不选择候选或自动派发. Agent、Middleware 和实际工具共用终态判断; 同一响应工具按顺序进入单线程, 终态后不再渲染或改写结果.
+- 预算核查: 复用本应用已有的 LangChain `SummarizationMiddleware(trigger=None)` 覆盖 SDK 默认摘要, 关闭绕过普通逻辑轮数的辅助摘要请求. `model_calls` 仍只计普通逻辑请求, 不含当前 SDK 每轮最多 2 次网络重试; 未重写分析或模型传输层.
+- CLI 显式使用 `--report`、`--sketch`、`--background`, 可选 `--alternative`; 与旧 `PNG PROMPT` 模式互斥. 保留旧选项和位置参数交错排列. stdout 只交付选中候选的实际代码; 受阻及预算耗尽退出 1, 输入与文件错误沿用退出 2.
+- 独立复审与修复: 修复变长位置参数导致旧 CLI 交错排列无法解析的问题; 将异常记录边界扩至整个会话生命周期, 修复浏览器关闭抛错时记录仍为 `completed` 的问题. 使用已有 CLI 案例及一个关闭失败行为测试保护实际结果.
+- 验证代码状态: 基点 `9e6b655f` 加本分支阶段 02 工作区改动. 在应用目录设置 `UV_CACHE_DIR=/private/tmp/shader-deep-uv-cache` 后运行 `make check`: 533 项单元测试、Ruff、格式、ty 全通过, repository check 为 0 findings. 日志: `/private/tmp/shader-deep-generation-execution-loop-check.log`.
+- 浏览器验证: 获准在宿主执行环境运行相同环境变量下的 `make integration_test`, 保留 Chromium 自身沙箱; 最小浏览器检查及 13 项集成测试均通过. 原错误修复案例已覆盖报告备选、基线映射、实际预览回读及唯一目录. 日志: `/private/tmp/shader-deep-generation-execution-loop-integration.log`. 使用模拟模型, 未增加并行测试框架或视觉评分体系.
+- 两个实施 subagent 分别完成执行会话/工具和工作流/API/CLI, root 完成浏览器联调、生命周期修复与维护文档. 独立只读复审已确认上述两项修复通过, 未发现剩余可行动问题.
+- 未覆盖: 用户明确选择先完成离线与浏览器验证. 本轮没有调用真实模型服务, 不声称真实模型效果或用户视觉验收通过; 一份代表性真实报告的模型样例仍待验收.

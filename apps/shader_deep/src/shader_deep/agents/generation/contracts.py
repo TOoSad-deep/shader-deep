@@ -21,9 +21,9 @@ class GenerationOutcome:
         state: 已登记候选和结果的最新黑板.
         run_dir: 保存代码、预览与 run.json 的目录.
         selected_candidate: 本轮已渲染并由模型选择的候选, 未完成时为空.
-        stop_reason: completed、attempt_limit、model_limit 或 error.
+        stop_reason: completed、blocked、attempt_limit、model_limit 或 error.
         attempts: 已执行的候选尝试次数.
-        model_calls: 模型调用轮数, 不包含客户端内部网络重试.
+        model_calls: 普通逻辑模型请求轮数, 不包含每轮最多两次 SDK 网络重试; 自动模型摘要已关闭.
     """
 
     # outcome 返回最新业务快照; selected_candidate=None 时也可查看失败尝试与停止原因.

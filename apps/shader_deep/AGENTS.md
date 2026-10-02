@@ -11,6 +11,7 @@
 ## 知识与任务入口
 
 - 当前结构与依赖方向: [架构说明](docs/architecture.md); 选择理由: [ADR 0001](docs/decisions/0001-agent-oriented-layout.md).
+- 报告到生成、受阻结束或生成 CLI: 先读[生成整体架构](docs/generation-architecture.md)和[阶段 02 实施记录](docs/work-items/generation-02-execution-loop.md#实施记录), 当前执行入口为 `run_generation_from_report`.
 - 分析范围、调度流程、Agent 职责或 skill 编排设计: 先读[分析架构与 Agent 工作流设计](docs/analysis-architecture-design.md), 在该文档维护已确认约束与待讨论方案.
 - 五库语义、字段、引用或报告公共状态设计: 先读[五库与报告数据设计](docs/analysis-five-libraries.md), 在该文档维护数据契约. 默认五库实现入口和验证范围见[五库实施记录](docs/work-items/five-library-implementation.md); 草图最低产出仍待讨论, 当前实现以架构说明和源码为准.
 - 本轮重构的进度、已知问题和验证证据: [任务记录](docs/work-items/structure-refactor.md). 接手时先核对 Git 状态, 不依赖先前聊天或把记录日期当作实时状态.
@@ -69,8 +70,10 @@
 
 ## 生成与渲染约定
 
-- 生成角色当前只允许 `render_shader` 和 `finish_shader`。工具列表限制与实际执行白名单都必须保留，不能只靠提示词约束权限。
+- 生成角色只允许 `render_shader`、`finish_shader` 和 `stop_generation`. 工具列表限制与实际执行白名单都必须保留, 不能只靠提示词约束权限.
+- `stop_generation` 记录非空受阻原因、允许引用的候选和补充输入/另试方案建议, 返回 `blocked`, 不自动派发任务或选择候选. 同批工具按顺序执行, 终态后的工具不能重开会话.
 - 渲染宽度、高度、时间和预算由程序固定。渲染失败也消耗尝试次数；模型调用次数单独计数，避免纯文本回复或无效调用形成无限循环。
+- 生成关闭自动模型摘要, 普通逻辑模型请求上限为 `max_attempts + 2`; SDK 有限网络重试不计入该字段. 报告模式未指定的宽高取自本轮固定原图, 旧 PNG 模式默认值保持不变.
 - `finish_shader` 只能选择本次会话成功渲染，且预览已进入后续模型请求的候选。同一批调用刚渲染出的候选不能跳过回读立即结束。
 - 最终交付读取已选候选的实际 GLSL 文件，保留自检说明及差异；不能用模型最后另写的一段未经渲染代码替代它。
 - `rendering/` 保持独立，不导入 Agent、黑板或 LangChain。Python 管理浏览器与参数，`webgl2.js` 负责真实编译、链接、绘制和 PNG 导出。

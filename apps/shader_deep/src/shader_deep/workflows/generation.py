@@ -19,6 +19,7 @@ from shader_deep.domain.tasks import TargetRecord, TaskRecord
 
 if TYPE_CHECKING:
     from shader_deep.domain.tasks import BlackboardState
+    from shader_deep.infrastructure.storage.generation_inputs import CapturedGenerationInputs
 
 # 角色提示说明工作方式; 次数、工具白名单和选择资格另由运行时代码检查.
 # 保护特征与视觉相似度仍依靠模型自检和用户验收, 当前没有程序化视觉验收器.
@@ -75,19 +76,37 @@ def run_generation(
     # 预先读取一次材料, 在创建会话和请求模型之前暴露缺失文件、错误角色等问题.
     # 这里的返回值不复用; 真正请求前, Context middleware 会重新读取最新状态.
     build_generation_context(state, task_id, asset_root=root)
-    with RenderSession(state, task_id, options or GenerationOptions(), root) as session:
-        try:
+    return _run_session(state, task_id, root, options or GenerationOptions())
+
+
+def _run_session(
+    state: BlackboardState,
+    task_id: str,
+    root: Path,
+    options: GenerationOptions,
+    *,
+    run_dir: Path | None = None,
+    inputs: CapturedGenerationInputs | None = None,
+) -> GenerationOutcome:
+    # PNG 与报告入口共用循环、预算退出和异常保存; 报告沿用准备时的唯一目录.
+    session = RenderSession(state, task_id, options, root, run_dir=run_dir, inputs=inputs)
+    try:
+        with session:
             _execute(session)
-        except GenerationLimitError:
-            # 达到次数预算是可预期的停止方式, 仍返回已有尝试供调用方检查.
-            pass
-        finally:
-            # 选择成功或预算耗尽会提前设置停止原因; 其他离开路径登记为 error.
-            # 未捕获的异常在保存之后继续抛出, with 负责关闭浏览器和执行线程.
-            if session.stop_reason == "running":
-                session.stop_reason = "error"
-            session.save()
-        return session.outcome()
+    except GenerationLimitError:
+        # 达到次数预算是可预期的停止方式, 仍返回已有尝试供调用方检查.
+        pass
+    except BaseException as exc:
+        # 包含浏览器关闭失败, 避免调用已抛错而落盘仍声称 completed.
+        session.stop_reason = "error"
+        session.error = f"{type(exc).__name__}: {exc}"
+        exc.add_note(f"Generation artifacts: {session.run_dir}")
+        raise
+    finally:
+        if session.stop_reason == "running":
+            session.stop_reason = "error"
+        session.save()
+    return session.outcome()
 
 
 def _completed_code(outcome: GenerationOutcome) -> str:

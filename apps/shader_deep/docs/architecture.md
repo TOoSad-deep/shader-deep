@@ -2,7 +2,7 @@
 
 本应用从参考图建立可追溯的分析结果, 或通过实际渲染生成 Shader. 两条流程保持独立, 不自动把分析结果送入生成. 本文描述重构后的实际代码; 历史设计与旧协议文档不替代当前入口.
 
-生成开发的目录、模块和四个实施分支见[生成整体架构与模块设计](generation-architecture.md), 选择理由见[宏观分析](generation-execution-design.md). 01 已落地的准备能力如下, 其余执行、比较和组合方案尚未接入.
+生成开发的目录、模块和四个实施分支见[生成整体架构与模块设计](generation-architecture.md), 选择理由见[宏观分析](generation-execution-design.md). 01 的输入准备与 02 的报告执行已接入, 多方案比较和整图组合尚未实施.
 
 结构选择及取舍见 [ADR 0001](decisions/0001-agent-oriented-layout.md); 实现的验证与交付状态见[结构重构任务](work-items/structure-refactor.md).
 
@@ -58,23 +58,27 @@ CLI / Python API
 
 ```text
 CLI / Python API
-  → 创建固定目标与任务
+  → 创建固定目标与任务, 报告模式先捕获输入
   → RenderSession 管理渲染线程与资源
   → 生成角色提交 GLSL
   → 真实渲染与预览回读
-  → finish_shader 选择本轮已展示的成功候选
-  → 返回所选文件中的实际代码
+  → finish_shader 选择已展示的成功候选, 或 stop_generation 记录主动受阻
+  → 返回实际候选与结束原因, 运行异常保存诊断后抛出
 ```
 
 `workflows/five_analysis.py` 创建运行并提供业务动作, 默认入口运行 `agents/main/` 的持续主 Agent. 主 Agent 按实际读取的编排 skill 调用元素登记、探索派发、结果读取、整合和结束工具, 原固定 `_stages` 不再推进默认链路. 元素登记与探索派发使用请求时工具权限, 同一模型响应中的夹带派发不会因登记刚成功而放行. 每个探索任务绑定同一原图、用户要求、目标和范围, 使用独立模型历史. 一次自动重派仍失败后, 主 agent 独立诊断原任务与自身错误, 只决定最后重派或结束; 决策不改变原输入, 自身失败不递归恢复. 整合拥有独立历史, 仅读已发布 V0; 语义合并只产生 F/R/M 旧项到保留项的映射, 不生成机制或更改草图. 程序一次重写 `[[ID]]` 及结构引用, 对草图选择碰撞、共同机制塌缩和关系端点塌缩拒绝发布.
 
-## 报告生成的输入准备
+## 报告生成的准备与执行
 
 [generation_from_report.py](../src/shader_deep/workflows/generation_from_report.py) 的内部 `_prepare_generation` 接收报告、草图、可选备选、本次要求和明确背景, 可从已有黑板选择基线. 它分配一个运行目录, 捕获输入后登记新目标与生成任务, 返回私有 `PreparedGeneration`; 不创建模型客户端、渲染线程或浏览器.
 
 [generation_inputs.py](../src/shader_deep/infrastructure/storage/generation_inputs.py) 复制协议指定文件, 校验副本并计算 manifest、五库与原图的内容 SHA256. `TaskRecord.generation_binding` 默认为空; 新绑定记录副本、摘要与选择, 有效 `selected`、备选条件和公共问题的必要正文单独进入上下文. 基线文件副本的映射写入 `run.json.inputs.baseline`, 历史候选路径与身份保持原值.
 
-固定文本、原图及基线内容由内存材料持有, `_build_generation_context(..., inputs=...)` 和 `GenerationContextMiddleware(..., inputs=...)` 每轮重用它们, 只刷新当前候选与结果. 未绑定任务仍走原路径; 已绑定任务缺少准备材料时明确报错, 不静默丢掉方案. 无 `options` 时准备入口采用原图尺寸, 显式 `GenerationOptions` 则提供完整渲染配置. 实施证据与 02 接线要求见[阶段 01 记录](work-items/generation-01-input-binding.md#实施记录).
+固定文本、原图及基线内容由内存材料持有, `_build_generation_context(..., inputs=...)` 和 `GenerationContextMiddleware(..., inputs=...)` 每轮重用它们, 只刷新当前候选与结果. 未绑定任务仍走原路径; 已绑定任务缺少准备材料时明确报错, 不静默丢掉方案. 输入捕获证据见[阶段 01 记录](work-items/generation-01-input-binding.md#实施记录).
+
+公开 `run_generation_from_report` 接收显式选择、背景及逐项渲染配置, 未指定宽高从捕获原图确定. 它将 `PreparedGeneration` 交给共用 `_run_session`, 与旧 PNG 路径使用同一 Agent 和工具循环. `RenderSession` 接收可选 `run_dir`、`inputs`, 复用准备目录并在每次保存中保留基线副本映射. CLI 的 `--report` 模式进入该 API; 原 PNG 模式保持原调用及默认尺寸.
+
+`stop_generation` 经过正常结果引用校验后保存 `blocked` 结果及下一步建议, 无候选也能结束; 成功选择、受阻、逻辑预算耗尽和异常以会话终态统一判断. 同批工具按响应顺序进入单线程, 结束后不再改写候选. 自动模型摘要在应用层关闭; `model_calls` 统计普通逻辑请求, 不包含 SDK 有限网络重试. 执行及资源关闭异常保留 `error` 诊断和目录注释后继续抛出. 验证范围见[阶段 02 记录](work-items/generation-02-execution-loop.md#实施记录).
 
 ## 状态由谁持有
 
@@ -85,7 +89,8 @@ CLI / Python API
 | 任务、attempt、恢复计数、回执、V0/V1 指针和封存 | `runtime/task_store/` 的 `commit.json`, 每轮进程锁及线程锁 |
 | 角色历史与请求级图像材料 | `agents/five_analysis/` 与复用的 `AnalysisLoop` |
 | 完整交付文件和按草图读取 | `infrastructure/storage/report_package.py`, 来自同一选定版本 |
-| `run.json` | 公开入口从权威提交记录生成的投影, 不接受提交、不承担恢复指针 |
+| 分析 `run.json` | 公开入口从权威提交记录生成的投影, 不接受提交、不承担恢复指针 |
+| 生成 `run.json` | RenderSession 保存黑板、固定输入引用、计数与终态; 不是可恢复的模型会话 |
 
 结果文件先写齐、验证, 再原子替换一份提交记录发布任务终态、结果路径与回执. 完成事件只用于唤醒, 协调器补查持久状态. 相同提交成功后重试返回原回执, 终结/取消/替换/封存阻止迟到的新提交. 进程锁及代次管理恢复无执行者的旧 `running`, 保留已提交结果及恢复计数.
 
