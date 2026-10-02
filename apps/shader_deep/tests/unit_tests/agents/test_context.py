@@ -14,10 +14,12 @@ from langchain.agents.middleware import ModelRequest, ModelResponse
 from langchain.messages import AIMessage, HumanMessage, SystemMessage, ToolMessage
 from langchain_openai import ChatOpenAI
 
-from shader_deep.agents.generation.context import GenerationContext, build_generation_context
+from shader_deep.agents.generation.context import GenerationContext, _build_generation_context, build_generation_context
 from shader_deep.agents.generation.middleware import GenerationContextMiddleware
 from shader_deep.domain.blackboard import add_candidate, add_result, add_target, add_task, new_blackboard
+from shader_deep.domain.generation import GenerationBinding
 from shader_deep.domain.tasks import BlackboardState, CandidateRecord, ResultRecord, TargetRecord, TaskRecord
+from shader_deep.infrastructure.storage.generation_inputs import CapturedBaseline, CapturedGenerationInputs
 
 PNG = base64.b64decode("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/lXkAAAAASUVORK5CYII=")
 BASE_CODE = "void mainImage(out vec4 c, in vec2 p) { c = vec4(0.25); }"
@@ -56,6 +58,26 @@ def fixture_state(root: Path) -> BlackboardState:
 
 def metadata(context: GenerationContext) -> dict[str, object]:
     return json.loads(context.message.content[0]["text"])
+
+
+def captured_inputs(root: Path) -> CapturedGenerationInputs:
+    snapshot = root / "inputs"
+    snapshot.mkdir()
+    reference, code, preview = snapshot / "reference.png", snapshot / "baseline.glsl", snapshot / "baseline.png"
+    reference.write_bytes(PNG)
+    code.write_text(BASE_CODE, encoding="utf-8")
+    preview.write_bytes(PNG)
+    url = "data:image/png;base64," + base64.b64encode(PNG).decode("ascii")
+    return CapturedGenerationInputs(
+        binding=GenerationBinding(report_path=str(snapshot), content_sha256="a" * 64, reference_sha256="b" * 64, element_id="E1", sketch_id="S1"),
+        reference_path=str(reference),
+        reference_url=url,
+        width=1,
+        height=1,
+        scheme_json=json.dumps({"selected": {"choices": {"F1": "M2"}, "composition": "先绘制主体"}}),
+        files=(str(reference), str(code), str(preview)),
+        baseline=CapturedBaseline(candidate_id="B7", code=BASE_CODE, code_path=str(code), preview_url=url, preview_path=str(preview)),
+    )
 
 
 class ContextTests(TestCase):
@@ -158,6 +180,15 @@ class ContextTests(TestCase):
         with self.assertRaisesRegex(ValueError, "Expected a generation task"):
             build_generation_context(state, "A1", asset_root=self.root)
 
+    def test_report_task_requires_matching_prepared_materials(self) -> None:
+        inputs = captured_inputs(self.root)
+        state = add_task(self.state, replace(self.state["tasks"]["G1"], id="prepared", generation_binding=inputs.binding))
+        with self.assertRaisesRegex(ValueError, "requires prepared inputs"):
+            build_generation_context(state, "prepared", asset_root=self.root)
+        for mismatched in (replace(inputs, binding=replace(inputs.binding, sketch_id="S2")), replace(inputs, baseline=None)):
+            with self.subTest(inputs=mismatched), self.assertRaisesRegex(ValueError, "do not match"):
+                _build_generation_context(state, "prepared", asset_root=self.root, inputs=mismatched)
+
 
 class MiddlewareTests(TestCase):
     def setUp(self) -> None:
@@ -203,3 +234,36 @@ class MiddlewareTests(TestCase):
         self.assertEqual(response.result[0].content, "GLSL")
         self.assertEqual(self.requests[0].messages[0].id, "generation-context:G1")
         self.assertEqual(self.requests[0].messages[1:], request.messages)
+
+    def test_prepared_materials_stay_fixed_while_new_candidate_and_error_appear(self) -> None:
+        inputs = captured_inputs(self.root)
+        self.state = add_task(self.state, replace(self.state["tasks"]["G1"], id="prepared", generation_binding=inputs.binding))
+        middleware = GenerationContextMiddleware(lambda: self.state, "prepared", asset_root=self.root, inputs=inputs)
+        history = [HumanMessage(content="继续")]
+        request = ModelRequest(model=self.model, messages=history, state={"messages": history})
+        middleware.wrap_model_call(request, self.capture)
+        for name in ("reference.PNG", "baseline.glsl", "baseline.png"):
+            (self.root / name).unlink()
+        (self.root / "candidate.glsl").write_text("new-code", encoding="utf-8")
+        (self.root / "candidate.png").write_bytes(PNG)
+        candidate = CandidateRecord(id="C1", task_id="prepared", code_path="candidate.glsl", preview_path="candidate.png")
+        self.state = add_candidate(self.state, candidate)
+        self.state = add_result(self.state, ResultRecord(id="R1", task_id="prepared", status="partial", summary="上一轮错误已修复"))
+        middleware.wrap_model_call(request, self.capture)
+        first, second = (json.loads(item.messages[0].content[0]["text"]) for item in self.requests)
+        self.assertEqual(first["generation_scheme"], second["generation_scheme"])
+        self.assertEqual(second["generation_scheme"]["selected"]["choices"], {"F1": "M2"})
+        self.assertEqual(second["candidates"][0]["code"], BASE_CODE)
+        self.assertEqual(second["candidates"][1]["code"], "new-code")
+        self.assertEqual(second["task_results"][0]["summary"], "上一轮错误已修复")
+        for prepared, image_count in zip(self.requests, (2, 3), strict=True):
+            images = [block["image_url"]["url"] for block in prepared.messages[0].content if block["type"] == "image_url"]
+            self.assertEqual(images, [inputs.reference_url] * image_count)
+            self.assertEqual(prepared.messages[1:], history)
+        context = _build_generation_context(self.state, "prepared", asset_root=self.root, inputs=inputs)
+        self.assertTrue(set(inputs.files).issubset(context.files))
+        self.assertIn(str(self.root / "candidate.glsl"), context.files)
+        self.assertEqual(self.state["candidates"]["B7"].code_path, "baseline.glsl")
+        self.assertEqual(self.state["targets"]["T1"].reference_path, "reference.PNG")
+        self.assertEqual(request.messages, history)
+        self.assertEqual(request.state["messages"], history)

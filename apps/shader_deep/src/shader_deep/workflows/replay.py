@@ -13,6 +13,7 @@ from typing import TYPE_CHECKING, Protocol, TypeVar, cast
 from pydantic import TypeAdapter
 
 from shader_deep.domain.blackboard import add_result, add_target, add_task, new_blackboard
+from shader_deep.domain.generation import GenerationBinding
 from shader_deep.domain.legacy import AnalysisSummary, LensConfig, LensReport
 from shader_deep.domain.library.models import ExplorationReport, PossibilityLibrary, VisualOutline
 from shader_deep.domain.library.validation import validate_outline
@@ -83,7 +84,7 @@ def _mapping(value: object) -> dict[str, object]:
 
 def _task(value: object) -> TaskRecord:
     adapter = TypeAdapter(TaskRecord)
-    adapter.rebuild(_types_namespace={"LensConfig": LensConfig, "VisualOutline": VisualOutline})
+    adapter.rebuild(_types_namespace={"LensConfig": LensConfig, "VisualOutline": VisualOutline, "GenerationBinding": GenerationBinding})
     return adapter.validate_python(value)
 
 

@@ -2,7 +2,7 @@
 
 本应用从参考图建立可追溯的分析结果, 或通过实际渲染生成 Shader. 两条流程保持独立, 不自动把分析结果送入生成. 本文描述重构后的实际代码; 历史设计与旧协议文档不替代当前入口.
 
-下一阶段的目录、模块和四个实施分支见[生成整体架构与模块设计](generation-architecture.md), 选择理由见[宏观分析](generation-execution-design.md). 这些文档描述拟实施方案, 不改变本文记录的当前能力.
+生成开发的目录、模块和四个实施分支见[生成整体架构与模块设计](generation-architecture.md), 选择理由见[宏观分析](generation-execution-design.md). 01 已落地的准备能力如下, 其余执行、比较和组合方案尚未接入.
 
 结构选择及取舍见 [ADR 0001](decisions/0001-agent-oriented-layout.md); 实现的验证与交付状态见[结构重构任务](work-items/structure-refactor.md).
 
@@ -67,6 +67,14 @@ CLI / Python API
 ```
 
 `workflows/five_analysis.py` 创建运行并提供业务动作, 默认入口运行 `agents/main/` 的持续主 Agent. 主 Agent 按实际读取的编排 skill 调用元素登记、探索派发、结果读取、整合和结束工具, 原固定 `_stages` 不再推进默认链路. 元素登记与探索派发使用请求时工具权限, 同一模型响应中的夹带派发不会因登记刚成功而放行. 每个探索任务绑定同一原图、用户要求、目标和范围, 使用独立模型历史. 一次自动重派仍失败后, 主 agent 独立诊断原任务与自身错误, 只决定最后重派或结束; 决策不改变原输入, 自身失败不递归恢复. 整合拥有独立历史, 仅读已发布 V0; 语义合并只产生 F/R/M 旧项到保留项的映射, 不生成机制或更改草图. 程序一次重写 `[[ID]]` 及结构引用, 对草图选择碰撞、共同机制塌缩和关系端点塌缩拒绝发布.
+
+## 报告生成的输入准备
+
+[generation_from_report.py](../src/shader_deep/workflows/generation_from_report.py) 的内部 `_prepare_generation` 接收报告、草图、可选备选、本次要求和明确背景, 可从已有黑板选择基线. 它分配一个运行目录, 捕获输入后登记新目标与生成任务, 返回私有 `PreparedGeneration`; 不创建模型客户端、渲染线程或浏览器.
+
+[generation_inputs.py](../src/shader_deep/infrastructure/storage/generation_inputs.py) 复制协议指定文件, 校验副本并计算 manifest、五库与原图的内容 SHA256. `TaskRecord.generation_binding` 默认为空; 新绑定记录副本、摘要与选择, 有效 `selected`、备选条件和公共问题的必要正文单独进入上下文. 基线文件副本的映射写入 `run.json.inputs.baseline`, 历史候选路径与身份保持原值.
+
+固定文本、原图及基线内容由内存材料持有, `_build_generation_context(..., inputs=...)` 和 `GenerationContextMiddleware(..., inputs=...)` 每轮重用它们, 只刷新当前候选与结果. 未绑定任务仍走原路径; 已绑定任务缺少准备材料时明确报错, 不静默丢掉方案. 无 `options` 时准备入口采用原图尺寸, 显式 `GenerationOptions` 则提供完整渲染配置. 实施证据与 02 接线要求见[阶段 01 记录](work-items/generation-01-input-binding.md#实施记录).
 
 ## 状态由谁持有
 

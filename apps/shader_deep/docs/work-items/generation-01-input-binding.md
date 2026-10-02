@@ -4,7 +4,7 @@
 
 ## 状态与目标
 
-状态: 待实施. 本文只规定第一个分支的工作, 不代表分支、类型或代码已经创建.
+状态: 已实现输入准备与上下文, 收口验证见文末记录. 本文只覆盖第一个分支, 未接入报告生成执行.
 
 目标: 将调用方明确选择的五库草图及可选局部备选, 固定为一个新生成任务和可逐轮复用的模型材料. 本阶段交付的准备入口只装配输入与上下文, 不调用模型或浏览器.
 
@@ -103,4 +103,17 @@
 
 ## 实施记录
 
-待填: 实际代码状态、改动、验证命令与结果、未覆盖范围.
+2026-10-03:
+
+- 分支: `TOoSad-deep/repo/generation-input-binding`, 基点 `b81e1c80`. 按本轮用户要求直接从前序提交建分支, 未等待前序合并; 不表示前序已经合并.
+- 新增 `GenerationBinding`、输入捕获和私有 `_prepare_generation`. 捕获后登记新目标和任务, 旧黑板记录保持原身份; `run.json` 保存 `phase=prepared` 及基线副本映射. 准备失败清理由本次独占创建的目录.
+- 摘要按固定文件顺序对文件名、长度及字节做 SHA256, 覆盖 manifest、五库和原图; README 作为导航随包复制但不计入内容身份. 当前没有持久会话恢复入口, 内存材料不会每轮重新做摘要或读取原文件.
+- 方案只采用有效 `selected`, 保留已选备选条件与公共问题正文. 原图和可选基线在捕获时加载; 当前候选与结果在请求前刷新. 基线副本映射保存在 `run.json.inputs.baseline`, 未覆盖源候选路径.
+- 兼容变化: `TaskRecord` 增加默认空的 `generation_binding`; `GenerationContextMiddleware` 增加关键字参数 `inputs=None`. 公开 `build_generation_context` 和旧生成函数签名保持不变. 已绑定报告的任务须经私有 `_build_generation_context(..., inputs=prepared.inputs)` 装配, 直接调用旧入口会报缺少准备材料.
+- 参数取舍: 不传 `options` 时使用原图尺寸; 显式传入的 `GenerationOptions` 是完整渲染配置, 包括其宽高. 02 增加 CLI 时按“未指定尺寸则使用原图”构造该配置, 不能先把旧 CLI 的 512 默认值写入报告模式.
+- 02 交接: 复用 `prepared.run_dir`、`state`、`task_id`、`inputs`、`options` 和 `asset_root`; RenderSession 后续保存快照时保留固定输入映射, 不新建第二个目录. 本阶段未修改 Agent 循环、工具或渲染器, 未导出报告生成 API/CLI.
+- 兼容修复: 首轮完整检查发现旧回放 `TypeAdapter(TaskRecord)` 缺少新增字段的类型命名空间, 已在 `workflows/replay.py` 补齐 `GenerationBinding`; 19 项相关回放测试通过. 独立复审发现嵌套草图引用正文缺失, 已补至引用闭包收敛, 并复核有效选择不受参考草图影响.
+- 验证代码状态: 基点 `b81e1c80` 加本分支阶段 01 工作区改动. 在应用目录设置 `UV_CACHE_DIR=/private/tmp/shader-deep-uv-cache` 后运行 `make check`: 524 项单元测试、Ruff、格式、ty 全通过, repository check 为 0 findings. 最终日志: `/private/tmp/shader-deep-generation-input-binding-check-final.log`; 首次失败日志保留在同前缀 `-check.log`.
+- 图像反馈回归: `make integration_test` 在受限环境因浏览器初始化 `kill EPERM/SIGABRT` 停止; 获准切换宿主执行环境后, 相同命令的最小浏览器检查与 13 项集成测试通过, 保留 Chromium 自身沙箱. 日志分别为 `/private/tmp/shader-deep-generation-input-binding-integration.log` 和同前缀 `-integration-unsandboxed.log`. 集成测试使用模拟模型.
+- 两个实施 subagent 分别负责绑定/捕获与上下文, root 完成准备工作流和交接测试, 独立只读复审已通过. 本记录保留实施与验证证据, 提交及远端交付状态以 Git 记录为准.
+- 未覆盖: 真实模型、报告到生成执行、主动受阻工具和视觉验收属于后续 02.

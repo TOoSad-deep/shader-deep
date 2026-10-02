@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, Literal, NotRequired, TypedDict
 
 if TYPE_CHECKING:
     from shader_deep.domain.evidence import MeasurementRecord
+    from shader_deep.domain.generation import GenerationBinding
     from shader_deep.domain.legacy import AnalysisSummary, LensConfig, LensReport
     from shader_deep.domain.library.models import ExplorationReport, PossibilityLibrary, VisualOutline
 
@@ -60,6 +61,7 @@ class TaskRecord:
         analysis_gap: 追加任务要解决的具体缺口及其影响.
         expected_evidence: 本次追加任务准备取得的新依据.
         evidence_ids: 明确选入本次分析子任务的程序证据.
+        generation_binding: 显式选定的五库报告副本, 旧生成任务可以不提供.
     """
 
     id: str
@@ -83,6 +85,7 @@ class TaskRecord:
     evidence_ids: tuple[str, ...] = ()
     # 新探索任务绑定统一初稿, 不向模型暴露整个 TaskRecord.
     analysis_outline: VisualOutline | None = None
+    generation_binding: GenerationBinding | None = None
 
 
 @dataclass(frozen=True, kw_only=True)

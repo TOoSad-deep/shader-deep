@@ -17,6 +17,7 @@ from shader_deep.infrastructure.llm.messages import png_data_url
 
 if TYPE_CHECKING:
     from shader_deep.domain.tasks import BlackboardState, CandidateRecord, ResultRecord, TaskRecord, TaskRecords
+    from shader_deep.infrastructure.storage.generation_inputs import CapturedBaseline, CapturedGenerationInputs
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -28,7 +29,7 @@ class GenerationContext:
         task: 本次使用的固定任务记录.
         candidate_ids: 本次展开的候选, 包括基线、指定输入和本任务产出.
         result_ids: 本次展开的相关历史结果和本任务结果.
-        files: 本次实际读取的文件绝对路径.
+        files: 本轮捕获或本次动态读取的文件绝对路径.
     """
 
     # 真正发送的材料在 message 中; 其他字段保留任务与文件来源, 供调用方检查.
@@ -47,17 +48,23 @@ def _candidates(records: TaskRecords) -> tuple[CandidateRecord, ...]:
     return tuple({candidate.id: candidate for candidate in (*baseline, *records.inputs, *records.outputs)}.values())
 
 
-def _candidate_data(state: BlackboardState, candidate: CandidateRecord, root: Path) -> dict[str, object]:
+def _candidate_data(state: BlackboardState, candidate: CandidateRecord, root: Path, baseline: CapturedBaseline | None) -> dict[str, object]:
     # 同一候选可能被不同目标下的任务复用, 所以保留其最初生成时的目标和基线.
     origin = state["tasks"][candidate.task_id]
-    return {
+    data = {
         **asdict(candidate),
         "source_target_version": origin.target_version,
         "source_baseline_id": origin.baseline_id,
-        # 模型不能仅凭本地路径知道代码内容; 这里将文件全文装进材料.
-        # Path 拼接时, 绝对 code_path 保持原位置, 相对路径才以 root 为基准.
-        "code": (root / candidate.code_path).read_text(encoding="utf-8"),
     }
+    if baseline is not None and candidate.id == baseline.candidate_id:
+        # 保留原业务记录的路径, 另列本轮实际采用的副本来源.
+        data["code"] = baseline.code
+        data["captured_code_path"] = baseline.code_path
+        data["captured_preview_path"] = baseline.preview_path
+    else:
+        # 模型不能仅凭本地路径知道代码内容; 新候选仍按当前文件全文装配.
+        data["code"] = (root / candidate.code_path).read_text(encoding="utf-8")
+    return data
 
 
 def _result_data(state: BlackboardState, result: ResultRecord) -> dict[str, object]:
@@ -71,14 +78,20 @@ def _result_data(state: BlackboardState, result: ResultRecord) -> dict[str, obje
     }
 
 
-def _metadata(state: BlackboardState, records: TaskRecords, candidates: tuple[CandidateRecord, ...], root: Path) -> str:
+def _metadata(
+    state: BlackboardState,
+    records: TaskRecords,
+    candidates: tuple[CandidateRecord, ...],
+    root: Path,
+    inputs: CapturedGenerationInputs | None,
+) -> str:
     # 文字材料用 JSON 保持字段关系; asdict 展开记录, json.dumps 将元组编码为数组.
     # 用户目标、候选源码和结果都在这段文本中, 图片本体则由 _message 单独加入.
-    payload = {
+    payload: dict[str, object] = {
         "kind": "generation_task_context",
         "task": asdict(records.task),
         "target": asdict(records.target),
-        "candidates": [_candidate_data(state, candidate, root) for candidate in candidates],
+        "candidates": [_candidate_data(state, candidate, root, inputs.baseline if inputs is not None else None) for candidate in candidates],
         "related_results": [_result_data(state, result) for result in records.related_results],
         "task_results": [_result_data(state, result) for result in records.results],
         "notes": [
@@ -88,6 +101,9 @@ def _metadata(state: BlackboardState, records: TaskRecords, candidates: tuple[Ca
             "preview_path 为空表示没有提供预览; 此上下文不证明代码可编译或预览捕获有效.",
         ],
     }
+    if inputs is not None:
+        payload["generation_scheme"] = json.loads(inputs.scheme_json)
+        payload["scheme_instruction"] = "采用 generation_scheme.selected 的有效方案; 条件依据中的其他机制不自动成为本次选择."
     return json.dumps(payload, ensure_ascii=False, indent=2)
 
 
@@ -102,14 +118,14 @@ def _images(records: TaskRecords, candidates: tuple[CandidateRecord, ...], root:
     return tuple(images)
 
 
-def _message(metadata: str, images: tuple[tuple[str, Path], ...], task_id: str) -> HumanMessage:
+def _message(metadata: str, images: tuple[tuple[str, Path], ...], task_id: str, cached: dict[Path, str]) -> HumanMessage:
     # 多模态消息的 content 是内容块列表, 可以同时承载文字和实际图片数据.
     content: list[str | dict[str, object]] = [{"type": "text", "text": metadata}]
     for label, path in images:
         content.extend(
             [
                 {"type": "text", "text": f"{label}\n文件: {path}"},
-                {"type": "image_url", "image_url": {"url": png_data_url(path)}},
+                {"type": "image_url", "image_url": {"url": cached[path] if path in cached else png_data_url(path)}},
             ]
         )
     # HumanMessage 表示 user 角色消息, 不表示这些文本来自用户手写.
@@ -117,8 +133,69 @@ def _message(metadata: str, images: tuple[tuple[str, Path], ...], task_id: str) 
     return HumanMessage(content=content, id=f"generation-context:{task_id}")
 
 
+def _validate_inputs(task: TaskRecord, inputs: CapturedGenerationInputs | None) -> None:
+    if task.role != "generation":
+        msg = f"Expected a generation task: {task.id}"
+        raise ValueError(msg)
+    if inputs is None:
+        if task.generation_binding is not None:
+            msg = "Bound generation task requires prepared inputs"
+            raise ValueError(msg)
+        return
+    baseline_id = inputs.baseline.candidate_id if inputs.baseline is not None else None
+    if inputs.binding != task.generation_binding or baseline_id != task.baseline_id:
+        msg = "Prepared generation inputs do not match task binding or baseline"
+        raise ValueError(msg)
+
+
+def _captured_images(
+    records: TaskRecords, candidates: tuple[CandidateRecord, ...], root: Path, inputs: CapturedGenerationInputs
+) -> tuple[tuple[tuple[str, Path], ...], dict[Path, str]]:
+    reference = Path(inputs.reference_path)
+    images = [(f"参考图: 目标 {records.target.version}", reference)]
+    cached = {reference: inputs.reference_url}
+    for candidate in candidates:
+        if inputs.baseline is not None and candidate.id == inputs.baseline.candidate_id:
+            baseline = inputs.baseline
+            if baseline.preview_path is not None and baseline.preview_url is not None:
+                path = Path(baseline.preview_path)
+                images.append((f"起始基线预览: {candidate.id}", path))
+                cached[path] = baseline.preview_url
+        elif candidate.preview_path is not None:
+            images.append((f"候选预览: {candidate.id}", (root / candidate.preview_path).resolve()))
+    return tuple(images), cached
+
+
+def _build_generation_context(
+    state: BlackboardState,
+    task_id: str,
+    *,
+    asset_root: Path | None = None,
+    inputs: CapturedGenerationInputs | None = None,
+) -> GenerationContext:
+    records = read_task(state, task_id)
+    _validate_inputs(records.task, inputs)
+    root = (asset_root if asset_root is not None else Path.cwd()).resolve()
+    candidates = _candidates(records)
+    images, cached = (_images(records, candidates, root), {}) if inputs is None else _captured_images(records, candidates, root, inputs)
+    metadata = _metadata(state, records, candidates, root, inputs)
+    baseline = inputs.baseline if inputs is not None else None
+    files = [*(inputs.files if inputs is not None else ()), *(str(path) for _, path in images)]
+    files.extend(
+        baseline.code_path if baseline is not None and candidate.id == baseline.candidate_id else str((root / candidate.code_path).resolve())
+        for candidate in candidates
+    )
+    return GenerationContext(
+        message=_message(metadata, images, task_id, cached),
+        task=records.task,
+        candidate_ids=tuple(candidate.id for candidate in candidates),
+        result_ids=tuple(dict.fromkeys(result.id for result in (*records.related_results, *records.results))),
+        files=tuple(dict.fromkeys(files)),
+    )
+
+
 def build_generation_context(state: BlackboardState, task_id: str, *, asset_root: Path | None = None) -> GenerationContext:
-    """从黑板读取生成任务, 加载绑定代码与图像并保留证据来源.
+    """从黑板读取未绑定报告的生成任务, 加载代码与图像并保留证据来源.
 
     Args:
         state: 本次读取的黑板状态.
@@ -130,26 +207,7 @@ def build_generation_context(state: BlackboardState, task_id: str, *, asset_root
 
     Raises:
         KeyError: 任务或所引用的业务记录不存在.
-        ValueError: 角色不是生成, 或所需 PNG 路径无效.
+        ValueError: 角色不是生成、任务需要报告准备材料, 或所需 PNG 路径无效.
         OSError: 绑定代码或图像文件无法读取.
     """
-    # 第一步取业务记录并确认角色; 其他 Agent 应使用自己的构造入口.
-    records = read_task(state, task_id)
-    if records.task.role != "generation":
-        msg = f"Expected a generation task: {task_id}"
-        raise ValueError(msg)
-    root = (asset_root if asset_root is not None else Path.cwd()).resolve()
-    # 第二步整理材料. 当前策略加载选中候选的完整源码和原始 PNG, 没有摘要或裁剪.
-    candidates = _candidates(records)
-    images = _images(records, candidates, root)
-    metadata = _metadata(state, records, candidates, root)
-    files = [*(str(path) for _, path in images), *(str((root / candidate.code_path).resolve()) for candidate in candidates)]
-    # 第三步实际编码图片并返回消息. 任意必需文件读取失败会抛出异常, 不伪装成已提供.
-    # dict.fromkeys 用于保持原顺序去重, 便于核对本次使用过的结果和文件.
-    return GenerationContext(
-        message=_message(metadata, images, task_id),
-        task=records.task,
-        candidate_ids=tuple(candidate.id for candidate in candidates),
-        result_ids=tuple(dict.fromkeys(result.id for result in (*records.related_results, *records.results))),
-        files=tuple(dict.fromkeys(files)),
-    )
+    return _build_generation_context(state, task_id, asset_root=asset_root)

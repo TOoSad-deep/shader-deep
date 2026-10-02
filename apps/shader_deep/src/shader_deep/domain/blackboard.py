@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from shader_deep.domain.generation import validate_generation_task
 from shader_deep.domain.tasks import TaskRecords
 from shader_deep.domain.validation import validate_analysis_result, validate_analysis_task
 
@@ -88,6 +89,7 @@ def add_task(state: BlackboardState, task: TaskRecord) -> BlackboardState:
     _require_new(state["tasks"], task.id)
     _check_task_inputs(state, task)
     validate_analysis_task(state, task)
+    validate_generation_task(task)
     return {**state, "tasks": {**state["tasks"], task.id: task}}
 
 

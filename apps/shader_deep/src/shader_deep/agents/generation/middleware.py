@@ -12,7 +12,7 @@ from typing import TYPE_CHECKING, cast
 from langchain.agents.middleware import AgentMiddleware, AgentState, ModelResponse
 from langchain.messages import AIMessage, HumanMessage, ToolMessage
 
-from shader_deep.agents.generation.context import build_generation_context
+from shader_deep.agents.generation.context import _build_generation_context
 from shader_deep.agents.generation.tools import GenerationLimitError
 
 if TYPE_CHECKING:
@@ -24,26 +24,36 @@ if TYPE_CHECKING:
 
     from shader_deep.agents.generation.tools import RenderSession
     from shader_deep.domain.tasks import BlackboardState
+    from shader_deep.infrastructure.storage.generation_inputs import CapturedGenerationInputs
 
 
 class GenerationContextMiddleware(AgentMiddleware[AgentState[object], None, object]):
     """为一个固定生成任务逐轮读取黑板, 并构造本次请求的材料."""
 
-    def __init__(self, get_state: Callable[[], BlackboardState], task_id: str, *, asset_root: Path | None = None) -> None:
+    def __init__(
+        self,
+        get_state: Callable[[], BlackboardState],
+        task_id: str,
+        *,
+        asset_root: Path | None = None,
+        inputs: CapturedGenerationInputs | None = None,
+    ) -> None:
         """绑定任务和黑板读取入口.
 
         Args:
             get_state: 返回调用方当前黑板状态的函数, 支持任务内登记新结果后刷新材料.
             task_id: 本实例负责的生成任务.
             asset_root: 相对制品路径的根目录, 未提供时固定使用构造实例时的工作目录.
+            inputs: 报告任务已经捕获的固定材料; 无绑定任务沿用原文件加载方式.
         """
         self.get_state = get_state
         self.task_id = task_id
         self.asset_root = (asset_root if asset_root is not None else Path.cwd()).resolve()
+        self.inputs = inputs
 
     def _prepare(self, request: ModelRequest) -> ModelRequest:
         # 每次调用 getter 取最新黑板, 包含上一轮工具刚登记的候选与错误.
-        context = build_generation_context(self.get_state(), self.task_id, asset_root=self.asset_root)
+        context = _build_generation_context(self.get_state(), self.task_id, asset_root=self.asset_root, inputs=self.inputs)
         # override 仅修改本次请求, 材料消息不写入会话历史, 避免每轮重复累积.
         return request.override(messages=[context.message, *request.messages])
 
