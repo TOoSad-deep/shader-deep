@@ -61,3 +61,15 @@
 ## 后续边界
 
 完成本地验收后仍需真实模型参考图验证, 核对视觉分析独立性、合并语义和实际上下文用量. 草图最低产出与 skill 封装继续按原讨论进程确定. 这些待办不改变已经确认的五库字段与职责边界.
+
+## 2026-10-02 交付读取与入口修复
+
+用户在交付审查后授权修复两项问题. 基于 `cb28bc14` 的工作区修改, 未提交或推送:
+
+- `read_sketch` 显式选择局部备选时, 将其 `reason` 与 `conditions` 中的对象引用加入取材范围, 复用既有正文及关系参与项的递归加载. 未选备选继续按需读取, 不改写已发布文件包或有效机制选择.
+- 短入口从同一五库快照派生草图默认机制的 ID 与名称. 按首次出现去重, 最多展示三个机制, 长名称压为单行并截断; 超量内容提示回读完整库. 不新增模型调用、业务字段或方案排名.
+- 新增三项回归测试, 覆盖理由/条件两种引用入口、递归依赖、未选备选隔离、文件包不变、同名方案区分及有界导航. 同步应用 README; 公开函数签名保持不变.
+
+验证命令均在应用目录执行: `UV_CACHE_DIR=/private/tmp/shader-deep-uv-cache uv run --no-sync python -W error -m unittest tests.unit_tests.infrastructure.test_report_package -q` 通过 9 项; `UV_CACHE_DIR=/private/tmp/shader-deep-uv-cache make check` 通过 514 项 unittest、repository_check (0 findings)、Ruff、格式和 ty. 完整检查日志保存在 `/private/tmp/shader-deep-report-fix-20261002-check.log`; `git diff --check` 通过.
+
+本次未调用真实模型或浏览器, 未增加分析到生成的自动交接, 未重新生成历史交付包. 真实可用五库样本及 shader 生成接入仍需另行验证.

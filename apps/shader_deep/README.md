@@ -2,6 +2,8 @@
 
 维护入口: [当前架构](docs/architecture.md) · [设计决策](docs/decisions/0001-agent-oriented-layout.md) · [重构进度与验证](docs/work-items/structure-refactor.md) · [开发检查](docs/development.md).
 
+下游开发设计: [整体架构与模块设计](docs/generation-architecture.md)提供目录、接口与四个实施分支入口; [宏观分析](docs/generation-execution-design.md)说明流程选择和审查依据. 这些下游能力尚未实施.
+
 输入本地 PNG 和文字要求, 通过单个 Deep Agent 生成、渲染、查看预览并修正 Shader, 将选定候选的实际 GLSL 写入标准输出。
 
 当前已连接内存黑板、Context Builder、真实 WebGL2 渲染工具和有预算的生成循环。每次尝试保存代码、预览或错误, 完成时明确选择已渲染且已向模型展示预览的候选。
@@ -141,7 +143,9 @@ if outcome.report_dir is not None:
         # materials = read_sketch(outcome.report_dir, "S1", alternative=0)
 ```
 
-按草图返回的是有范围的取材视图, 保留整轮状态、全部缺口和未知项. 视图提供有效选择及必要正文, 其他候选继续从完整包读取, 不声称视图是自包含小包. 完整文件包可整体移动, 原图哈希和全部引用可校验. 已发布包不可覆盖.
+短入口为每套草图展示默认机制的 ID 与名称, 方便区分同名方案; 同一机制去重展示, 过多机制和长名称截断后可回读完整库. 导航顺序不表示方案排名或执行顺序.
+
+按草图返回的是有范围的取材视图, 保留整轮状态、全部缺口和未知项. 视图提供有效选择及必要正文; 显式选中备选后, 也加载其理由与适用条件中引用的对象及正文依赖. 未选备选的材料继续从完整包按需读取, 不声称视图是自包含小包. 完整文件包可整体移动, 原图哈希和全部引用可校验. 已发布包不可覆盖.
 
 ### 实时运行日志
 

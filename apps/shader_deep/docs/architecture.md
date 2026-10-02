@@ -2,6 +2,8 @@
 
 本应用从参考图建立可追溯的分析结果, 或通过实际渲染生成 Shader. 两条流程保持独立, 不自动把分析结果送入生成. 本文描述重构后的实际代码; 历史设计与旧协议文档不替代当前入口.
 
+下一阶段的目录、模块和四个实施分支见[生成整体架构与模块设计](generation-architecture.md), 选择理由见[宏观分析](generation-execution-design.md). 这些文档描述拟实施方案, 不改变本文记录的当前能力.
+
 结构选择及取舍见 [ADR 0001](decisions/0001-agent-oriented-layout.md); 实现的验证与交付状态见[结构重构任务](work-items/structure-refactor.md).
 
 分析重设计按主题分为两份文档: 调度流程、模块职责和 Agent 编排见[分析架构与 Agent 工作流设计](analysis-architecture-design.md); 五库语义、字段、引用和报告公共状态见[五库与报告数据设计](analysis-five-libraries.md). 两份文档分别记录已确认设计与待讨论方案, 默认五库代码已接入; 主 Agent + skill 的本轮实施契约见[改造方案](work-items/main-agent-skill-phase-one-plan.md), 草图最低产出继续另议. 实施与验证状态见[五库实施记录](work-items/five-library-implementation.md). 本文区分新默认流程和保留的四库兼容链路.

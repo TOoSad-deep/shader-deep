@@ -12,12 +12,14 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, JsonValue
 
-from shader_deep.domain.five_libraries import FiveLibraries, Issue, object_index, parse_references, validate_libraries
+from shader_deep.domain.five_libraries import FiveLibraries, Issue, Sketch, object_index, parse_references, validate_libraries
 
 LIBRARIES = ("elements", "features", "relations", "mechanisms", "sketches")
 MARKER = re.compile(r"\[\[([^\[\]\r\n]+)\]\]")
 ENTRY_SKETCHES = 6
 ENTRY_GAPS = 3
+ENTRY_MECHANISMS = 3
+ENTRY_LABEL_LENGTH = 40
 
 
 class ReferenceAsset(BaseModel):
@@ -57,10 +59,26 @@ def _check_manifest(libraries: FiveLibraries, manifest: ReportManifest) -> None:
         raise ValueError(msg)
 
 
+def _entry_label(value: str) -> str:
+    text = " ".join(value.split())
+    return text if len(text) <= ENTRY_LABEL_LENGTH else text[: ENTRY_LABEL_LENGTH - 1] + "…"
+
+
+def _sketch_entry(sketch: Sketch, mechanisms: dict[str, str]) -> str:
+    # 同一机制可能服务多个目标, 导航按首次出现去重, 不暗示执行顺序或方案排名.
+    selected = list(dict.fromkeys(identity for identities in sketch.default.values() for identity in identities))
+    labels = [f"{identity} {_entry_label(mechanisms[identity])}" for identity in selected[:ENTRY_MECHANISMS]]
+    summary = "; ".join(labels) if labels else "无"
+    if len(selected) > ENTRY_MECHANISMS:
+        summary += f"; 另 {len(selected) - ENTRY_MECHANISMS} 种, 详见 sketches.json"
+    return f"- `{sketch.id}` {_entry_label(sketch.name)}: {len(sketch.default)} 个实现目标; 默认机制: {summary}."
+
+
 def _entry(libraries: FiveLibraries, manifest: ReportManifest) -> str:
     target = next(item for item in libraries.elements if item.id == manifest.target_element_id)
     rows = ["# 分析报告", "", f"目标: {target.id} {target.name}; 范围: {target.region}.", f"状态: `{manifest.status}`.", "", "草图目录:", ""]
-    rows.extend(f"- `{item.id}` {item.name}: {len(item.default)} 个实现目标." for item in libraries.sketches[:ENTRY_SKETCHES])
+    mechanisms = {item.id: item.name for item in libraries.mechanisms}
+    rows.extend(_sketch_entry(item, mechanisms) for item in libraries.sketches[:ENTRY_SKETCHES])
     if len(libraries.sketches) > ENTRY_SKETCHES:
         rows.append(f"- 另有 {len(libraries.sketches) - ENTRY_SKETCHES} 套草图, 完整目录见 sketches.json; 顺序沿用来源, 未排名.")
     if not libraries.sketches:
@@ -165,7 +183,7 @@ def read_sketch(directory: Path, sketch_id: str, *, alternative: int | None = No
         alternative: 显式选择一项局部备选的零基索引; 不自动组合备选.
 
     Returns:
-        公共状态、原草图、有效选择和相关正文; 其他引用按需回读原包.
+        公共状态、原草图、有效选择及相关正文, 包括所选备选条件与理由的引用; 其他引用按需回读原包.
 
     Raises:
         ValueError: 草图不存在或备选索引无效.
@@ -177,6 +195,7 @@ def read_sketch(directory: Path, sketch_id: str, *, alternative: int | None = No
         raise ValueError(msg)
     choices, composition = dict(sketch.default), sketch.composition
     alternatives = sketch.alternatives or ()
+    selected: set[str] = set()
     if alternative is not None:
         if isinstance(alternative, bool) or not isinstance(alternative, int) or not 0 <= alternative < len(alternatives):
             msg = f"无效备选索引: {alternative}"
@@ -184,7 +203,9 @@ def read_sketch(directory: Path, sketch_id: str, *, alternative: int | None = No
         option = alternatives[alternative]
         choices.update(option.choices)
         composition = option.composition or composition
-    selected = set(choices) | {sketch.element_id} | {identity for values in choices.values() for identity in values}
+        # 已选备选的适用依据也属于必要材料, 未选备选仍留在完整包中按需读取.
+        selected.update(_text_ids({"reason": option.reason, "conditions": list(option.conditions or ())}))
+    selected.update(set(choices) | {sketch.element_id} | {identity for values in choices.values() for identity in values})
     selected.update(MARKER.findall(composition))
     _include_referenced_content(libraries, selected)
     return {
