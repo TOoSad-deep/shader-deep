@@ -6,6 +6,7 @@
 from __future__ import annotations
 
 from concurrent.futures import ThreadPoolExecutor
+from dataclasses import asdict
 from typing import TYPE_CHECKING, Literal
 
 from langchain.tools import BaseTool, tool
@@ -14,6 +15,7 @@ from shader_deep.agents.generation.contracts import GenerationOutcome
 from shader_deep.agents.generation.tools.finish import select_candidate, stop_generation
 from shader_deep.agents.generation.tools.render import render_candidate
 from shader_deep.infrastructure.storage.artifacts import create_run_directory, save_run
+from shader_deep.infrastructure.storage.scene_inputs import CapturedSceneInputs, scene_input_records
 
 if TYPE_CHECKING:
     # 这些类型仅供检查; 不在运行时互相导入, 避免 session 与执行模块形成循环导入.
@@ -38,7 +40,7 @@ class RenderSession:
         asset_root: Path,
         *,
         run_dir: Path | None = None,
-        inputs: CapturedGenerationInputs | None = None,
+        inputs: CapturedGenerationInputs | CapturedSceneInputs | None = None,
     ) -> None:
         """绑定黑板和执行条件.
 
@@ -47,8 +49,8 @@ class RenderSession:
             task_id: 生成任务标识.
             options: 固定渲染条件与预算.
             asset_root: 输入制品根目录, 写入运行记录供追溯.
-            run_dir: 报告准备阶段已分配的运行目录; 未提供时创建新目录.
-            inputs: 报告任务已固定的材料, 供逐轮请求复用.
+            run_dir: 准备阶段已分配的运行目录; 未提供时创建新目录.
+            inputs: 单方案或整图任务已固定的材料, 供逐轮请求复用.
         """
         self.state = state
         self.task_id = task_id
@@ -86,15 +88,20 @@ class RenderSession:
         self._worker = ThreadPoolExecutor(max_workers=1, thread_name_prefix="shader-render")
         return self
 
-    def save(self) -> None:
-        """保存本轮条件、预算、选择状态及黑板."""
-        # 只把可序列化的运行信息交给 artifacts, 不保存浏览器、线程池和模型客户端.
+    def _input_details(self) -> dict[str, object]:
+        if isinstance(self.inputs, CapturedSceneInputs):
+            return {"scene_plan": asdict(self.inputs.plan), "inputs": {"scene_elements": scene_input_records(self.inputs)}}
         baseline = self.inputs.baseline if self.inputs is not None else None
         paths = (
             None
             if baseline is None
             else {"candidate_id": baseline.candidate_id, "code_path": baseline.code_path, "preview_path": baseline.preview_path}
         )
+        return {"inputs": {"baseline": paths}}
+
+    def save(self) -> None:
+        """保存本轮条件、预算、选择状态及黑板."""
+        # 只保存材料路径与组合计划, GLSL/data URL 继续由捕获文件和请求内存承载.
         save_run(
             self.run_dir,
             self.state,
@@ -102,7 +109,7 @@ class RenderSession:
                 "task_id": self.task_id,
                 "asset_root": str(self.asset_root),
                 "phase": "generation",
-                "inputs": {"baseline": paths},
+                **self._input_details(),
                 "render": {"width": self.options.width, "height": self.options.height, "time": self.options.time},
                 "max_attempts": self.options.max_attempts,
                 "max_model_calls": self.options.max_attempts + 2,

@@ -2,7 +2,7 @@
 
 日期: 2026-10-03.
 
-状态: 分阶段实施的设计基线. 本文承接[宏观分析](generation-execution-design.md), 具体规定目录、模块职责、数据交接和四个实施分支. 01 至 03 已落地, 验证及交付状态见各阶段记录; [03 比较记录](work-items/generation-03-plan-comparison.md#实施记录)是最新进展, 04 仍为拟实施. 当前代码以[当前架构](architecture.md)为准.
+状态: 分阶段实施的设计基线. 本文承接[宏观分析](generation-execution-design.md), 具体规定目录、模块职责、数据交接和四个实施分支. 01 至 04 已落地, 验证及交付状态见各阶段记录; [04 整图组合记录](work-items/generation-04-scene-composition.md#实施记录)是最新进展. 当前代码以[当前架构](architecture.md)为准, 真实模型效果不由离线测试代替.
 
 目标是用最小交接层, 把固定五库方案送入现有生成与渲染闭环. 首先完成单方案, 再做方案比较, 最后完成多元素整图组合. 设计与实现保持在 `apps/shader_deep/` 内, 复用现有 DeepAgents、黑板、WebGL2 和文件存储.
 
@@ -51,7 +51,7 @@ flowchart TD
 
 ## 目录设计
 
-以下是目标目录, 注明所属阶段. 01 至 03 已落地, 其余按各阶段记录推进. 现有文件按职责扩展, 不为每个辅助函数拆包. 新文件名为实施约定, 如源码表明合并到既有文件更清晰, 可在对应阶段记录理由后调整.
+以下是按阶段落地的目录. 现有文件按职责扩展, 不为每个辅助函数拆包. 具体实现及调整理由见各阶段记录.
 
 ```text
 src/shader_deep/
@@ -83,6 +83,7 @@ src/shader_deep/
     report_package.py                  # 复用完整包校验和 read_sketch
     generation_inputs.py               # 01 保存本轮输入副本并计算内容身份
     generation_comparison.py           # 03 比较索引、预览导航和人工选择记录
+    scene_inputs.py                    # 04 跨元素来源校验、代码和预览捕获
     artifacts.py                       # 复用运行目录与 run.json 写入
   rendering/                           # 复用 WebGL2, 首版不改变渲染协议
 tests/

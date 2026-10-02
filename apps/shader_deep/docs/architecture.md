@@ -2,7 +2,7 @@
 
 本应用从参考图建立可追溯的分析结果, 或通过实际渲染生成 Shader. 两条流程保持独立, 不自动把分析结果送入生成. 本文描述重构后的实际代码; 历史设计与旧协议文档不替代当前入口.
 
-生成开发的目录、模块和四个实施分支见[生成整体架构与模块设计](generation-architecture.md), 选择理由见[宏观分析](generation-execution-design.md). 01 的输入准备、02 的报告执行和 03 的两方案比较已接入, 整图组合尚未实施.
+生成开发的目录、模块和四个实施分支见[生成整体架构与模块设计](generation-architecture.md), 选择理由见[宏观分析](generation-execution-design.md). 输入准备、报告执行、两方案比较及两元素整图组合已接入, 模型视觉效果与用户验收单独记录.
 
 结构选择及取舍见 [ADR 0001](decisions/0001-agent-oriented-layout.md); 实现的验证与交付状态见[结构重构任务](work-items/structure-refactor.md).
 
@@ -87,6 +87,14 @@ CLI / Python API
 比较调用一次 `build_model` 固定客户端配置, 将它交给两个独立 `_run_session`; `_execute` 各自创建 Agent 与消息历史. 只扩展内部模型传参, 旧公开生成入口签名保持不变. 普通运行异常成为该项的错误索引, 另一项继续; 取消则停止批次并保留已有子运行. 没有崩溃恢复或隐式重试整项能力.
 
 [比较存储](../src/shader_deep/infrastructure/storage/generation_comparison.py) 写入 `comparison.json` 与 README 产物导航; [比较领域记录](../src/shader_deep/domain/generation_comparison.py) 只保存共同条件、两项索引和独立人工选择. 读取按调用方给定目录定位; 人工选择核对该项已完成、候选 ID 和子运行当前选择一致, 仅更新比较索引. 子运行内的生成自检与人工选择分开保存. 实施与证据见[阶段 03 记录](work-items/generation-03-plan-comparison.md#实施记录).
+
+## 两元素整图组合
+
+[scene_generation.py](../src/shader_deep/workflows/scene_generation.py) 的 `run_scene_generation` 接收两个 `SceneElementSource` 和整图目标、背景与布局约定. [scene_inputs.py](../src/shader_deep/infrastructure/storage/scene_inputs.py) 从源 `run.json` 核对完成状态、实际已选候选与任务归属, 复用报告捕获规则校验保存的内容身份, 并固定实际代码和可用预览. 两个输入须来自同一完整原图, 报告内短 ID 按各自来源解释.
+
+工作流用全新黑板登记整图目标和任务, 不向 `generation_binding` 塞入多元素来源, 也不登记旧候选. `ScenePlan` 与轻量来源映射随当前 `run.json` 保存. Context Builder 按槽位注入两个有效方案、代码及预览, 完整原图只注入一次, 当前整图候选与错误逐轮刷新. 固定材料在内存中复用, 不回读变化中的来源路径.
+
+`RenderSession` 与上下文中间件的既有 `inputs` 参数接受单方案或整图材料; 继续共用原 Agent、三个工具及单 Pass 渲染契约. 模型可以为组合协调实现, 须在自检中说明偏离; 最终候选只来自新整图会话的实际渲染. 没有新增拼接器、图层合成器或元素子 Agent. 实施与证据见[阶段 04 记录](work-items/generation-04-scene-composition.md#实施记录).
 
 ## 状态由谁持有
 

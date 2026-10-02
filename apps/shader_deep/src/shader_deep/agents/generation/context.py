@@ -14,10 +14,12 @@ from langchain.messages import HumanMessage
 
 from shader_deep.domain.blackboard import read_task
 from shader_deep.infrastructure.llm.messages import png_data_url
+from shader_deep.infrastructure.storage.scene_inputs import CapturedSceneInputs
 
 if TYPE_CHECKING:
     from shader_deep.domain.tasks import BlackboardState, CandidateRecord, ResultRecord, TaskRecord, TaskRecords
     from shader_deep.infrastructure.storage.generation_inputs import CapturedBaseline, CapturedGenerationInputs
+    from shader_deep.infrastructure.storage.scene_inputs import CapturedSceneElement
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -83,15 +85,16 @@ def _metadata(
     records: TaskRecords,
     candidates: tuple[CandidateRecord, ...],
     root: Path,
-    inputs: CapturedGenerationInputs | None,
+    inputs: CapturedGenerationInputs | CapturedSceneInputs | None,
 ) -> str:
     # 文字材料用 JSON 保持字段关系; asdict 展开记录, json.dumps 将元组编码为数组.
     # 用户目标、候选源码和结果都在这段文本中, 图片本体则由 _message 单独加入.
+    baseline = inputs.baseline if inputs is not None and not isinstance(inputs, CapturedSceneInputs) else None
     payload: dict[str, object] = {
         "kind": "generation_task_context",
         "task": asdict(records.task),
         "target": asdict(records.target),
-        "candidates": [_candidate_data(state, candidate, root, inputs.baseline if inputs is not None else None) for candidate in candidates],
+        "candidates": [_candidate_data(state, candidate, root, baseline) for candidate in candidates],
         "related_results": [_result_data(state, result) for result in records.related_results],
         "task_results": [_result_data(state, result) for result in records.results],
         "notes": [
@@ -101,10 +104,27 @@ def _metadata(
             "preview_path 为空表示没有提供预览; 此上下文不证明代码可编译或预览捕获有效.",
         ],
     }
-    if inputs is not None:
+    if isinstance(inputs, CapturedSceneInputs):
+        payload["scene_plan"] = asdict(inputs.plan)
+        payload["scene_elements"] = [_scene_element_data(slot, element) for slot, element in enumerate(inputs.elements, start=1)]
+    elif inputs is not None:
         payload["generation_scheme"] = json.loads(inputs.scheme_json)
         payload["scheme_instruction"] = "采用 generation_scheme.selected 的有效方案; 条件依据中的其他机制不自动成为本次选择."
     return json.dumps(payload, ensure_ascii=False, indent=2)
+
+
+def _scene_element_data(slot: int, element: CapturedSceneElement) -> dict[str, object]:
+    # 不合并不同来源的短 ID; 槽位、源运行和报告身份共同标识这份素材.
+    return {
+        "slot": slot,
+        "source": asdict(element.source),
+        "task_id": element.task_id,
+        "binding": asdict(element.inputs.binding),
+        "generation_scheme": json.loads(element.inputs.scheme_json),
+        "code": element.code,
+        "captured_code_path": element.code_path,
+        "captured_preview_path": element.preview_path,
+    }
 
 
 def _images(records: TaskRecords, candidates: tuple[CandidateRecord, ...], root: Path) -> tuple[tuple[str, Path], ...]:
@@ -133,10 +153,14 @@ def _message(metadata: str, images: tuple[tuple[str, Path], ...], task_id: str, 
     return HumanMessage(content=content, id=f"generation-context:{task_id}")
 
 
-def _validate_inputs(task: TaskRecord, inputs: CapturedGenerationInputs | None) -> None:
+def _validate_inputs(records: TaskRecords, inputs: CapturedGenerationInputs | CapturedSceneInputs | None) -> None:
+    task = records.task
     if task.role != "generation":
         msg = f"Expected a generation task: {task.id}"
         raise ValueError(msg)
+    if isinstance(inputs, CapturedSceneInputs):
+        _validate_scene_inputs(records, inputs)
+        return
     if inputs is None:
         if task.generation_binding is not None:
             msg = "Bound generation task requires prepared inputs"
@@ -145,6 +169,16 @@ def _validate_inputs(task: TaskRecord, inputs: CapturedGenerationInputs | None) 
     baseline_id = inputs.baseline.candidate_id if inputs.baseline is not None else None
     if inputs.binding != task.generation_binding or baseline_id != task.baseline_id:
         msg = "Prepared generation inputs do not match task binding or baseline"
+        raise ValueError(msg)
+
+
+def _validate_scene_inputs(records: TaskRecords, inputs: CapturedSceneInputs) -> None:
+    task = records.task
+    if task.generation_binding is not None or task.baseline_id is not None or task.candidate_ids:
+        msg = "Scene task cannot bind a single report, baseline or historical candidates"
+        raise ValueError(msg)
+    if records.target.reference_path != inputs.reference_path or records.target.request != inputs.plan.request:
+        msg = "Prepared scene inputs do not match the task target"
         raise ValueError(msg)
 
 
@@ -166,20 +200,48 @@ def _captured_images(
     return tuple(images), cached
 
 
+def _scene_images(
+    records: TaskRecords, candidates: tuple[CandidateRecord, ...], root: Path, inputs: CapturedSceneInputs
+) -> tuple[tuple[tuple[str, Path], ...], dict[Path, str]]:
+    reference = Path(inputs.reference_path)
+    images = [(f"完整参考图: 目标 {records.target.version}", reference)]
+    cached = {reference: inputs.reference_url}
+    for slot, element in enumerate(inputs.elements, start=1):
+        if element.preview_path is not None and element.preview_url is not None:
+            preview = Path(element.preview_path)
+            label = f"元素素材 {slot} 预览: 来源 {element.source.run_dir}, 候选 {element.source.candidate_id}"
+            images.append((label, preview))
+            cached[preview] = element.preview_url
+    images.extend(
+        (f"整图候选预览: {candidate.id}", (root / candidate.preview_path).resolve()) for candidate in candidates if candidate.preview_path is not None
+    )
+    return tuple(images), cached
+
+
+def _image_materials(
+    records: TaskRecords, candidates: tuple[CandidateRecord, ...], root: Path, inputs: CapturedGenerationInputs | CapturedSceneInputs | None
+) -> tuple[tuple[tuple[str, Path], ...], dict[Path, str]]:
+    if isinstance(inputs, CapturedSceneInputs):
+        return _scene_images(records, candidates, root, inputs)
+    if inputs is not None:
+        return _captured_images(records, candidates, root, inputs)
+    return _images(records, candidates, root), {}
+
+
 def _build_generation_context(
     state: BlackboardState,
     task_id: str,
     *,
     asset_root: Path | None = None,
-    inputs: CapturedGenerationInputs | None = None,
+    inputs: CapturedGenerationInputs | CapturedSceneInputs | None = None,
 ) -> GenerationContext:
     records = read_task(state, task_id)
-    _validate_inputs(records.task, inputs)
+    _validate_inputs(records, inputs)
     root = (asset_root if asset_root is not None else Path.cwd()).resolve()
     candidates = _candidates(records)
-    images, cached = (_images(records, candidates, root), {}) if inputs is None else _captured_images(records, candidates, root, inputs)
+    images, cached = _image_materials(records, candidates, root, inputs)
     metadata = _metadata(state, records, candidates, root, inputs)
-    baseline = inputs.baseline if inputs is not None else None
+    baseline = inputs.baseline if inputs is not None and not isinstance(inputs, CapturedSceneInputs) else None
     files = [*(inputs.files if inputs is not None else ()), *(str(path) for _, path in images)]
     files.extend(
         baseline.code_path if baseline is not None and candidate.id == baseline.candidate_id else str((root / candidate.code_path).resolve())

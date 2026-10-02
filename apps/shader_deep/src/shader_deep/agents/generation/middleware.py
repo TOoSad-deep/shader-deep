@@ -25,6 +25,7 @@ if TYPE_CHECKING:
     from shader_deep.agents.generation.tools import RenderSession
     from shader_deep.domain.tasks import BlackboardState
     from shader_deep.infrastructure.storage.generation_inputs import CapturedGenerationInputs
+    from shader_deep.infrastructure.storage.scene_inputs import CapturedSceneInputs
 
 
 class GenerationContextMiddleware(AgentMiddleware[AgentState[object], None, object]):
@@ -36,7 +37,7 @@ class GenerationContextMiddleware(AgentMiddleware[AgentState[object], None, obje
         task_id: str,
         *,
         asset_root: Path | None = None,
-        inputs: CapturedGenerationInputs | None = None,
+        inputs: CapturedGenerationInputs | CapturedSceneInputs | None = None,
     ) -> None:
         """绑定任务和黑板读取入口.
 
@@ -44,7 +45,7 @@ class GenerationContextMiddleware(AgentMiddleware[AgentState[object], None, obje
             get_state: 返回调用方当前黑板状态的函数, 支持任务内登记新结果后刷新材料.
             task_id: 本实例负责的生成任务.
             asset_root: 相对制品路径的根目录, 未提供时固定使用构造实例时的工作目录.
-            inputs: 报告任务已经捕获的固定材料; 无绑定任务沿用原文件加载方式.
+            inputs: 单方案或整图任务已捕获的固定材料; 未提供时沿用原文件加载方式.
         """
         self.get_state = get_state
         self.task_id = task_id

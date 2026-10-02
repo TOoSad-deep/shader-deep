@@ -7,11 +7,14 @@ from pathlib import Path
 from PIL import Image
 
 from shader_deep.domain.generation_comparison import GenerationPlan
+from shader_deep.domain.scene import SceneElementSource
 from shader_deep.workflows.generation import run_generation
 from shader_deep.workflows.generation_comparison import run_generation_comparison
 from shader_deep.workflows.generation_from_report import run_generation_from_report
+from shader_deep.workflows.scene_generation import run_scene_generation
 from tests.unit_tests.agents.test_context import BASE_CODE
 from tests.unit_tests.fixtures._generation_fixture import GenerationFixture, generation_report, task_payloads, tool_results
+from tests.unit_tests.fixtures._scene_fixture import CIRCLE_CODE, RECTANGLE_CODE, SCENE_CODE, scene_reports
 
 
 class GenerationIntegrationTests(GenerationFixture):
@@ -98,3 +101,36 @@ class GenerationIntegrationTests(GenerationFixture):
                 if block.get("type") == "image_url"
             ]
             self.assertIn(expected, images)
+
+    def test_two_rendered_elements_form_a_new_overlapping_scene_candidate(self) -> None:
+        def respond(request: dict[str, object]) -> dict[str, object]:
+            rendered = [result for result in tool_results(request) if result["status"] == "rendered"]
+            if rendered:
+                return self.call("finish_shader", {"candidate_id": rendered[-1]["candidate_id"], "assessment": "模拟模型自检, 待用户验收"})
+            payload = task_payloads(request)[0]
+            if "scene_plan" in payload:
+                code = SCENE_CODE
+            else:
+                name = payload["generation_scheme"]["reference_content"]["elements"][0]["name"]
+                code = CIRCLE_CODE if name == "红色圆形" else RECTANGLE_CODE
+            return self.call("render_shader", {"glsl_code": code})
+
+        self.response = respond
+        sources = []
+        for report in scene_reports(self.root / "scene-inputs"):
+            outcome = run_generation_from_report(report, "S1", "实现当前元素", background="深灰", max_attempts=1, output_dir=self.root / "elements")
+            sources.append(SceneElementSource(run_dir=str(outcome.run_dir), candidate_id=outcome.selected_candidate.id))
+        outcome = run_scene_generation(sources, "组合红圆与绿方形", background="深灰", max_attempts=1, output_dir=self.options.output_dir)
+        self.assertEqual(outcome.stop_reason, "completed")
+        self.assertEqual(Path(outcome.selected_candidate.code_path).read_text(), SCENE_CODE)
+        self.assertNotIn(outcome.selected_candidate.id, {source.candidate_id for source in sources})
+        with Image.open(outcome.selected_candidate.preview_path) as image:
+            self.assertEqual(image.size, (32, 24))
+            self.assertEqual(image.convert("RGB").getpixel((7, 12)), (255, 0, 0))
+            self.assertEqual(image.convert("RGB").getpixel((18, 12)), (0, 255, 0))
+        requests = [request for request in self.requests if "scene_plan" in task_payloads(request)[0]]
+        self.assertEqual([item["code"] for item in task_payloads(requests[0])[0]["scene_elements"]], [CIRCLE_CODE, RECTANGLE_CODE])
+        expected = "data:image/png;base64," + base64.b64encode(Path(outcome.selected_candidate.preview_path).read_bytes()).decode("ascii")
+        self.assertIn(expected, json.dumps(requests[-1]))
+        record = json.loads((outcome.run_dir / "run.json").read_text())
+        self.assertEqual(len(record["scene_plan"]["elements"]), 2)

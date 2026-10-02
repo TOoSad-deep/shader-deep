@@ -2,7 +2,7 @@
 
 维护入口: [当前架构](docs/architecture.md) · [设计决策](docs/decisions/0001-agent-oriented-layout.md) · [重构进度与验证](docs/work-items/structure-refactor.md) · [开发检查](docs/development.md).
 
-下游开发设计: [整体架构与模块设计](docs/generation-architecture.md)提供目录、接口与四个实施分支入口; [宏观分析](docs/generation-execution-design.md)说明流程选择和审查依据. 01 的输入绑定、[02 的生成闭环](docs/work-items/generation-02-execution-loop.md)及[03 的两方案比较](docs/work-items/generation-03-plan-comparison.md)已接入, 整图组合仍待后续阶段.
+下游开发设计: [整体架构与模块设计](docs/generation-architecture.md)提供目录、接口与四个实施分支入口; [宏观分析](docs/generation-execution-design.md)说明流程选择和审查依据. 01 至 04 已接入, 最新的[两元素整图组合](docs/work-items/generation-04-scene-composition.md)复用单方案生成与两方案比较产物; 真实模型效果仍需单独验收.
 
 输入本地 PNG 和文字要求, 通过单个 Deep Agent 生成、渲染、查看预览并修正 Shader, 将选定候选的实际 GLSL 写入标准输出。
 
@@ -262,6 +262,31 @@ print(comparison.directory)  # 打开其中的 README.md 查看两项真实产�
 比较目录包含 `comparison.json`、预览与代码导航 `README.md`, 以及 `runs/` 下两个独立子运行. 索引保存共同条件、方案来源和实际结果, 不复制子运行的代码或日志. 单项普通运行失败会保留错误并继续另一项; 用户取消或键盘中断停止整批, 已有子运行保留, 不发布完整比较索引.
 
 人工选择初始为空. 查看预览后, 用 `select_generation_comparison(directory, item_index, candidate_id, reason=...)` 保存明确选择; `item_index` 为零基索引, 候选必须属于该项实际完成的选择. 更新前会核对子运行, 并保留其内容原样. `read_generation_comparison(directory)` 只读取已有索引. 即使异常运行保留了已渲染产物, 也不会被作为已完成条目接受选择. 这些接口不自动评分或启动整图生成, 视觉判断仍由用户给出.
+
+## 两元素整图组合
+
+`run_scene_generation` 接收两个明确选定的单元素来源运行及候选 ID, 原图从两个来源报告校验获得. 来源必须完成且候选确为该运行实际选择, 报告内容身份与原图哈希必须匹配保存的绑定. 不同报告可以使用相同短 ID, 但同一报告元素的两套方案不能冒充两个元素.
+
+```python
+from pathlib import Path
+from shader_deep.api import SceneElementSource, run_scene_generation
+
+outcome = run_scene_generation(
+    (
+        SceneElementSource(run_dir="/absolute/path/element-a-run", candidate_id="element-a-selected-id"),
+        SceneElementSource(run_dir="/absolute/path/element-b-run", candidate_id="element-b-selected-id"),
+    ),
+    "组合两个元素, 保留各自关键外观",
+    background="深灰", output_dir=Path("runs"),
+)
+print(outcome.stop_reason, outcome.run_dir)
+```
+
+两个来源可以是独立生成结果或比较中的已选子运行. 从比较索引读取来源时, 使用用户明确选择的条目及实际候选, 不默认采用第一项. `layout` 默认“保持原图布局与遮挡”, 可传入明确调整说明; 未指定宽高取自固定原图. 无需先标注每个元素的坐标和层级.
+
+程序固定源报告、实际 GLSL 和可用预览, 每轮将完整原图、两份方案及代码交给现有生成 Agent. Agent 负责协调函数、坐标和叠加关系, 生成新的完整 `mainImage`; 程序不拼接 shader 字符串. 来源代码仅作为素材, 最终交付必须是整图会话自己渲染、回读并选中的候选.
+
+`run.json.scene_plan` 保存组合要求与来源, `run.json.inputs.scene_elements` 保存报告绑定和本轮文件映射; 素材副本位于 `inputs/element-1/`、`inputs/element-2/`. 原来源运行保持原样, 不将两份黑板合并到新任务. 调整组合目标或来源时重新调用整图入口创建新任务, 本接口不从裸黑板恢复既有整图会话. 单 Pass、预算、主动受阻和异常语义沿用现有生成闭环; 模型自检不代替用户视觉接受.
 
 ## 当前目录与源码入口
 

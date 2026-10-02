@@ -13,6 +13,7 @@
 - 当前结构与依赖方向: [架构说明](docs/architecture.md); 选择理由: [ADR 0001](docs/decisions/0001-agent-oriented-layout.md).
 - 报告到生成、受阻结束或生成 CLI: 先读[生成整体架构](docs/generation-architecture.md)和[阶段 02 实施记录](docs/work-items/generation-02-execution-loop.md#实施记录), 当前执行入口为 `run_generation_from_report`.
 - 两方案比较或人工选择记录: 读[阶段 03 实施记录](docs/work-items/generation-03-plan-comparison.md#实施记录); 比较索引引用独立子运行, 人工选择只更新比较索引.
+- 两元素整图组合: 读[阶段 04 实施记录](docs/work-items/generation-04-scene-composition.md#实施记录); `run_scene_generation` 从两个已选来源固定素材, 用新会话生成整图, 来源候选不进入本轮选择集合.
 - 分析范围、调度流程、Agent 职责或 skill 编排设计: 先读[分析架构与 Agent 工作流设计](docs/analysis-architecture-design.md), 在该文档维护已确认约束与待讨论方案.
 - 五库语义、字段、引用或报告公共状态设计: 先读[五库与报告数据设计](docs/analysis-five-libraries.md), 在该文档维护数据契约. 默认五库实现入口和验证范围见[五库实施记录](docs/work-items/five-library-implementation.md); 草图最低产出仍待讨论, 当前实现以架构说明和源码为准.
 - 本轮重构的进度、已知问题和验证证据: [任务记录](docs/work-items/structure-refactor.md). 接手时先核对 Git 状态, 不依赖先前聊天或把记录日期当作实时状态.
