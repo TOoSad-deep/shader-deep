@@ -28,7 +28,9 @@ from shader_deep.workflows.options import AnalysisOptions
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
+    from langchain_core.language_models import LanguageModelInput
     from langchain_core.messages import BaseMessage
+    from langchain_core.runnables import Runnable
 
     from shader_deep.runtime.execution import AnalysisExecution
     from shader_deep.runtime.task_store import Attempt, JsonValue, Receipt
@@ -80,24 +82,30 @@ class RoutingFakeModel(BaseChatModel):
     no_sketches: bool = False
     plan_count: int = 3
     invalid_target: bool = False
+    invalid_dispatch_target: bool = False
     _lock: threading.Lock = PrivateAttr(default_factory=threading.Lock)
 
     @property
     def _llm_type(self) -> str:
         return "five-analysis-test"
 
-    def bind_tools(self, tools: Sequence[object], **kwargs: object) -> RoutingFakeModel:
-        del tools, kwargs
-        return self
+    def bind_tools(self, tools: Sequence[object], **kwargs: object) -> Runnable[LanguageModelInput, BaseMessage]:
+        del kwargs
+        names = tuple(str(getattr(tool, "name", "")) for tool in tools)
+        # 绑定参数属于当前请求, 不以共享模型字段保存各并发角色的权限.
+        return self.bind(allowed_tools=names)
 
     def _generate(self, messages: list[BaseMessage], stop: list[str] | None = None, run_manager: object = None, **kwargs: object) -> ChatResult:
-        del stop, run_manager, kwargs
+        del stop, run_manager
         with self._lock:
             self.requests.append(list(messages))
             number = len(self.requests)
         payload = context(messages)
         prompt = str(messages[0].content)
-        if "恢复决策主 agent" in prompt:
+        names = set(kwargs.get("allowed_tools", ()))
+        if "read_skill" in names or "submit_elements" in names or "dispatch_exploration" in names or "finish_analysis" in names:
+            message = self._main_response(messages, payload, names, number)
+        elif "恢复决策主 agent" in prompt:
             if self.recovery_idle:
                 message = AIMessage(content="需要考虑是否恢复", response_metadata={"finish_reason": "stop"})
             else:
@@ -122,6 +130,41 @@ class RoutingFakeModel(BaseChatModel):
         else:
             message = self._merge_response(messages, payload, number)
         return ChatResult(generations=[ChatGeneration(message=message)])
+
+    def _main_response(self, messages: list[BaseMessage], payload: dict[str, object], names: set[str], number: int) -> AIMessage:
+        if "read_skill" in names and not self._receipts(messages, "read_skill"):
+            return self._call("read_skill", {"path": "/skills/analysis-orchestration/SKILL.md"}, number)
+        if "submit_elements" in names and not payload.get("registered_elements"):
+            elements = [{"id": "E1", "name": "圆形", "region": "图中央的圆形主体", "feature_ids": []}]
+            return self._call("submit_elements", {"elements": elements}, number)
+        dispatched = self._receipts(messages, "dispatch_exploration")
+        accepted = [value for value in dispatched if value.get("status") == "accepted"]
+        if "dispatch_exploration" in names and not accepted:
+            target = "E2" if self.invalid_dispatch_target else "E1"
+            return self._call("dispatch_exploration", {"target_element_id": target, "directions": DIRECTIONS[: self.plan_count]}, number)
+        read = {value.get("result_id") for value in self._receipts(messages, "read_analysis_result")}
+        result_ids = accepted[-1].get("result_ids", []) if accepted else []
+        integrated = self._receipts(messages, "dispatch_integration")
+        version = integrated[-1].get("selected_version") if integrated else None
+        pending = [identity for identity in [*result_ids, version] if identity is not None and identity not in read]
+        if "read_analysis_result" in names and pending:
+            return self._call("read_analysis_result", {"result_id": pending[0]}, number)
+        if "dispatch_integration" in names and not integrated:
+            return self._call("dispatch_integration", {}, number)
+        return self._call("finish_analysis", {}, number)
+
+    @staticmethod
+    def _receipts(messages: list[BaseMessage], name: str) -> list[dict[str, object]]:
+        values = []
+        for message in messages:
+            if isinstance(message, ToolMessage) and message.name == name and message.status != "error":
+                try:
+                    value = json.loads(str(message.content))
+                except ValueError:
+                    value = {"content": message.content}
+                if isinstance(value, dict) and value.get("status") != "error":
+                    values.append(value)
+        return values
 
     def _worker_response(self, payload: dict[str, object], number: int) -> AIMessage:
         if payload["direction"] == self.permanent_direction:
@@ -232,7 +275,21 @@ class FiveAnalysisTests(unittest.TestCase):
         self.assertIsNone(result.libraries)
         with TaskStore(directory) as store:
             self.assertEqual(store.task("exploration-1")["repairs"], 2)
-            self.assertEqual(set(store.snapshot()["versions"]), {"final_projection"})
+            self.assertFalse({"V0", "V1"} & set(store.snapshot()["versions"]))
+            self.assertEqual(store.read_version("final_projection")["status"], "failed")
+
+    def test_invalid_dispatch_target_never_starts_workers(self) -> None:
+        model = RoutingFakeModel(invalid_dispatch_target=True)
+        with patch("shader_deep.workflows.five_analysis.run_exploration") as workers:
+            result, directory = self.run_case(model, AnalysisOptions(max_main_calls=6))
+        workers.assert_not_called()
+        self.assertEqual(result.status, "failed")
+        self.assertIsNone(result.libraries)
+        with TaskStore(directory) as store:
+            tasks = store.snapshot()["tasks"]
+            self.assertFalse(any(task_id.startswith("exploration-") for task_id in tasks))
+            self.assertLessEqual(sum(task["model_calls"] for task in tasks.values()), 6)
+            self.assertTrue(store.snapshot()["sealed"])
 
     def test_configured_two_perspectives_and_three_cap(self) -> None:
         result, _ = self.run_case(RoutingFakeModel(plan_count=2), AnalysisOptions(max_tasks=2))
@@ -321,9 +378,31 @@ class FiveAnalysisTests(unittest.TestCase):
             )
         model = RoutingFakeModel()
         result = execute_five_analysis(request, REFERENCE, AnalysisOptions(max_main_calls=1), directory, model=model)
-        self.assertEqual(result.selected_version, "V0")
-        self.assertEqual(result.status, "partial")
-        self.assertFalse(any("整合工具人" in str(messages[0].content) for messages in model.requests))
+        self.assertEqual(result.status, "failed")
+        self.assertIsNone(result.selected_version)
+        self.assertEqual(model.requests, [])
+        with TaskStore(directory) as store:
+            self.assertEqual(store.task("planning")["model_calls"], 1)
+            self.assertEqual(store.task("main")["model_calls"], 0)
+            self.assertFalse(any(task_id.startswith("exploration-") for task_id in store.snapshot()["tasks"]))
+
+    def test_persistent_main_quota_survives_coordinator_restart(self) -> None:
+        directory = Path(self.enterContext(tempfile.TemporaryDirectory()))
+        request = "分析圆形"
+        version = hashlib.sha256((request + REFERENCE).encode()).hexdigest()
+        digest = hashlib.sha256(REFERENCE.encode()).hexdigest()
+        with TaskStore(directory) as store:
+            store.register("main", version, {"user_request": request, "reference_path": "reference.png", "reference_fingerprint": digest})
+            attempt = store.start_attempt("main")
+            store.consume_model_call(attempt)
+            store.fail_attempt(attempt, "模拟协调器退出")
+        model = RoutingFakeModel()
+        result = execute_five_analysis(request, REFERENCE, AnalysisOptions(max_main_calls=1), directory, model=model)
+        self.assertEqual(result.status, "failed")
+        self.assertEqual(model.requests, [])
+        with TaskStore(directory) as store:
+            self.assertEqual(store.task("main")["model_calls"], 1)
+            self.assertFalse(any(task_id.startswith("exploration-") for task_id in store.snapshot()["tasks"]))
 
     def test_empty_merge_without_reading_cannot_claim_completed(self) -> None:
         result, directory = self.run_case(RoutingFakeModel(integration_blind=True))
@@ -459,24 +538,31 @@ class FiveAnalysisTests(unittest.TestCase):
 
     def test_parallel_recovery_roles_share_main_quota_atomically(self) -> None:
         model = RoutingFakeModel(idle_all=True)
-        result, directory = self.run_case(model, AnalysisOptions(max_main_calls=2))
+        result, directory = self.run_case(model, AnalysisOptions(max_main_calls=4))
         self.assertEqual(result.status, "failed")
         with TaskStore(directory) as store:
             tasks = store.snapshot()["tasks"]
-            total = sum(task["model_calls"] for task_id, task in tasks.items() if task_id == "planning" or task_id.startswith("recovery-"))
-            self.assertEqual(total, 2)
+            total = sum(task["model_calls"] for task_id, task in tasks.items() if task_id in {"main", "planning"} or task_id.startswith("recovery-"))
+            self.assertEqual(total, 4)
             self.assertEqual(sum(len(tasks[f"exploration-{number}"]["attempts"]) for number in range(1, 4)), 7)
         self.assertEqual(sum("恢复决策主 agent" in str(messages[0].content) for messages in model.requests), 1)
 
     def test_recovery_cost_reduces_shared_integration_quota(self) -> None:
-        result, directory = self.run_case(RoutingFakeModel(idle_direction=DIRECTIONS[0]), AnalysisOptions(max_main_calls=3))
+        result, directory = self.run_case(RoutingFakeModel(idle_direction=DIRECTIONS[0]), AnalysisOptions(max_main_calls=8))
         self.assertEqual(result.status, "partial")
         self.assertEqual(result.selected_version, "V0")
         with TaskStore(directory) as store:
-            self.assertEqual(store.task("planning")["model_calls"], 1)
+            self.assertEqual(store.task("planning")["model_calls"], 0)
             self.assertEqual(store.task("recovery-exploration-1")["model_calls"], 1)
             self.assertEqual(store.task("integration")["model_calls"], 1)
             self.assertEqual(store.task("integration")["status"], "failed")
+            tasks = store.snapshot()["tasks"]
+            shared = sum(
+                task["model_calls"]
+                for task_id, task in tasks.items()
+                if task_id in {"main", "planning", "integration"} or task_id.startswith("recovery-")
+            )
+            self.assertEqual(shared, 8)
 
     def test_main_interrupt_cancels_recovery_before_waiting_for_worker_exit(self) -> None:
         directory = Path(self.enterContext(tempfile.TemporaryDirectory()))
@@ -549,7 +635,7 @@ class FiveAnalysisTests(unittest.TestCase):
             store.consume_model_call(recovery)
             store.submit(recovery, "decision", {"retry": True, "reason": "保持相同输入进行最后一次重派"})
         model = RoutingFakeModel()
-        result = execute_five_analysis(request, REFERENCE, AnalysisOptions(max_main_calls=4), directory, model=model)
+        result = execute_five_analysis(request, REFERENCE, AnalysisOptions(max_main_calls=12), directory, model=model)
         self.assertEqual(result.status, "completed")
         self.assertFalse(any("恢复决策主 agent" in str(messages[0].content) for messages in model.requests))
         with TaskStore(directory) as store:

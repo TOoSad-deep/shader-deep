@@ -55,7 +55,7 @@ def _charge_model(store: TaskStore, attempt: Attempt, options: AnalysisOptions, 
         used = sum(
             integer_value(object_value(value).get("model_calls", 0))
             for task_id, value in tasks.items()
-            if task_id in {"planning", "integration"} or task_id.startswith("recovery-")
+            if task_id in {"main", "planning", "integration"} or task_id.startswith("recovery-")
         )
         if options.max_main_calls and used >= options.max_main_calls:
             msg = "主角色共享的逻辑模型调用额度已耗尽"

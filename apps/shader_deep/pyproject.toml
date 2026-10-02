@@ -34,7 +34,7 @@ build-backend = "setuptools.build_meta"
 where = ["src"]
 
 [tool.setuptools.package-data]
-"shader_deep.resources" = ["analysis.yaml"]
+"shader_deep.resources" = ["analysis.yaml", "skills/*/SKILL.md", "skills/*/agents/openai.yaml"]
 "shader_deep.rendering" = ["webgl2.js"]
 
 [dependency-groups]

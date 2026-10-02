@@ -58,9 +58,13 @@ def check_wheel(wheel: Path) -> None:
     with tempfile.TemporaryDirectory(prefix="shader-installed-") as directory:
         root = Path(directory)
         with zipfile.ZipFile(wheel) as archive:
-            required = {"shader_deep/resources/analysis.yaml", "shader_deep/rendering/webgl2.js"}
+            required = {
+                "shader_deep/resources/analysis.yaml",
+                "shader_deep/resources/skills/analysis-orchestration/SKILL.md",
+                "shader_deep/rendering/webgl2.js",
+            }
             if not required <= set(archive.namelist()):
-                msg = "Wheel is missing default configuration or WebGL2 resources"
+                msg = "Wheel is missing analysis configuration, orchestration skill, or WebGL2 resources"
                 raise ValueError(msg)
             archive.extractall(root)
         _run(["-c", IMPORT_CHECK], root)

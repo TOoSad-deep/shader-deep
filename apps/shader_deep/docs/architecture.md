@@ -4,7 +4,7 @@
 
 结构选择及取舍见 [ADR 0001](decisions/0001-agent-oriented-layout.md); 实现的验证与交付状态见[结构重构任务](work-items/structure-refactor.md).
 
-分析重设计按主题分为两份文档: 调度流程、模块职责和 Agent 编排见[分析架构与 Agent 工作流设计](analysis-architecture-design.md); 五库语义、字段、引用和报告公共状态见[五库与报告数据设计](analysis-five-libraries.md). 两份文档分别记录已确认设计与待讨论方案, 默认五库代码已接入; 草图最低产出和 skill 具体封装仍待讨论. 实施与验证状态见[五库实施记录](work-items/five-library-implementation.md). 本文区分新默认流程和保留的四库兼容链路.
+分析重设计按主题分为两份文档: 调度流程、模块职责和 Agent 编排见[分析架构与 Agent 工作流设计](analysis-architecture-design.md); 五库语义、字段、引用和报告公共状态见[五库与报告数据设计](analysis-five-libraries.md). 两份文档分别记录已确认设计与待讨论方案, 默认五库代码已接入; 主 Agent + skill 的本轮实施契约见[改造方案](work-items/main-agent-skill-phase-one-plan.md), 草图最低产出继续另议. 实施与验证状态见[五库实施记录](work-items/five-library-implementation.md). 本文区分新默认流程和保留的四库兼容链路.
 
 ## 从哪里开始阅读
 
@@ -20,7 +20,7 @@
 | --- | --- | --- |
 | `cli/` | 参数、输出、退出码 | 不执行业务校验和调度 |
 | `workflows/` | 输入装配、阶段推进、批次调度、进度与交付 | 创建运行及共享资源, 汇总角色结果 |
-| `agents/` | 目标规划、独立探索、受限整合、生成及旧角色实现 | 提示词、上下文、工具权限按角色组织 |
+| `agents/` | 持续主 Agent、独立探索、受限整合、生成及旧角色实现 | 提示词、上下文、工具权限按角色组织 |
 | `domain/` | 任务、黑板、证据、五库及四库兼容引用规则 | 不依赖模型框架、Agent 或文件系统适配器 |
 | [runtime/](../src/shader_deep/runtime/README.md) | 调用循环、计数、预算、历史、提交与修复 | 不导入具体 Agent 或历史会话 |
 | `infrastructure/` | 模型客户端、传输、文件存储、配置读取、追踪 | 将外部资源适配为业务和执行组件所需接口 |
@@ -39,11 +39,15 @@
 ```text
 CLI / Python API
   → 创建运行并固定参考图
-  → 主 Agent 提交元素、唯一目标与单批方向
-  → 最多三个 worker 独立探索 F/R/M/S
-  → 程序汇集、规范化引用并发布不可变 V0
+  → 持续主 Agent 发现并读取编排 skill
+  → submit_elements 登记元素, 回执进入下一次主模型请求
+  → dispatch_exploration 冻结唯一目标与本批方向
+  → 最多三个 worker 独立探索 F/R/M/S, 内部完成有限恢复
+  → 主 Agent 按需读取结果并调用 dispatch_integration
+  → 整合工具汇集、规范化引用并发布不可变 V0
   → 独立线程执行整合 worker, 仅合并 F/R/M
   → 校验通过发布 V1; 失败回退 V0 + partial + gaps
+  → 主 Agent 调用 finish_analysis, 程序计算最终状态
   → 完整五库包 + 短入口 + 按草图视图
   → 原子提交包指针并封存, run.json 保存派生投影
 ```
@@ -60,7 +64,7 @@ CLI / Python API
   → 返回所选文件中的实际代码
 ```
 
-`workflows/five_analysis.py` 组织目标规划、单批探索、异步整合及完成判定. 每个探索任务绑定同一原图、用户要求、目标和范围, 使用独立模型历史. 一次自动重派仍失败后, 主 agent 独立诊断原任务与自身错误, 只决定最后重派或结束; 决策不改变原输入, 自身失败不递归恢复. 整合拥有独立历史, 仅读已发布 V0; 语义合并只产生 F/R/M 旧项到保留项的映射, 不生成机制或更改草图. 程序一次重写 `[[ID]]` 及结构引用, 对草图选择碰撞、共同机制塌缩和关系端点塌缩拒绝发布.
+`workflows/five_analysis.py` 创建运行并提供业务动作, 默认入口运行 `agents/main/` 的持续主 Agent. 主 Agent 按实际读取的编排 skill 调用元素登记、探索派发、结果读取、整合和结束工具, 原固定 `_stages` 不再推进默认链路. 元素登记与探索派发使用请求时工具权限, 同一模型响应中的夹带派发不会因登记刚成功而放行. 每个探索任务绑定同一原图、用户要求、目标和范围, 使用独立模型历史. 一次自动重派仍失败后, 主 agent 独立诊断原任务与自身错误, 只决定最后重派或结束; 决策不改变原输入, 自身失败不递归恢复. 整合拥有独立历史, 仅读已发布 V0; 语义合并只产生 F/R/M 旧项到保留项的映射, 不生成机制或更改草图. 程序一次重写 `[[ID]]` 及结构引用, 对草图选择碰撞、共同机制塌缩和关系端点塌缩拒绝发布.
 
 ## 状态由谁持有
 
@@ -91,7 +95,7 @@ CLI / Python API
 
 `AnalysisOptions` 保留旧字段, 默认 `max_tasks` 改为 3; 新入口只接受一批 2 或 3 个方向. 主/子总调用上限默认 0, 固定修复/重派次数与无进展规则继续生效. 四库特有比较阶段参数仅由兼容链路使用. 模型传输与请求检查只依赖 `runtime/options.py` 中的最小只读协议, 不需要了解探索数量等业务配置. 生成参数由 `agents/generation/options.py` 管理.
 
-五库角色复用现有模型传输和 AnalysisLoop, 通过独立执行实例及受限工具落实职责. 方法 skill 的具体加载封装仍待确定, 没有将普通提示词文件宣称为已接入 skill 系统. 生成和分析保持独立.
+五库角色复用现有模型传输和 AnalysisLoop, 通过独立执行实例及受限工具落实职责. 主 Agent 使用 SDK SkillsMiddleware 发现随包发布的 `resources/skills/analysis-orchestration/SKILL.md`, 通过限定读取工具取得完整方法内容后执行业务动作; 请求材料与工具执行白名单共同限制权限. 探索与整合仍复用原角色提示和独立上下文. 生成和分析保持独立.
 
 ## 兼容边界
 

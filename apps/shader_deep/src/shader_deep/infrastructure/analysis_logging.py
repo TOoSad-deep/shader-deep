@@ -125,6 +125,8 @@ def submission_summary(tool: str, arguments: JsonValue) -> str:
     """
     if not isinstance(arguments, dict):
         return "参数不是已解析对象; 原始草稿见 tools.jsonl"
+    if tool in {"submit_elements", "dispatch_exploration"}:
+        return _main_summary(tool, arguments)
     containers = {"submit_target_plan": "plan", "submit_exploration": "report", "submit_merges": "proposal", "submit_recovery_decision": "decision"}
     container = containers.get(tool)
     value = arguments.get(container) if container else None
@@ -135,6 +137,15 @@ def submission_summary(tool: str, arguments: JsonValue) -> str:
     if tool == "submit_exploration":
         return _exploration_summary(value)
     return json.dumps(_safe(value), ensure_ascii=False)
+
+
+def _main_summary(tool: str, arguments: dict[str, JsonValue]) -> str:
+    """持续主 Agent 的元素登记与探索派发使用不同参数布局."""
+    if tool == "dispatch_exploration":
+        return _planning_summary(arguments)
+    return "\n".join(
+        f"元素 {_short(item.get('id'))}: {_short(item.get('name'))}; 范围={_short(item.get('region'))}" for item in _items(arguments, "elements")
+    )
 
 
 def _items(value: dict[str, JsonValue], key: str) -> list[dict[str, JsonValue]]:

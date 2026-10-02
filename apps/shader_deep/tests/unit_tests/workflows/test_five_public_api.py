@@ -68,14 +68,15 @@ class FivePublicApiTests(TestCase):
             outcome = run_analysis_task(state, task.id, options=self.options)
         self.assertEqual(outcome.stop_reason, "completed")
         inputs = [context(messages) for messages in model.requests if "user_request" in context(messages)]
-        self.assertEqual(len(inputs), 4)
+        self.assertTrue(inputs)
+        self.assertEqual(len([payload for payload in inputs if "direction" in payload]), 3)
         for payload in inputs:
             request = payload["user_request"]
             for required in (target.request, task.objective, *target.constraints, *target.protected_features):
                 self.assertIn(required, request)
             self.assertNotIn("其他目标要求", request)
         commit = json.loads((outcome.run_dir / "commit.json").read_text())
-        self.assertEqual(commit["tasks"]["planning"]["payload"]["user_request"], inputs[0]["user_request"])
+        self.assertEqual(commit["tasks"]["main"]["payload"]["user_request"], inputs[0]["user_request"])
         self.assertEqual(state["targets"]["T1"], target)
         self.assertEqual(state["tasks"][task.id], task)
 
@@ -86,7 +87,8 @@ class FivePublicApiTests(TestCase):
             outcome = run_analysis(self.reference, prompt, options=self.options)
         self.assertEqual(outcome.stop_reason, "completed")
         inputs = [context(messages) for messages in model.requests if "user_request" in context(messages)]
-        self.assertEqual(len(inputs), 4)
+        self.assertTrue(inputs)
+        self.assertEqual(len([payload for payload in inputs if "direction" in payload]), 3)
         self.assertTrue(all(payload["user_request"] == prompt for payload in inputs))
 
     def test_integration_failure_delivers_v0_and_global_gap(self) -> None:
@@ -134,7 +136,7 @@ class FivePublicApiTests(TestCase):
         self.assertIn("报告包已发布并封存", stderr.getvalue())
         log = (Path(output["run_dir"]) / "analysis.log").read_text()
         self.assertIn("完整业务提交与回执", log)
-        for task_id in ("planning", "exploration-1", "exploration-2", "exploration-3", "integration"):
+        for task_id in ("main", "exploration-1", "exploration-2", "exploration-3", "integration"):
             self.assertIn(f"/{task_id} attempt=", log)
 
     def test_cli_error_level_keeps_complete_file_log_and_clean_stdout(self) -> None:

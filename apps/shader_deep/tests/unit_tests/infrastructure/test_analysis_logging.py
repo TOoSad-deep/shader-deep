@@ -8,10 +8,18 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from unittest import TestCase
 
-from shader_deep.infrastructure.analysis_logging import LOGGER, analysis_console, log_analysis
+from shader_deep.infrastructure.analysis_logging import LOGGER, analysis_console, log_analysis, submission_summary
 
 
 class AnalysisLoggingTests(TestCase):
+    def test_main_intermediate_submissions_have_readable_element_and_dispatch_summaries(self) -> None:
+        elements = {"elements": [{"id": "E1", "name": "蓝青色发光框", "region": "图中央"}]}
+        self.assertIn("元素 E1: 蓝青色发光框; 范围=图中央", submission_summary("submit_elements", elements))
+        dispatch = {"target_element_id": "E1", "directions": ["检查轮廓", "检查色彩"]}
+        summary = submission_summary("dispatch_exploration", dispatch)
+        self.assertIn("目标=E1", summary)
+        self.assertIn("探索方向 2: 检查色彩", summary)
+
     def test_diagnostics_redact_sensitive_fields_and_leave_business_results_visible(self) -> None:
         with TemporaryDirectory() as temporary:
             directory = Path(temporary)

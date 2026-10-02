@@ -1,0 +1,4 @@
+interface:
+  display_name: "图像分析编排"
+  short_description: "持续主 Agent 按回执编排图像元素登记、独立探索、整合与交付"
+  default_prompt: "使用 $analysis-orchestration 完成本轮图像分析编排。"

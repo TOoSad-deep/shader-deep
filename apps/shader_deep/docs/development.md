@@ -9,7 +9,7 @@
 先看 `agents/<role>/` 的入口、提示词、上下文和工具. 业务数据及引用约束放入 `domain/`; 网络和文件细节放入 `infrastructure/`. 工作流负责创建共享资源和交付, 角色通过显式输入与回调使用它们.
 
 - 修改语义判断: 找对应角色的提示词、提交契约和工具.
-- 修改阶段顺序、并发或最终状态: 找 `workflows/`.
+- 修改主 Agent 的编排方法: 找 `resources/skills/analysis-orchestration/SKILL.md`; 修改业务工具执行、并发或最终状态: 找 `workflows/`.
 - 修改合并合法性、引用或版本规则: 找 `domain/library/`.
 - 修改重试、调用额度或格式修复: 找 `runtime/` 与 `infrastructure/llm/`.
 - 修改渲染与浏览器释放: 找 `rendering/` 和 `agents/generation/tools/`.
@@ -47,7 +47,7 @@ uv run --no-sync python -m shader_deep.cli.replay --help
 uv run --no-sync python main.py --help
 ```
 
-默认 YAML 位于包内 `resources/analysis.yaml`, WebGL2 脚本位于 `rendering/webgl2.js`. 修改资源位置时同步维护 `pyproject.toml` 的 package-data, 并从构建出的 wheel 检查资源、旧入口与新入口. 仅在可编辑安装中运行成功不足以证明安装包完整.
+默认 YAML 位于包内 `resources/analysis.yaml`, 主 Agent 编排 skill 位于 `resources/skills/analysis-orchestration/SKILL.md`, WebGL2 脚本位于 `rendering/webgl2.js`. 修改资源位置时同步维护 `pyproject.toml` 的 package-data, 并从构建出的 wheel 检查资源、旧入口与新入口. 仅在可编辑安装中运行成功不足以证明安装包完整.
 
 上面的 wheel 文件名以实际构建输出为准. `check_distribution.py` 只用于本仓库构建的包, 在临时解包目录执行导入及 CLI 帮助检查, 使用当前环境已有依赖, 不安装包或调用真实模型.
 
