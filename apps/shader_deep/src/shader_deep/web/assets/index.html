@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="shader-token" content="__TOKEN__">
+  <title>Shader Deep · 本地工作台</title>
+  <link rel="stylesheet" href="/style.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <header><a class="brand" href="/" aria-label="Shader Deep 首页"><span class="mark">S</span> Shader Deep <span class="edition">STUDIO</span></a><span class="local"><i></i> 本地工作台</span></header>
+  <main>
+    <div class="intro"><div><p class="eyebrow">IMAGE → UNDERSTANDING → SHADER</p><h1>让参考图，成为可运行的 Shader。</h1><p class="muted">从图片出发，探索实现方案，查看每一次渲染。</p></div><span class="version">LOCAL / 01</span></div>
+    <div class="workspace">
+      <aside class="panel controls">
+        <div class="section-title"><span class="step">01</span><h2>创建任务</h2></div>
+        <form id="task-form">
+          <label for="mode">工作方式</label>
+          <select id="mode"><option value="generate">图片 → 生成 Shader</option><option value="analyze">图片 → 多视角分析</option><option value="report">分析方案 → 生成 Shader</option></select>
+          <div id="upload-fields">
+            <label class="upload" for="image"><span class="upload-icon">↥</span><strong id="upload-label">选择一张参考图</strong><span>PNG · 最大 12 MB · 边长 ≤ 4096</span><input id="image" type="file" accept="image/png"></label>
+          </div>
+          <div id="report-fields" hidden>
+            <label for="source">本次会话的分析报告</label><select id="source"><option value="">暂无可用分析报告</option></select>
+            <label for="sketch">草图方案</label><select id="sketch"></select>
+            <label for="alternative">机制选择</label><select id="alternative"></select>
+            <label for="background">背景要求</label><input id="background" value="透明" maxlength="1000">
+            <p class="hint">查看报告中的缺口与未知项后，再选择方案。</p>
+          </div>
+          <label for="prompt">这次想实现什么？</label><textarea id="prompt" rows="4" maxlength="8000" required placeholder="例如：复刻中央玻璃球，保留透明质感和粉色边缘光。"></textarea>
+          <div id="generation-fields"><div class="field-row"><div><label for="width">宽度</label><input id="width" type="number" value="512" min="1" max="2048" required></div><span class="times">×</span><div><label for="height">高度</label><input id="height" type="number" value="512" min="1" max="2048" required></div></div><label for="attempts">最多渲染次数</label><input id="attempts" type="number" min="1" max="10" value="3" required><p class="hint">包括编译失败的尝试；固定渲染时间为 0 秒。</p></div>
+          <div id="analysis-fields" hidden><label for="perspectives">独立探索视角</label><select id="perspectives"><option value="3">3 个视角</option><option value="2">2 个视角</option></select><p class="hint">调用预算沿用分析配置，默认不限制总调用次数。可随时停止。</p></div>
+          <button id="submit" class="primary" type="submit">开始生成 <span>↗</span></button>
+          <p class="hint footer-hint">运行会使用 .env 配置的模型服务和追踪设置。</p>
+          <p id="error" class="error" role="alert" hidden></p>
+        </form>
+      </aside>
+      <section class="stage">
+        <div class="panel preview-panel"><div class="panel-heading"><div class="section-title"><span class="step">02</span><h2>图像工作区</h2></div><span id="status" class="badge" role="status">准备就绪</span></div>
+          <div class="preview-grid"><figure><figcaption>REFERENCE <span>参考图</span></figcaption><div class="image-well"><img id="reference" alt="当前参考图" hidden><div id="reference-empty" class="empty"><span class="outline-icon">▧</span><p>从一张图片开始</p><small>上传后会在这里显示</small></div></div></figure><figure><figcaption>RENDER <span id="render-label">生成预览</span></figcaption><div class="image-well checker"><img id="preview" alt="生成的 Shader 渲染预览" hidden><div id="preview-empty" class="empty"><span class="outline-icon">◇</span><p>等待第一次渲染</p><small>每次成功渲染的候选都会保留</small></div></div></figure></div>
+          <div id="candidates" class="candidates"></div><p class="preview-note">预览来自实际渲染文件。模型选择结果后，仍需你确认视觉效果。</p>
+        </div>
+        <div class="panel results"><div class="panel-heading"><div class="section-title"><span class="step">03</span><h2>任务与结果</h2></div><button id="stop" class="danger" type="button" hidden>停止运行</button></div><label class="sr-only" for="history">本次会话任务</label><select id="history"><option value="">尚未开始任务</option></select><p id="task-prompt" class="task-prompt">选择工作方式并提交，进度与结果将在这里显示。</p><p id="directory" class="directory"></p><div id="file-links" class="file-links"></div><div id="report-result" hidden><div class="report-heading"><h3>分析报告</h3><button id="use-report" type="button" class="secondary">选择方案并生成 ↗</button></div><pre id="report-text"></pre></div><details id="log-details" open><summary>运行日志 <span>自动刷新 · 最近 24 KB</span></summary><pre id="log">等待任务开始…</pre></details></div>
+      </section>
+    </div>
+    <footer><span>SHADER DEEP</span><p>任务文件保存在本机；刷新页面可继续查看本次服务会话。关闭服务会停止任务。</p></footer>
+  </main>
+</body>
+</html>

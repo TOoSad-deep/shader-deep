@@ -1,10 +1,11 @@
-.PHONY: help sync browsers test integration_test lint format type check repository_check
+.PHONY: help sync browsers web test integration_test lint format type check repository_check
 .DEFAULT_GOAL := help
 
 help:
 	@echo "make sync    - install the app and development tools"
 	@echo "make test    - run network-free business tests"
 	@echo "make browsers - install the matching Chromium browser"
+	@echo "make web - start the local visual workspace at http://127.0.0.1:8765"
 	@echo "make integration_test - check browser readiness, then test WebGL2 (fail fast)"
 	@echo "make lint    - check code, formatting and types"
 	@echo "make format  - format application Python files"
@@ -25,6 +26,9 @@ sync:
 
 browsers:
 	PLAYWRIGHT_SKIP_BROWSER_GC=1 uv run --no-sync playwright install chromium --no-shell
+
+web:
+	uv run --no-sync --env-file .env python -m shader_deep.cli.web
 
 test:
 	uv run --no-sync python -W error -m unittest discover -s tests/unit_tests -q

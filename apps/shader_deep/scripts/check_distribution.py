@@ -36,6 +36,7 @@ CLI_MODULES = (
     "shader_deep.cli.analysis",
     "shader_deep.cli.generation",
     "shader_deep.cli.replay",
+    "shader_deep.cli.web",
     "shader_deep.analysis_cli",
     "shader_deep.analysis.replay",
 )
@@ -62,6 +63,9 @@ def check_wheel(wheel: Path) -> None:
                 "shader_deep/resources/analysis.yaml",
                 "shader_deep/resources/skills/analysis-orchestration/SKILL.md",
                 "shader_deep/rendering/webgl2.js",
+                "shader_deep/web/assets/index.html",
+                "shader_deep/web/assets/style.css",
+                "shader_deep/web/assets/app.js",
             }
             if not required <= set(archive.namelist()):
                 msg = "Wheel is missing analysis configuration, orchestration skill, or WebGL2 resources"
@@ -83,7 +87,7 @@ def main() -> int:
     except subprocess.CalledProcessError as exc:
         sys.stderr.write(exc.stdout + exc.stderr)
         return 1
-    sys.stdout.write("Wheel checks: OK (resources, import isolation, compatibility imports, 6 CLI modules)\n")
+    sys.stdout.write(f"Wheel checks: OK (resources, import isolation, compatibility imports, {len(CLI_MODULES)} CLI modules)\n")
     return 0
 
 
