@@ -109,7 +109,7 @@ def _metadata(
         payload["scene_elements"] = [_scene_element_data(slot, element) for slot, element in enumerate(inputs.elements, start=1)]
     elif inputs is not None:
         payload["generation_scheme"] = json.loads(inputs.scheme_json)
-        payload["scheme_instruction"] = "采用 generation_scheme.selected 的有效方案; 条件依据中的其他机制不自动成为本次选择."
+        payload["scheme_instruction"] = "采用 selected 生效方案; 其他材料是参考. 保持 F/R, 展开 M 并渲染验证; evidence 仅支持记录区域."
     return json.dumps(payload, ensure_ascii=False, indent=2)
 
 
@@ -188,6 +188,9 @@ def _captured_images(
     reference = Path(inputs.reference_path)
     images = [(f"参考图: 目标 {records.target.version}", reference)]
     cached = {reference: inputs.reference_url}
+    for label, path, url in inputs.evidence_images:
+        images.append((label, Path(path)))
+        cached[Path(path)] = url
     for candidate in candidates:
         if inputs.baseline is not None and candidate.id == inputs.baseline.candidate_id:
             baseline = inputs.baseline

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from typing import TYPE_CHECKING
 
 from shader_deep.domain.five_libraries.models import (
@@ -14,7 +15,7 @@ from shader_deep.domain.five_libraries.models import (
     MergeProposal,
     Relation,
 )
-from shader_deep.domain.five_libraries.references import fail, resolve_mapping, rewrite_text
+from shader_deep.domain.five_libraries.references import MARKER, fail, resolve_mapping, rewrite_text
 from shader_deep.domain.five_libraries.validation import (
     KINDS,
     TEXT_FIELDS,
@@ -34,6 +35,7 @@ def _selection(value: dict[str, object], mapping: Mapping[str, str], field: str)
     result: dict[str, object] = {}
     for target, mechanisms in value.items():
         mapped_target = mapping.get(target, target)
+        # 不能靠覆盖或合并字典值消解撞键, 否则原草图的两个实现目标会被悄悄改成一个.
         if mapped_target in result:
             fail(field, target, "选择目标合并后撞键; 不允许联合或丢弃原选择")
         if not isinstance(mechanisms, (list, tuple)):
@@ -47,6 +49,7 @@ def _selection(value: dict[str, object], mapping: Mapping[str, str], field: str)
 
 def _rewrite(value: object, mapping: Mapping[str, str], key: str = "", field: str = "") -> object:
     if isinstance(value, str):
+        # 结构引用按完整 ID 替换; 正文只改 [[ID]], 避免把普通文字或参数误当作引用.
         return mapping.get(value, value) if key in REFERENCE_FIELDS else rewrite_text(value, mapping) if key in TEXT_FIELDS else value
     if isinstance(value, (tuple, list)):
         return [_rewrite(child, mapping, key, f"{field}[{number}]") for number, child in enumerate(value)]
@@ -73,18 +76,30 @@ def rewrite_issues(issues: tuple[Issue, ...], mapping: Mapping[str, str]) -> tup
     )
 
 
-def _namespace(library: FiveLibraries, counts: dict[str, int]) -> dict[str, str]:
+def _namespace(library: FiveLibraries, counts: dict[str, int], reserved: set[str]) -> dict[str, str]:
     prefixes = {"features": "F", "relations": "R", "mechanisms": "M", "sketches": "S"}
+    # 各来源可重复使用本地 F1/M1; 汇集时统一分配包内 ID, 唯有冻结目标 E 保留共同身份.
     mapping = {element.id: element.id for element in library.elements}
     for kind, prefix in prefixes.items():
         for item in getattr(library, kind):
             counts[kind] += 1
             candidate = f"{prefix}{counts[kind]}"
-            while candidate in mapping.values():
+            while candidate in mapping.values() or candidate in reserved:
                 counts[kind] += 1
                 candidate = f"{prefix}{counts[kind]}"
             mapping[item.id] = candidate
     return mapping
+
+
+def _plain_tokens(value: object, key: str = "") -> set[str]:
+    """预留正文中的普通变量, 避免汇集分配新 ID 后改变原文含义."""
+    if isinstance(value, str) and key in TEXT_FIELDS | {"context_notes"}:
+        return set(re.findall(r"(?<![A-Za-z0-9_])(?:E|F|R|M|S)\d+(?![A-Za-z0-9_])", MARKER.sub("", value)))
+    if isinstance(value, dict):
+        return set().union(*(_plain_tokens(child, str(child_key)) for child_key, child in value.items()))
+    if isinstance(value, (tuple, list)):
+        return set().union(*(_plain_tokens(child, key) for child in value))
+    return set()
 
 
 def exploration_mappings(target: Element, reports: dict[str, ExplorationSubmission]) -> dict[str, dict[str, str]]:
@@ -100,11 +115,13 @@ def exploration_mappings(target: Element, reports: dict[str, ExplorationSubmissi
     Raises:
         LibraryValidationError: 任一来源产物不符合提交契约.
     """
+    # 正文中的普通 F9 等变量不参与改写, 也不能因新分配同名 ID 而变成疑似裸引用.
+    reserved = set().union(*(_plain_tokens(report.model_dump()) for report in reports.values()), _plain_tokens(target.model_dump()))
     counts = dict.fromkeys(KINDS, 0)
     mappings: dict[str, dict[str, str]] = {}
     for source, report in reports.items():
         validate_exploration(report, target)
-        mappings[source] = _namespace(exploration_library(report, target), counts)
+        mappings[source] = _namespace(exploration_library(report, target), counts, reserved)
     return mappings
 
 
@@ -125,6 +142,7 @@ def collect_explorations(target: Element, reports: dict[str, ExplorationSubmissi
     questions: list[Issue] = []
     gaps: list[Issue] = []
     mappings = exploration_mappings(target, reports)
+    # collect 只消除身份冲突并保留所有来源内容; 语义去重留给后续显式 merge 建议.
     for source, report in reports.items():
         original = exploration_library(report, target)
         mapping = mappings[source]
@@ -197,6 +215,7 @@ def _retained(library: FiveLibraries, proposal: MergeProposal, mapping: Mapping[
             group = next((group for group in proposal.groups if group.keep == item.id), None)
             selected = item
             if group and isinstance(item, (Feature, Relation)):
+                # 合并观察可扩充候选机制集合, 草图已选择的机制仍由各自 default/choices 决定.
                 items = library.features if isinstance(item, Feature) else library.relations
                 selected = item.model_copy(update={"mechanism_refs": _candidate_union(items, group.ids)})
             retained.append(selected.model_dump())
@@ -212,6 +231,7 @@ def _merge_conflicts(library: FiveLibraries, proposal: MergeProposal, mapping: M
     relations = {item.id: item for item in library.relations}
     for group in proposal.groups:
         if group.kind == "relations":
+            # 相同端点但前后/内外等作用不同仍是不同关系; 不凭描述相似就机械合并.
             signatures = {frozenset((mapping.get(part.ref, part.ref), part.role) for part in relations[ref].participants) for ref in group.ids}
             if len(signatures) != 1:
                 fail("groups", group.ids, "关系参与对象或作用不同; 无法机械证明合并保义")
@@ -245,6 +265,7 @@ def apply_merges(library: FiveLibraries, proposal: MergeProposal, target_element
     validate_libraries(library, target_element_id)
     mapping = merge_mapping(library, proposal)
     _merge_conflicts(library, proposal, mapping)
+    # 全程构造新快照, 引用改写或末尾校验失败时调用方仍持有完整原版, 不接受部分合并.
     retained = _retained(library, proposal, mapping)
     rewritten = FiveLibraries.model_validate(_rewrite(retained.model_dump(), mapping))
     result = _deduplicate_candidates(rewritten)

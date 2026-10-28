@@ -1,13 +1,19 @@
 """使用模拟模型与真实 WebGL2, 验证单 Agent 的错误修复和图像反馈."""
 
 import base64
+import hashlib
 import json
+from dataclasses import replace
 from pathlib import Path
 
 from PIL import Image
 
+from shader_deep.domain.evidence import ImageRegion, MeasurementRequest, MeasurementSpec
 from shader_deep.domain.generation_comparison import GenerationPlan
 from shader_deep.domain.scene import SceneElementSource
+from shader_deep.imaging.measurements import ReferenceMeasurements
+from shader_deep.infrastructure.storage.report_evidence import EvidenceAsset, ReportEvidence, evidence_bytes
+from shader_deep.infrastructure.storage.report_package import read_report_package, write_report_package
 from shader_deep.workflows.generation import run_generation
 from shader_deep.workflows.generation_comparison import run_generation_comparison
 from shader_deep.workflows.generation_from_report import run_generation_from_report
@@ -62,6 +68,38 @@ class GenerationIntegrationTests(GenerationFixture):
         self.assertEqual(Path(record["inputs"]["baseline"]["code_path"]).read_text(), BASE_CODE)
         self.assertEqual(list(self.options.output_dir.iterdir()), [outcome.run_dir])
         self.assertTrue((outcome.run_dir / "inputs" / "report" / "manifest.json").is_file())
+
+    def test_evidence_report_real_render_and_preview_readback(self) -> None:
+        source = generation_report(self.root)
+        manifest, library = read_report_package(source)
+        reference = (source / "reference.png").read_bytes()
+        measurements = ReferenceMeasurements(reference, self.root, "worker", "fixed", 1)
+        record, _ = measurements.measure(
+            MeasurementRequest(
+                question="检查目标颜色区域", measurement=MeasurementSpec(kind="crop", region=ImageRegion(left=4, top=4, right=20, bottom=18))
+            )
+        )
+        crop = Path(record.artifact_path).read_bytes()
+        digest = hashlib.sha256(crop).hexdigest()
+        path = "evidence/" + digest + ".png"
+        evidence = ReportEvidence(
+            reference_sha256=manifest.reference.sha256,
+            records=(replace(record, artifact_path=path),),
+            links={"F1": (record.id,)},
+            assets=(EvidenceAsset(path=path, sha256=digest),),
+        )
+        manifest = manifest.model_copy(
+            update={"evidence": EvidenceAsset(path="evidence.json", sha256=hashlib.sha256(evidence_bytes(evidence)).hexdigest())}
+        )
+        report = write_report_package(self.root / "evidence-report", library, manifest, reference, evidence=evidence, evidence_assets={path: crop})
+        outcome = run_generation_from_report(report, "S1", "保持圆形轮廓", background="透明", max_attempts=1, output_dir=self.options.output_dir)
+        self.assertEqual(outcome.stop_reason, "completed")
+        self.assertEqual(outcome.model_calls, 2)
+        expected_crop = "data:image/png;base64," + base64.b64encode(crop).decode()
+        expected_preview = "data:image/png;base64," + base64.b64encode(Path(outcome.selected_candidate.preview_path).read_bytes()).decode()
+        self.assertIn(expected_crop, json.dumps(self.requests[0]))
+        self.assertIn(expected_preview, json.dumps(self.requests[1]))
+        self.assertEqual(task_payloads(self.requests[0])[0]["generation_scheme"]["evidence"]["links"], {"F1": [record.id]})
 
     def test_real_render_failures_stop_with_preserved_code(self) -> None:
         self.response = lambda _request: self.call("render_shader", {"glsl_code": "invalid_glsl"})

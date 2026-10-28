@@ -1,6 +1,6 @@
 # Shader Deep
 
-维护入口: [当前架构](docs/architecture.md) · [设计决策](docs/decisions/0001-agent-oriented-layout.md) · [重构进度与验证](docs/work-items/structure-refactor.md) · [开发检查](docs/development.md).
+开发入口: [模块导航与架构](docs/architecture.md#模块导航) · [开发与验证](docs/development.md) · [文档同步约定](AGENTS.md#文档同步) · [设计决策](docs/decisions/0001-agent-oriented-layout.md). 历史改造与验证按需查对应任务记录.
 
 下游开发设计: [整体架构与模块设计](docs/generation-architecture.md)提供目录、接口与四个实施分支入口; [宏观分析](docs/generation-execution-design.md)说明流程选择和审查依据. 01 至 04 已接入, 最新的[两元素整图组合](docs/work-items/generation-04-scene-composition.md)复用单方案生成与两方案比较产物; 真实模型效果仍需单独验收.
 
@@ -8,7 +8,7 @@
 
 当前已连接内存黑板、Context Builder、真实 WebGL2 渲染工具和有预算的生成循环。每次尝试保存代码、预览或错误, 完成时明确选择已渲染且已向模型展示预览的候选。
 
-独立分析提供 `shader-deep-analyze` 命令: 持续主 Agent 读取编排 skill, 先登记元素并在下一轮根据回执选择目标与派发探索; 默认三个独立探索 worker 产出特征、关系、机制和草图. 主 Agent 接收内部有限恢复处理后的结果, 请求程序汇集 V0 并委派独立整合 worker, 整合仅合并 F/R/M. 程序维护引用并交付 `five_libraries_v1` 完整文件包、短入口及按草图读取视图. 分析到生成的自动交接尚未接入, 候选仍需编码、渲染与用户视觉验收.
+独立分析提供 `shader-deep-analyze` 命令: 主 Deep Agent 登记元素、冻结目标和方向, 使用 SDK 原生 `task` 委派两个或三个独立探索子 agent, 再委派整合子 agent. 框架负责工具循环、skills、scratch 文件与上下文整理; 应用只保留固定输入、任务准入、五库校验和文件包交付. 整合仅合并 F/R/M, 草图由程序保义更新引用. 分析到生成仍需用户显式选择报告与草图, 候选仍需编码、渲染与视觉验收. 当前实现与迁移边界见[原生实施记录](docs/work-items/deep-agents-native-plan-20261028.md).
 
 ## 安装与配置
 
@@ -44,6 +44,8 @@ make browsers
 可选 `OPENROUTER_REASONING_EFFORT` 显式控制推理强度, 未配置时沿用模型默认; 所选值必须受模型支持, 必须推理的模型不能设为 `none`。OpenRouter 重复的相同 SSE 结束标记会去重, 冲突或缺失标记仍被拒绝, 不降低工具执行的完整性检查。
 
 可选 `OPENROUTER_PROVIDER_SORT` 使用 `price`、`throughput` 或 `latency` 优先选路, 未配置时沿用网关默认。分析请求为函数工具声明 `strict: true`, 保留原 Schema 中动态选择字典的键和值约束; 提供方返回仍须经过本地字段、引用与业务校验, 严格模式不替代这些检查。
+
+OpenRouter 分析请求在发送前移除字符串字段的非空白查找正则 `pattern: "\\S"`, 避免当前严格工具服务将完整文本约束成单字符. 字符串长度和其他正则保留, 本地仍拒绝空白文本并校验字段及引用; 不改变报告格式或放宽提交规则. 诊断及复测记录见[分析诊断](docs/work-items/analysis-diagnostic-20261025.md).
 
 程序读取进程环境变量, `.env` 由运行命令中的 `--env-file` 加载。实际 `.env` 文件继续由 Git 忽略。
 
@@ -147,9 +149,10 @@ PNG 字节保持原样, 任务说明与实际加载的图像一起进入多模�
 uv run --no-sync --env-file .env shader-deep-analyze /absolute/path/reference.png "只分析中央粉色圆形本体" --output-dir runs > analysis-index.json
 ```
 
-默认一批三个独立视角, `--max-tasks 2` 可以减少到两个. 第四个视角或结果返回后的新探索批次会被拒绝. 重试保持原目标、方向和输入, 不增加视角. 主 Agent 只定位元素与确定范围, 不预填特征观察或机制答案. 探索的共同材料是固定原图、用户要求、目标元素与范围, 每个 worker 使用自己的方向和模型历史.
+默认一批三个独立视角, `--max-tasks 2` 可以减少到两个. 第四个视角或新探索批次会被拒绝, 同一槽位只启动一次. 主 Agent 只定位元素与确定范围, 不预填特征观察或机制答案. 每个探索图收到固定原图、用户要求、目标范围与自己的方向, 使用独立模型历史和 scratch 文件. 父图 description 不能改写这些输入, 子图不能继续委派.
 
-整合使用独立线程和历史, 从不可变 V0 目录按 ID 读取正文, 只合并已有特征、关系和机制. 程序拒绝改变方案含义的映射, 草图直接汇集且仅更新引用. 合法 V0 在整合启动前持久保存; 整合或 V1 发布失败后交付 V0、`partial` 和具体缺口. 无合法可用观察基线时返回 `failed`, 不发布空包.
+
+整合使用独立 Deep Agent 图, 仅在全部探索槽位成功或失败后启动, 读取固定 V0 并只合并已有特征、关系和机制. 程序拒绝改变方案含义的映射, 草图直接汇集且仅更新引用. 合法 V0 在整合启动前保存; 整合失败后交付 V0、`partial` 和具体缺口. 主图正常结束后程序核查实际产物, 无合法基线时返回 `failed`, 不发布空包. 模型结束文本或 scratch 文件不能代替合法业务提交.
 
 ### 文件包与读取
 
@@ -158,12 +161,11 @@ CLI 标准输出只返回 JSON 状态、运行目录、`report_dir` 和短结果
 ```text
 run-*/
   reference.png
-  commit.json       # 任务、回执、结果和版本指针的唯一权威发布记录
-  results/          # 不可变原始产物、V0/V1; 来源与恢复信息保留在运行记录
-  run.json          # 从权威记录生成的可读投影
-  analysis.log      # 全级别可读日志, 包含完整业务提交与 V0/V1 正文
-  events.jsonl      # 模型调用、网络尝试、用量与执行事件
-  tools.jsonl       # 原有工具参数和回执审计
+  manifest.json     # 固定计划、槽位状态和已接受版本索引
+  result.json       # 最终状态、选定版本及缺口
+  results/          # 已接受的探索正文及 V0/V1
+  run.json          # 公开入口的黑板与交付索引
+  analysis.log      # 本轮业务进度与失败诊断
   report/
     README.md       # 目标、状态、草图目录、缺口和读取导航
     manifest.json   # 本轮公共 state 与格式版本
@@ -196,7 +198,7 @@ if outcome.report_dir is not None:
 
 ### 实时运行日志
 
-默认 `--log-level INFO` 将运行开始、元素拆分、探索方向、每个子 Agent 的提交摘要、拒绝原因、请求耗时与 token 用量、版本发布和最终状态输出到 stderr. 每条记录带 UTC 时间、run/task/attempt 身份及模型调用序号, 并行结果可按任务区分. INFO 摘要会显式标记长文本截断; 完整正文另写入本轮 `analysis.log`.
+默认 `--log-level INFO` 将运行开始、业务进度、失败和最终状态输出到 stderr. 已接受正文保存在 `results/` 和 `report/`; SDK 模型与工具调用可沿用 LangSmith 追踪. 原生流程没有 attempt 代次或完整模型会话恢复日志.
 
 ```sh
 # JSON 索引保存到文件, 关键进度仍显示在终端.
@@ -207,29 +209,34 @@ uv run --no-sync --env-file .env shader-deep-analyze /absolute/path/reference.pn
 
 `--log-level WARNING` 或 `ERROR` 可减少终端信息, 不减少文件日志. 后台执行时可将 stderr 重定向到控制台日志并使用 `tail -f` 查看; 也可直接查看运行目录的 `analysis.log`. Python API 始终保存文件日志, 控制台输出沿用宿主对 `shader_deep.analysis` logger 的配置.
 
-日志区分尚未校验的模型响应、被接受或拒绝的工具提交、已发布版本. 执行成功不等于内容质量或视觉验收通过. 文本日志不记录图片 Base64、推理字段和客户端密钥; 写入故障会报告警告, 不改变业务提交和报告发布. 日志属于诊断材料, 权威恢复状态仍为 `commit.json`.
+日志属于诊断材料, 已接受报告由业务提交工具校验并保存. 执行成功不等于内容质量或视觉验收通过. 文本日志不记录图片 Base64、推理字段和客户端密钥. 已保存的旧运行与日志保留供人工检查, 当前流程不加载旧执行恢复协议.
 
-### 配置与恢复
+### 配置与迁移
 
 配置文件为 [resources/analysis.yaml](src/shader_deep/resources/analysis.yaml), 按模块位置加载. 显式 CLI 参数优先于 YAML, YAML 优先于 `AnalysisOptions` 内置值; 相对 YAML 输出路径基于配置文件所在目录. `--config` 可选其他文件, 显式文件不存在或字段错误会在模型调用前报错. Python 直接调用使用 `AnalysisOptions`, 可显式调用 `load_analysis_options` 加载 YAML.
 
-`max_main_calls` 由规划、主恢复诊断与整合共用, 并发扣费读取持久计数; `max_main_calls` / `max_worker_calls` 默认 0, 不设总模型调用限额; 提供方单次输出容量、请求超时和上下文检查继续生效. 阶段输出覆盖顺序保持: 阶段 CLI > 通用 CLI > 阶段 YAML > 通用 YAML > 内置值. `outline_max_output_tokens` 在新流程用于目标规划, `worker_max_output_tokens` 用于探索, `integration_max_output_tokens` 用于整合.
+`max_orchestrator_calls`、`max_integrator_calls` 和 `max_worker_calls` 分别限制主图、整合图和每个探索图的模型节点调用, 默认 0 不附加此限制; SDK 递归限制仍然生效. 这些值不限制所有子图的合计请求或框架摘要请求, 也不是费用预算. 阶段输出覆盖顺序保持: 阶段 CLI > 通用 CLI > 阶段 YAML > 通用 YAML > 内置值. `outline_max_output_tokens` 用于主角色, 其余两个阶段字段分别用于探索与整合.
 
-网络暂时错误默认额外重试两次, 只重试请求、不重放工具. 每个逻辑任务最多两次提交修复, 跨重派不重置; 每个任务初次执行加一次自动重派; 自动恢复失败后由主 agent 在独立受限上下文诊断, 决定最后重派原任务或结束. 恢复决策自身失败不会递归恢复, 也不能改变目标、方向或加入兄弟结论. 连续三轮没有新的有效读取或接受的提交会结束当前实例并进入恢复策略. 永久配置、认证和输入容量错误直接报告.
+网络暂时错误由框架模型重试中间件处理, 默认额外两次, SDK 客户端内部重试关闭. 工具提交错误可在同一图会话内修正; 会话结束仍无合法提交则记失败. 不自动重派、不启动恢复 agent、不在主图结束后补问模型. 每次公开调用创建新运行, 已落盘产物保留, 首版不续跑跨进程模型会话.
 
-运行状态和结果回执一起原子发布. 完成事件只用于唤醒, 协调器等待期间补查持久状态; 相同成功提交在封存后重试仍返回旧回执. 取消、替换和封存撤销新提交权限. 每轮进程锁和运行代次阻止两个协调器同时写入; 恢复任务状态不承诺恢复旧模型推理或聊天会话.
+| 配置 | 原生流程处理 |
+| --- | --- |
+| `max_tasks`、`max_parallel` | 固定 2/3 个探索槽位, SDK task 并发上限 |
+| 输出 token、超时、流式、网络重试 | 保留阶段优先级与传输适配 |
+| `worker_observation_tools`、`max_measurements` | 固定原图的业务取证能力和每角色取证限制 |
+| `max_main_calls` | 已删除; 使用独立的主图/整合图限制 |
+| `max_repeated_no_progress`、`max_context_tokens`、`request_image_tokens`、`request_token_margin` | 已删除; 上下文管理采用 SDK 机制 |
+| `max_comparison_targets`、`library_page_chars`、`max_integration_calls`、`max_integration_packages`、`integration_no_progress`、`integration_history_tokens` | 已删除; 当前角色不使用此协议 |
+
+公开 `run_analysis` / `run_analysis_task` 的核心签名、CLI 状态索引和报告包格式保持; 以上执行与配置语义发生了明确变化. 表中的旧字段已从 `AnalysisOptions`、YAML 和 CLI 入口移除, 即使传入原默认值也会明确报错, 需要从调用参数或配置文件删除. 旧四库回放命令也不再提供.
 
 草图最低产出要求继续另议. 当前按已表达的业务缺口计算部分完成, 不增加每个 worker 的草图数量门槛. `completed` 只说明本轮流程与已知必要工作完成, 不证明视觉效果、机制正确或上下文成本收益.
 
-### 四库兼容与历史回放
+### 历史执行退出
 
-旧 `possibility_library_v1` 实现保留于 `workflows/legacy_analysis.py`、旧角色和 `domain/library/`. 旧数据不自动转换为五库. 历史回放继续使用四库链路, 不计作新默认流程的验证:
+旧四库、固定五库执行器、冻结回放和探索 skill 对照实验已移除. 当前保留原生分析、生成和五库报告读取入口, 已保存的运行目录及报告文件不删除. 四库报告不会自动转换或被五库读取器接受. 删除范围与验证见[清理记录](docs/work-items/analysis-legacy-cleanup-20261028.md).
 
-```sh
-uv run --no-sync --env-file .env python -m shader_deep.cli.replay /absolute/path/four-library-source-run --output-dir runs/replay --max-main-calls 8
-```
-
-当前实现地图见[架构说明](docs/architecture.md); 数据契约见[五库设计](docs/analysis-five-libraries.md); 角色与恢复契约见[分析架构设计](docs/analysis-architecture-design.md). 本轮实施及实际验证记录见[五库实施记录](docs/work-items/five-library-implementation.md).
+当前实现见[架构说明](docs/architecture.md); 数据契约见[五库设计](docs/analysis-five-libraries.md); 原生角色分工见[分析架构设计](docs/analysis-architecture-design.md).
 
 ## 单 Agent 生成闭环
 
@@ -317,22 +324,19 @@ print(outcome.stop_reason, outcome.run_dir)
 ```text
 src/shader_deep/
 ├── api.py                  # 稳定 Python API
-├── cli/                    # 分析、生成、回放命令
+├── cli/                    # 分析、生成与本地网页命令
 ├── workflows/              # 调度、阶段推进、主进度与最终交付
-├── agents/                 # five_analysis / generation / 四库兼容角色
-├── domain/                 # 业务记录、五库契约与四库兼容规则
-├── runtime/                # 调用循环、预算、历史、提交与修复
+├── agents/                 # analysis / generation 的角色定义与工具
+├── domain/                 # 业务记录、五库契约与只读历史类型
 ├── infrastructure/         # 模型传输、配置读取、制品存储与追踪
 ├── imaging/                # 图像读取、测量与剖面
 ├── rendering/              # 独立 WebGL2 渲染器
-├── resources/              # 默认 YAML
-├── compatibility/          # 显式保留的旧流程
-└── experiments/            # 固定样本回放实验
+└── resources/              # 默认配置与原生角色 skills
 ```
 
-从 [当前架构](docs/architecture.md) 阅读完整职责、调用链和状态归属; 修改与验证方法见 [开发指南](docs/development.md). `analysis/`、旧 `context/`、`tools/` 及旧模块路径是兼容转发, 新实现不从这些路径导入.
+从[当前架构](docs/architecture.md)阅读职责、调用链和状态归属; 修改与验证方法见[开发指南](docs/development.md).
 
-`workflows/five_analysis.py` 组合目标规划、独立探索和异步整合; `domain/five_libraries/` 集中维护字段与引用; `runtime/task_store/` 管理持久生命周期; `infrastructure/storage/report_package.py` 发布和读取文件包. 旧协调器只服务四库兼容及回放.
+`workflows/analysis/` 固定本轮业务输入、槽位状态与交付; `agents/analysis/native.py` 定义原生主/子角色、工具与输入适配; `domain/five_libraries/` 维护字段与引用; `infrastructure/storage/report_package.py` 发布和读取文件包. SDK 管理模型历史、task 执行和 scratch.
 
 测试按业务和执行职责组织在 `tests/unit_tests/` 的子目录中. `tests/integration_tests/` 保留真实浏览器渲染检查.
 
@@ -460,7 +464,7 @@ if outcome.selected_candidate is not None:
 
 提示词要求先渲染, 再对照真实预览进行修正或结束。候选选择只结束当前生成任务, 不修改原任务的基线, 也不自动建立全局采用或用户接受记录。
 
-未绑定报告的任务沿用上述 Context Builder 入口. 报告生成由公开 `run_generation_from_report` 统一准备, 内部每轮复用固定原图、有效方案和基线材料, 并刷新候选与错误; 不把带报告绑定的任务直接交给旧 `run_generation`. 初稿与探索的 Builder 分别在 `agents/outline/context.py`、`agents/exploration/context.py`; 整合角色按当前阶段构造受限材料. `compatibility/` 保留旧协议及按需整合逻辑. 分析和生成均不额外调用模型生成摘要; 生成保留有限轮数下的完整有效历史. 独立视觉评审尚未接入.
+未绑定报告的任务沿用上述 Context Builder 入口. 报告生成由公开 `run_generation_from_report` 统一准备, 内部每轮复用固定原图、有效方案和基线材料, 并刷新候选与错误; 不把带报告绑定的任务直接交给旧 `run_generation`. 当前分析在 `agents/analysis/` 按角色构造受限材料. 原生分析接受 SDK 的上下文摘要与工具输出外置; 生成不额外调用摘要模型, 保留有限轮数下的完整有效历史. 独立视觉评审尚未接入.
 
 ## 开发检查
 
@@ -486,3 +490,7 @@ make integration_test
 集成测试使用真实 Chromium 执行 Shader, 再用 Pillow 解码 PNG, 检查颜色、尺寸、坐标方向、alpha、时间、编译和链接错误、连续渲染及生命周期。生成闭环测试使用模拟模型响应, 但实际执行浏览器编译、错误修复后的渲染和 PNG 反馈。缺少浏览器时会失败, 先执行 `make browsers`。
 
 这些测试不验证具体外部模型服务的联网可用性或模型的实际视觉判断能力; 真实模型联调需使用配置的服务另行执行。格式调整使用 `make format`。检查命令使用已安装环境, 不隐式安装依赖。
+
+### 原图取证
+
+`AnalysisOptions(worker_observation_tools=True)` 开放各探索角色绑定原图的裁剪与区域统计. 每个角色独立计量, 新证据须在后续请求实际回读后才能关联观察. 证据文件随五库包校验和固定, 规则见[辅助材料契约](docs/analysis-five-libraries.md#2026-10-27-内容收缩与辅助材料契约). 历史对照试验结果见任务记录, 当前包不提供实验执行入口.

@@ -10,9 +10,9 @@ from tempfile import TemporaryDirectory
 from unittest import TestCase
 from unittest.mock import patch
 
-from shader_deep import analysis_cli
-from shader_deep.analysis import config as analysis_config
+from shader_deep.cli import analysis as analysis_cli
 from shader_deep.domain.blackboard import new_blackboard
+from shader_deep.workflows import configuration as analysis_config
 from shader_deep.workflows.configuration import load_analysis_options
 from shader_deep.workflows.options import AnalysisOptions
 from shader_deep.workflows.outcomes import AnalysisOutcome
@@ -34,7 +34,6 @@ class AnalysisConfigTests(TestCase):
         options = load_analysis_options()
         self.assertEqual(options.max_output_tokens, 32768)
         self.assertEqual(options.max_worker_calls, 5)
-        self.assertEqual(options.max_main_calls, 0)
         self.assertEqual(options.output_dir, self.root / "artifacts")
 
     def test_explicit_missing_config_does_not_fall_back(self) -> None:
@@ -49,7 +48,6 @@ class AnalysisConfigTests(TestCase):
         (self.root / "analysis.yaml").write_text("max_worker_calls: 7\n", encoding="utf-8")
         with patch("shader_deep.workflows.configuration.DEFAULT_CONFIG", bundled):
             expected = load_analysis_options()
-            self.assertEqual(expected.max_main_calls, 0)
             self.assertEqual(expected.max_worker_calls, 0)
             with contextlib.chdir(self.root):
                 self.assertEqual(load_analysis_options(), expected)
@@ -60,6 +58,10 @@ class AnalysisConfigTests(TestCase):
             "[1, 2]",
             "max_output_token: 100",
             "max_tasks: 1",
+            "max_tasks: 4",
+            "max_main_calls: 0",
+            "max_context_tokens: 4096",
+            "max_repeated_no_progress: 0",
             "max_worker_calls: true",
             "max_worker_calls: -1",
             'max_output_tokens: "32768"',
@@ -108,12 +110,8 @@ class AnalysisConfigTests(TestCase):
             "--no-stream-model-responses",
             "--max-request-retries",
             "0",
-            "--max-main-calls",
-            "0",
             "--max-worker-calls",
             "0",
-            "--max-repeated-no-progress",
-            "3",
             "--output-dir",
             "cli-runs",
         ]
@@ -130,8 +128,6 @@ class AnalysisConfigTests(TestCase):
         self.assertEqual(options.max_output_tokens, 24576)
         self.assertFalse(options.stream_model_responses)
         self.assertEqual(options.max_request_retries, 0)
-        self.assertEqual(options.max_main_calls, 0)
-        self.assertEqual(options.max_repeated_no_progress, 3)
         self.assertEqual(options.output_dir, Path("cli-runs"))
 
     def test_invalid_cli_config_fails_before_model_invocation(self) -> None:

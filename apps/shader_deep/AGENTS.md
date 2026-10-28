@@ -10,21 +10,33 @@
 
 ## 知识与任务入口
 
-- 当前结构与依赖方向: [架构说明](docs/architecture.md); 选择理由: [ADR 0001](docs/decisions/0001-agent-oriented-layout.md).
-- 报告到生成、受阻结束或生成 CLI: 先读[生成整体架构](docs/generation-architecture.md)和[阶段 02 实施记录](docs/work-items/generation-02-execution-loop.md#实施记录), 当前执行入口为 `run_generation_from_report`.
-- 两方案比较或人工选择记录: 读[阶段 03 实施记录](docs/work-items/generation-03-plan-comparison.md#实施记录); 比较索引引用独立子运行, 人工选择只更新比较索引.
-- 两元素整图组合: 读[阶段 04 实施记录](docs/work-items/generation-04-scene-composition.md#实施记录); `run_scene_generation` 从两个已选来源固定素材, 用新会话生成整图, 来源候选不进入本轮选择集合.
-- 分析范围、调度流程、Agent 职责或 skill 编排设计: 先读[分析架构与 Agent 工作流设计](docs/analysis-architecture-design.md), 在该文档维护已确认约束与待讨论方案.
-- 五库语义、字段、引用或报告公共状态设计: 先读[五库与报告数据设计](docs/analysis-five-libraries.md), 在该文档维护数据契约. 默认五库实现入口和验证范围见[五库实施记录](docs/work-items/five-library-implementation.md); 草图最低产出仍待讨论, 当前实现以架构说明和源码为准.
-- 本轮重构的进度、已知问题和验证证据: [任务记录](docs/work-items/structure-refactor.md). 接手时先核对 Git 状态, 不依赖先前聊天或把记录日期当作实时状态.
-- 修改架构边界时更新相应决策与说明; 有意义的进度、失败和交付变化写入对应任务记录. 验证记录要标明命令、代码状态、结果与未覆盖范围.
-- 设计目标、代码已实现、本地验证、提交、推送和合并分别记录. 每项事实只保留一个主要记录位置, 其他入口用链接引用.
+先根据本次改动读取对应模块说明, 再沿其中链接定位源码和必要测试. 跨模块关系看[架构总览](docs/architecture.md), 命令与验证范围看[开发指南](docs/development.md).
+
+| 本次改动 | 优先读取 |
+| --- | --- |
+| 主/子角色、工具、skill、上下文或 task 委派 | [分析角色](src/shader_deep/agents/analysis/README.md) |
+| 固定输入、槽位状态、V0/V1、失败交付或运行参数 | [分析工作流](src/shader_deep/workflows/analysis/README.md) |
+| 五库字段、引用或合并含义 | [五库领域](src/shader_deep/domain/five_libraries/README.md); 详细业务定义查[数据设计](docs/analysis-five-libraries.md) |
+| 模型配置、输出预算、原始工具参数或网络传输 | [模型适配](src/shader_deep/infrastructure/llm/README.md) |
+| 报告包、证据文件、生成输入捕获或保存格式 | [文件存储](src/shader_deep/infrastructure/storage/README.md) |
+| 生成、渲染、两方案比较或两元素整图组合 | [生成架构](docs/generation-architecture.md); 从本次涉及的执行分支进入 |
+
+模块 README 说明当前实现, ADR 记录仍有效的设计取舍, `docs/work-items/` 保存对应任务的计划、进度与验证证据. 查历史演变时再读[原生切换记录](docs/work-items/deep-agents-native-plan-20261028.md)、[旧执行清理](docs/work-items/analysis-legacy-cleanup-20261028.md)或相关生成记录; 已完成计划不覆盖当前源码与约定.
+
+## 文档同步
+
+- 修改模块前阅读对应 README. 职责、公开接口、输入输出、状态归属、依赖关系或关键约束改变时, 在同一轮改动中更新模块说明; 普通内部实现调整无需机械更新文档.
+- 新增或移动模块时补阅读入口和上层导航; 删除实现时清理旧入口与失效链接. 简单辅助目录可由上层说明覆盖, 不强制每个文件夹新增 README.
+- 每项事实保留一个主要说明位置: 模块细节在相邻 README, 跨模块关系在架构总览, 字段合同在数据设计与源码, 具体算法在代码注释. 其他位置链接引用, 不复制维护.
+- 跨会话工作更新对应任务记录, 区分计划、已实现、验证证据与未覆盖范围; 小改动不另建一套进度文件. 历史验证不能代替当前状态检查.
+- 文档变更运行 `make repository_check` 并检查 diff. 链接与依赖检查不能证明文字符合代码, 交付前仍须对照涉及的入口与约束.
 
 ## 应用范围
 
 - 当前有两条独立流程：`shader-deep` 执行生成、渲染、查看预览与选择候选；`shader-deep-analyze` 执行多视角分析、按需测量与报告综合。
 - 独立视觉评审、持续决策、分析到生成的自动交接尚未接入。除非任务明确要求，不提前扩展这些流程，也不把设计方案写成已经实现的能力。
 - 优先完成需求范围内的最小改动。应用问题先在本包解决；涉及 SDK 或其他包时，再读取对应目录的约定并说明跨包修改原因。
+- 优先使用 Deep Agents 现有能力. 新增模块或自定义框架机制前, 简要说明已有模块/框架无法满足的具体需求, 避免为假设中的瓶颈增加通用抽象.
 - 保留现有公开入口及兼容包装，包括 `main.py`、`generate_shader`、`generate_task`、`run_shader`、`run_generation`、`run_analysis` 和 `run_analysis_task`。签名变更遵循根目录的兼容要求。
 
 ## 源码职责与查找范围
@@ -34,18 +46,16 @@
 | 路径 | 职责 |
 | --- | --- |
 | `src/shader_deep/api.py`、`cli/` | 稳定调用入口、参数、输出与退出码 |
-| `src/shader_deep/workflows/` | 运行创建、阶段推进、并行调度、主进度与最终交付 |
-| `src/shader_deep/agents/` | 初稿、探索、整合、生成角色的提示词、上下文与受限工具 |
-| `src/shader_deep/domain/` | 任务、黑板、证据和五库业务规则及四库兼容契约; 不依赖模型框架或 IO |
-| `src/shader_deep/runtime/` | 角色执行、预算、历史、提交与局部修复 |
+| `src/shader_deep/workflows/` | 运行创建、固定业务事实、单次原生图调用与最终交付 |
+| `src/shader_deep/agents/` | 原生主/探索/整合与生成角色的提示词、上下文与受限工具 |
+| `src/shader_deep/domain/` | 任务、黑板、证据和五库业务规则; 历史类型仅用于读取与校验; 不依赖模型框架或 IO |
 | `src/shader_deep/infrastructure/` | 模型客户端、网络恢复、配置读取、存储和追踪 |
 | `src/shader_deep/imaging/` | 固定参考图、裁剪、统计与剖面 |
 | `src/shader_deep/rendering/` | 独立 WebGL2 渲染器及浏览器端脚本 |
-| `src/shader_deep/compatibility/`、`experiments/` | 旧执行协议和显式实验; 不进入默认角色依赖链 |
 | `src/shader_deep/resources/` | 随安装包发布的默认 YAML |
 | `tests/unit_tests/`、`tests/integration_tests/` | 按职责组织的无网络业务测试、真实浏览器集成测试 |
 
-旧 `analysis/`、`context/`、`tools/` 和原单文件路径保留为导入转发, 新代码使用规范路径. 当前调用链和状态归属见 [docs/architecture.md](docs/architecture.md), 验证与打包见 [docs/development.md](docs/development.md).
+当前调用链和状态归属见 [docs/architecture.md](docs/architecture.md), 验证与打包见 [docs/development.md](docs/development.md).
 
 使用 `rg` 时优先限定到相关模块和测试。默认排除 `.venv/`、`__pycache__/`、`*.egg-info/`、`runs/` 和生成制品；需要诊断某次运行时，只读取对应运行目录。不要为应用层问题无差别扫描整个上游仓库。
 
@@ -65,8 +75,8 @@
 - 黑板登记函数校验引用并返回新状态，调用方必须接收返回值。不得用相同 ID 覆盖旧记录，或通过直接修改共享嵌套字典绕过登记规则。
 - 任务的 `target_version`、`baseline_id` 和显式输入引用在登记后保持固定。采用新目标或基线时创建新任务；新候选的产生和选择不自动改写旧任务。
 - `read_task` 只解析业务引用。记录存在于黑板中，不表示它已经被发送给模型；Context Builder 负责加载任务实际需要的代码、图像和证据。
-- 每轮通过 `request.override(messages=...)` 构造请求级材料，避免将参考图和完整报告重复追加到持久聊天历史。保留有效历史及工具调用与响应的配对关系。
-- 保留各角色已有的选材策略。分析子任务只接收明确选入的历史报告与证据；修改消息合并方式时验证实际多模态请求，不能只检查文件路径或文本占位符。
+- 固定图像与业务材料通过请求级注入保持可用, 避免重复追加到持久消息. 原生分析的历史、todos、文件和摘要交给 SDK, 应用业务记录不保存第二份模型历史. 生成继续保持工具调用/响应配对.
+- 保留各角色已有的选材策略。探索子任务只接收冻结输入、自身方向与本角色证据；修改消息合并方式时验证实际多模态请求，不能只检查文件路径或文本占位符。
 - 制品按独立 `run-*` 目录保存，失败尝试也应可追溯。快照通过同目录临时文件替换写入；不要将其描述为多个文件的事务或可恢复完整模型会话的检查点。
 - 区分候选已登记、渲染成功、材料已进入模型请求、模型提交结果、用户视觉验收。`completed` 和 `presented` 等程序状态不证明视觉效果已被用户接受。
 
@@ -85,19 +95,10 @@
 
 ## 多视角分析与证据约定
 
-- 默认工作流为 `workflows/five_analysis.py`: 主 Agent 只定位元素与范围, 一次冻结默认三个、最多三个独立探索方向. 探索共享固定原图、用户要求、目标元素和范围, 各自生成 F/R/M/S. 整合异步执行且仅合并 F/R/M; 草图直接汇集, 程序保义更新引用. 五库字段见数据设计, 持久状态/回执/V0/V1 由 `runtime/task_store/` 管理, 文件包由 `infrastructure/storage/report_package.py` 发布. 已发布包与封存状态须来自同一权威记录.
-
-- 旧协议兼容会话通过 `run_analysis_batch` 派发任务、`measure_reference` 测量、`finish_analysis` 综合；主任务可用 `read_analysis_file` 按需读取已登记报告；主、子提交都可通过 `repair_analysis_submission` 修复合法 JSON 草稿。子任务可提出取证建议，不能访问兄弟报告目录。视角配置和报告内容不能扩大工具权限。
-- 新五库每轮只执行一批两个或三个独立视角, 主 Agent 不生成共同观察初稿, 恢复不引入兄弟报告或增加方向. 以下初稿、追加任务和旧证据规则仅用于显式四库/历史兼容流程: 首批至少两个视角, 允许绑定旧视觉初稿与明确选入证据; 追加任务声明目的、缺口和预期证据.
-- 每个视角拥有独立模型历史、执行计数和提交状态。子线程返回结果记录，由协调器合并到最新黑板；不得用工作线程持有的旧状态覆盖其他任务产出。
-- 保留整批校验后登记、会话工具串行提交和批次内部并行执行的边界。向工作线程传播追踪上下文时，每个任务单独复制 `contextvars` 上下文。
-- 分析开始时固定参考图字节。测量保留原图哈希、任务归属、目标版本、方法版本及像素区域；相同有效规格复用证据 ID，不重复扣独立测量预算。
-- 测量坐标使用原图左上原点，右、下边界不包含在区域内。裁剪证据需提供实际图像；裁剪属于视觉材料，数值测量只支持实际采样区域内的结论。
-- 透明像素统计采用白底合成，RGB 加权值属于编码亮度近似。剖面极值是局部候选，不自动代表网格线、完整物体或唯一物理机制。
-- 分开记录观察、解释、分歧、未知项和建议。声明 `measurement_supported` 必须有允许引用的数值证据；关键观察需引用具体观察条目，不能把解释冒充事实。
-- 旧协议综合前核对具体引用条目与证据已进入主模型请求，`source_result_ids` 列明可用报告范围；目录本身不等于正文已读。缺失任务由执行器计算；保留失败和部分完成状态，不通过删掉失败记录获得全部成功。
-- 逻辑模型调用和网络请求尝试分别计数。重试只包围模型请求与响应完整性检查，不重放已执行工具，也不创建重复任务。
-- 保留分析流程对 SDK 内部重试和自动模型摘要的控制，避免额外请求绕过预算。流式输出需完整接收并检查正常结束标记后才可执行工具；有限 JSON 恢复不得猜补缺失参数。
+- 默认分析采用原生 Deep Agents 与 SDK task. 固定原图、单批目标/方向及父子材料隔离由程序保证; 角色工具与请求边界以[分析角色说明](src/shader_deep/agents/analysis/README.md)为准.
+- 业务提交通过领域校验才接受, 普通文本、todos 或 scratch 文件不代表报告. 业务状态与 SDK 图状态各自归属; 终态与 V0/V1 规则见[分析工作流](src/shader_deep/workflows/analysis/README.md), 合并保义见[五库领域](src/shader_deep/domain/five_libraries/README.md).
+- 证据保留来源及实际字节, 引用合法不证明视觉结论正确. 取证呈现规则见角色说明, 文件校验与生成取材见[文件存储](src/shader_deep/infrastructure/storage/README.md).
+- 旧四库、固定五库执行与回放实验已删除. 已保存制品保留, 历史类型不构成旧执行支持; 新分析运行不承诺跨进程模型会话恢复.
 
 ## 配置、输出与追踪
 

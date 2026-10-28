@@ -543,7 +543,7 @@ report/
 
 ## 9. 实现状态与后续维护
 
-2026-09-28 源码核对: [现有模型](../src/shader_deep/domain/library/models.py)的 `PossibilityLibrary` 仍为四库, `Candidate` 仍嵌套在 `Feature` / `Relation` 内. 该四库已转为兼容实现. 2026-09-30 用户授权后默认入口接入 `domain/five_libraries/` 与五库文件包; 当前验证由[五库实施记录](work-items/five-library-implementation.md)维护, 尚未进行真实模型视觉验证.
+2026-09-28 源码核对: [现有模型](../src/shader_deep/domain/library/models.py)的 `PossibilityLibrary` 仍为四库, `Candidate` 仍嵌套在 `Feature` / `Relation` 内. 四库执行现已退出, 仅保留历史模型与纯校验. 2026-09-30 用户授权后默认入口接入 `domain/five_libraries/` 与五库文件包; 当时验证见[五库实施记录](work-items/five-library-implementation.md); 后续原生切换及旧执行删除分别见[原生实施记录](work-items/deep-agents-native-plan-20261028.md)和[清理记录](work-items/analysis-legacy-cleanup-20261028.md). 工程验收与真实视觉验证分别判断.
 
 后续维护方式:
 
@@ -584,3 +584,17 @@ report/
 | 2026-09-30 | 按用户澄清仅修复设计契约, 将文本对象引用统一为 `[[ID]]`, 明确标记语法、来源解析、具体修复问题及依据原内容一次重写; 同步草图 JSON 示例和架构互链 | 文本引用设计契约已收口, 业务字段结构不变; 解析、校验及重写代码待实现, 未修改业务代码 |
 
 | 2026-09-30 | 用户授权实施已确认字段与引用契约, 默认交付切换为完整五库包、短入口及按草图视图 | 当前字段保持不变; 新模型、来源映射与读取代码已接入, 验收证据见[五库实施记录](work-items/five-library-implementation.md), 跨图检索和视觉机制验证未完成 |
+
+## 2026-10-27 内容收缩与辅助材料契约
+
+F/R 仅登记本目标必须复现的直接现象及有独立价值的关系. 所有已登记 F/R 继续承担候选和每套来源草图覆盖义务; 未解决的必要目标保留具体 gaps. 背景等辅助观察放在 ExplorationSubmission 的可选 `context_notes`, 不作为第六库, 不计入覆盖分母. `open_questions` 集中保留未知数量、尺寸和成因. M 说明原理、操作、可调因素和必要适用条件, 公式、代码和具体参数由生成阶段展开.
+
+正文 `[[ID]]` 必须存在; 已登记 ID 裸写仍拒绝. 未登记的普通变量如 R0 不因外形被当成对象. 汇集 ID 分配预留所有来源非标记正文中的此类变量名, 避免新来源对象使原变量变成裸引用; 不改写变量正文. 草图 default 和备选 choices 是权威采用集合, composition 仅说明生效方案; 比较或移除理由写 reason. 若备选替换了原 composition 引用的机制, 必须提供兼容的新 composition. 读取和生成使用同一规则.
+
+任务容器增加可选 `evidence_links: {F或R: [证据ID]}`. 五库业务对象必填字段不变. 关联只能指向当前 worker 由程序生成且已经进入后续模型请求的记录. `context_notes` 中的显式对象引用也校验并随来源映射重写. 历史分步草稿实验已退出; 当前原生角色直接提交完整探索结果, 已接受结果不可覆盖.
+
+manifest 可选 `evidence` 声明 `evidence.json` 的 SHA-256. 未声明是旧包无附带测量依据; 已声明文件缺失、篡改或其 PNG 制品损坏均拒绝. `analysis_evidence_v1` 保存原图哈希、MeasurementRecord、F/R 关联及包内 PNG 路径/哈希. 已呈现裁剪在 worker 内固定实际字节, 提交时将字节和 SHA-256 保存到不可变证据版本; V0/V1 的 materials 复用这些冻结内容, 不重新读取临时文件来确认身份. materials 与同一版本 source_mappings 一起冻结; 来源命名空间与合并同步重写观察键, 稳定去重重复证据 ID, 保留不同来源依据. 发布时只携带被引用的记录与制品, 全量工具事件独立保存. 主模型读取 V0/V1 时只收到证据元数据和哈希, 内部冻结的 base64 字节不进入工具正文.
+
+证据读取按测量类型校验内容: crop 必须提供可解码 PNG, 尺寸和 RGBA 像素须等于固定原图的实际采样区域; region_stats 和 line_profile 检查各自必要数值、有限值、聚合方式、样本数、单位及方法版本, 拒绝混入其他类型的结果字段. 剖面摘要与既有确定性方法重建结果一致. 这些检查不把像素统计升级为物体或材质的语义结论.
+
+证据与五库在同一暂存目录校验发布. `read_report_package` 保持原二元组返回方式; `read_sketch` 另提供所选 F/R 证据视图. 包移动后路径仍为包内路径. 完整包按已冻结版本读取和校验, 不依赖运行临时裁剪仍存在. 生成固定输入复制明确声明的证据文件与 PNG, 内容摘要包含这些字节, 将所选裁剪图缓存为真实多模态材料. 数值统计仅描述采样矩形和其透明度处理, 不自动构成物体原色或语义真值.

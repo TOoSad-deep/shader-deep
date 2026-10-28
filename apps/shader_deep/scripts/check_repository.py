@@ -13,8 +13,21 @@ from urllib.parse import unquote, urlsplit
 
 PACKAGE = "shader_deep"
 FRAMEWORKS = ("deepagents", "langchain", "langgraph", "openai", "anthropic")
-LEGACY = ("analysis", "context", "tools", "config", "schemas", "blackboard", "artifacts", "middleware", "analysis_cli")
-CURRENT = {"agents", "workflows", "domain", "runtime", "infrastructure", "imaging", "rendering"}
+LEGACY = (
+    "analysis",
+    "context",
+    "tools",
+    "config",
+    "schemas",
+    "blackboard",
+    "artifacts",
+    "middleware",
+    "analysis_cli",
+    "compatibility",
+    "experiments",
+    "runtime",
+)
+CURRENT = {"agents", "workflows", "domain", "infrastructure", "imaging", "rendering"}
 INLINE_LINK = re.compile(r"!?\[[^\]\n]*\]\(\s*(<[^>\n]+>|[^\s)]+)(?:\s+[\"'][^\n]*[\"'])?\s*\)")
 REFERENCE = re.compile(r"^\s*\[([^\]]+)\]:\s*(<[^>\n]+>|\S+)")
 REFERENCE_USE = re.compile(r"!?\[([^\]\n]+)\]\[([^\]\n]*)\]")
@@ -38,9 +51,7 @@ def _forbidden(layer: str, module: str) -> bool:
     application = module.startswith(PACKAGE + ".")
     if layer in {"domain", "rendering"}:
         return framework or (application and not _within(module, f"{PACKAGE}.{layer}"))
-    if layer == "runtime" and any(_within(module, f"{PACKAGE}.{name}") for name in ("agents", "workflows", "compatibility")):
-        return True
-    return layer in CURRENT and any(_within(module, f"{PACKAGE}.{name}") for name in (*LEGACY, "compatibility"))
+    return layer in CURRENT and any(_within(module, f"{PACKAGE}.{name}") for name in LEGACY)
 
 
 def _import_names(node: ast.Import | ast.ImportFrom | ast.Call, package: str) -> list[str]:

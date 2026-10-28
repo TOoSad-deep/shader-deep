@@ -16,14 +16,18 @@ from pathlib import Path
 import shader_deep
 if not Path(shader_deep.__file__).is_relative_to(Path.cwd()):
     raise RuntimeError('Imported the editable checkout instead of the wheel')
-from shader_deep.domain.library.store import LibraryStore
+from shader_deep.domain.five_libraries import FiveLibraries
 if any(name.startswith(('langchain', 'deepagents', 'shader_deep.infrastructure')) for name in sys.modules):
     raise RuntimeError('Domain import crossed an execution or IO boundary')
 from shader_deep import api
-if any(name.startswith('shader_deep.compatibility') for name in sys.modules):
-    raise RuntimeError('Current API loaded a historical execution path')
+from shader_deep.agents.analysis import run_analysis, run_analysis_task
+from shader_deep.agents.analysis.native import build_analysis_agent
+if run_analysis is not api.run_analysis or run_analysis_task is not api.run_analysis_task:
+    raise RuntimeError('Analysis package changed the public entrypoint identity')
+if not callable(build_analysis_agent):
+    raise RuntimeError('Native analysis factory is unavailable')
 from shader_deep.workflows.configuration import DEFAULT_CONFIG, load_analysis_options
-if not DEFAULT_CONFIG.is_file() or load_analysis_options().max_integration_calls < 1:
+if not DEFAULT_CONFIG.is_file() or load_analysis_options().max_tasks not in (2, 3):
     raise RuntimeError('Bundled configuration is unavailable')
 for item in pkgutil.walk_packages(shader_deep.__path__, shader_deep.__name__ + '.'):
     if not item.name.endswith('.__main__'):
@@ -35,10 +39,8 @@ CLI_MODULES = (
     "shader_deep.cli",
     "shader_deep.cli.analysis",
     "shader_deep.cli.generation",
-    "shader_deep.cli.replay",
     "shader_deep.cli.web",
     "shader_deep.analysis_cli",
-    "shader_deep.analysis.replay",
 )
 
 
@@ -51,7 +53,7 @@ def _run(arguments: list[str], root: Path) -> str:
 
 
 def check_wheel(wheel: Path) -> None:
-    """验证本地构建包的资源、导入隔离与兼容 CLI.
+    """验证本地构建包的资源、导入隔离与当前 CLI.
 
     Args:
         wheel: 本仓库构建的受信 wheel; 导入检查会执行其中的 Python 代码.
@@ -61,7 +63,9 @@ def check_wheel(wheel: Path) -> None:
         with zipfile.ZipFile(wheel) as archive:
             required = {
                 "shader_deep/resources/analysis.yaml",
-                "shader_deep/resources/skills/analysis-orchestration/SKILL.md",
+                "shader_deep/resources/skills/native-orchestration/SKILL.md",
+                "shader_deep/resources/skills/native-exploration/SKILL.md",
+                "shader_deep/resources/skills/native-integration/SKILL.md",
                 "shader_deep/rendering/webgl2.js",
                 "shader_deep/web/assets/index.html",
                 "shader_deep/web/assets/style.css",
@@ -87,7 +91,7 @@ def main() -> int:
     except subprocess.CalledProcessError as exc:
         sys.stderr.write(exc.stdout + exc.stderr)
         return 1
-    sys.stdout.write(f"Wheel checks: OK (resources, import isolation, compatibility imports, {len(CLI_MODULES)} CLI modules)\n")
+    sys.stdout.write(f"Wheel checks: OK (resources, import isolation, public API, {len(CLI_MODULES)} CLI modules)\n")
     return 0
 
 

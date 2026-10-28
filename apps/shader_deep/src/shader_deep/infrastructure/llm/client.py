@@ -28,6 +28,8 @@ def require_env(name: str) -> str:
 
 def _configuration_prefix() -> str:
     """按优先级整组选用配置, 不跨组补齐凭据."""
+    # 任一字段非空就选中该组, 随后由 require_env 检查完整性.
+    # 配了一半时直接报错, 避免地址属于一组、密钥却借用另一组.
     for prefix in ("OPENROUTER", "DS_MICU"):
         if any(os.getenv(f"{prefix}_{field}", "").strip() for field in ("MODEL", "BASE_URL", "API_KEY")):
             return prefix
@@ -36,6 +38,7 @@ def _configuration_prefix() -> str:
 
 def _openrouter_body() -> dict[str, object]:
     """传递显式推理及选路设置, 未配置时沿用提供方默认值."""
+    # 这里保留服务端默认推理行为, 只有用户显式设置才发送覆盖值.
     provider: dict[str, object] = {"require_parameters": True}
     sorting = os.getenv("OPENROUTER_PROVIDER_SORT", "").strip()
     if sorting:

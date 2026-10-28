@@ -7,6 +7,7 @@ from typing import Annotated, Literal
 from pydantic import BaseModel, ConfigDict, Field, StringConstraints
 
 Text = Annotated[str, StringConstraints(strict=True, min_length=1, pattern=r"\S")]
+# 键是采用方案的 F/R, 值中的多个 M 表示共同采用; 互斥替换放在 Alternative 中.
 Selections = dict[str, tuple[Text, ...]]
 
 
@@ -95,6 +96,7 @@ class Issue(FrozenModel):
 class FiveLibraries(FrozenModel):
     """同一快照的五库对象集合."""
 
+    # E 固定分析对象; F/R 保存观察与联系, M 保存候选构造方法, S 显式选择并组织 F/R 到 M 的方案.
     elements: tuple[Element, ...]
     features: tuple[Feature, ...]
     relations: tuple[Relation, ...]
@@ -109,6 +111,9 @@ class ExplorationSubmission(FrozenModel):
     relations: tuple[Relation, ...]
     mechanisms: tuple[Mechanism, ...]
     sketches: tuple[Sketch, ...]
+    # 观察到测量记录的关联属于提交辅助材料, 不把证据内容嵌进五库业务对象.
+    evidence_links: dict[Text, tuple[Text, ...]] = Field(default_factory=dict)
+    context_notes: tuple[Text, ...] = ()
     open_questions: tuple[Issue, ...] = ()
     gaps: tuple[Issue, ...] = ()
 

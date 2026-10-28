@@ -38,18 +38,24 @@ class RepositoryChecksTests(TestCase):
         self.assertEqual({finding.line for finding in findings}, {2, 5})
         self.assertTrue(all(finding.path == path for finding in findings))
 
-    def test_runtime_dynamic_import_and_renderer_framework_are_rejected(self) -> None:
-        self.source_file("runtime/runner.py", 'import importlib\nimportlib.import_module("shader_deep.agents.outline")\n')
+    def test_domain_dynamic_import_and_renderer_framework_are_rejected(self) -> None:
+        self.source_file("domain/loader.py", 'import importlib\nimportlib.import_module("shader_deep.agents.analysis.native")\n')
         self.source_file("rendering/renderer.py", "import langchain_anthropic\n")
         self.source_file("domain/models.py", "from pydantic import BaseModel\n")
         self.assertEqual(len(check_imports(self.app)), 2)
 
-    def test_active_code_cannot_reenter_legacy_but_compatibility_can_forward(self) -> None:
+    def test_current_code_cannot_import_retired_execution(self) -> None:
         self.source_file("agents/worker.py", "from shader_deep.analysis.loop import AnalysisLoop\n")
         self.source_file("analysis/loop.py", "from shader_deep.runtime.runner import AnalysisLoop\n")
         findings = check_imports(self.app)
         self.assertEqual(len(findings), 1)
         self.assertIn("shader_deep.analysis.loop", findings[0].message)
+
+    def test_retired_execution_imports_are_rejected_without_compatibility_exceptions(self) -> None:
+        path = self.source_file("agents/worker.py", "from shader_deep.compatibility.four_library.exploration.agent import run_exploration\n")
+        findings = check_imports(self.app)
+        self.assertEqual({finding.path for finding in findings}, {path})
+        self.assertIn("shader_deep.compatibility", findings[0].message)
 
     def test_links_accept_encoded_paths_and_ignore_fenced_examples(self) -> None:
         (self.app / "设计 说明.md").write_text("# 说明\n", encoding="utf-8")
@@ -75,8 +81,8 @@ class RepositoryChecksTests(TestCase):
         self.assertEqual((findings[0].path, findings[0].line), (readme, 2))
 
     def test_cli_fails_then_passes_after_boundary_is_repaired(self) -> None:
-        path = self.source_file("runtime/runner.py", "from shader_deep.workflows.analysis import run_analysis\n")
+        path = self.source_file("domain/rules.py", "from shader_deep.workflows.analysis import run_analysis\n")
         with patch("sys.argv", ["check_repository", "--root", str(self.app)]), redirect_stdout(StringIO()):
             self.assertEqual(main(), 1)
-            path.write_text("from shader_deep.runtime.execution import AnalysisExecution\n", encoding="utf-8")
+            path.write_text("from shader_deep.domain.tasks import TaskRecord\n", encoding="utf-8")
             self.assertEqual(main(), 0)

@@ -13,6 +13,14 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field, JsonValue
 
 from shader_deep.domain.five_libraries import FiveLibraries, Issue, Sketch, object_index, parse_references, validate_libraries
+from shader_deep.infrastructure.storage.report_evidence import (
+    EvidenceAsset,
+    ReportEvidence,
+    evidence_bytes,
+    evidence_path,
+    evidence_view,
+    read_evidence,
+)
 
 LIBRARIES = ("elements", "features", "relations", "mechanisms", "sketches")
 MARKER = re.compile(r"\[\[([^\[\]\r\n]+)\]\]")
@@ -38,6 +46,8 @@ class ReportManifest(BaseModel):
     reference: ReferenceAsset
     target_element_id: str
     status: Literal["completed", "partial"]
+    evidence: EvidenceAsset | None = None
+    context_notes: tuple[str, ...] = ()
     open_questions: tuple[Issue, ...] = ()
     gaps: tuple[Issue, ...] = ()
 
@@ -49,6 +59,8 @@ def _write_json(path: Path, value: JsonValue) -> None:
 def _check_manifest(libraries: FiveLibraries, manifest: ReportManifest) -> None:
     validate_libraries(libraries, manifest.target_element_id)
     index = object_index(libraries)
+    for note in manifest.context_notes:
+        parse_references(note, index, field="manifest.context_notes")
     for issue in (*manifest.open_questions, *manifest.gaps):
         if set(issue.refs) - index.keys():
             msg = f"公共问题含包外引用: {issue.refs}"
@@ -99,7 +111,15 @@ def _entry(libraries: FiveLibraries, manifest: ReportManifest) -> str:
     return "\n".join(rows)
 
 
-def write_report_package(directory: Path, libraries: FiveLibraries, manifest: ReportManifest, reference: bytes) -> Path:
+def write_report_package(
+    directory: Path,
+    libraries: FiveLibraries,
+    manifest: ReportManifest,
+    reference: bytes,
+    *,
+    evidence: ReportEvidence | None = None,
+    evidence_assets: dict[str, bytes] | None = None,
+) -> Path:
     """校验后一次发布完整文件包, 已交付目录不能原地覆盖.
 
     Args:
@@ -107,6 +127,8 @@ def write_report_package(directory: Path, libraries: FiveLibraries, manifest: Re
         libraries: 已选定同一版本的完整五库.
         manifest: 程序计算的本轮公共状态.
         reference: 启动时固定的 PNG 字节.
+        evidence: 可选版本化证据, 与 manifest 声明保持一致.
+        evidence_assets: 证据声明引用的包内 PNG 字节.
 
     Returns:
         已发布文件包的绝对目录.
@@ -127,7 +149,9 @@ def write_report_package(directory: Path, libraries: FiveLibraries, manifest: Re
     directory.parent.mkdir(parents=True, exist_ok=True)
     staging = Path(tempfile.mkdtemp(prefix=".report-staging-", dir=directory.parent))
     try:
+        _write_evidence(staging, manifest, evidence, evidence_assets or {})
         _write_contents(staging, libraries, manifest, reference)
+        # 在同级暂存目录按正式读取路径复验全部内容, 成功后才以整目录改名发布.
         read_report_package(staging)
         staging.rename(directory)
     except BaseException:
@@ -168,6 +192,7 @@ def read_report_package(directory: Path) -> tuple[ReportManifest, FiveLibraries]
     if hashlib.sha256((directory / manifest.reference.path).read_bytes()).hexdigest() != manifest.reference.sha256:
         msg = "参考图哈希校验失败"
         raise ValueError(msg)
+    read_evidence(directory, manifest.evidence, libraries, manifest.reference.sha256)
     return manifest, libraries
 
 
@@ -193,6 +218,7 @@ def read_sketch(directory: Path, sketch_id: str, *, alternative: int | None = No
     if sketch is None:
         msg = f"草图不存在: {sketch_id}"
         raise ValueError(msg)
+    # 取材只修改局部选择副本; 原草图、公共状态和完整包始终保持原样.
     choices, composition = dict(sketch.default), sketch.composition
     alternatives = sketch.alternatives or ()
     selected: set[str] = set()
@@ -209,6 +235,7 @@ def read_sketch(directory: Path, sketch_id: str, *, alternative: int | None = No
     selected.update(MARKER.findall(composition))
     _include_referenced_content(libraries, selected)
     return {
+        "evidence": evidence_view(read_evidence(directory, manifest.evidence, libraries, manifest.reference.sha256), selected),
         "scope": "sketch_view",
         "manifest": manifest.model_dump(mode="json", exclude_none=True),
         "sketch": sketch.model_dump(mode="json", exclude_none=True),
@@ -222,6 +249,7 @@ def _include_referenced_content(libraries: FiveLibraries, selected: set[str]) ->
     participants = {item.id: {part.ref for part in item.participants} for item in libraries.relations}
     pending = list(selected)
     visited: set[str] = set()
+    # 追随正文引用和关系端点补齐材料, visited 防循环; 不沿 feature_ids 或候选机制 ID 扩张.
     while pending:
         identity = pending.pop()
         if identity in visited or identity not in objects:
@@ -248,3 +276,19 @@ def _selected_content(libraries: FiveLibraries, selected: set[str]) -> dict[str,
         for name in LIBRARIES
         if name != "sketches"
     }
+
+
+def _write_evidence(directory: Path, manifest: ReportManifest, evidence: ReportEvidence | None, assets: dict[str, bytes]) -> None:
+    """证据与五库在同一暂存目录校验发布."""
+    if evidence is None:
+        return
+    data = evidence_bytes(evidence)
+    declaration = EvidenceAsset(path="evidence.json", sha256=hashlib.sha256(data).hexdigest())
+    if manifest.evidence != declaration:
+        msg = "manifest 证据声明与实际内容不一致"
+        raise ValueError(msg)
+    (directory / "evidence.json").write_bytes(data)
+    for name, content in assets.items():
+        path = evidence_path(directory, name)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(content)

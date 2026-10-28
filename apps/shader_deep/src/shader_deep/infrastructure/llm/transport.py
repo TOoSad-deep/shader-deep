@@ -1,20 +1,29 @@
-"""记录网络请求的重试过程, 恢复边界仅包含模型调用, 不重放已执行工具."""
+"""适配模型请求与完整响应校验, 为 SDK 请求重试识别暂时性网络错误."""
 
 from __future__ import annotations
 
-import time
-from typing import TYPE_CHECKING, TypeVar
+import json
+from typing import TYPE_CHECKING, cast
 
 import httpx2
-from langchain_core.exceptions import ModelError
+from langchain_core.exceptions import ModelAPIError, ModelError
 from langchain_core.messages import AIMessage, AIMessageChunk
+from langchain_core.messages.tool import tool_call
 from langchain_openai import ChatOpenAI
 
-from shader_deep.infrastructure.llm.openrouter import RAW_REASONING, ReasoningBuffer, StreamTerminal, is_openrouter, restore_reasoning
-from shader_deep.runtime.execution import RequestAttempt
+# 本模块只适配请求/响应协议. 原生角色的 ModelRetryMiddleware 决定是否重试请求,
+# 业务工具是否接受结果仍由角色和领域层决定, 不在传输层重放任务.
+from shader_deep.infrastructure.llm.openrouter import (
+    RAW_REASONING,
+    ReasoningBuffer,
+    StreamTerminal,
+    _tool_parameters,
+    is_openrouter,
+    restore_reasoning,
+)
 
 if TYPE_CHECKING:
-    from collections.abc import Callable, Iterator
+    from collections.abc import Iterator
 
     from langchain_core.callbacks import CallbackManagerForLLMRun
     from langchain_core.language_models import LanguageModelInput
@@ -22,13 +31,47 @@ if TYPE_CHECKING:
     from langchain_core.outputs import ChatGenerationChunk, ChatResult
     from openai import BaseModel
 
-    from shader_deep.runtime.events import EventCallback
-    from shader_deep.runtime.execution import AnalysisExecution
-    from shader_deep.runtime.options import ModelOptions
+    from shader_deep.infrastructure.llm.options import ModelOptions
 
-Response = TypeVar("Response")
 MAX_CAUSE_DEPTH = 5
 RAW_TOOL_CALLS = "analysis_raw_tool_calls"
+
+
+def _reject_constant(value: str) -> object:
+    """拒绝 JSON 标准未定义的 NaN 和 Infinity."""
+    msg = f"Nonstandard JSON constant: {value}"
+    raise ValueError(msg)
+
+
+def _unique_object(pairs: list[tuple[str, object]]) -> dict[str, object]:
+    """重复键具有覆盖歧义, 不接受解析器静默选择最后一个值."""
+    result: dict[str, object] = {}
+    for key, value in pairs:
+        if key in result:
+            msg = f"Duplicate JSON key: {key[:80]}"
+            raise ValueError(msg)
+        result[key] = value
+    return result
+
+
+def decode_object(raw: str) -> dict[str, object]:
+    """严格解码一个完整工具参数对象, 不使用底层流式解析器补齐的结果.
+
+    Args:
+        raw: 模型服务返回的完整原始参数字符串.
+
+    Returns:
+        未补全或删改字段的 JSON 对象.
+
+    Raises:
+        ValueError: 参数不是严格、完整且无重复键的 JSON.
+        TypeError: 参数的顶层不是 JSON 对象.
+    """
+    value = json.loads(raw, object_pairs_hook=_unique_object, parse_constant=_reject_constant)
+    if not isinstance(value, dict):
+        msg = "Tool arguments must be one JSON object"
+        raise TypeError(msg)
+    return cast("dict[str, object]", value)
 
 
 def _explicit_required(schema: object) -> object:
@@ -47,7 +90,7 @@ class AnalysisChatOpenAI(ChatOpenAI):
     """保留原始参数供执行前审查, 防止流式解析器补齐非法 JSON 后丢失原文."""
 
     def _get_request_payload(self, input_: LanguageModelInput, *, stop: list[str] | None = None, **kwargs: object) -> dict:
-        """保持参数可选性, 只补全模型工具 Schema 的合法空 required."""
+        """保留本地契约, 在请求边界适配 required 和 OpenRouter 非空白正则."""
         payload = super()._get_request_payload(input_, stop=stop, **kwargs)
         if "tools" in payload:
             payload["tools"] = _explicit_required(payload["tools"])
@@ -56,6 +99,8 @@ class AnalysisChatOpenAI(ChatOpenAI):
                 if entry.get("type") == "function":
                     # 保留动态 F/R 选择键的原 Schema, 不将字典的 additionalProperties 改为 false.
                     entry["function"]["strict"] = True
+                    if "parameters" in entry["function"]:
+                        entry["function"]["parameters"] = _tool_parameters(entry["function"]["parameters"])
             restore_reasoning(payload, self._convert_input(input_).to_messages())
         return payload
 
@@ -81,6 +126,7 @@ class AnalysisChatOpenAI(ChatOpenAI):
         """随流式片段保存参数原文, 由框架按 index 合并而不重新序列化参数."""
         reasoning = ReasoningBuffer()
         terminal = StreamTerminal()
+        # 每次网络请求独立汇集; 部分 chunk 可进入框架, 但完整响应校验前不能执行工具.
         for chunk in super()._stream(messages, stop=stop, run_manager=run_manager, **kwargs):
             details = chunk.message.additional_kwargs.pop(RAW_REASONING, [])
             reasoning.append(details)
@@ -88,6 +134,7 @@ class AnalysisChatOpenAI(ChatOpenAI):
             if finished and reasoning.blocks:
                 chunk.message.additional_kwargs["reasoning_details"] = reasoning.details()
             if isinstance(chunk.message, AIMessageChunk) and chunk.message.tool_call_chunks:
+                # 额外保存参数原文, 因为 SDK 的增量 JSON 解析可能提前补齐末尾括号.
                 chunk.message.additional_kwargs[RAW_TOOL_CALLS] = [dict(call) for call in chunk.message.tool_call_chunks]
             yield chunk
 
@@ -105,6 +152,58 @@ class AnalysisChatOpenAI(ChatOpenAI):
                     for call in choice.get("message", {}).get("tool_calls", []) or []
                 ]
         return result
+
+
+def validate_analysis_message(message: AIMessage) -> AIMessage:
+    """工具执行前核对结束标记与原始 JSON, 不使用流式解析器猜补的参数.
+
+    Args:
+        message: 完整接收后的模型响应, 包含适配器保存的原始参数.
+
+    Returns:
+        仅含严格原始 JSON 解码结果的消息.
+
+    Raises:
+        ModelAPIError: 工具响应缺少正常结束标记, 可由框架有限重试.
+        ValueError: 输出截断、身份或参数不是完整且无歧义的 JSON 对象.
+        TypeError: 原始工具参数缺失或类型不正确.
+    """
+    finish = message.response_metadata.get("finish_reason")
+    if finish == "length":
+        msg = "Analysis response reached output limit; no tools executed"
+        raise ValueError(msg)
+    raw = message.additional_kwargs.get(RAW_TOOL_CALLS, [])
+    if not (raw or message.tool_calls or message.invalid_tool_calls):
+        return message
+    if finish not in {"stop", "tool_calls"}:
+        # 缺少正常结束标记按传输不完整处理, 让框架在限定次数内重新请求.
+        msg = "Incomplete model response: no successful finish marker for tool arguments"
+        raise ModelAPIError(msg)
+    return _strict_tool_calls(message, raw)
+
+
+def _strict_tool_calls(message: AIMessage, raw: object) -> AIMessage:
+    """整条响应通过严格检查后才允许执行其中任何工具."""
+    if not isinstance(raw, list) or not raw:
+        msg = "Missing original tool arguments; no tools executed"
+        raise ValueError(msg)
+    accepted = []
+    identities: set[str] = set()
+    # 先严格解析整条响应的所有调用, 再统一替换 SDK 解析结果, 不执行半批合法参数.
+    for call in raw:
+        if not isinstance(call, dict) or not isinstance(call.get("args"), str):
+            msg = "Missing original JSON tool arguments; no tools executed"
+            raise TypeError(msg)
+        identity, name = call.get("id"), call.get("name")
+        if not isinstance(identity, str) or not identity or identity in identities or not isinstance(name, str) or not name:
+            msg = "Missing or ambiguous tool call identity; no tools executed"
+            raise ValueError(msg)
+        arguments = decode_object(call["args"])
+        identities.add(identity)
+        accepted.append(tool_call(name=name, args=arguments, id=identity))
+    extra = {key: value for key, value in message.additional_kwargs.items() if key != "tool_calls"}
+    # 消除旧序列化调用副本, 保留推理等协议字段; 后续发回历史时以严格解析后的调用为准.
+    return message.model_copy(update={"tool_calls": accepted, "invalid_tool_calls": [], "additional_kwargs": extra})
 
 
 def configure_analysis_model(model: ChatOpenAI, options: ModelOptions) -> ChatOpenAI:
@@ -142,59 +241,6 @@ def configure_analysis_model(model: ChatOpenAI, options: ModelOptions) -> ChatOp
     )
 
 
-def call_with_recovery(
-    call: Callable[[], Response],
-    execution: AnalysisExecution,
-    retries: int,
-    *,
-    on_event: EventCallback | None = None,
-    before_attempt: Callable[[], None] | None = None,
-) -> Response:
-    """只重试暂时性模型请求错误, 并保留任务身份与每次尝试记录.
-
-    Args:
-        call: 单次模型调用; 重试边界内不能包含工具执行.
-        execution: 当前角色的调用计数与审计记录.
-        retries: 本次逻辑调用允许的额外请求尝试次数.
-        on_event: 可选的短事件回调, 用于观察请求和重试进度.
-        before_attempt: 每次网络尝试前检查取消, 被取消的尝试不计作已发送请求.
-
-    Returns:
-        首次成功返回的响应.
-
-    Raises:
-        Exception: 不可重试的服务错误, 或请求尝试次数耗尽时的最后一次错误.
-    """
-    for attempt in range(retries + 1):
-        if before_attempt is not None:
-            before_attempt()
-        # monotonic 不受系统时钟校准影响; 成功和失败都记录耗时, 便于区分逻辑轮与请求次数.
-        began = time.monotonic()
-        if on_event is not None:
-            on_event("request_started", {"attempt": attempt + 1})
-        try:
-            result = call()
-        except Exception as exc:  # 记录所有失败, 仅对判定为暂时性的模型请求错误重试.
-            record = _attempt(execution.model_calls, attempt, began, exc)
-            execution.request_attempts += (record,)
-            if on_event is not None:
-                on_event("request_failed", {"attempt": attempt + 1, "error_type": record.error_type, "elapsed_seconds": record.elapsed_seconds})
-            if not _retryable(exc) or attempt == retries:
-                raise
-            if on_event is not None:
-                on_event("request_retry", {"next_attempt": attempt + 2})
-            # 退避为 1、2、4、4…秒, 减少暂时性服务错误下的连续请求压力.
-            time.sleep(min(2.0**attempt, 4.0))
-        else:
-            record = _attempt(execution.model_calls, attempt, began, None)
-            execution.request_attempts += (record,)
-            if on_event is not None:
-                on_event("request_completed", {"attempt": attempt + 1, "elapsed_seconds": record.elapsed_seconds})
-            return result
-    msg = "No request attempts were permitted"
-    raise RuntimeError(msg)
-
-
 def _retryable(error: Exception) -> bool:
     """区分暂时性传输故障与重试无法解决的本地配置、客户端错误."""
     # 收到 SSE 响应头后, SDK 可能直接抛出读取连接时的传输异常.
@@ -213,19 +259,3 @@ def _retryable(error: Exception) -> bool:
             return False
         cause = cause.__cause__
     return True
-
-
-def _attempt(model_call: int, attempt: int, began: float, error: Exception | None) -> RequestAttempt:
-    """提取异常类型链与耗时; 对外记录从 1 开始的尝试序号."""
-    causes = []
-    cause = error.__cause__ if error is not None else None
-    while cause is not None and len(causes) < MAX_CAUSE_DEPTH:
-        causes.append(type(cause).__name__)
-        cause = cause.__cause__
-    return RequestAttempt(
-        model_call=model_call,
-        attempt=attempt + 1,
-        elapsed_seconds=round(time.monotonic() - began, 3),
-        error_type=type(error).__name__ if error else None,
-        cause_types=tuple(causes),
-    )

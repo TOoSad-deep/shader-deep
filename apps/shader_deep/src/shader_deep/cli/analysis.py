@@ -33,10 +33,10 @@ def main() -> int:
         help="Console diagnostics level (stderr); analysis.log keeps full diagnostics",
     )
     parser.add_argument("--max-tasks", type=int, help="Perspectives in the single exploration batch: 2 or 3 (default: 3)")
-    parser.add_argument("--max-parallel", type=int, help="Maximum concurrent lens workers")
+    parser.add_argument("--max-parallel", type=int, help="SDK task concurrency limit")
     parser.add_argument("--max-worker-calls", type=int, help="Model calls per lens worker; 0 means unlimited")
-    parser.add_argument("--max-main-calls", type=int, help="Coordinator model calls across planning and synthesis; 0 means unlimited")
-    parser.add_argument("--max-repeated-no-progress", type=int, help="Stop after identical rejected turns without new material; 0 disables")
+    parser.add_argument("--max-orchestrator-calls", type=int, help="Main graph model-node limit; 0 adds no limit")
+    parser.add_argument("--max-integrator-calls", type=int, help="Integration graph model-node limit; 0 adds no limit")
     parser.add_argument("--max-measurements", type=int, help="Unique coordinator measurements; cached results are free")
     parser.add_argument("--max-request-retries", type=int, help="Extra transient transport attempts per model call")
     parser.add_argument("--request-timeout-seconds", type=int, help="Network timeout for each model request attempt")

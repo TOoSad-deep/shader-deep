@@ -16,6 +16,7 @@ TEXT_FIELDS = {"name", "region", "description", "method", "conditions", "composi
 
 def object_index(library: FiveLibraries) -> dict[str, str]:
     """建立真正对象类型索引, 拒绝跨库同名."""
+    # 类型来自所属库, 不由 F/M 等 ID 前缀推断; 来源可以使用自定义本地 ID.
     index: dict[str, str] = {}
     for kind in KINDS:
         for item in getattr(library, kind):
@@ -58,6 +59,7 @@ def _selections(choices: Selections, library: FiveLibraries, field: str) -> None
         if not mechanisms:
             fail(field, target, "共同采用的机制不能为空")
         _unique(mechanisms, f"{field}.{target}")
+        # 机制存在还不够, 必须已被该观察列为候选, 才能在草图中采用.
         if not set(mechanisms) <= candidates[target]:
             fail(field, mechanisms, f"选择超出 {target} 的候选机制")
 
@@ -73,6 +75,7 @@ def _sketch(sketch: Sketch, library: FiveLibraries, target_id: str) -> None:
         if not alternative.choices or not alternative.choices.keys() <= sketch.default.keys():
             fail(alt_field, alternative.choices, "备选必须非空并且只替换默认目标")
         _selections(alternative.choices, library, f"{alt_field}.choices")
+        # 局部备选覆盖对应目标的整组机制, 其余目标继承默认选择; 组织说明须与生效组合一致.
         effective = {**sketch.default, **alternative.choices}
         composition = alternative.composition or sketch.composition
         _composition(composition, effective, library, f"{alt_field}.composition")
@@ -155,16 +158,33 @@ def validate_exploration(submission: ExplorationSubmission, target: Element) -> 
     Raises:
         LibraryValidationError: 来源内引用非法或必要缺口未记录.
     """
+    validate_exploration_draft(submission, target)
+    _missing_candidates(submission)
+    _missing_sketch_targets(submission)
+
+
+def validate_exploration_draft(submission: ExplorationSubmission, target: Element) -> None:
+    """校验已登记草稿引用, 将候选与覆盖完整性留到最终提交.
+
+    Args:
+        submission: 已接收的阶段产物, 不允许悬空引用.
+        target: 固定目标元素.
+
+    Raises:
+        LibraryValidationError: 字段、引用或草图选择不合法.
+    """
     library = exploration_library(submission, target)
     validate_libraries(library, target.id)
     index = object_index(library)
+    for note in submission.context_notes:
+        parse_references(note, index, field="context_notes")
+    for identity in submission.evidence_links:
+        _ref(identity, {"features", "relations"}, index, "evidence_links")
     for issue in (*submission.open_questions, *submission.gaps):
         _unique(issue.refs, "issues.refs")
         for ref in issue.refs:
             _ref(ref, set(KINDS), index, "issues.refs")
         _model_texts(issue, index, "issues")
-    _missing_candidates(submission)
-    _missing_sketch_targets(submission)
 
 
 def _missing_candidates(submission: ExplorationSubmission) -> None:

@@ -8,6 +8,47 @@ from urllib.parse import urlsplit
 from langchain_core.messages import AIMessage, BaseMessage
 
 RAW_REASONING = "openrouter_reasoning_delta"
+_SCHEMA_MAPS = {"properties", "patternProperties", "$defs", "definitions", "dependentSchemas"}
+_SCHEMA_CHILDREN = {
+    "items",
+    "prefixItems",
+    "additionalItems",
+    "additionalProperties",
+    "unevaluatedItems",
+    "unevaluatedProperties",
+    "contains",
+    "propertyNames",
+    "allOf",
+    "anyOf",
+    "oneOf",
+    "not",
+    "if",
+    "then",
+    "else",
+    "contentSchema",
+}
+
+
+def _tool_parameters(schema: object) -> object:
+    """仅在外发 Schema 移除非空白正则, 本地 Text 校验继续执行.
+
+    当前严格工具服务会把非空白查找正则约束成单字符. 保留长度和其他
+    正则约束, 仅遍历 Schema 子节点, 不修改 default、enum 或 examples 数据.
+    """
+    if isinstance(schema, list):
+        return [_tool_parameters(child) for child in schema]
+    if not isinstance(schema, dict):
+        return schema
+    result = dict(schema)
+    # 只沿 JSON Schema 关键字递归; 示例数据里的同名 pattern 不属于待适配约束.
+    for key, value in schema.items():
+        if key in _SCHEMA_MAPS and isinstance(value, dict):
+            result[key] = {name: _tool_parameters(child) for name, child in value.items()}
+        elif key in _SCHEMA_CHILDREN:
+            result[key] = _tool_parameters(value)
+    if schema.get("type") == "string" and schema.get("pattern") == r"\S":
+        result.pop("pattern")
+    return result
 
 
 def is_openrouter(base_url: str | None) -> bool:
@@ -17,6 +58,7 @@ def is_openrouter(base_url: str | None) -> bool:
 
 def restore_reasoning(payload: dict, messages: list[BaseMessage]) -> None:
     """将工具调用之前的完整推理块附回对应 assistant 消息."""
+    # 推理块是提供方回传协议的一部分, 按消息原位复制, 不改写为正文或混入其他角色.
     for encoded, message in zip(payload["messages"], messages, strict=True):
         if isinstance(message, AIMessage) and isinstance(message.additional_kwargs.get("reasoning_details"), list):
             encoded["reasoning_details"] = deepcopy(message.additional_kwargs["reasoning_details"])
@@ -39,6 +81,7 @@ class StreamTerminal:
         if info["finish_reason"] != self.metadata["finish_reason"]:
             msg = "OpenRouter stream returned conflicting finish reasons"
             raise ValueError(msg)
+        # 原地去掉重复字段, 后续框架合并 chunk 时便不会把同一结束原因拼接两次.
         for key, value in tuple(info.items()):
             if self.metadata.get(key) == value:
                 del info[key]
@@ -60,6 +103,7 @@ class ReasoningBuffer:
                 msg = "OpenRouter reasoning block index must be an integer"
                 raise TypeError(msg)
             block = self.blocks.setdefault(index, {})
+            # 只有内容字段允许增量拼接; id、type、签名等元数据变化意味着流不一致.
             for key, value in detail.items():
                 if key in {"text", "summary", "data"} and isinstance(value, str):
                     block[key] = block.get(key, "") + value

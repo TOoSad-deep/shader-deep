@@ -1,5 +1,7 @@
 # 主 Agent + 编排 skill 改造方案
 
+> 历史记录: 下文保留当时的实现、命令与验证结果. 旧分析执行和回放已退出当前包, 最新范围见[清理记录](analysis-legacy-cleanup-20261028.md).
+
 日期: 2026-10-01. 状态: 已实施, 无网络验证和五图派发前实测通过; 真实探索/整合及视觉质量未验收.
 
 本文替代上一版“第一阶段”方案, 将目标收敛为复用 Deep Agents 完成主 Agent 编排改造. 五库职责、单批探索和交付约束继续遵循[架构设计](../analysis-architecture-design.md); 先前提出的测试专用暂停配置、暂停业务状态和额外调度框架不纳入本次实现.
@@ -75,7 +77,7 @@ skill 描述工作方法, 主 Agent 选择工具并组织流程, 程序负责执
 
 ### 调整应用入口与角色结束条件
 
-当前[角色循环](../../src/shader_deep/runtime/runner.py)已经调用 `create_deep_agent`, 需要适配现有封装:
+当前角色循环（历史路径 `src/shader_deep/runtime/runner.py`, 已删除）已经调用 `create_deep_agent`, 需要适配现有封装:
 
 - 主 Agent 在中间工具成功后继续运行, 最终交付或明确失败后才结束.
 - 调整 `role_prompt_only`、工具白名单和进展判断, 保证 skill 可读、有效多步操作不会被误判为停滞.

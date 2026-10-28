@@ -14,6 +14,7 @@ from PIL import Image
 
 from shader_deep.domain.five_libraries import object_index, parse_references
 from shader_deep.domain.generation import GenerationBinding
+from shader_deep.infrastructure.storage.report_evidence import read_evidence
 from shader_deep.infrastructure.storage.report_package import (
     LIBRARIES,
     _include_referenced_content,
@@ -55,14 +56,19 @@ class CapturedGenerationInputs:
     height: int
     scheme_json: str
     files: tuple[str, ...]
+    evidence_images: tuple[tuple[str, str, str], ...] = ()
     baseline: CapturedBaseline | None = None
 
 
 def _copy_report(source: Path, destination: Path) -> dict[str, bytes]:
     # 限定协议已知文件, 不复制目录内额外日志、配置或其他运行制品.
-    contents = {name: (source / name).read_bytes() for name in REPORT_FILES}
+    manifest, libraries = read_report_package(source)
+    evidence = read_evidence(source, manifest.evidence, libraries, manifest.reference.sha256)
+    extra = ("evidence.json", *(asset.path for asset in evidence.assets)) if evidence is not None else ()
+    contents = {name: (source / name).read_bytes() for name in (*REPORT_FILES, *extra)}
     destination.mkdir(parents=True)
     for name, content in contents.items():
+        (destination / name).parent.mkdir(parents=True, exist_ok=True)
         (destination / name).write_bytes(content)
     return contents
 
@@ -71,10 +77,22 @@ def _content_sha256(contents: dict[str, bytes]) -> str:
     # 固定 CONTENT_FILES 顺序; 每项为 UTF-8 文件名、NUL、8 字节大端长度、原始字节.
     # README 仅是可重建导航, 不计入 manifest、五库和原图的内容身份.
     digest = hashlib.sha256()
-    for name in CONTENT_FILES:
+    for name in (*CONTENT_FILES, *sorted(set(contents) - set(REPORT_FILES))):
         content = contents[name]
         digest.update(name.encode("utf-8") + b"\0" + len(content).to_bytes(8, "big") + content)
     return digest.hexdigest()
+
+
+def _evidence_images(directory: Path, scheme: str, contents: dict[str, bytes]) -> tuple[tuple[str, str, str], ...]:
+    """所选 F/R 的裁剪内容固定在内存, 之后请求不跟随磁盘变化."""
+    evidence = json.loads(scheme).get("evidence")
+    if evidence is None:
+        return ()
+    return tuple(
+        ("分析证据: " + record["id"], str(directory / record["artifact_path"]), _png_url(contents[record["artifact_path"]]))
+        for record in evidence["records"]
+        if record["artifact_path"]
+    )
 
 
 def _png_url(content: bytes) -> str:
@@ -143,6 +161,7 @@ def _scheme(directory: Path, sketch_id: str, alternative: int | None, manifest: 
         "sketch_name": sketch.name,
         "element_id": sketch.element_id,
         "manifest": view["manifest"],
+        "evidence": view["evidence"],
         "selected": view["selected"],
         "selected_alternative": {"reason": option.reason, "conditions": option.conditions} if option is not None else None,
         "reference_content": _scheme_references(libraries, view["selected"], sketch.element_id, option),
@@ -195,12 +214,12 @@ def _reuse_generation_inputs(
 ) -> CapturedGenerationInputs:
     # 只用于模型执行前准备同批另一方案; 读取已固定的报告副本, 不重读用户原始文件.
     report_path = (run_dir / "inputs" / "report").resolve()
-    _copy_report(Path(source.binding.report_path), report_path)
+    contents = _copy_report(Path(source.binding.report_path), report_path)
     manifest, libraries = read_report_package(report_path)
     scheme = _scheme(report_path, sketch_id, alternative, manifest, libraries)
     baseline = source.baseline
     captured = None
-    files = [str(report_path / name) for name in REPORT_FILES]
+    files = [str(report_path / name) for name in contents]
     if baseline is not None:
         preview = base64.b64decode(baseline.preview_url.split(",", 1)[1]) if baseline.preview_url is not None else None
         captured = _write_baseline(baseline.candidate_id, baseline.code.encode("utf-8"), preview, (run_dir / "inputs" / "baseline").resolve())
@@ -210,6 +229,7 @@ def _reuse_generation_inputs(
         binding=replace(source.binding, report_path=str(report_path), sketch_id=sketch_id, alternative=alternative),
         reference_path=str(report_path / "reference.png"),
         scheme_json=scheme,
+        evidence_images=_evidence_images(report_path, scheme, contents),
         files=tuple(files),
         baseline=captured,
     )
@@ -252,7 +272,7 @@ def capture_generation_inputs(
     width, height = _reference_size(reference)
     root = (asset_root if asset_root is not None else Path.cwd()).resolve()
     captured = _capture_baseline(baseline, (run_dir / "inputs" / "baseline").resolve(), root)
-    files = [str(report_path / name) for name in REPORT_FILES]
+    files = [str(report_path / name) for name in contents]
     if captured is not None:
         files.extend(path for path in (captured.code_path, captured.preview_path) if path is not None)
     return CapturedGenerationInputs(
@@ -269,6 +289,7 @@ def capture_generation_inputs(
         width=width,
         height=height,
         scheme_json=scheme,
+        evidence_images=_evidence_images(report_path, scheme, contents),
         files=tuple(files),
         baseline=captured,
     )

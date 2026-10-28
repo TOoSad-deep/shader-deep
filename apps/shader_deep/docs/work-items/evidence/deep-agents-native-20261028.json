@@ -1,0 +1,35 @@
+{
+  "date": "2026-10-28",
+  "status": "implemented_uncommitted",
+  "dependencies": {
+    "deepagents": "0.7.13",
+    "langchain": "1.4.0",
+    "langgraph": "1.2.11",
+    "langchain-openai": "1.6.0"
+  },
+  "checks": {
+    "unit_tests": {
+      "count": 607,
+      "passed": true
+    },
+    "lint": "passed after formatting two relocated test paths",
+    "repository_check": "0 findings",
+    "wheel": "resources, import isolation, compatibility and 7 CLI modules passed"
+  },
+  "real_smoke": {
+    "path": "runs/native-smoke-real-20261028/output/run-cu4epir4",
+    "model": "z-ai/glm-5.3-flash",
+    "seconds": 116.65,
+    "status": "failed",
+    "report_accepted": false,
+    "limitations": [
+      "one worker hit output limit",
+      "one worker ended without accepted submission",
+      "no real-model report/visual success claim"
+    ]
+  },
+  "logs": "/private/tmp/shader-native-implementation-20261028",
+  "not_run": [
+    "browser/render integration: renderer and generation preview handoff unchanged"
+  ]
+}

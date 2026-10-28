@@ -9,7 +9,6 @@ if TYPE_CHECKING:
     from collections.abc import Mapping
 
 MARKER = re.compile(r"\[\[([^\[\]\r\n]+)\]\]")
-BARE_ID = re.compile(r"(?<![A-Za-z0-9_])(?:E|F|R|M|S)\d+(?![A-Za-z0-9_])")
 
 
 class LibraryValidationError(ValueError):
@@ -44,14 +43,13 @@ def parse_references(text: str, index: Mapping[str, str], *, field: str) -> tupl
     """
     refs = tuple(match.group(1) for match in MARKER.finditer(text))
     remainder = MARKER.sub("", text)
+    # 先移除完整标记再检查残留括号, 可拒绝空标记、嵌套和跨行等部分匹配.
     if "[[" in remainder or "]]" in remainder:
         fail(field, text, "标记不能为空、嵌套或跨行")
     for ref in refs:
         if ref not in index:
             fail(field, text, f"标记引用 {ref!r} 不存在; 必须精确匹配")
-    suspected = BARE_ID.search(remainder)
-    if suspected:
-        fail(field, text, f"疑似未标记对象引用 {suspected.group()!r}; 使用 [[ID]]")
+    # 只检查当前索引中的精确对象身份; 普通变量无需因形似 F1 就被强制解释成引用.
     for ref in index:
         if re.search(rf"(?<![A-Za-z0-9_]){re.escape(ref)}(?![A-Za-z0-9_])", remainder):
             fail(field, text, f"疑似未标记对象引用 {ref!r}; 使用 [[ID]]")
@@ -97,4 +95,5 @@ def rewrite_text(text: str, mapping: Mapping[str, str]) -> str:
     Returns:
         仅显式对象引用被更新的正文.
     """
+    # 依据原始匹配一次替换, 避免 F1 -> F2 后再次命中 F2 -> F3 而发生意外连锁改写.
     return MARKER.sub(lambda match: f"[[{mapping.get(match.group(1), match.group(1))}]]", text)

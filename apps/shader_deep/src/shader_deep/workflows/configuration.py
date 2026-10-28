@@ -4,12 +4,10 @@ from __future__ import annotations
 
 from dataclasses import fields, replace
 from pathlib import Path
-from typing import Literal
 
 from shader_deep.infrastructure.configuration import read_yaml_mapping
 from shader_deep.workflows.options import AnalysisOptions
 
-AnalysisPhase = Literal["outline", "integration", "worker"]
 OUTPUT_FIELDS = ("max_output_tokens", "outline_max_output_tokens", "integration_max_output_tokens", "worker_max_output_tokens")
 
 DEFAULT_CONFIG = Path(__file__).resolve().parents[1] / "resources" / "analysis.yaml"
@@ -54,6 +52,7 @@ def load_analysis_options(path: Path | None = None) -> AnalysisOptions:
         TypeError: 参数类型不符合 AnalysisOptions 契约.
     """
     selected = path if path is not None else DEFAULT_CONFIG
+    # 仅包内默认文件允许缺失回退; 用户显式选定的路径仍须真实可读.
     if path is None and not selected.exists():
         return AnalysisOptions()
     values = _read_values(selected)
@@ -65,6 +64,7 @@ def load_analysis_options(path: Path | None = None) -> AnalysisOptions:
 
 def _with_sources(options: AnalysisOptions, values: dict[str, object], source: str) -> AnalysisOptions:
     """仅标注实际设置的输出预算, 不将缺省回退伪装成配置输入."""
+    # 保留原字段值和来源元数据, 由角色解析器判断 CLI 通用值是否覆盖 YAML 阶段值.
     sources = {name: (origin, value) for name, origin, value in options._output_token_sources}
     for name in OUTPUT_FIELDS:
         if name in values:
@@ -72,6 +72,7 @@ def _with_sources(options: AnalysisOptions, values: dict[str, object], source: s
             if isinstance(value, int) and not isinstance(value, bool):
                 sources[name] = (source, value)
             else:
+                # 显式清空阶段值时撤销旧来源, 避免旧 YAML 标记继续影响回退判断.
                 sources.pop(name, None)
     metadata = tuple((name, origin, value) for name, (origin, value) in sources.items())
     return replace(options, **values, _output_token_sources=metadata)
@@ -95,34 +96,3 @@ def apply_analysis_overrides(options: AnalysisOptions, overrides: dict[str, obje
         msg = "Unknown or internal analysis option override"
         raise ValueError(msg)
     return _with_sources(options, overrides, "cli")
-
-
-def resolve_phase_options(options: AnalysisOptions, phase: AnalysisPhase) -> tuple[AnalysisOptions, str]:
-    """统一解析阶段预算, 供请求参数、预算检查及运行记录共同使用.
-
-    Args:
-        options: 保留原始阶段配置和来源的完整运行选项.
-        phase: 初稿、整合或探索子任务阶段.
-
-    Returns:
-        max_output_tokens 已解析的选项副本及来源; 输入选项保持不变.
-
-    Raises:
-        ValueError: 阶段名称不合法.
-    """
-    if phase not in ("outline", "integration", "worker"):
-        msg = f"Unknown analysis phase: {phase}"
-        raise ValueError(msg)
-    stage = f"{phase}_max_output_tokens"
-    sources = {name: origin for name, origin, value in options._output_token_sources if getattr(options, name) == value}
-    stage_value = getattr(options, stage)
-    if sources.get(stage) == "cli":
-        value, source = stage_value, "stage_cli"
-    elif sources.get("max_output_tokens") == "cli":
-        value, source = options.max_output_tokens, "cli"
-    elif stage_value is not None:
-        value, source = stage_value, "stage_yaml" if sources.get(stage) == "yaml" else "stage_options"
-    else:
-        value = options.max_output_tokens
-        source = sources.get("max_output_tokens", "default" if value == AnalysisOptions().max_output_tokens else "options")
-    return replace(options, max_output_tokens=value), source

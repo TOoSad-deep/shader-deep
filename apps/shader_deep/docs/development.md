@@ -2,23 +2,21 @@
 
 所有命令在 `apps/shader_deep/` 执行. 当前入口与职责见 [architecture.md](architecture.md), 运行方法及预算见 [应用 README](../README.md).
 
-设计取舍见 [ADR 0001](decisions/0001-agent-oriented-layout.md). 当前工作状态、验证证据和锁文件已知问题见[结构重构任务](work-items/structure-refactor.md). 新任务只为需要跨会话保留的工作建立记录, 不为同一状态维护多份进度文件.
+设计取舍见 [ADR 0001](decisions/0001-agent-oriented-layout.md). 跨会话任务使用对应的 `docs/work-items/` 记录; 历史检查结果不代表当前工作区已通过验证.
 
-## 修改一个角色
+## 开始一次改动
 
-先看 `agents/<role>/` 的入口、提示词、上下文和工具. 业务数据及引用约束放入 `domain/`; 网络和文件细节放入 `infrastructure/`. 工作流负责创建共享资源和交付, 角色通过显式输入与回调使用它们.
+1. 核对 Git 状态, 保留已有改动, 明确本次目标和完成条件.
+2. 在[模块导航](architecture.md#模块导航)找到相关 README, 阅读职责、状态归属和常见修改入口; 需要时再展开数据设计或历史记录.
+3. 优先在既有模块及框架能力内实现. 跨模块调整时先明确各模块责任; 使用子 agent 时为文件或职责分配互不重叠的所有者.
+4. 根据[文档同步约定](../AGENTS.md#文档同步)判断说明是否需要同步. 更改职责、接口或关键约束时更新, 内部细节调整不强制改文档.
+5. 执行与改动相关的验证, 留下结果及未覆盖范围. 发现已替代实现或旧链接时一并收口, 不保持两套相互矛盾的当前说明.
 
-- 修改语义判断: 找对应角色的提示词、提交契约和工具.
-- 修改主 Agent 的编排方法: 找 `resources/skills/analysis-orchestration/SKILL.md`; 修改业务工具执行、并发或最终状态: 找 `workflows/`.
-- 修改合并合法性、引用或版本规则: 找 `domain/library/`.
-- 修改重试、调用额度或格式修复: 找 `runtime/` 与 `infrastructure/llm/`.
-- 修改渲染与浏览器释放: 找 `rendering/` 和 `agents/generation/tools/`.
-
-不从新实现导入旧路径转发模块. 已存在的公共函数保留签名, 新内部组件优先使用小类、函数和明确参数. `LibraryPersistence`、回放会话协议只服务实际的替换边界, 不要求每个类都有接口和工厂.
+公开函数和核心参数按应用约定保留; 框架用法以当前安装源码为准. 测试命令以 [Makefile](../Makefile) 为准, 模块 README 只链接相关行为测试与需要注意的验证范围.
 
 ## 测试组织
 
-`tests/unit_tests/` 按 `agents`、`workflows`、`domain`、`runtime`、`infrastructure`、`rendering`、`compatibility` 组织; `fixtures` 保存模型传输夹具. 已有行为断言保留, mock 位于搬迁后的实际依赖入口. 旧协议测试继续验证兼容实现, 不计作默认流程验证.
+`tests/unit_tests/` 按角色、工作流、领域、传输/存储和渲染职责组织; `fixtures` 保存模型传输夹具. 保留当前可观察行为的断言, mock 对准实际依赖入口. 已退出执行器的专属回归随实现删除, 不让旧协议成为原生流程要求.
 
 ```sh
 make check
@@ -43,11 +41,10 @@ uv build --out-dir /private/tmp/shader-deep-dist
 uv run --no-sync python scripts/check_distribution.py /private/tmp/shader-deep-dist/shader_deep_app-0.1.0-py3-none-any.whl
 uv lock --check
 uv run --no-sync python -m shader_deep.cli.analysis --help
-uv run --no-sync python -m shader_deep.cli.replay --help
 uv run --no-sync python main.py --help
 ```
 
-默认 YAML 位于包内 `resources/analysis.yaml`, 主 Agent 编排 skill 位于 `resources/skills/analysis-orchestration/SKILL.md`, WebGL2 脚本位于 `rendering/webgl2.js`. 修改资源位置时同步维护 `pyproject.toml` 的 package-data, 并从构建出的 wheel 检查资源、旧入口与新入口. 仅在可编辑安装中运行成功不足以证明安装包完整.
+默认 YAML 位于包内 `resources/analysis.yaml`, 主 Agent 编排 skill 位于 `resources/skills/native-orchestration/SKILL.md`, WebGL2 脚本位于 `rendering/webgl2.js`. 修改资源位置时同步维护 `pyproject.toml` 的 package-data, 并从构建出的 wheel 检查资源与当前公开入口. 仅在可编辑安装中运行成功不足以证明安装包完整.
 
 上面的 wheel 文件名以实际构建输出为准. `check_distribution.py` 只用于本仓库构建的包, 在临时解包目录执行导入及 CLI 帮助检查, 使用当前环境已有依赖, 不安装包或调用真实模型.
 

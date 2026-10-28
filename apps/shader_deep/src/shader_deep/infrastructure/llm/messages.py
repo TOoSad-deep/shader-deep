@@ -38,12 +38,11 @@ def png_data_url(path: Path) -> str:
     return f"data:image/png;base64,{encoded}"
 
 
-def _message(payload: dict[str, object], reference_url: str, control: dict[str, object] | None = None) -> HumanMessage:
-    """业务正文和真实原图保持固定, 控制信息不扩充业务协议."""
+def _message(payload: dict[str, object], reference_url: str) -> HumanMessage:
+    """将固定业务正文与真实原图编码为单条多模态消息."""
+    # 图像单独放入 image_url 内容块, 才会成为视觉输入; 写在 JSON 字符串里只是文本.
     content: list[str | dict[str, object]] = [
         {"type": "text", "text": json.dumps(payload, ensure_ascii=False, separators=(",", ":"))},
         {"type": "image_url", "image_url": {"url": reference_url}},
     ]
-    if control:
-        content.append({"type": "text", "text": "运行控制反馈: " + json.dumps(control, ensure_ascii=False, separators=(",", ":"))})
     return HumanMessage(content=content)
