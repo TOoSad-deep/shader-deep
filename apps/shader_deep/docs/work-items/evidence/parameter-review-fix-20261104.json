@@ -1,0 +1,102 @@
+{
+  "date": "2026-11-04",
+  "task": "Repair final review findings via explicitly requested subagents",
+  "subagents": {
+    "model_guards": [
+      "stream terminal validation",
+      "injected SDK clients and caller subclass compatibility"
+    ],
+    "preview_cleanup": [
+      "preserve primary initialization error and release resources"
+    ],
+    "fix_review": "Independent read-only final review; no remaining actionable findings"
+  },
+  "changes": [
+    {
+      "path": "apps/shader_deep/src/shader_deep/experiments/_parameter_model.py",
+      "before_sha256": "9a660efffe8897a018f50c5b08a98049c2a9955b0f758bc4d97752bc09ae1e71",
+      "after_sha256": "9f67fde011958ec71c841d396fd61aca4c90d7b94c6d377b0b72830e0b1cc3dc"
+    },
+    {
+      "path": "apps/shader_deep/src/shader_deep/experiments/_parameter_stream.py",
+      "before_sha256": null,
+      "after_sha256": "83a709f90868f72271f60c9ef148eacc1850468276140d67ebfd0b5dc23a8aea"
+    },
+    {
+      "path": "apps/shader_deep/src/shader_deep/rendering/_preview_browser.py",
+      "before_sha256": "e337a20ccae6e5f6d7cc09ed9abf85ba87f2e61fad8ee3806c74dbc14218411e",
+      "after_sha256": "876dc10bd1c38d537bd7e30aef7d0b7f4e14b3164f55fd91071140be9ed4d716"
+    },
+    {
+      "path": "apps/shader_deep/src/shader_deep/rendering/preview.py",
+      "before_sha256": "1ae16c613f3ea230535b4ff61385cf5924ce685fcf9a8132802787b3b90e2faf",
+      "after_sha256": "4506080856e6d9e4257f30345281dcfd946b6f2092efc358d3dd5dfb0675bba3"
+    },
+    {
+      "path": "apps/shader_deep/tests/unit_tests/agents/test_parameter_clients.py",
+      "before_sha256": null,
+      "after_sha256": "5838442ee0ef1b6075a3ef208e984675df6e8e2e901cb1de0087327b4f02b767"
+    },
+    {
+      "path": "apps/shader_deep/tests/unit_tests/agents/test_parameter_stream.py",
+      "before_sha256": null,
+      "after_sha256": "84ae52e14ef0e9278bdd8ff487c506f7650d28ce4d94c4904409702f0f81e944"
+    },
+    {
+      "path": "apps/shader_deep/tests/unit_tests/rendering/test_preview.py",
+      "before_sha256": "9887d94f08a90b233520f288ba389560bc916f0c6635d05a48cb7fa540f0fcbf",
+      "after_sha256": "6736ee556a69108362b48832e8198c319af065bd2b09c987ff09b69c6d560354"
+    }
+  ],
+  "verification": {
+    "unit_tests": 525,
+    "integration_tests": 23,
+    "browser_readiness_tests": 1,
+    "repository_check": "passed",
+    "ruff_format_type": "passed",
+    "original_review_reproduction": {
+      "single_length": {
+        "status": "ParameterOutputError",
+        "http_requests": 1,
+        "wire_tool_json_incomplete": true,
+        "parameter_updates_executed": 0,
+        "response_metadata": []
+      },
+      "duplicate_length": {
+        "status": "ParameterOutputError",
+        "http_requests": 1,
+        "wire_tool_json_incomplete": true,
+        "parameter_updates_executed": 0,
+        "response_metadata": []
+      },
+      "missing_terminal": {
+        "status": "ParameterOutputError",
+        "http_requests": 1,
+        "wire_tool_json_incomplete": true,
+        "parameter_updates_executed": 0,
+        "response_metadata": []
+      },
+      "custom_completions_client": {
+        "root_client_is_none": true,
+        "result": "constructed"
+      },
+      "init_cleanup_failure": {
+        "outer_error": "fragment_compile: original shader compile failure",
+        "is_original": true,
+        "worker_released": true,
+        "closed": true
+      }
+    },
+    "independent_review_tests": 32,
+    "live_model_requests": 0
+  },
+  "artifact_dir": "/Users/douwen/.codex/worktrees/bb55/shader-deep/apps/shader_deep/runs/run-parameter-review-fix-20261104",
+  "boundaries": [
+    "New stream integrity validation applies to Chat Completions; Responses API retains existing path.",
+    "Opaque custom completions objects retain caller-owned retry/timeout behavior.",
+    "Protocol-error response is drained and cleaned up before error propagation, not immediately disconnected; external cancellation is not converted into draining.",
+    "No new visual quality evaluation, provider pinning, shader changes or dependencies."
+  ],
+  "committed": false,
+  "pushed": false
+}

@@ -90,6 +90,21 @@ class WebGL2RenderTests(TestCase):
                 self.assertEqual(image.size, size)
                 self.assertEqual(image.getpixel((size[0] - 1, size[1] - 1)), (255, 0, 0, 255))
 
+    def test_invalid_uniforms_report_error_and_next_render_succeeds(self) -> None:
+        cases = (
+            (RED, {"missing": 1.0}),
+            ("uniform int VALUE; void mainImage(out vec4 c, in vec2 p) { c = vec4(float(VALUE)); }", {"VALUE": 1.0}),
+            ("uniform vec2 VALUE; void mainImage(out vec4 c, in vec2 p) { c = vec4(VALUE, 0.0, 1.0); }", {"VALUE": 1.0}),
+            ("uniform float VALUE[2]; void mainImage(out vec4 c, in vec2 p) { c = vec4(VALUE[0]); }", {"VALUE": 1.0}),
+            ("uniform float UNUSED; " + RED, {"UNUSED": 1.0}),
+        )
+        for code, uniforms in cases:
+            with self.subTest(uniforms=uniforms, code=code):
+                with self.assertRaises(RenderError) as caught:
+                    self.renderer.render(code, 8, 8, 0.0, uniforms=uniforms)
+                self.assertEqual(caught.exception.stage, "uniform")
+                self.assertEqual(self.image(RED).getpixel((0, 0)), (255, 0, 0, 255))
+
     def test_oversized_buffer_is_rejected_without_resizing_silently(self) -> None:
         with self.assertRaises(RenderError) as caught:
             self.renderer.render(RED, 2**31, 16, 0.0)

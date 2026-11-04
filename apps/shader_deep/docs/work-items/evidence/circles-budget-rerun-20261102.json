@@ -1,0 +1,255 @@
+{
+  "run_dir": "apps/shader_deep/runs/run-circles-budget-rerun-wjt6bwrz",
+  "retry_run_dir": "apps/shader_deep/runs/run-circles-budget-retry-xukk2y0j",
+  "baseline_run": "apps/shader_deep/runs/run-circles-case-5686vir4",
+  "limits": {
+    "parameter_updates_prompt": 8,
+    "model_calls": 20,
+    "timeout_seconds": 45,
+    "max_retries": 0,
+    "max_tokens": 4096,
+    "graph_steps": 80
+  },
+  "model": "z-ai/glm-5.3-flash",
+  "rows": [
+    {
+      "group": "A",
+      "status": "completed",
+      "finish_reason": "stop",
+      "attempt": 2,
+      "artifact_root": "apps/shader_deep/runs/run-circles-budget-retry-xukk2y0j/A-circles",
+      "updates": 5,
+      "history_calls": 0,
+      "usage": {
+        "model_calls_started": 12,
+        "usage_records": 12,
+        "input_tokens": 50531,
+        "output_tokens": 2449,
+        "total_tokens": 52980,
+        "cache_read_tokens": 46592,
+        "reasoning_tokens": 1674
+      },
+      "final_parameters": {
+        "u_scale": 0.95,
+        "u_bloom": 0.7,
+        "u_pink": 0.45,
+        "u_rim": 1.4,
+        "u_blur": 1.2
+      },
+      "before_mae": 5.259889955873843,
+      "mae_after_update_three": 1.4527661358868633,
+      "final_mae": 1.4494459364149306,
+      "previous_low_budget_final_mae": 1.669849537037037,
+      "final_worse_than_best": false,
+      "providers": [
+        "OpenInference"
+      ],
+      "trials": [
+        {
+          "revision": 0,
+          "parameters": {
+            "u_scale": 0.7,
+            "u_bloom": 0.2,
+            "u_pink": 0.6,
+            "u_rim": 1,
+            "u_blur": 1.2
+          },
+          "image": "tool-01-image-01-current.png",
+          "mae_rgb_8bit": 5.259889955873843
+        },
+        {
+          "revision": 1,
+          "parameters": {
+            "u_scale": 0.95,
+            "u_bloom": 0.7,
+            "u_pink": 0.6,
+            "u_rim": 1,
+            "u_blur": 1.2
+          },
+          "image": "tool-03-image-01-current.png",
+          "mae_rgb_8bit": 1.451616640444155
+        },
+        {
+          "revision": 2,
+          "parameters": {
+            "u_scale": 0.95,
+            "u_bloom": 0.7,
+            "u_pink": 0.95,
+            "u_rim": 1,
+            "u_blur": 1.2
+          },
+          "image": "tool-05-image-01-current.png",
+          "mae_rgb_8bit": 1.456661648220486
+        },
+        {
+          "revision": 3,
+          "parameters": {
+            "u_scale": 0.95,
+            "u_bloom": 0.7,
+            "u_pink": 0.7,
+            "u_rim": 1,
+            "u_blur": 1.2
+          },
+          "image": "tool-07-image-01-current.png",
+          "mae_rgb_8bit": 1.4527661358868633
+        },
+        {
+          "revision": 4,
+          "parameters": {
+            "u_scale": 0.95,
+            "u_bloom": 0.7,
+            "u_pink": 0.45,
+            "u_rim": 1,
+            "u_blur": 1.2
+          },
+          "image": "tool-09-image-01-current.png",
+          "mae_rgb_8bit": 1.4502218740957755
+        },
+        {
+          "revision": 5,
+          "parameters": {
+            "u_scale": 0.95,
+            "u_bloom": 0.7,
+            "u_pink": 0.45,
+            "u_rim": 1.4,
+            "u_blur": 1.2
+          },
+          "image": "tool-11-image-01-current.png",
+          "mae_rgb_8bit": 1.4494459364149306
+        }
+      ],
+      "final_reply": "revision 5 与参考图已高度一致：两圆轮廓、位置、大小匹配，重叠区的粉紫染色分布和强度接近，边缘描边亮度与柔度也接近参考图。\n\n**最终参数**：u_scale=0.95, u_bloom=0.7, u_pink=0.45, u_rim=1.4, u_blur=1.2\n\n**调整过程回顾**：\n- u_scale 0.7→0.95：两圆整体偏小，放大后轮廓与参考一致\n- u_bloom 0.2→0.7：基线重叠区紫色晕染明显偏弱，加强后匹配\n- u_pink 0.6→0.95→0.7→0.45：先试增强，发现粉色蔓延过广（越界到蓝圆上部），逐级回调到 0.45 后染色范围与参考一致\n- u_rim 1.0→1.4：参考图重叠边缘有更亮的描边，增强后匹配\n\n**剩余差异**：并排图下当前渲染与参考图的轮廓、位置、大小、亮度、光晕均已基本一致，肉眼可见的残余差异非常小（重叠区内渐变的细微色调差别），未再做进一步调整。共使用 6 次参数修改，在 8 次限额内。",
+      "mae_reduction_after_update_three_percent": 0.22854328648745925
+    },
+    {
+      "group": "B",
+      "status": "completed",
+      "finish_reason": "stop",
+      "attempt": 1,
+      "artifact_root": "apps/shader_deep/runs/run-circles-budget-rerun-wjt6bwrz/B-circles",
+      "updates": 3,
+      "history_calls": 1,
+      "usage": {
+        "model_calls_started": 9,
+        "usage_records": 9,
+        "input_tokens": 36970,
+        "output_tokens": 2097,
+        "total_tokens": 39067,
+        "cache_read_tokens": 30464,
+        "reasoning_tokens": 1445
+      },
+      "final_parameters": {
+        "u_scale": 0.7,
+        "u_bloom": 1.1,
+        "u_pink": 1.2,
+        "u_rim": 0.8,
+        "u_blur": 0.9
+      },
+      "before_mae": 5.259889955873843,
+      "mae_after_update_three": 5.130326447663484,
+      "final_mae": 5.130326447663484,
+      "previous_low_budget_final_mae": 1.194580078125,
+      "final_worse_than_best": true,
+      "providers": [
+        "OpenInference"
+      ],
+      "trials": [
+        {
+          "revision": 0,
+          "parameters": {
+            "u_scale": 0.7,
+            "u_bloom": 0.2,
+            "u_pink": 0.6,
+            "u_rim": 1,
+            "u_blur": 1.2
+          },
+          "image": "tool-01-image-01-current.png",
+          "mae_rgb_8bit": 5.259889955873843
+        },
+        {
+          "revision": 1,
+          "parameters": {
+            "u_scale": 0.7,
+            "u_bloom": 0.7,
+            "u_pink": 0.9,
+            "u_rim": 1,
+            "u_blur": 1.2
+          },
+          "image": "tool-04-image-01-current.png",
+          "mae_rgb_8bit": 5.166138825593172
+        },
+        {
+          "revision": 2,
+          "parameters": {
+            "u_scale": 0.7,
+            "u_bloom": 1.1,
+            "u_pink": 1.2,
+            "u_rim": 1,
+            "u_blur": 1.2
+          },
+          "image": "tool-06-image-01-current.png",
+          "mae_rgb_8bit": 5.10718677662037
+        },
+        {
+          "revision": 3,
+          "parameters": {
+            "u_scale": 0.7,
+            "u_bloom": 1.1,
+            "u_pink": 1.2,
+            "u_rim": 0.8,
+            "u_blur": 0.9
+          },
+          "image": "tool-08-image-01-current.png",
+          "mae_rgb_8bit": 5.130326447663484
+        }
+      ],
+      "final_reply": "已完成基线观察与三轮参数调整， 每轮均用 compare_preview 取并排图(左参考、右当前)对照。汇总如下：\n\n**基线(trial 1)**: u_scale=0.7, u_bloom=0.2, u_pink=0.6, u_rim=1.0, u_blur=1.2。与参考相比， 重叠区紫色晕染明显偏弱， 顶部粉色染色不足， 边缘偏硬。\n\n**第 1 次修改(trial 2)**: u_bloom 0.2→0.7, u_pink 0.6→0.9。紫色晕染增强、粉色染色提升， 方向正确但重叠区颜色仍比参考浅。\n\n**第 2 次修改(trial 3)**: u_bloom 0.7→1.1, u_pink 1.2。重叠区紫色晕染浓度已接近参考， 顶部粉色饱和度基本对齐。\n\n**第 3 次修改(trial 4)**: u_rim 1.0→0.8, u_blur 1.2→0.9。边缘描边略收， 后方圆边界的模糊宽度收窄后过渡更贴近参考。\n\n**当前参数**: u_scale=0.7, u_bloom=1.1, u_pink=1.2, u_rim=0.8, u_blur=0.9。\n\n**剩余差异(如实说明)**： 两圆的轮廓、位置、大小与参考基本一致， 重叠区紫晕和粉色染色也已对齐； 但边缘描边和晕染的过渡仍存在轻微差别， 未达到完全逐像素一致。若需继续逼近， 可再微调 u_rim/u_bloom; 本次先停止在此状态。",
+      "mae_reduction_after_update_three_percent": 0.0
+    }
+  ],
+  "failed_attempt": {
+    "group": "A",
+    "status": "failed",
+    "error": {
+      "type": "OpenAITimeoutError",
+      "message": "Request timed out."
+    },
+    "usage": {
+      "model_calls_started": 2,
+      "usage_records": 1,
+      "input_tokens": 3509,
+      "output_tokens": 30,
+      "total_tokens": 3539,
+      "cache_read_tokens": 0,
+      "reasoning_tokens": 9
+    },
+    "updates": 0,
+    "note": "Initial A attempt timed out on second response before parameter changes. Retried once from same initial state; retained here."
+  },
+  "total_usage_observed": {
+    "model_calls_started": 23,
+    "usage_records": 22,
+    "input_tokens": 91010,
+    "output_tokens": 4576,
+    "total_tokens": 95586,
+    "cache_read_tokens": 77056,
+    "reasoning_tokens": 3128
+  },
+  "successful_attempt_usage": {
+    "model_calls_started": 21,
+    "usage_records": 21,
+    "input_tokens": 87501,
+    "output_tokens": 4546,
+    "total_tokens": 92047,
+    "cache_read_tokens": 77056,
+    "reasoning_tokens": 3119
+  },
+  "unreported_usage_request_count": 1,
+  "tracing_enabled": false,
+  "comparison_note": "One run per group, with one transport-failure retry for A. Same source/input/defaults/model and output cap; iteration budget increased. Actual route varies across historical runs. Scores are offline only. Stopped early states are not force-extended or replaced with best candidates.",
+  "comparability": {
+    "same_source_hashes": true,
+    "same_shader_hash": true,
+    "same_reference_hash": true
+  }
+}

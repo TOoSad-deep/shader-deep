@@ -1,0 +1,1347 @@
+{
+  "model": "z-ai/glm-5.3-flash",
+  "run_dir": "apps/shader_deep/runs/run-parameter-suite-_vyk3hw0",
+  "status": "finished",
+  "limits_per_case": {
+    "model_calls": 8,
+    "timeout_seconds": 45,
+    "max_retries": 0,
+    "max_tokens": 4096,
+    "graph_steps": 32
+  },
+  "evaluation_boundary": "Parameter intervals were fixed before model calls. They are proxies, not visual acceptance.",
+  "cases": [
+    {
+      "id": "S1",
+      "title": "圆环减弱光晕",
+      "kind": "single",
+      "parameters": {
+        "GLOW_STRENGTH": {
+          "min": 0,
+          "max": 3,
+          "initial": 1.5
+        }
+      },
+      "goal": "让圆环周围的光晕明显减弱到原来的大约一半或更少.",
+      "predefined_parameter_checks": {
+        "GLOW_STRENGTH": [
+          0,
+          0.75
+        ]
+      },
+      "status": "graph_completed",
+      "model_requests": [
+        {
+          "number": 1,
+          "image_sha256": [],
+          "boundary": "LangChain input before provider serialization"
+        },
+        {
+          "number": 2,
+          "image_sha256": [
+            "ac714b8bb4753af357492a5ef4181ec8bf09ffc6198b7ad473247d191ec85bed"
+          ],
+          "boundary": "LangChain input before provider serialization"
+        },
+        {
+          "number": 3,
+          "image_sha256": [
+            "ac714b8bb4753af357492a5ef4181ec8bf09ffc6198b7ad473247d191ec85bed"
+          ],
+          "boundary": "LangChain input before provider serialization"
+        },
+        {
+          "number": 4,
+          "image_sha256": [
+            "ac714b8bb4753af357492a5ef4181ec8bf09ffc6198b7ad473247d191ec85bed",
+            "0364ee6725e3edfbd91b223ea2abbb5c03f18e417ed0ea9d48bec73e0498ab53"
+          ],
+          "boundary": "LangChain input before provider serialization"
+        },
+        {
+          "number": 5,
+          "image_sha256": [
+            "ac714b8bb4753af357492a5ef4181ec8bf09ffc6198b7ad473247d191ec85bed",
+            "0364ee6725e3edfbd91b223ea2abbb5c03f18e417ed0ea9d48bec73e0498ab53"
+          ],
+          "boundary": "LangChain input before provider serialization"
+        },
+        {
+          "number": 6,
+          "image_sha256": [
+            "ac714b8bb4753af357492a5ef4181ec8bf09ffc6198b7ad473247d191ec85bed",
+            "0364ee6725e3edfbd91b223ea2abbb5c03f18e417ed0ea9d48bec73e0498ab53",
+            "b85cdf00cc351865b8a72b07152df8161f202ebca6d7fa3b3e2f99df428a3882"
+          ],
+          "boundary": "LangChain input before provider serialization"
+        }
+      ],
+      "requested_tools": [
+        {
+          "name": "capture_preview",
+          "args": {},
+          "id": "call_51ae4e33e9e94151bfbf20f1",
+          "type": "tool_call"
+        },
+        {
+          "name": "set_parameters",
+          "args": {
+            "parameters": {
+              "GLOW_STRENGTH": 0.7
+            }
+          },
+          "id": "call_b74118f06a5e4e259c336aea",
+          "type": "tool_call"
+        },
+        {
+          "name": "capture_preview",
+          "args": {},
+          "id": "call_0a2fdfc67b8b4a839c6b0066",
+          "type": "tool_call"
+        },
+        {
+          "name": "set_parameters",
+          "args": {
+            "parameters": {
+              "GLOW_STRENGTH": 0.5
+            }
+          },
+          "id": "call_b2bfa48a55a34d73bee0fd49",
+          "type": "tool_call"
+        },
+        {
+          "name": "capture_preview",
+          "args": {},
+          "id": "call_2c5e2daeb1cb447da238b4c4",
+          "type": "tool_call"
+        }
+      ],
+      "tool_results": [
+        {
+          "name": "capture_preview",
+          "status": "success",
+          "call_id": "call_51ae4e33e9e94151bfbf20f1",
+          "text": "{\"revision\": 0, \"parameters\": {\"GLOW_STRENGTH\": 1.5}, \"width\": 512, \"height\": 512, \"time\": 0}",
+          "image": "capture-01.png",
+          "sha256": "ac714b8bb4753af357492a5ef4181ec8bf09ffc6198b7ad473247d191ec85bed"
+        },
+        {
+          "name": "set_parameters",
+          "status": "success",
+          "call_id": "call_b74118f06a5e4e259c336aea",
+          "text": "{\"parameters\": {\"GLOW_STRENGTH\": 0.7}}"
+        },
+        {
+          "name": "capture_preview",
+          "status": "success",
+          "call_id": "call_0a2fdfc67b8b4a839c6b0066",
+          "text": "{\"revision\": 1, \"parameters\": {\"GLOW_STRENGTH\": 0.7}, \"width\": 512, \"height\": 512, \"time\": 0}",
+          "image": "capture-03.png",
+          "sha256": "0364ee6725e3edfbd91b223ea2abbb5c03f18e417ed0ea9d48bec73e0498ab53"
+        },
+        {
+          "name": "set_parameters",
+          "status": "success",
+          "call_id": "call_b2bfa48a55a34d73bee0fd49",
+          "text": "{\"parameters\": {\"GLOW_STRENGTH\": 0.5}}"
+        },
+        {
+          "name": "capture_preview",
+          "status": "success",
+          "call_id": "call_2c5e2daeb1cb447da238b4c4",
+          "text": "{\"revision\": 2, \"parameters\": {\"GLOW_STRENGTH\": 0.5}, \"width\": 512, \"height\": 512, \"time\": 0}",
+          "image": "capture-05.png",
+          "sha256": "b85cdf00cc351865b8a72b07152df8161f202ebca6d7fa3b3e2f99df428a3882"
+        }
+      ],
+      "assistant_messages": [
+        "我先取一次基线预览，观察当前光晕效果。",
+        "基线已确认：GLOW_STRENGTH = 1.5,圆环周围有明显青色光晕。目标约为原来的一半或更少,即 0.75 以下。我选择 0.7 提交。",
+        "参数已提交，现在取图查看实际效果。",
+        "对比基线，光晕有所减弱，但视觉上仍偏亮，与“大约一半或更少”的目标还有差距。我将 GLOW_STRENGTH 降到 0.5（约为初始值的三分之一，满足“或更少”）。",
+        "参数已提交，取图确认结果。",
+        "目标已达成，停止调整。以下是最终报告：\n\n## 最终结果\n\n**最终参数值：`GLOW_STRENGTH = 0.5`**（共修改 2 次，未超限）\n\n**调整过程与观察：**\n\n| 版本 | GLOW_STRENGTH | 观察 |\n|------|---------------|------|\n| 基线 (rev 0) | 1.5 | 圆环周围有明显青色光晕，向外扩散范围大，边缘发散 |\n| 第一次 (rev 1) | 0.7 | 光晕减弱，但仍偏亮，未达到“约一半或更少”的目标 |\n| 最终 (rev 2) | 0.5 | 光晕明显收敛，约为基线强度的三分之一，满足“一半或更少” |\n\n**基线 → 最终对比：** 圆环外侧的弥散光晕大幅减弱，环体轮廓更清晰锐利，背景更接近纯深色；圆环本身的亮青色主体保持不变。整体观感从未版本中数值（0.5 为初始值 1.5 的三分之一）来看，光晕强度符合“原来的大约一半或更少”的要求。\n\n其余源码与参数均未改动，仅通过工具更新了允许的 `GLOW_STRENGTH`。"
+      ],
+      "usage": [
+        {
+          "input_tokens": 2935,
+          "output_tokens": 118,
+          "total_tokens": 3053,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 99
+          }
+        },
+        {
+          "input_tokens": 3361,
+          "output_tokens": 140,
+          "total_tokens": 3501,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 2816,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 67
+          }
+        },
+        {
+          "input_tokens": 3454,
+          "output_tokens": 25,
+          "total_tokens": 3479,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 3328,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 9
+          }
+        },
+        {
+          "input_tokens": 3877,
+          "output_tokens": 405,
+          "total_tokens": 4282,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 3328,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 329
+          }
+        },
+        {
+          "input_tokens": 3973,
+          "output_tokens": 15,
+          "total_tokens": 3988,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 3840,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 1
+          }
+        },
+        {
+          "input_tokens": 4394,
+          "output_tokens": 414,
+          "total_tokens": 4808,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 3840,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 139
+          }
+        }
+      ],
+      "before": {
+        "parameters": {
+          "GLOW_STRENGTH": 1.5
+        },
+        "revision": 0,
+        "sha256": "ac714b8bb4753af357492a5ef4181ec8bf09ffc6198b7ad473247d191ec85bed"
+      },
+      "after": {
+        "parameters": {
+          "GLOW_STRENGTH": 0.5
+        },
+        "revision": 2,
+        "sha256": "b85cdf00cc351865b8a72b07152df8161f202ebca6d7fa3b3e2f99df428a3882"
+      },
+      "elapsed_seconds": 22.18,
+      "evaluation": {
+        "parameter_checks": {
+          "GLOW_STRENGTH": true
+        },
+        "all_parameter_checks_passed": true,
+        "only_allowed_parameter_submissions": true,
+        "all_tools_successful": true,
+        "update_calls": 2,
+        "capture_calls": 3,
+        "final_image_in_later_model_input": true,
+        "changed_all_requested_parameters": true,
+        "mean_absolute_rgb_difference_8bit": [
+          2.4542999267578125,
+          5.3331146240234375,
+          5.64727783203125
+        ],
+        "user_visual_acceptance": "pending",
+        "baseline_capture_matches_initial": true,
+        "no_other_tools_requested": true,
+        "all_capture_images_in_later_model_inputs": true
+      },
+      "shader_sha256": "b0a9fcaf3f5739675e81c50a73ea683c73c4e7f6fdff5edb5efd76adaf292857",
+      "review_observation": "Outer halo visibly reduced; additive glow also changes ring-core brightness/color."
+    },
+    {
+      "id": "S2",
+      "title": "圆环线条减细",
+      "kind": "single",
+      "parameters": {
+        "LINE_WIDTH": {
+          "min": 0.003,
+          "max": 0.06,
+          "initial": 0.03
+        }
+      },
+      "goal": "让圆环线条的视觉宽度变为原来的大约一半.",
+      "predefined_parameter_checks": {
+        "LINE_WIDTH": [
+          0.01,
+          0.02
+        ]
+      },
+      "status": "graph_completed",
+      "model_requests": [
+        {
+          "number": 1,
+          "image_sha256": [],
+          "boundary": "LangChain input before provider serialization"
+        },
+        {
+          "number": 2,
+          "image_sha256": [
+            "c29fa2d7cd443908f3fee3087523263dddf3b9e424305e1ce52a3d8faba8c34a"
+          ],
+          "boundary": "LangChain input before provider serialization"
+        },
+        {
+          "number": 3,
+          "image_sha256": [
+            "c29fa2d7cd443908f3fee3087523263dddf3b9e424305e1ce52a3d8faba8c34a"
+          ],
+          "boundary": "LangChain input before provider serialization"
+        },
+        {
+          "number": 4,
+          "image_sha256": [
+            "c29fa2d7cd443908f3fee3087523263dddf3b9e424305e1ce52a3d8faba8c34a",
+            "0d2dae14eed29851279da2f7bb80dd61d01d0d5ae3ec1ed91e0d440a401a6ad2"
+          ],
+          "boundary": "LangChain input before provider serialization"
+        }
+      ],
+      "requested_tools": [
+        {
+          "name": "capture_preview",
+          "args": {},
+          "id": "call_3f0107a1e7b846b49be7c486",
+          "type": "tool_call"
+        },
+        {
+          "name": "set_parameters",
+          "args": {
+            "parameters": {
+              "LINE_WIDTH": 0.015
+            }
+          },
+          "id": "call_026cfaa09ca94f7980a5d1e2",
+          "type": "tool_call"
+        },
+        {
+          "name": "capture_preview",
+          "args": {},
+          "id": "call_f1a777c0280c4902a01599d3",
+          "type": "tool_call"
+        }
+      ],
+      "tool_results": [
+        {
+          "name": "capture_preview",
+          "status": "success",
+          "call_id": "call_3f0107a1e7b846b49be7c486",
+          "text": "{\"revision\": 0, \"parameters\": {\"LINE_WIDTH\": 0.03}, \"width\": 512, \"height\": 512, \"time\": 0}",
+          "image": "capture-01.png",
+          "sha256": "c29fa2d7cd443908f3fee3087523263dddf3b9e424305e1ce52a3d8faba8c34a"
+        },
+        {
+          "name": "set_parameters",
+          "status": "success",
+          "call_id": "call_026cfaa09ca94f7980a5d1e2",
+          "text": "{\"parameters\": {\"LINE_WIDTH\": 0.015}}"
+        },
+        {
+          "name": "capture_preview",
+          "status": "success",
+          "call_id": "call_f1a777c0280c4902a01599d3",
+          "text": "{\"revision\": 1, \"parameters\": {\"LINE_WIDTH\": 0.015}, \"width\": 512, \"height\": 512, \"time\": 0}",
+          "image": "capture-03.png",
+          "sha256": "0d2dae14eed29851279da2f7bb80dd61d01d0d5ae3ec1ed91e0d440a401a6ad2"
+        }
+      ],
+      "assistant_messages": [
+        "基线: LINE_WIDTH = 0.03, 圆环线条较粗且有柔光过渡. 目标是视觉宽度减半, 先将 LINE_WIDTH 从 0.03 调至 0.015.",
+        "已达到目标，停止修改。\n\n**最终参数**: LINE_WIDTH = 0.015 (由 0.03 调整为此值)\n\n**观察对比**：\n- 基线 (0.03): 圆环线条较粗， 内圈亮带明显， 外缘有较宽的柔光渐变。\n- 修改后 (0.015): 圆环的亮带宽度大约减半， 呈现为更纤细的线条， 中心实心亮区明显变窄， 柔光边缘也随之收敛， 整体视觉宽度约为原来的一半。\n\n仅修改了工具允许的 LINE_WIDTH 参数， 圆环半径、颜色、柔光算法等其余部分均未变动。"
+      ],
+      "usage": [
+        {
+          "input_tokens": 2933,
+          "output_tokens": 6,
+          "total_tokens": 2939,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 1
+          }
+        },
+        {
+          "input_tokens": 3342,
+          "output_tokens": 102,
+          "total_tokens": 3444,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 512,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 33
+          }
+        },
+        {
+          "input_tokens": 3429,
+          "output_tokens": 6,
+          "total_tokens": 3435,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 3328,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 1
+          }
+        },
+        {
+          "input_tokens": 3839,
+          "output_tokens": 190,
+          "total_tokens": 4029,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 3392,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 34
+          }
+        }
+      ],
+      "before": {
+        "parameters": {
+          "LINE_WIDTH": 0.03
+        },
+        "revision": 0,
+        "sha256": "c29fa2d7cd443908f3fee3087523263dddf3b9e424305e1ce52a3d8faba8c34a"
+      },
+      "after": {
+        "parameters": {
+          "LINE_WIDTH": 0.015
+        },
+        "revision": 1,
+        "sha256": "0d2dae14eed29851279da2f7bb80dd61d01d0d5ae3ec1ed91e0d440a401a6ad2"
+      },
+      "elapsed_seconds": 8.82,
+      "evaluation": {
+        "parameter_checks": {
+          "LINE_WIDTH": true
+        },
+        "all_parameter_checks_passed": true,
+        "only_allowed_parameter_submissions": true,
+        "all_tools_successful": true,
+        "update_calls": 1,
+        "capture_calls": 2,
+        "final_image_in_later_model_input": true,
+        "changed_all_requested_parameters": true,
+        "mean_absolute_rgb_difference_8bit": [
+          3.2436676025390625,
+          10.38372802734375,
+          11.680068969726562
+        ],
+        "user_visual_acceptance": "pending",
+        "baseline_capture_matches_initial": true,
+        "no_other_tools_requested": true,
+        "all_capture_images_in_later_model_inputs": true
+      },
+      "shader_sha256": "206bed597b21b2b8583fb613a8defaa61799440bf747ec554aff4f41053457e6",
+      "review_observation": "Ring band visibly narrower; target direction achieved in the displayed comparison."
+    },
+    {
+      "id": "S3",
+      "title": "圆环放大",
+      "kind": "single",
+      "parameters": {
+        "RADIUS": {
+          "min": 0.1,
+          "max": 0.4,
+          "initial": 0.18
+        }
+      },
+      "goal": "把居中的圆环明显放大, 让圆环中心线直径接近画布宽度的65%, 保持圆环居中.",
+      "predefined_parameter_checks": {
+        "RADIUS": [
+          0.29,
+          0.36
+        ]
+      },
+      "status": "graph_completed",
+      "model_requests": [
+        {
+          "number": 1,
+          "image_sha256": [],
+          "boundary": "LangChain input before provider serialization"
+        },
+        {
+          "number": 2,
+          "image_sha256": [
+            "c731f5762843285869f74f59bd03d2ada2677839b12e070d3370661b86e7ad13"
+          ],
+          "boundary": "LangChain input before provider serialization"
+        },
+        {
+          "number": 3,
+          "image_sha256": [
+            "c731f5762843285869f74f59bd03d2ada2677839b12e070d3370661b86e7ad13"
+          ],
+          "boundary": "LangChain input before provider serialization"
+        },
+        {
+          "number": 4,
+          "image_sha256": [
+            "c731f5762843285869f74f59bd03d2ada2677839b12e070d3370661b86e7ad13",
+            "cf31483626663b68fc04cb2aefa2971285f7de0a6705253293d986e42c982410"
+          ],
+          "boundary": "LangChain input before provider serialization"
+        }
+      ],
+      "requested_tools": [
+        {
+          "name": "capture_preview",
+          "args": {},
+          "id": "70c1b222-7912-403e-be90-7e95822e0363",
+          "type": "tool_call"
+        },
+        {
+          "name": "set_parameters",
+          "args": {
+            "parameters": {
+              "RADIUS": 0.325
+            }
+          },
+          "id": "6a079efc-e67d-4e62-ad99-0eb881d89fe6",
+          "type": "tool_call"
+        },
+        {
+          "name": "capture_preview",
+          "args": {},
+          "id": "22b6b7d3-3e5c-4842-a75e-a7913b0c2aa0",
+          "type": "tool_call"
+        }
+      ],
+      "tool_results": [
+        {
+          "name": "capture_preview",
+          "status": "success",
+          "call_id": "70c1b222-7912-403e-be90-7e95822e0363",
+          "text": "{\"revision\": 0, \"parameters\": {\"RADIUS\": 0.18}, \"width\": 512, \"height\": 512, \"time\": 0}",
+          "image": "capture-01.png",
+          "sha256": "c731f5762843285869f74f59bd03d2ada2677839b12e070d3370661b86e7ad13"
+        },
+        {
+          "name": "set_parameters",
+          "status": "success",
+          "call_id": "6a079efc-e67d-4e62-ad99-0eb881d89fe6",
+          "text": "{\"parameters\": {\"RADIUS\": 0.325}}"
+        },
+        {
+          "name": "capture_preview",
+          "status": "success",
+          "call_id": "22b6b7d3-3e5c-4842-a75e-a7913b0c2aa0",
+          "text": "{\"revision\": 1, \"parameters\": {\"RADIUS\": 0.325}, \"width\": 512, \"height\": 512, \"time\": 0}",
+          "image": "capture-03.png",
+          "sha256": "cf31483626663b68fc04cb2aefa2971285f7de0a6705253293d986e42c982410"
+        }
+      ],
+      "assistant_messages": [
+        "我先取一次基线预览，观察当前圆环大小与画布宽度的比例。",
+        "基线观察：画布 512×512，青色圆环居中。目测环外缘约从 x≈155 延伸到 x≈355，即外直径约 200px（约画布宽度 39%），环线本身有一定厚度，中心线直径约 185px（约 36%）。当前 RADIUS = 0.18，恰好对应归一化半径 0.18 → 中心线直径 0.36×512 ≈ 184px，与目测一致，说明 RADIUS 直接是环的归一化半径。\n\n目标：中心线直径 ≈ 65% × 512 ≈ 333px → RADIUS = 0.325。该值在允许范围 [0.1, 0.4] 内。提交修改：",
+        "参数已提交（RADIUS = 0.325），现在单独取图检查实际渲染效果。",
+        "第二次取图确认结果，基线校验与公式一致，无需继续调整。以下为报告：\n\n## 最终报告\n\n**最终参数值：`RADIUS = 0.325`**（仅修改一次，共取图两次，未动其他源码/参数）\n\n### 基线观察（revision 0，RADIUS = 0.18）\n- 512×512 画布，青色圆环居中，外缘约在 x≈155→355，外直径约 200px（约 39% 宽度）。\n- 由此反推：RADIUS 即环的归一化半径，中心线直径 ≈ 2×RADIUS×画布宽；0.18 对应约 36% 宽度，与目测一致，确认了线性映射关系。\n\n### 修改决策\n- 目标中心线直径 = 65% × 512 ≈ 333px → 所需 RADIUS = 333 / (2×512) ≈ 0.325，落在允许区间 [0.1, 0.4] 内。\n\n### 修改后观察（revision 1，RADIUS = 0.325）\n- 圆环明显放大且仍居中（中心保持在画布中点）。\n- 按已验证的线性映射，中心线直径 = 2×0.325×512 ≈ 333px，恰为画布宽度的 **65.0%**；目测亮核外缘约 350px、线宽约 15px，中心线约 335px（≈65.5%），与目标吻合，偏差在辉光导致的目测误差范围内。\n- 环线颜色、粗细、辉光样式均未改变，仅整体尺寸放大。\n\n目标已达成，停止调整。"
+      ],
+      "usage": [
+        {
+          "input_tokens": 2947,
+          "output_tokens": 126,
+          "total_tokens": 3073,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 101
+          }
+        },
+        {
+          "input_tokens": 3376,
+          "output_tokens": 522,
+          "total_tokens": 3898,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 328
+          }
+        },
+        {
+          "input_tokens": 3588,
+          "output_tokens": 36,
+          "total_tokens": 3624,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 3328,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 9
+          }
+        },
+        {
+          "input_tokens": 4020,
+          "output_tokens": 1240,
+          "total_tokens": 5260,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 3584,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 847
+          }
+        }
+      ],
+      "before": {
+        "parameters": {
+          "RADIUS": 0.18
+        },
+        "revision": 0,
+        "sha256": "c731f5762843285869f74f59bd03d2ada2677839b12e070d3370661b86e7ad13"
+      },
+      "after": {
+        "parameters": {
+          "RADIUS": 0.325
+        },
+        "revision": 1,
+        "sha256": "cf31483626663b68fc04cb2aefa2971285f7de0a6705253293d986e42c982410"
+      },
+      "elapsed_seconds": 16.87,
+      "evaluation": {
+        "parameter_checks": {
+          "RADIUS": true
+        },
+        "all_parameter_checks_passed": true,
+        "only_allowed_parameter_submissions": true,
+        "all_tools_successful": true,
+        "update_calls": 1,
+        "capture_calls": 2,
+        "final_image_in_later_model_input": true,
+        "changed_all_requested_parameters": true,
+        "mean_absolute_rgb_difference_8bit": [
+          6.889312744140625,
+          22.419387817382812,
+          24.420364379882812
+        ],
+        "user_visual_acceptance": "pending",
+        "baseline_capture_matches_initial": true,
+        "no_other_tools_requested": true,
+        "all_capture_images_in_later_model_inputs": true
+      },
+      "shader_sha256": "844fd74b59e4615441f952069854434acd9599c6aba5d774061c16eaaa6573ef",
+      "review_observation": "Centered ring visibly larger; parameter RADIUS=0.325 corresponds to a 65% centerline diameter in this fixed square shader."
+    },
+    {
+      "id": "M1",
+      "title": "同时减细与减弱光晕",
+      "kind": "multiple",
+      "parameters": {
+        "LINE_WIDTH": {
+          "min": 0.003,
+          "max": 0.06,
+          "initial": 0.03
+        },
+        "GLOW_STRENGTH": {
+          "min": 0,
+          "max": 3,
+          "initial": 1.6
+        }
+      },
+      "goal": "同时让圆环线条约细一半, 并让外侧光晕明显减弱到原来的一半或更少. 两个目标都要满足.",
+      "predefined_parameter_checks": {
+        "LINE_WIDTH": [
+          0.01,
+          0.02
+        ],
+        "GLOW_STRENGTH": [
+          0,
+          0.8
+        ]
+      },
+      "status": "graph_completed",
+      "model_requests": [
+        {
+          "number": 1,
+          "image_sha256": [],
+          "boundary": "LangChain input before provider serialization"
+        },
+        {
+          "number": 2,
+          "image_sha256": [
+            "a1c076cee8fc628fc0578dc735719c9ccebcb9cf5ce5904f0883a38170de11ed"
+          ],
+          "boundary": "LangChain input before provider serialization"
+        },
+        {
+          "number": 3,
+          "image_sha256": [
+            "a1c076cee8fc628fc0578dc735719c9ccebcb9cf5ce5904f0883a38170de11ed"
+          ],
+          "boundary": "LangChain input before provider serialization"
+        },
+        {
+          "number": 4,
+          "image_sha256": [
+            "a1c076cee8fc628fc0578dc735719c9ccebcb9cf5ce5904f0883a38170de11ed",
+            "e24533c08c81194876575f233e485a9e830f4de17cd2d05f72c31d67bde8bef0"
+          ],
+          "boundary": "LangChain input before provider serialization"
+        }
+      ],
+      "requested_tools": [
+        {
+          "name": "capture_preview",
+          "args": {},
+          "id": "chatcmpl-tool-8ab965c884ec9780",
+          "type": "tool_call"
+        },
+        {
+          "name": "set_parameters",
+          "args": {
+            "parameters": {
+              "GLOW_STRENGTH": 0.8,
+              "LINE_WIDTH": 0.015
+            }
+          },
+          "id": "chatcmpl-tool-948d6154f2de6d3c",
+          "type": "tool_call"
+        },
+        {
+          "name": "capture_preview",
+          "args": {},
+          "id": "chatcmpl-tool-ac144e4471771910",
+          "type": "tool_call"
+        }
+      ],
+      "tool_results": [
+        {
+          "name": "capture_preview",
+          "status": "success",
+          "call_id": "chatcmpl-tool-8ab965c884ec9780",
+          "text": "{\"revision\": 0, \"parameters\": {\"LINE_WIDTH\": 0.03, \"GLOW_STRENGTH\": 1.6}, \"width\": 512, \"height\": 512, \"time\": 0}",
+          "image": "capture-01.png",
+          "sha256": "a1c076cee8fc628fc0578dc735719c9ccebcb9cf5ce5904f0883a38170de11ed"
+        },
+        {
+          "name": "set_parameters",
+          "status": "success",
+          "call_id": "chatcmpl-tool-948d6154f2de6d3c",
+          "text": "{\"parameters\": {\"LINE_WIDTH\": 0.015, \"GLOW_STRENGTH\": 0.8}}"
+        },
+        {
+          "name": "capture_preview",
+          "status": "success",
+          "call_id": "chatcmpl-tool-ac144e4471771910",
+          "text": "{\"revision\": 1, \"parameters\": {\"LINE_WIDTH\": 0.015, \"GLOW_STRENGTH\": 0.8}, \"width\": 512, \"height\": 512, \"time\": 0}",
+          "image": "capture-03.png",
+          "sha256": "e24533c08c81194876575f233e485a9e830f4de17cd2d05f72c31d67bde8bef0"
+        }
+      ],
+      "assistant_messages": [
+        "先取基线预览图观察当前效果。",
+        "基线参数：LINE_WIDTH = 0.03,GLOW_STRENGTH = 1.6。\n\n目标：\n- 线条约细一半 → LINE_WIDTH 0.03 → 0.015\n- 光晕明显减弱到一半或更少 → GLOW_STRENGTH 1.6 → 0.8\n\n一次性提交这两个修改：",
+        "参数已提交，现在单独取图查看实际渲染效果：",
+        "修改已完成，两项目标均一次达到，无需继续调整。\n\n**最终参数值：**\n- `LINE_WIDTH`: 0.03 → **0.015**(约细一半)\n- `GLOW_STRENGTH`: 1.6 → **0.8**(减弱到原来的一半)\n\n**观察结果：** 基线图中圆环线条较粗、外圈光晕较强。提交修改后渲染回执确认参数已生效(LINE_WIDTH=0.015, GLOW_STRENGTH=0.8),线条宽度减半后圆环更纤细锐利，光晕强度减半后外侧辉光明显收敛、边缘更清晰。两个目标都按预期幅度达成，停止进一步修改，其余源码和参数保持不变。"
+      ],
+      "usage": [
+        {
+          "input_tokens": 3016,
+          "output_tokens": 332,
+          "total_tokens": 3348,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 315
+          }
+        },
+        {
+          "input_tokens": 3047,
+          "output_tokens": 174,
+          "total_tokens": 3221,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 2816,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 64
+          }
+        },
+        {
+          "input_tokens": 3185,
+          "output_tokens": 19,
+          "total_tokens": 3204,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 2816,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        {
+          "input_tokens": 3257,
+          "output_tokens": 188,
+          "total_tokens": 3445,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 3072,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 24
+          }
+        }
+      ],
+      "before": {
+        "parameters": {
+          "LINE_WIDTH": 0.03,
+          "GLOW_STRENGTH": 1.6
+        },
+        "revision": 0,
+        "sha256": "a1c076cee8fc628fc0578dc735719c9ccebcb9cf5ce5904f0883a38170de11ed"
+      },
+      "after": {
+        "parameters": {
+          "LINE_WIDTH": 0.015,
+          "GLOW_STRENGTH": 0.8
+        },
+        "revision": 1,
+        "sha256": "e24533c08c81194876575f233e485a9e830f4de17cd2d05f72c31d67bde8bef0"
+      },
+      "elapsed_seconds": 19.0,
+      "evaluation": {
+        "parameter_checks": {
+          "LINE_WIDTH": true,
+          "GLOW_STRENGTH": true
+        },
+        "all_parameter_checks_passed": true,
+        "only_allowed_parameter_submissions": true,
+        "all_tools_successful": true,
+        "update_calls": 1,
+        "capture_calls": 2,
+        "final_image_in_later_model_input": true,
+        "changed_all_requested_parameters": true,
+        "mean_absolute_rgb_difference_8bit": [
+          5.2093658447265625,
+          13.406219482421875,
+          13.092041015625
+        ],
+        "user_visual_acceptance": "pending",
+        "baseline_capture_matches_initial": true,
+        "no_other_tools_requested": true,
+        "all_capture_images_in_later_model_inputs": true
+      },
+      "shader_sha256": "cdbf2fea7c9bb74a2e97689fa353dc78196c93ac44b1d096e94c1aa71dd06584",
+      "review_observation": "Band narrower and halo weaker in the displayed comparison; not independent controls of every appearance property."
+    },
+    {
+      "id": "M2",
+      "title": "放大、减细、减弱光晕",
+      "kind": "multiple",
+      "parameters": {
+        "RADIUS": {
+          "min": 0.1,
+          "max": 0.4,
+          "initial": 0.18
+        },
+        "LINE_WIDTH": {
+          "min": 0.003,
+          "max": 0.06,
+          "initial": 0.03
+        },
+        "GLOW_STRENGTH": {
+          "min": 0,
+          "max": 3,
+          "initial": 1.4
+        }
+      },
+      "goal": "同时放大圆环, 使中心线直径接近画布宽度65%; 线条约细一半; 外侧光晕减弱到一半或更少. 三个目标都要满足.",
+      "predefined_parameter_checks": {
+        "RADIUS": [
+          0.29,
+          0.36
+        ],
+        "LINE_WIDTH": [
+          0.01,
+          0.02
+        ],
+        "GLOW_STRENGTH": [
+          0,
+          0.7
+        ]
+      },
+      "status": "graph_completed",
+      "model_requests": [
+        {
+          "number": 1,
+          "image_sha256": [],
+          "boundary": "LangChain input before provider serialization"
+        },
+        {
+          "number": 2,
+          "image_sha256": [
+            "0dbdd7c5b61b22c84336090591c286ec1d7f7efe51ca799aae9abf9751bddaef"
+          ],
+          "boundary": "LangChain input before provider serialization"
+        },
+        {
+          "number": 3,
+          "image_sha256": [
+            "0dbdd7c5b61b22c84336090591c286ec1d7f7efe51ca799aae9abf9751bddaef"
+          ],
+          "boundary": "LangChain input before provider serialization"
+        },
+        {
+          "number": 4,
+          "image_sha256": [
+            "0dbdd7c5b61b22c84336090591c286ec1d7f7efe51ca799aae9abf9751bddaef",
+            "f4f6443b104dae8ac98e11bbbe48b8d12d990448f9b365f5623e9d685c5e6fa1"
+          ],
+          "boundary": "LangChain input before provider serialization"
+        }
+      ],
+      "requested_tools": [
+        {
+          "name": "capture_preview",
+          "args": {},
+          "id": "chatcmpl-tool-b7f16355bf05e178",
+          "type": "tool_call"
+        },
+        {
+          "name": "set_parameters",
+          "args": {
+            "parameters": {
+              "GLOW_STRENGTH": 0.7,
+              "LINE_WIDTH": 0.015,
+              "RADIUS": 0.325
+            }
+          },
+          "id": "chatcmpl-tool-92e90c6aceecc7a9",
+          "type": "tool_call"
+        },
+        {
+          "name": "capture_preview",
+          "args": {},
+          "id": "chatcmpl-tool-863b04406f8b13d5",
+          "type": "tool_call"
+        }
+      ],
+      "tool_results": [
+        {
+          "name": "capture_preview",
+          "status": "success",
+          "call_id": "chatcmpl-tool-b7f16355bf05e178",
+          "text": "{\"revision\": 0, \"parameters\": {\"RADIUS\": 0.18, \"LINE_WIDTH\": 0.03, \"GLOW_STRENGTH\": 1.4}, \"width\": 512, \"height\": 512, \"time\": 0}",
+          "image": "capture-01.png",
+          "sha256": "0dbdd7c5b61b22c84336090591c286ec1d7f7efe51ca799aae9abf9751bddaef"
+        },
+        {
+          "name": "set_parameters",
+          "status": "success",
+          "call_id": "chatcmpl-tool-92e90c6aceecc7a9",
+          "text": "{\"parameters\": {\"RADIUS\": 0.325, \"LINE_WIDTH\": 0.015, \"GLOW_STRENGTH\": 0.7}}"
+        },
+        {
+          "name": "capture_preview",
+          "status": "success",
+          "call_id": "chatcmpl-tool-863b04406f8b13d5",
+          "text": "{\"revision\": 1, \"parameters\": {\"RADIUS\": 0.325, \"LINE_WIDTH\": 0.015, \"GLOW_STRENGTH\": 0.7}, \"width\": 512, \"height\": 512, \"time\": 0}",
+          "image": "capture-03.png",
+          "sha256": "f4f6443b104dae8ac98e11bbbe48b8d12d990448f9b365f5623e9d685c5e6fa1"
+        }
+      ],
+      "assistant_messages": [
+        "我先取基线图观察当前状态。",
+        "基线参数: RADIUS=0.18, LINE_WIDTH=0.03, GLOW_STRENGTH=1.4 (512×512)。从图上量测: 圆环中心线直径约占画布宽度 36% (半径≈92px ≈ 0.18×512), 线条核心宽约 15px, 光晕明显。\n\n换算目标:\n- 中心线直径 65% → RADIUS = 0.65/2 = 0.325\n- 线条减半 → LINE_WIDTH = 0.015\n- 光晕减半 → GLOW_STRENGTH = 0.7\n\n提交第一组参数:",
+        "参数已提交, 现在取图检查实际效果:",
+        "第一轮结果检查： 三个目标均已在一次提交中达成， 无需继续修改。\n\n## 最终参数与观察报告\n\n**最终参数 (revision 1):**\n- `RADIUS = 0.325` (原 0.18)\n- `LINE_WIDTH = 0.015` (原 0.03)\n- `GLOW_STRENGTH = 0.7` (原 1.4)\n\n**换算依据与观察结果：**\n\n1. **圆环放大** — 中心线半径取画布比例的 0.325, 中心线直径 = 2 × 0.325 = 0.65, 即画布宽度的 65%, 精确达标。图中圆环明显扩大， 外缘接近画布边缘但仍有余量， 未溢出。\n2. **线条减细** — LINE_WIDTH 从 0.03 减半至 0.015 (约 15px → 约 7.7px)。渲染图上线条核心明显变细， 从原先较粗的霓虹管变成纤细线条， 视觉上约为原先一半。\n3. **光晕减弱** — GLOW_STRENGTH 减半至 0.7。对比基线， 外侧青色光晕范围和亮度显著收敛， 只余贴着线条的薄薄一层柔光， 符合“减弱到一半或更少”的要求。\n\n三项修改均通过工具允许的参数完成， 算法与源码未动， 目标已全部满足， 停止调参。"
+      ],
+      "usage": [
+        {
+          "input_tokens": 3017,
+          "output_tokens": 620,
+          "total_tokens": 3637,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 605
+          }
+        },
+        {
+          "input_tokens": 3456,
+          "output_tokens": 1004,
+          "total_tokens": 4460,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 813
+          }
+        },
+        {
+          "input_tokens": 3686,
+          "output_tokens": 28,
+          "total_tokens": 3714,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 2816,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 8
+          }
+        },
+        {
+          "input_tokens": 4132,
+          "output_tokens": 887,
+          "total_tokens": 5019,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 3456,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 544
+          }
+        }
+      ],
+      "before": {
+        "parameters": {
+          "RADIUS": 0.18,
+          "LINE_WIDTH": 0.03,
+          "GLOW_STRENGTH": 1.4
+        },
+        "revision": 0,
+        "sha256": "0dbdd7c5b61b22c84336090591c286ec1d7f7efe51ca799aae9abf9751bddaef"
+      },
+      "after": {
+        "parameters": {
+          "RADIUS": 0.325,
+          "LINE_WIDTH": 0.015,
+          "GLOW_STRENGTH": 0.7
+        },
+        "revision": 1,
+        "sha256": "f4f6443b104dae8ac98e11bbbe48b8d12d990448f9b365f5623e9d685c5e6fa1"
+      },
+      "elapsed_seconds": 23.1,
+      "evaluation": {
+        "parameter_checks": {
+          "RADIUS": true,
+          "LINE_WIDTH": true,
+          "GLOW_STRENGTH": true
+        },
+        "all_parameter_checks_passed": true,
+        "only_allowed_parameter_submissions": true,
+        "all_tools_successful": true,
+        "update_calls": 1,
+        "capture_calls": 2,
+        "final_image_in_later_model_input": true,
+        "changed_all_requested_parameters": true,
+        "mean_absolute_rgb_difference_8bit": [
+          12.778350830078125,
+          39.322723388671875,
+          39.98185729980469
+        ],
+        "user_visual_acceptance": "pending",
+        "baseline_capture_matches_initial": true,
+        "no_other_tools_requested": true,
+        "all_capture_images_in_later_model_inputs": true
+      },
+      "shader_sha256": "68e522a988dccc8a1b6189142d6e4ffefbca9ab4f259036a7d46124877fa8d05",
+      "review_observation": "Ring larger, band narrower and halo weaker. Model claimed LINE_WIDTH=0.015 means a 7.7px full width; the source uses a half-width, so nominal full width is about 15.36px plus the smoothing transition. Final parameter submission remains correct."
+    },
+    {
+      "id": "M3",
+      "title": "波形增高并增加波峰",
+      "kind": "multiple",
+      "parameters": {
+        "AMPLITUDE": {
+          "min": 0.01,
+          "max": 0.25,
+          "initial": 0.04
+        },
+        "FREQUENCY": {
+          "min": 1,
+          "max": 10,
+          "initial": 3
+        }
+      },
+      "goal": "让波形的上下振幅明显增大到约原来两倍, 同时让画布中波峰数量明显增加到约原来两倍.",
+      "predefined_parameter_checks": {
+        "AMPLITUDE": [
+          0.065,
+          0.1
+        ],
+        "FREQUENCY": [
+          5,
+          7
+        ]
+      },
+      "status": "graph_completed",
+      "model_requests": [
+        {
+          "number": 1,
+          "image_sha256": [],
+          "boundary": "LangChain input before provider serialization"
+        },
+        {
+          "number": 2,
+          "image_sha256": [
+            "61652783302380d8a32eb2979b2767589289c159dff5a1ae48f7d1350921832f"
+          ],
+          "boundary": "LangChain input before provider serialization"
+        },
+        {
+          "number": 3,
+          "image_sha256": [
+            "61652783302380d8a32eb2979b2767589289c159dff5a1ae48f7d1350921832f"
+          ],
+          "boundary": "LangChain input before provider serialization"
+        },
+        {
+          "number": 4,
+          "image_sha256": [
+            "61652783302380d8a32eb2979b2767589289c159dff5a1ae48f7d1350921832f",
+            "0b88ff8bc9567bcea43f40bf357c55243222575212cd688768d30b972489f205"
+          ],
+          "boundary": "LangChain input before provider serialization"
+        }
+      ],
+      "requested_tools": [
+        {
+          "name": "capture_preview",
+          "args": {},
+          "id": "chatcmpl-tool-876f50096e4b4269",
+          "type": "tool_call"
+        },
+        {
+          "name": "set_parameters",
+          "args": {
+            "parameters": {
+              "AMPLITUDE": 0.08,
+              "FREQUENCY": 6
+            }
+          },
+          "id": "chatcmpl-tool-aa39cf98291d03d5",
+          "type": "tool_call"
+        },
+        {
+          "name": "capture_preview",
+          "args": {},
+          "id": "chatcmpl-tool-820f0b0ad156f8f5",
+          "type": "tool_call"
+        }
+      ],
+      "tool_results": [
+        {
+          "name": "capture_preview",
+          "status": "success",
+          "call_id": "chatcmpl-tool-876f50096e4b4269",
+          "text": "{\"revision\": 0, \"parameters\": {\"AMPLITUDE\": 0.04, \"FREQUENCY\": 3}, \"width\": 512, \"height\": 512, \"time\": 0}",
+          "image": "capture-01.png",
+          "sha256": "61652783302380d8a32eb2979b2767589289c159dff5a1ae48f7d1350921832f"
+        },
+        {
+          "name": "set_parameters",
+          "status": "success",
+          "call_id": "chatcmpl-tool-aa39cf98291d03d5",
+          "text": "{\"parameters\": {\"AMPLITUDE\": 0.08, \"FREQUENCY\": 6}}"
+        },
+        {
+          "name": "capture_preview",
+          "status": "success",
+          "call_id": "chatcmpl-tool-820f0b0ad156f8f5",
+          "text": "{\"revision\": 1, \"parameters\": {\"AMPLITUDE\": 0.08, \"FREQUENCY\": 6}, \"width\": 512, \"height\": 512, \"time\": 0}",
+          "image": "capture-03.png",
+          "sha256": "0b88ff8bc9567bcea43f40bf357c55243222575212cd688768d30b972489f205"
+        }
+      ],
+      "assistant_messages": [
+        "我先取基线图观察当前波形。",
+        "基线参数: AMPLITUDE=0.04, FREQUENCY=3。目标是振幅和频率都翻倍, 我提交 AMPLITUDE=0.08、FREQUENCY=6。",
+        "参数已提交, 现在单独取图验证效果。",
+        "目标已达成, 一次修改即停止。最终报告:\n\n## 最终参数值\n- **AMPLITUDE**: 0.04 → **0.08**(原两倍)\n- **FREQUENCY**: 3 → **6**(原两倍)\n\n## 观察结果\n- 基线(revision 0):AMPLITUDE=0.04、FREQUENCY=3, 波形上下振幅较小, 画布中波峰数量较少。\n- 修改后(revision 1):AMPLITUDE=0.08、FREQUENCY=6。上下振幅由 0.04 线性放大到 0.08, 波形上下摆动明显增至约两倍; FREQUENCY 线性控制波峰密度, 由 3 提高到 6 后, 画布中波峰数量明显增加到约两倍。两个目标均通过对应参数直接线性实现, 一次提交即满足, 未再进行额外修改。其他源码与参数均未改动。"
+      ],
+      "usage": [
+        {
+          "input_tokens": 3011,
+          "output_tokens": 170,
+          "total_tokens": 3181,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 155
+          }
+        },
+        {
+          "input_tokens": 3036,
+          "output_tokens": 99,
+          "total_tokens": 3135,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 2816,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 29
+          }
+        },
+        {
+          "input_tokens": 3130,
+          "output_tokens": 20,
+          "total_tokens": 3150,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 2816,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        {
+          "input_tokens": 3198,
+          "output_tokens": 218,
+          "total_tokens": 3416,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 3072,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        }
+      ],
+      "before": {
+        "parameters": {
+          "AMPLITUDE": 0.04,
+          "FREQUENCY": 3
+        },
+        "revision": 0,
+        "sha256": "61652783302380d8a32eb2979b2767589289c159dff5a1ae48f7d1350921832f"
+      },
+      "after": {
+        "parameters": {
+          "AMPLITUDE": 0.08,
+          "FREQUENCY": 6
+        },
+        "revision": 1,
+        "sha256": "0b88ff8bc9567bcea43f40bf357c55243222575212cd688768d30b972489f205"
+      },
+      "elapsed_seconds": 15.99,
+      "evaluation": {
+        "parameter_checks": {
+          "AMPLITUDE": true,
+          "FREQUENCY": true
+        },
+        "all_parameter_checks_passed": true,
+        "only_allowed_parameter_submissions": true,
+        "all_tools_successful": true,
+        "update_calls": 1,
+        "capture_calls": 2,
+        "final_image_in_later_model_input": true,
+        "changed_all_requested_parameters": true,
+        "mean_absolute_rgb_difference_8bit": [
+          2.609771728515625,
+          8.455421447753906,
+          9.164810180664062
+        ],
+        "user_visual_acceptance": "pending",
+        "baseline_capture_matches_initial": true,
+        "no_other_tools_requested": true,
+        "all_capture_images_in_later_model_inputs": true
+      },
+      "shader_sha256": "a96fe40854b1c84a033a02bc2f1b5a5b30e09123ab26de369e8d81645ec1038b",
+      "review_observation": "Wave height and number of oscillations visibly increased. This is a simple direct parameter mapping, not evidence of general inverse rendering ability."
+    }
+  ],
+  "elapsed_seconds": 106.0,
+  "totals": {
+    "cases": 6,
+    "single": 3,
+    "multiple": 3,
+    "model_calls": 26,
+    "graph_completed": 6,
+    "parameter_checks_passed": 6,
+    "visual_acceptance": "pending"
+  },
+  "assessment": "Six fixed synthetic cases only. Parameter interval checks and image changes support protocol/directional behavior, not general visual optimization quality. Model image evidence is recorded before provider serialization."
+}

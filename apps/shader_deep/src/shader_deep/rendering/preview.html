@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="zh-CN">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shader 实时调参预览</title>
+<style>
+  :root { color-scheme: dark; font-family: system-ui, sans-serif; background: #10141b; color: #eef3fb; }
+  body { max-width: 1000px; margin: 48px auto; padding: 0 24px; }
+  h1 { font-size: 26px; margin-bottom: 8px; }
+  p { color: #aab8cc; line-height: 1.7; }
+  main { display: flex; gap: 32px; align-items: flex-start; flex-wrap: wrap; margin-top: 28px; }
+  canvas { width: min(100%, 512px); height: auto; background: #03060e; border-radius: 16px; }
+  aside { flex: 1; min-width: 240px; }
+  label { display: block; margin: 24px 0 12px; }
+  output { float: right; font-variant-numeric: tabular-nums; color: #7de5dc; }
+  input { width: 100%; accent-color: #7de5dc; }
+  button { margin-top: 28px; padding: 10px 18px; border: 1px solid #52647c; border-radius: 8px; background: #243044; color: inherit; cursor: pointer; }
+  #status { font-size: 14px; }
+</style>
+<h1>Shader 实时调参预览</h1>
+<p>拖动滑块，观察线条和光晕的变化。页面持续绘制，调整参数时保留同一个 Shader 程序。</p>
+<main>
+  <canvas data-shader-preview aria-label="线条与光晕的实时 Shader 画布"></canvas>
+  <aside>
+    <div id="controls"></div>
+    <button id="reset" type="button">恢复初值</button>
+    <p id="status" role="status">正在启动预览…</p>
+  </aside>
+</main>
+
+<!-- 第一步只使用固定的演示 Shader. 可以替换这里的 mainImage 和下方参数配置. -->
+<script id="shader" type="x-shader/x-fragment">
+uniform float GLOW_STRENGTH;
+uniform float LINE_WIDTH;
+void mainImage(out vec4 color, in vec2 pixel) {
+    vec2 uv = (pixel - 0.5 * iResolution.xy) / iResolution.y;
+    float distanceToLine = abs(length(uv) - 0.27);
+    float line = 1.0 - smoothstep(LINE_WIDTH, LINE_WIDTH + 0.003, distanceToLine);
+    float glow = exp(-distanceToLine * 35.0) * GLOW_STRENGTH * 0.4;
+    color = vec4(vec3(0.015, 0.025, 0.055) + vec3(0.25, 0.8, 1.0) * (line + glow), 1.0);
+}
+</script>
+<script src="webgl2.js"></script>
+<script src="preview.js"></script>
+</html>

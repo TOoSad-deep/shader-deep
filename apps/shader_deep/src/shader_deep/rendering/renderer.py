@@ -6,38 +6,20 @@
 from __future__ import annotations
 
 import base64
-import math
 from contextlib import ExitStack
 from importlib.resources import files
 from typing import TYPE_CHECKING, Literal, TypedDict, cast
 
 from playwright.sync_api import Error as PlaywrightError, sync_playwright
 
+from shader_deep.rendering._validation import validate_render_input, validate_uniform_values
+from shader_deep.rendering.models import RenderError as RenderError
+
 if TYPE_CHECKING:
     from types import TracebackType
     from typing import Self
 
     from playwright.sync_api import Page
-
-
-class RenderError(RuntimeError):
-    """渲染失败, 保留失败阶段与浏览器原始日志.
-
-    Attributes:
-        stage: 初始化、编译、链接、绘制或导出等失败阶段.
-        log: 底层错误详情, Shader 编译错误保留驱动返回的日志.
-    """
-
-    def __init__(self, log: str, *, stage: str) -> None:
-        """创建可供调用方诊断的渲染错误.
-
-        Args:
-            log: 该阶段的错误详情.
-            stage: 失败阶段.
-        """
-        self.stage = stage
-        self.log = log
-        super().__init__(f"{stage}: {log}")
 
 
 # 与 webgl2.js 返回的对象保持一致: 成功带 png, 失败带 stage/message.
@@ -51,21 +33,6 @@ class _Failure(TypedDict):
     ok: Literal[False]
     stage: str
     message: str
-
-
-def _validate(glsl_code: str, width: int, height: int, time: float) -> None:
-    # 渲染器可以脱离 GenerationOptions 单独使用, 所以保留自身入口校验.
-    # 这里只检查通用参数, 具体 GLSL 语法和显卡尺寸上限交给浏览器检查.
-    if not isinstance(glsl_code, str) or not glsl_code.strip():
-        msg = "glsl_code must be a non-empty string"
-        raise ValueError(msg)
-    for name, value in (("width", width), ("height", height)):
-        if isinstance(value, bool) or not isinstance(value, int) or value <= 0:
-            msg = f"{name} must be a positive integer"
-            raise ValueError(msg)
-    if isinstance(time, bool) or not isinstance(time, (int, float)) or not math.isfinite(time):
-        msg = "time must be a finite number of seconds"
-        raise ValueError(msg)
 
 
 class WebGL2Renderer:
@@ -119,7 +86,7 @@ class WebGL2Renderer:
             raise RenderError(str(exc), stage="init") from exc
         return self
 
-    def render(self, glsl_code: str, width: int, height: int, time: float) -> bytes:
+    def render(self, glsl_code: str, width: int, height: int, time: float, *, uniforms: dict[str, float] | None = None) -> bytes:
         """按指定像素尺寸和时间渲染一帧.
 
         Args:
@@ -127,15 +94,18 @@ class WebGL2Renderer:
             width: 输出 PNG 的像素宽度.
             height: 输出 PNG 的像素高度.
             time: 直接传给 iTime 的秒数, 不使用墙上时钟或动画计时.
+            uniforms: 自定义 uniform float 的名称和数值, 不允许覆盖 iTime/iResolution.
 
         Returns:
             PNG 编码字节, 保留 Shader 输出的透明度.
 
         Raises:
-            ValueError: 代码为空、尺寸无效或时间不是有限数值.
+            ValueError: 代码、尺寸、时间或自定义 uniform 名称/数值无效.
             RenderError: 未启动渲染器, 或编译、链接、绘制、导出失败.
         """
-        _validate(glsl_code, width, height, time)
+        validate_render_input(glsl_code, width, height, time)
+        values = dict(uniforms) if uniforms is not None else {}
+        validate_uniform_values(values)
         if self._page is None:
             msg = "Use WebGL2Renderer inside a with block"
             raise RenderError(msg, stage="init")
@@ -146,7 +116,7 @@ class WebGL2Renderer:
                 "_Success | _Failure",
                 self._page.evaluate(
                     "args => window.renderShader(args)",
-                    {"glsl_code": glsl_code, "width": width, "height": height, "time": time},
+                    {"glsl_code": glsl_code, "width": width, "height": height, "time": time, "uniforms": values},
                 ),
             )
         except PlaywrightError as exc:

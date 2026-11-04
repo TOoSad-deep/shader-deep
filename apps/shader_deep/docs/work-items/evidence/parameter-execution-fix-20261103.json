@@ -1,0 +1,69 @@
+{
+  "date": "2026-11-03",
+  "scope": "parameter execution reliability repair",
+  "production_changes": [
+    "fatal RenderError propagation from parameter tools",
+    "one bounded connection retry with SDK retries disabled",
+    "8192 default output cap and pre-tool truncation rejection",
+    "request-attempt budget and final capture inside parameter-run trace",
+    "cleanup preserves primary exception; browser lifecycle event logs"
+  ],
+  "browser_recovery": "fail fast; automatic browser restart not implemented",
+  "original_browser_close_trigger": "unresolved",
+  "verification": {
+    "unit_tests": 507,
+    "integration_tests": 23,
+    "browser_readiness_tests": 1,
+    "repository_check": "passed",
+    "ruff_format_ty": "passed",
+    "git_diff_check": "passed"
+  },
+  "live_smoke": {
+    "run_dir": "/Users/douwen/.codex/worktrees/bb55/shader-deep/apps/shader_deep/runs/run-parameter-fix-99bg_pkx",
+    "model": "z-ai/glm-5.3-flash",
+    "providers": [
+      "Parasail"
+    ],
+    "status": "completed",
+    "model_calls": 4,
+    "input_tokens": 25946,
+    "output_tokens": 2298,
+    "total_tokens": 28244,
+    "max_model_calls": 8,
+    "parameter_updates_prompt": 1,
+    "tools": [
+      {
+        "name": "compare_preview",
+        "status": "success"
+      },
+      {
+        "name": "set_parameters",
+        "status": "success"
+      },
+      {
+        "name": "compare_preview",
+        "status": "success"
+      }
+    ],
+    "all_wire_output_limits_8192": true,
+    "final_parameters": {
+      "u_scale": 1.05,
+      "u_bloom": 0.2,
+      "u_pink": 0.6,
+      "u_rim": 1,
+      "u_blur": 1.2
+    },
+    "final_revision": 1,
+    "trace_id": "0659b859-a7c9-46c5-82b7-b8c01760413c",
+    "trace_url": "https://smith.langchain.com/o/fcb09333-f0ce-45e7-9ea2-c4750cdfbd16/projects/p/2e0945b1-fc78-4930-96bb-3085745b703a/r/0659b859-a7c9-46c5-82b7-b8c01760413c?poll=true",
+    "remote_verification": {
+      "root_name": "shader-deep.parameter-run",
+      "root_ended": true,
+      "root_error": false,
+      "model_calls": 4,
+      "model_calls_ended": 4,
+      "model_errors": 0
+    },
+    "boundary": "Short execution smoke; not new visual quality comparison or proof transient failures are eliminated."
+  }
+}

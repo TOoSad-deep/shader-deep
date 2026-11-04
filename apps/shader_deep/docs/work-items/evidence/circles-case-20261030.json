@@ -1,0 +1,1788 @@
+{
+  "model": "z-ai/glm-5.3-flash",
+  "run_dir": "apps/shader_deep/runs/run-circles-case-5686vir4",
+  "status": "finished",
+  "input_manifest": {
+    "run_dir": "apps/shader_deep/runs/run-circles-case-5686vir4",
+    "width": 1024,
+    "height": 576,
+    "time": 0.0,
+    "parameters": {
+      "u_scale": {
+        "min": 0.7,
+        "max": 1.4,
+        "initial": 0.7
+      },
+      "u_bloom": {
+        "min": 0.0,
+        "max": 1.6,
+        "initial": 0.2
+      },
+      "u_pink": {
+        "min": 0.0,
+        "max": 1.5,
+        "initial": 0.6
+      },
+      "u_rim": {
+        "min": 0.0,
+        "max": 2.0,
+        "initial": 1.0
+      },
+      "u_blur": {
+        "min": 0.4,
+        "max": 2.0,
+        "initial": 1.2
+      }
+    },
+    "original_sha256": "145a71b05fc6c60a50088662182f1feb36469b1cd7686de0280a1a89cb1fecf7",
+    "reference_sha256": "8431f0a97a9caae5bdd1ad7e0d6d82e94a604c5a53c49cb9abd659f3f761a41a",
+    "adapted_sha256": "4d9f1d8dd1b8c5dfc8508a9c174dc217a1b0c08fee5dd59bb0bc49a9833f92cb",
+    "adaptation": "Remove host-supplied version/precision/output and built-in uniform declarations; main to mainImage; gl_FragCoord.xy to pixel; u_resolution to iResolution.xy. Original drawing expressions unchanged. Unused u_time removed.",
+    "original_native_matches_adapted_pixels": false,
+    "native_adapter_comparison": {
+      "pixel_exact": false,
+      "max_channel_difference": 1,
+      "mae_rgb_8bit": 5.651403356481481e-07
+    }
+  },
+  "groups": {
+    "A": "compare_only_without_history",
+    "B": "compare_only_with_optional_history"
+  },
+  "paired_repetitions": 1,
+  "execution_order": "A then B; sequential execution",
+  "comparison_mode": "Current rendering observation exclusively through compare_preview in both groups; optional history in B only; identical task text; no scores, differences or best-candidate labels given to model.",
+  "limits_per_case": {
+    "model_calls": 8,
+    "timeout_seconds": 45,
+    "max_retries": 0,
+    "max_tokens": 4096,
+    "graph_steps": 32
+  },
+  "evaluation_boundary": "User reference image, unknown target parameters and attainability. Only image, supplied parameter ranges/defaults and meanings enter model context. Post-run pixel errors are diagnostics, not perceptual scores.",
+  "cases": [
+    {
+      "id": "A-circles",
+      "case_id": "circles",
+      "group": "A",
+      "history_tool_enabled": false,
+      "title": "用户重叠圆形参考匹配",
+      "parameters": {
+        "u_scale": {
+          "min": 0.7,
+          "max": 1.4,
+          "initial": 0.7
+        },
+        "u_bloom": {
+          "min": 0.0,
+          "max": 1.6,
+          "initial": 0.2
+        },
+        "u_pink": {
+          "min": 0.0,
+          "max": 1.5,
+          "initial": 0.6
+        },
+        "u_rim": {
+          "min": 0.0,
+          "max": 2.0,
+          "initial": 1.0
+        },
+        "u_blur": {
+          "min": 0.4,
+          "max": 2.0,
+          "initial": 1.2
+        }
+      },
+      "goal": "匹配用户参考图",
+      "kind": "multiple",
+      "status": "completed",
+      "model_requests": [
+        {
+          "number": 1,
+          "image_sha256": [],
+          "current_pixel_sha256": [],
+          "bound_tool_names": [
+            "ls",
+            "read_file",
+            "write_file",
+            "edit_file",
+            "delete",
+            "glob",
+            "grep",
+            "task",
+            "set_parameters",
+            "compare_preview"
+          ],
+          "reference_image_sha256": [
+            "8431f0a97a9caae5bdd1ad7e0d6d82e94a604c5a53c49cb9abd659f3f761a41a"
+          ],
+          "boundary": "LangChain input before provider serialization"
+        },
+        {
+          "number": 2,
+          "image_sha256": [
+            "a88db89985d730107c5709ad13a985d6dfbd9c6a37cf6d4e4cf0d99fb17880b6"
+          ],
+          "current_pixel_sha256": [
+            "4f62f0b26783e7b0fc78d2b5aeb7e8c332dcebd6783ff144229b0f1a37b8a4f1"
+          ],
+          "bound_tool_names": [
+            "ls",
+            "read_file",
+            "write_file",
+            "edit_file",
+            "delete",
+            "glob",
+            "grep",
+            "task",
+            "set_parameters",
+            "compare_preview"
+          ],
+          "reference_image_sha256": [
+            "8431f0a97a9caae5bdd1ad7e0d6d82e94a604c5a53c49cb9abd659f3f761a41a"
+          ],
+          "boundary": "LangChain input before provider serialization"
+        },
+        {
+          "number": 3,
+          "image_sha256": [
+            "a88db89985d730107c5709ad13a985d6dfbd9c6a37cf6d4e4cf0d99fb17880b6"
+          ],
+          "current_pixel_sha256": [
+            "4f62f0b26783e7b0fc78d2b5aeb7e8c332dcebd6783ff144229b0f1a37b8a4f1"
+          ],
+          "bound_tool_names": [
+            "ls",
+            "read_file",
+            "write_file",
+            "edit_file",
+            "delete",
+            "glob",
+            "grep",
+            "task",
+            "set_parameters",
+            "compare_preview"
+          ],
+          "reference_image_sha256": [
+            "8431f0a97a9caae5bdd1ad7e0d6d82e94a604c5a53c49cb9abd659f3f761a41a"
+          ],
+          "boundary": "LangChain input before provider serialization"
+        },
+        {
+          "number": 4,
+          "image_sha256": [
+            "a88db89985d730107c5709ad13a985d6dfbd9c6a37cf6d4e4cf0d99fb17880b6",
+            "812c0e6cfb3ef4779101f8695daee2e1792074dbef0745bf93df748b2d4cd1db"
+          ],
+          "current_pixel_sha256": [
+            "4f62f0b26783e7b0fc78d2b5aeb7e8c332dcebd6783ff144229b0f1a37b8a4f1",
+            "a97a1a13485b6e8dc0e675bba6f0d3e6251b5920db1f53bde187ba9af15b5a5b"
+          ],
+          "bound_tool_names": [
+            "ls",
+            "read_file",
+            "write_file",
+            "edit_file",
+            "delete",
+            "glob",
+            "grep",
+            "task",
+            "set_parameters",
+            "compare_preview"
+          ],
+          "reference_image_sha256": [
+            "8431f0a97a9caae5bdd1ad7e0d6d82e94a604c5a53c49cb9abd659f3f761a41a"
+          ],
+          "boundary": "LangChain input before provider serialization"
+        },
+        {
+          "number": 5,
+          "image_sha256": [
+            "a88db89985d730107c5709ad13a985d6dfbd9c6a37cf6d4e4cf0d99fb17880b6",
+            "812c0e6cfb3ef4779101f8695daee2e1792074dbef0745bf93df748b2d4cd1db"
+          ],
+          "current_pixel_sha256": [
+            "4f62f0b26783e7b0fc78d2b5aeb7e8c332dcebd6783ff144229b0f1a37b8a4f1",
+            "a97a1a13485b6e8dc0e675bba6f0d3e6251b5920db1f53bde187ba9af15b5a5b"
+          ],
+          "bound_tool_names": [
+            "ls",
+            "read_file",
+            "write_file",
+            "edit_file",
+            "delete",
+            "glob",
+            "grep",
+            "task",
+            "set_parameters",
+            "compare_preview"
+          ],
+          "reference_image_sha256": [
+            "8431f0a97a9caae5bdd1ad7e0d6d82e94a604c5a53c49cb9abd659f3f761a41a"
+          ],
+          "boundary": "LangChain input before provider serialization"
+        },
+        {
+          "number": 6,
+          "image_sha256": [
+            "a88db89985d730107c5709ad13a985d6dfbd9c6a37cf6d4e4cf0d99fb17880b6",
+            "812c0e6cfb3ef4779101f8695daee2e1792074dbef0745bf93df748b2d4cd1db",
+            "8ef188b4fad8fd59cc4414658dd6f0aa925a2664c6e99c4bd57fdae13753e405"
+          ],
+          "current_pixel_sha256": [
+            "4f62f0b26783e7b0fc78d2b5aeb7e8c332dcebd6783ff144229b0f1a37b8a4f1",
+            "a97a1a13485b6e8dc0e675bba6f0d3e6251b5920db1f53bde187ba9af15b5a5b",
+            "bd31f501c730381e16aa7632e016f4fcfd394d26081ce3e360404af272a2d8d8"
+          ],
+          "bound_tool_names": [
+            "ls",
+            "read_file",
+            "write_file",
+            "edit_file",
+            "delete",
+            "glob",
+            "grep",
+            "task",
+            "set_parameters",
+            "compare_preview"
+          ],
+          "reference_image_sha256": [
+            "8431f0a97a9caae5bdd1ad7e0d6d82e94a604c5a53c49cb9abd659f3f761a41a"
+          ],
+          "boundary": "LangChain input before provider serialization"
+        },
+        {
+          "number": 7,
+          "image_sha256": [
+            "a88db89985d730107c5709ad13a985d6dfbd9c6a37cf6d4e4cf0d99fb17880b6",
+            "812c0e6cfb3ef4779101f8695daee2e1792074dbef0745bf93df748b2d4cd1db",
+            "8ef188b4fad8fd59cc4414658dd6f0aa925a2664c6e99c4bd57fdae13753e405"
+          ],
+          "current_pixel_sha256": [
+            "4f62f0b26783e7b0fc78d2b5aeb7e8c332dcebd6783ff144229b0f1a37b8a4f1",
+            "a97a1a13485b6e8dc0e675bba6f0d3e6251b5920db1f53bde187ba9af15b5a5b",
+            "bd31f501c730381e16aa7632e016f4fcfd394d26081ce3e360404af272a2d8d8"
+          ],
+          "bound_tool_names": [
+            "ls",
+            "read_file",
+            "write_file",
+            "edit_file",
+            "delete",
+            "glob",
+            "grep",
+            "task",
+            "set_parameters",
+            "compare_preview"
+          ],
+          "reference_image_sha256": [
+            "8431f0a97a9caae5bdd1ad7e0d6d82e94a604c5a53c49cb9abd659f3f761a41a"
+          ],
+          "boundary": "LangChain input before provider serialization"
+        },
+        {
+          "number": 8,
+          "image_sha256": [
+            "a88db89985d730107c5709ad13a985d6dfbd9c6a37cf6d4e4cf0d99fb17880b6",
+            "812c0e6cfb3ef4779101f8695daee2e1792074dbef0745bf93df748b2d4cd1db",
+            "8ef188b4fad8fd59cc4414658dd6f0aa925a2664c6e99c4bd57fdae13753e405",
+            "80f4f30e43b71a97ebc096409daea0b2cdb8e8318de938f51aae83c9acf9aba8"
+          ],
+          "current_pixel_sha256": [
+            "4f62f0b26783e7b0fc78d2b5aeb7e8c332dcebd6783ff144229b0f1a37b8a4f1",
+            "a97a1a13485b6e8dc0e675bba6f0d3e6251b5920db1f53bde187ba9af15b5a5b",
+            "bd31f501c730381e16aa7632e016f4fcfd394d26081ce3e360404af272a2d8d8",
+            "b4fd1baa15dbf21bfcec60245c4b5366ecabf36a3bcb46a9413fbf0ec8cb9a12"
+          ],
+          "bound_tool_names": [
+            "ls",
+            "read_file",
+            "write_file",
+            "edit_file",
+            "delete",
+            "glob",
+            "grep",
+            "task",
+            "set_parameters",
+            "compare_preview"
+          ],
+          "reference_image_sha256": [
+            "8431f0a97a9caae5bdd1ad7e0d6d82e94a604c5a53c49cb9abd659f3f761a41a"
+          ],
+          "boundary": "LangChain input before provider serialization"
+        }
+      ],
+      "requested_tools": [
+        {
+          "name": "compare_preview",
+          "args": {},
+          "id": "call_7ebae0b51a304170b3071517",
+          "type": "tool_call"
+        },
+        {
+          "name": "set_parameters",
+          "args": {
+            "parameters": {
+              "u_scale": 1.05,
+              "u_blur": 0.6
+            }
+          },
+          "id": "call_e818048938f140899e59d3cd",
+          "type": "tool_call"
+        },
+        {
+          "name": "compare_preview",
+          "args": {},
+          "id": "call_a9d44ba310554c15a99e98d8",
+          "type": "tool_call"
+        },
+        {
+          "name": "set_parameters",
+          "args": {
+            "parameters": {
+              "u_bloom": 1.0,
+              "u_rim": 1.5
+            }
+          },
+          "id": "call_d1af6e53589842ed84b6f43e",
+          "type": "tool_call"
+        },
+        {
+          "name": "compare_preview",
+          "args": {},
+          "id": "call_52de43788a8a424d9e6c7b1a",
+          "type": "tool_call"
+        },
+        {
+          "name": "set_parameters",
+          "args": {
+            "parameters": {
+              "u_pink": 1.1
+            }
+          },
+          "id": "call_cc36888b5a084015a76eb154",
+          "type": "tool_call"
+        },
+        {
+          "name": "compare_preview",
+          "args": {},
+          "id": "call_0dbcfc52fac7416480e7b793",
+          "type": "tool_call"
+        }
+      ],
+      "tool_results": [
+        {
+          "name": "compare_preview",
+          "status": "success",
+          "call_id": "call_7ebae0b51a304170b3071517",
+          "texts": [
+            "{\"revision\": 0, \"parameters\": {\"u_scale\": 0.7, \"u_bloom\": 0.2, \"u_pink\": 0.6, \"u_rim\": 1, \"u_blur\": 1.2}, \"width\": 1024, \"height\": 576, \"time\": 0, \"trial_id\": 1, \"layout\": \"reference_left_current_right\", \"image_width\": 2048, \"image_height\": 600}"
+          ],
+          "images": [
+            {
+              "image": "tool-01-image-01.png",
+              "sha256": "a88db89985d730107c5709ad13a985d6dfbd9c6a37cf6d4e4cf0d99fb17880b6",
+              "current_image": "tool-01-image-01-current.png",
+              "current_pixel_sha256": "4f62f0b26783e7b0fc78d2b5aeb7e8c332dcebd6783ff144229b0f1a37b8a4f1",
+              "metadata": {
+                "revision": 0,
+                "parameters": {
+                  "u_scale": 0.7,
+                  "u_bloom": 0.2,
+                  "u_pink": 0.6,
+                  "u_rim": 1,
+                  "u_blur": 1.2
+                },
+                "width": 1024,
+                "height": 576,
+                "time": 0,
+                "trial_id": 1,
+                "layout": "reference_left_current_right",
+                "image_width": 2048,
+                "image_height": 600
+              },
+              "provenance": "Exact current-image pixels extracted without resizing"
+            }
+          ],
+          "text": "{\"revision\": 0, \"parameters\": {\"u_scale\": 0.7, \"u_bloom\": 0.2, \"u_pink\": 0.6, \"u_rim\": 1, \"u_blur\": 1.2}, \"width\": 1024, \"height\": 576, \"time\": 0, \"trial_id\": 1, \"layout\": \"reference_left_current_right\", \"image_width\": 2048, \"image_height\": 600}"
+        },
+        {
+          "name": "set_parameters",
+          "status": "success",
+          "call_id": "call_e818048938f140899e59d3cd",
+          "texts": [
+            "{\"parameters\": {\"u_scale\": 1.05, \"u_bloom\": 0.2, \"u_pink\": 0.6, \"u_rim\": 1, \"u_blur\": 0.6}}"
+          ],
+          "images": [],
+          "text": "{\"parameters\": {\"u_scale\": 1.05, \"u_bloom\": 0.2, \"u_pink\": 0.6, \"u_rim\": 1, \"u_blur\": 0.6}}"
+        },
+        {
+          "name": "compare_preview",
+          "status": "success",
+          "call_id": "call_a9d44ba310554c15a99e98d8",
+          "texts": [
+            "{\"revision\": 1, \"parameters\": {\"u_scale\": 1.05, \"u_bloom\": 0.2, \"u_pink\": 0.6, \"u_rim\": 1, \"u_blur\": 0.6}, \"width\": 1024, \"height\": 576, \"time\": 0, \"trial_id\": 2, \"layout\": \"reference_left_current_right\", \"image_width\": 2048, \"image_height\": 600}"
+          ],
+          "images": [
+            {
+              "image": "tool-03-image-01.png",
+              "sha256": "812c0e6cfb3ef4779101f8695daee2e1792074dbef0745bf93df748b2d4cd1db",
+              "current_image": "tool-03-image-01-current.png",
+              "current_pixel_sha256": "a97a1a13485b6e8dc0e675bba6f0d3e6251b5920db1f53bde187ba9af15b5a5b",
+              "metadata": {
+                "revision": 1,
+                "parameters": {
+                  "u_scale": 1.05,
+                  "u_bloom": 0.2,
+                  "u_pink": 0.6,
+                  "u_rim": 1,
+                  "u_blur": 0.6
+                },
+                "width": 1024,
+                "height": 576,
+                "time": 0,
+                "trial_id": 2,
+                "layout": "reference_left_current_right",
+                "image_width": 2048,
+                "image_height": 600
+              },
+              "provenance": "Exact current-image pixels extracted without resizing"
+            }
+          ],
+          "text": "{\"revision\": 1, \"parameters\": {\"u_scale\": 1.05, \"u_bloom\": 0.2, \"u_pink\": 0.6, \"u_rim\": 1, \"u_blur\": 0.6}, \"width\": 1024, \"height\": 576, \"time\": 0, \"trial_id\": 2, \"layout\": \"reference_left_current_right\", \"image_width\": 2048, \"image_height\": 600}"
+        },
+        {
+          "name": "set_parameters",
+          "status": "success",
+          "call_id": "call_d1af6e53589842ed84b6f43e",
+          "texts": [
+            "{\"parameters\": {\"u_scale\": 1.05, \"u_bloom\": 1, \"u_pink\": 0.6, \"u_rim\": 1.5, \"u_blur\": 0.6}}"
+          ],
+          "images": [],
+          "text": "{\"parameters\": {\"u_scale\": 1.05, \"u_bloom\": 1, \"u_pink\": 0.6, \"u_rim\": 1.5, \"u_blur\": 0.6}}"
+        },
+        {
+          "name": "compare_preview",
+          "status": "success",
+          "call_id": "call_52de43788a8a424d9e6c7b1a",
+          "texts": [
+            "{\"revision\": 2, \"parameters\": {\"u_scale\": 1.05, \"u_bloom\": 1, \"u_pink\": 0.6, \"u_rim\": 1.5, \"u_blur\": 0.6}, \"width\": 1024, \"height\": 576, \"time\": 0, \"trial_id\": 3, \"layout\": \"reference_left_current_right\", \"image_width\": 2048, \"image_height\": 600}"
+          ],
+          "images": [
+            {
+              "image": "tool-05-image-01.png",
+              "sha256": "8ef188b4fad8fd59cc4414658dd6f0aa925a2664c6e99c4bd57fdae13753e405",
+              "current_image": "tool-05-image-01-current.png",
+              "current_pixel_sha256": "bd31f501c730381e16aa7632e016f4fcfd394d26081ce3e360404af272a2d8d8",
+              "metadata": {
+                "revision": 2,
+                "parameters": {
+                  "u_scale": 1.05,
+                  "u_bloom": 1,
+                  "u_pink": 0.6,
+                  "u_rim": 1.5,
+                  "u_blur": 0.6
+                },
+                "width": 1024,
+                "height": 576,
+                "time": 0,
+                "trial_id": 3,
+                "layout": "reference_left_current_right",
+                "image_width": 2048,
+                "image_height": 600
+              },
+              "provenance": "Exact current-image pixels extracted without resizing"
+            }
+          ],
+          "text": "{\"revision\": 2, \"parameters\": {\"u_scale\": 1.05, \"u_bloom\": 1, \"u_pink\": 0.6, \"u_rim\": 1.5, \"u_blur\": 0.6}, \"width\": 1024, \"height\": 576, \"time\": 0, \"trial_id\": 3, \"layout\": \"reference_left_current_right\", \"image_width\": 2048, \"image_height\": 600}"
+        },
+        {
+          "name": "set_parameters",
+          "status": "success",
+          "call_id": "call_cc36888b5a084015a76eb154",
+          "texts": [
+            "{\"parameters\": {\"u_scale\": 1.05, \"u_bloom\": 1, \"u_pink\": 1.1, \"u_rim\": 1.5, \"u_blur\": 0.6}}"
+          ],
+          "images": [],
+          "text": "{\"parameters\": {\"u_scale\": 1.05, \"u_bloom\": 1, \"u_pink\": 1.1, \"u_rim\": 1.5, \"u_blur\": 0.6}}"
+        },
+        {
+          "name": "compare_preview",
+          "status": "success",
+          "call_id": "call_0dbcfc52fac7416480e7b793",
+          "texts": [
+            "{\"revision\": 3, \"parameters\": {\"u_scale\": 1.05, \"u_bloom\": 1, \"u_pink\": 1.1, \"u_rim\": 1.5, \"u_blur\": 0.6}, \"width\": 1024, \"height\": 576, \"time\": 0, \"trial_id\": 4, \"layout\": \"reference_left_current_right\", \"image_width\": 2048, \"image_height\": 600}"
+          ],
+          "images": [
+            {
+              "image": "tool-07-image-01.png",
+              "sha256": "80f4f30e43b71a97ebc096409daea0b2cdb8e8318de938f51aae83c9acf9aba8",
+              "current_image": "tool-07-image-01-current.png",
+              "current_pixel_sha256": "b4fd1baa15dbf21bfcec60245c4b5366ecabf36a3bcb46a9413fbf0ec8cb9a12",
+              "metadata": {
+                "revision": 3,
+                "parameters": {
+                  "u_scale": 1.05,
+                  "u_bloom": 1,
+                  "u_pink": 1.1,
+                  "u_rim": 1.5,
+                  "u_blur": 0.6
+                },
+                "width": 1024,
+                "height": 576,
+                "time": 0,
+                "trial_id": 4,
+                "layout": "reference_left_current_right",
+                "image_width": 2048,
+                "image_height": 600
+              },
+              "provenance": "Exact current-image pixels extracted without resizing"
+            }
+          ],
+          "text": "{\"revision\": 3, \"parameters\": {\"u_scale\": 1.05, \"u_bloom\": 1, \"u_pink\": 1.1, \"u_rim\": 1.5, \"u_blur\": 0.6}, \"width\": 1024, \"height\": 576, \"time\": 0, \"trial_id\": 4, \"layout\": \"reference_left_current_right\", \"image_width\": 2048, \"image_height\": 600}"
+        }
+      ],
+      "assistant_messages": [
+        "我先取基线并排图观察当前渲染与参考图的差异。",
+        "基线观察：当前图形整体明显偏小（参考图中两圆更大），且前景圆边界过于模糊、几乎看不到重叠边缘的紫色晕染。第一步先放大整体缩放并减小模糊宽度。",
+        "参数已更新，取并排图检查实际效果。",
+        "大小已接近参考图。剩余差异：参考图重叠区域紫色晕染明显更强，且前景圆压在蓝圆上的边缘有一条清晰的浅色描边；当前重叠区偏蓝、描边不明显。第二步加大紫色晕染并加强边缘描边。",
+        "紫色晕染已出现，但参考图前景圆顶部的粉色染色更明显（左上偏品红），当前仍偏淡。第三次修改：加强粉色染色。",
+        "已完成三次修改，最终参数为 u_scale=1.05、u_bloom=1.0、u_pink=1.1、u_rim=1.5、u_blur=0.6。\n\n对比结果：\n- **轮廓与位置**：整体大小、两圆相对位置已与参考图基本一致（第一次修改将 u_scale 从 0.7 提到 1.05 解决了明显偏小的问题）。\n- **重叠区晕染**：u_bloom 提升后重叠区出现了参考图中的紫色晕染，位置和范围接近。\n- **粉色染色**：u_pink 提升后前景圆顶部有粉色倾向，但相比参考图中左上较明显的品红染色，当前仍偏淡。\n\n**如实说明剩余差异**：\n1. 参考图前景圆顶部的粉色染色更浓、范围更大，当前仍偏淡偏弱。\n2. 参考图蓝圆颜色更深（纯蓝），当前偏青绿色一些（颜色不受允许参数控制，无法调整）。\n3. 参考图中前景圆左下与蓝圆交界处有一条较清晰的浅色描边，当前描边虽加强但不如参考图清晰。\n4. 参考图前景圆的模糊过渡更柔和、灰白色区域更大更实，当前的模糊边界稍显集中。\n\n三次修改额度已用完，以上差异如实报告。"
+      ],
+      "usage": [
+        {
+          "input_tokens": 4225,
+          "output_tokens": 31,
+          "total_tokens": 4256,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 10
+          }
+        },
+        {
+          "input_tokens": 6004,
+          "output_tokens": 184,
+          "total_tokens": 6188,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 4096,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 110
+          }
+        },
+        {
+          "input_tokens": 6132,
+          "output_tokens": 18,
+          "total_tokens": 6150,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 5760,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        {
+          "input_tokens": 7908,
+          "output_tokens": 222,
+          "total_tokens": 8130,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 5888,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 135
+          }
+        },
+        {
+          "input_tokens": 8049,
+          "output_tokens": 6,
+          "total_tokens": 8055,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 7680,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        {
+          "input_tokens": 9813,
+          "output_tokens": 190,
+          "total_tokens": 10003,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 7808,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 133
+          }
+        },
+        {
+          "input_tokens": 9924,
+          "output_tokens": 6,
+          "total_tokens": 9930,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 9600,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        {
+          "input_tokens": 11688,
+          "output_tokens": 300,
+          "total_tokens": 11988,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 9728,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        }
+      ],
+      "model_responses": [
+        {
+          "number": 1,
+          "finish_reason": "tool_calls",
+          "model_name": "z-ai/glm-5.3-flash",
+          "content": "我先取基线并排图观察当前渲染与参考图的差异。",
+          "has_visible_content": true,
+          "tool_names": [
+            "compare_preview"
+          ]
+        },
+        {
+          "number": 2,
+          "finish_reason": "tool_calls",
+          "model_name": "z-ai/glm-5.3-flash",
+          "content": "基线观察：当前图形整体明显偏小（参考图中两圆更大），且前景圆边界过于模糊、几乎看不到重叠边缘的紫色晕染。第一步先放大整体缩放并减小模糊宽度。",
+          "has_visible_content": true,
+          "tool_names": [
+            "set_parameters"
+          ]
+        },
+        {
+          "number": 3,
+          "finish_reason": "tool_calls",
+          "model_name": "z-ai/glm-5.3-flash",
+          "content": "参数已更新，取并排图检查实际效果。",
+          "has_visible_content": true,
+          "tool_names": [
+            "compare_preview"
+          ]
+        },
+        {
+          "number": 4,
+          "finish_reason": "tool_calls",
+          "model_name": "z-ai/glm-5.3-flash",
+          "content": "大小已接近参考图。剩余差异：参考图重叠区域紫色晕染明显更强，且前景圆压在蓝圆上的边缘有一条清晰的浅色描边；当前重叠区偏蓝、描边不明显。第二步加大紫色晕染并加强边缘描边。",
+          "has_visible_content": true,
+          "tool_names": [
+            "set_parameters"
+          ]
+        },
+        {
+          "number": 5,
+          "finish_reason": "tool_calls",
+          "model_name": "z-ai/glm-5.3-flash",
+          "content": "",
+          "has_visible_content": false,
+          "tool_names": [
+            "compare_preview"
+          ]
+        },
+        {
+          "number": 6,
+          "finish_reason": "tool_calls",
+          "model_name": "z-ai/glm-5.3-flash",
+          "content": "紫色晕染已出现，但参考图前景圆顶部的粉色染色更明显（左上偏品红），当前仍偏淡。第三次修改：加强粉色染色。",
+          "has_visible_content": true,
+          "tool_names": [
+            "set_parameters"
+          ]
+        },
+        {
+          "number": 7,
+          "finish_reason": "tool_calls",
+          "model_name": "z-ai/glm-5.3-flash",
+          "content": "",
+          "has_visible_content": false,
+          "tool_names": [
+            "compare_preview"
+          ]
+        },
+        {
+          "number": 8,
+          "finish_reason": "stop",
+          "model_name": "z-ai/glm-5.3-flash",
+          "content": "已完成三次修改，最终参数为 u_scale=1.05、u_bloom=1.0、u_pink=1.1、u_rim=1.5、u_blur=0.6。\n\n对比结果：\n- **轮廓与位置**：整体大小、两圆相对位置已与参考图基本一致（第一次修改将 u_scale 从 0.7 提到 1.05 解决了明显偏小的问题）。\n- **重叠区晕染**：u_bloom 提升后重叠区出现了参考图中的紫色晕染，位置和范围接近。\n- **粉色染色**：u_pink 提升后前景圆顶部有粉色倾向，但相比参考图中左上较明显的品红染色，当前仍偏淡。\n\n**如实说明剩余差异**：\n1. 参考图前景圆顶部的粉色染色更浓、范围更大，当前仍偏淡偏弱。\n2. 参考图蓝圆颜色更深（纯蓝），当前偏青绿色一些（颜色不受允许参数控制，无法调整）。\n3. 参考图中前景圆左下与蓝圆交界处有一条较清晰的浅色描边，当前描边虽加强但不如参考图清晰。\n4. 参考图前景圆的模糊过渡更柔和、灰白色区域更大更实，当前的模糊边界稍显集中。\n\n三次修改额度已用完，以上差异如实报告。",
+          "has_visible_content": true,
+          "tool_names": []
+        }
+      ],
+      "reference_sha256": "8431f0a97a9caae5bdd1ad7e0d6d82e94a604c5a53c49cb9abd659f3f761a41a",
+      "before": {
+        "parameters": {
+          "u_scale": 0.7,
+          "u_bloom": 0.2,
+          "u_pink": 0.6,
+          "u_rim": 1,
+          "u_blur": 1.2
+        },
+        "revision": 0,
+        "sha256": "e93265be4e3a74857a8d742f659ee861c218e3f586a3d63299aa61497b61c617",
+        "pixel_sha256": "4f62f0b26783e7b0fc78d2b5aeb7e8c332dcebd6783ff144229b0f1a37b8a4f1"
+      },
+      "before_matches_baseline_pixels": true,
+      "experiment_tool_names": [
+        "set_parameters",
+        "compare_preview"
+      ],
+      "task_text": "下面的图片是只读的目标参考图, 不是当前渲染图. 任务是调整工具允许的 uniform 参数, 使当前渲染尽量与参考图一致. 若有 compare_preview, 用其左参考右当前的并排图观察基线和每次修改结果; 否则调用 capture_preview 后与本参考图对照. 通过 set_parameters 提交新值, 再单独取图检查实际图片. 只修改允许参数, 不修改 Shader 源码、参数范围或参考图. 根据图像差异决定调整, 不假定知道目标参数; 尚有差异时如实说明.\n补充要求: 只允许修改工具列出的参数, 其他源码和参数固定. 本次最多修改三次, 每次重新取图对照参考图, 尽量匹配轮廓、位置、大小、亮度和光晕. 达到目标就停止, 如实报告剩余差异. 不使用其他工具或子任务. 本轮观察基线及每次更新后的当前渲染都必须调用 compare_preview, 不使用 capture_preview. 如已配置 get_trial_history, 可按需回读历史参数和截图, 自行判断是否用 set_parameters 恢复; 未配置则不调用. 参数含义: u_scale=整体缩放; u_bloom=前景圆内重叠区域的紫色晕染强度; u_pink=前景圆顶部粉色染色强度; u_rim=重叠边缘描边强度; u_blur=前景圆内后方圆边界的模糊宽度. 只依据参考图和实际渲染判断, 不假定参考图一定能在这些参数范围内精确实现.",
+      "after": {
+        "parameters": {
+          "u_scale": 1.05,
+          "u_bloom": 1,
+          "u_pink": 1.1,
+          "u_rim": 1.5,
+          "u_blur": 0.6
+        },
+        "revision": 3,
+        "sha256": "d39f9fa43c69a5f5ee433de873dbad8a225d68638be7839b4de57323e6fe0443",
+        "pixel_sha256": "b4fd1baa15dbf21bfcec60245c4b5366ecabf36a3bcb46a9413fbf0ec8cb9a12"
+      },
+      "elapsed_seconds": 31.14,
+      "evaluation": {
+        "only_allowed_parameter_submissions": true,
+        "all_tools_successful": true,
+        "no_other_tools_requested": true,
+        "reference_in_all_model_inputs": true,
+        "history_availability_matches_group": true,
+        "compare_only_schema_in_all_requests": true,
+        "capture_preview_requested": false,
+        "history_tool_requested": false,
+        "history_calls": 0,
+        "update_calls": 3,
+        "capture_calls": 4,
+        "compare_calls": 4,
+        "final_image_in_later_model_input": true,
+        "changed_all_requested_parameters": true,
+        "image_errors": {
+          "before": {
+            "mae_rgb_8bit": 5.259889955873843,
+            "rmse_rgb_8bit": 25.397976944868496,
+            "pixel_exact_match": false
+          },
+          "after": {
+            "mae_rgb_8bit": 1.669849537037037,
+            "rmse_rgb_8bit": 10.892559220091893,
+            "pixel_exact_match": false
+          }
+        },
+        "mae_reduction_fraction": 0.6825314690904747,
+        "pixel_exact_match": false,
+        "user_visual_acceptance": "pending",
+        "capture_errors": [
+          {
+            "parameters": {
+              "u_scale": 0.7,
+              "u_bloom": 0.2,
+              "u_pink": 0.6,
+              "u_rim": 1,
+              "u_blur": 1.2
+            },
+            "revision": 0,
+            "image": "tool-01-image-01-current.png",
+            "mae_rgb_8bit": 5.259889955873843
+          },
+          {
+            "parameters": {
+              "u_scale": 1.05,
+              "u_bloom": 0.2,
+              "u_pink": 0.6,
+              "u_rim": 1,
+              "u_blur": 0.6
+            },
+            "revision": 1,
+            "image": "tool-03-image-01-current.png",
+            "mae_rgb_8bit": 1.7050809507016782
+          },
+          {
+            "parameters": {
+              "u_scale": 1.05,
+              "u_bloom": 1,
+              "u_pink": 0.6,
+              "u_rim": 1.5,
+              "u_blur": 0.6
+            },
+            "revision": 2,
+            "image": "tool-05-image-01-current.png",
+            "mae_rgb_8bit": 1.6592107702184606
+          },
+          {
+            "parameters": {
+              "u_scale": 1.05,
+              "u_bloom": 1,
+              "u_pink": 1.1,
+              "u_rim": 1.5,
+              "u_blur": 0.6
+            },
+            "revision": 3,
+            "image": "tool-07-image-01-current.png",
+            "mae_rgb_8bit": 1.669849537037037
+          }
+        ],
+        "best_captured_candidate": {
+          "parameters": {
+            "u_scale": 1.05,
+            "u_bloom": 1,
+            "u_pink": 0.6,
+            "u_rim": 1.5,
+            "u_blur": 0.6
+          },
+          "revision": 2,
+          "image": "tool-05-image-01-current.png",
+          "mae_rgb_8bit": 1.6592107702184606
+        },
+        "final_worse_than_best": true,
+        "all_tool_images_in_model_input": true,
+        "final_revision_image_in_model_input": true,
+        "prompt_update_limit_exceeded": false
+      }
+    },
+    {
+      "id": "B-circles",
+      "case_id": "circles",
+      "group": "B",
+      "history_tool_enabled": true,
+      "title": "用户重叠圆形参考匹配",
+      "parameters": {
+        "u_scale": {
+          "min": 0.7,
+          "max": 1.4,
+          "initial": 0.7
+        },
+        "u_bloom": {
+          "min": 0.0,
+          "max": 1.6,
+          "initial": 0.2
+        },
+        "u_pink": {
+          "min": 0.0,
+          "max": 1.5,
+          "initial": 0.6
+        },
+        "u_rim": {
+          "min": 0.0,
+          "max": 2.0,
+          "initial": 1.0
+        },
+        "u_blur": {
+          "min": 0.4,
+          "max": 2.0,
+          "initial": 1.2
+        }
+      },
+      "goal": "匹配用户参考图",
+      "kind": "multiple",
+      "status": "completed",
+      "model_requests": [
+        {
+          "number": 1,
+          "image_sha256": [],
+          "current_pixel_sha256": [],
+          "bound_tool_names": [
+            "ls",
+            "read_file",
+            "write_file",
+            "edit_file",
+            "delete",
+            "glob",
+            "grep",
+            "task",
+            "set_parameters",
+            "compare_preview",
+            "get_trial_history"
+          ],
+          "reference_image_sha256": [
+            "8431f0a97a9caae5bdd1ad7e0d6d82e94a604c5a53c49cb9abd659f3f761a41a"
+          ],
+          "boundary": "LangChain input before provider serialization"
+        },
+        {
+          "number": 2,
+          "image_sha256": [
+            "a88db89985d730107c5709ad13a985d6dfbd9c6a37cf6d4e4cf0d99fb17880b6"
+          ],
+          "current_pixel_sha256": [
+            "4f62f0b26783e7b0fc78d2b5aeb7e8c332dcebd6783ff144229b0f1a37b8a4f1"
+          ],
+          "bound_tool_names": [
+            "ls",
+            "read_file",
+            "write_file",
+            "edit_file",
+            "delete",
+            "glob",
+            "grep",
+            "task",
+            "set_parameters",
+            "compare_preview",
+            "get_trial_history"
+          ],
+          "reference_image_sha256": [
+            "8431f0a97a9caae5bdd1ad7e0d6d82e94a604c5a53c49cb9abd659f3f761a41a"
+          ],
+          "boundary": "LangChain input before provider serialization"
+        },
+        {
+          "number": 3,
+          "image_sha256": [
+            "a88db89985d730107c5709ad13a985d6dfbd9c6a37cf6d4e4cf0d99fb17880b6"
+          ],
+          "current_pixel_sha256": [
+            "4f62f0b26783e7b0fc78d2b5aeb7e8c332dcebd6783ff144229b0f1a37b8a4f1"
+          ],
+          "bound_tool_names": [
+            "ls",
+            "read_file",
+            "write_file",
+            "edit_file",
+            "delete",
+            "glob",
+            "grep",
+            "task",
+            "set_parameters",
+            "compare_preview",
+            "get_trial_history"
+          ],
+          "reference_image_sha256": [
+            "8431f0a97a9caae5bdd1ad7e0d6d82e94a604c5a53c49cb9abd659f3f761a41a"
+          ],
+          "boundary": "LangChain input before provider serialization"
+        },
+        {
+          "number": 4,
+          "image_sha256": [
+            "a88db89985d730107c5709ad13a985d6dfbd9c6a37cf6d4e4cf0d99fb17880b6",
+            "16f168b228f33eba32325fd9b689dacc1128188939172a37afa4b026bbba541f"
+          ],
+          "current_pixel_sha256": [
+            "4f62f0b26783e7b0fc78d2b5aeb7e8c332dcebd6783ff144229b0f1a37b8a4f1",
+            "6ff9d00a657e6404da286ab19ba4f7a92568d7671e7c07fef4dd3293c96ff708"
+          ],
+          "bound_tool_names": [
+            "ls",
+            "read_file",
+            "write_file",
+            "edit_file",
+            "delete",
+            "glob",
+            "grep",
+            "task",
+            "set_parameters",
+            "compare_preview",
+            "get_trial_history"
+          ],
+          "reference_image_sha256": [
+            "8431f0a97a9caae5bdd1ad7e0d6d82e94a604c5a53c49cb9abd659f3f761a41a"
+          ],
+          "boundary": "LangChain input before provider serialization"
+        },
+        {
+          "number": 5,
+          "image_sha256": [
+            "a88db89985d730107c5709ad13a985d6dfbd9c6a37cf6d4e4cf0d99fb17880b6",
+            "16f168b228f33eba32325fd9b689dacc1128188939172a37afa4b026bbba541f"
+          ],
+          "current_pixel_sha256": [
+            "4f62f0b26783e7b0fc78d2b5aeb7e8c332dcebd6783ff144229b0f1a37b8a4f1",
+            "6ff9d00a657e6404da286ab19ba4f7a92568d7671e7c07fef4dd3293c96ff708"
+          ],
+          "bound_tool_names": [
+            "ls",
+            "read_file",
+            "write_file",
+            "edit_file",
+            "delete",
+            "glob",
+            "grep",
+            "task",
+            "set_parameters",
+            "compare_preview",
+            "get_trial_history"
+          ],
+          "reference_image_sha256": [
+            "8431f0a97a9caae5bdd1ad7e0d6d82e94a604c5a53c49cb9abd659f3f761a41a"
+          ],
+          "boundary": "LangChain input before provider serialization"
+        },
+        {
+          "number": 6,
+          "image_sha256": [
+            "a88db89985d730107c5709ad13a985d6dfbd9c6a37cf6d4e4cf0d99fb17880b6",
+            "16f168b228f33eba32325fd9b689dacc1128188939172a37afa4b026bbba541f",
+            "1066fd70b6174859bc4d9b1eb7da34882ea500ecf6a159a97897cbf24b220095"
+          ],
+          "current_pixel_sha256": [
+            "4f62f0b26783e7b0fc78d2b5aeb7e8c332dcebd6783ff144229b0f1a37b8a4f1",
+            "6ff9d00a657e6404da286ab19ba4f7a92568d7671e7c07fef4dd3293c96ff708",
+            "fb49caa3beaca52e4af5f31895abc9c04af7804878b26aa036568260884f82da"
+          ],
+          "bound_tool_names": [
+            "ls",
+            "read_file",
+            "write_file",
+            "edit_file",
+            "delete",
+            "glob",
+            "grep",
+            "task",
+            "set_parameters",
+            "compare_preview",
+            "get_trial_history"
+          ],
+          "reference_image_sha256": [
+            "8431f0a97a9caae5bdd1ad7e0d6d82e94a604c5a53c49cb9abd659f3f761a41a"
+          ],
+          "boundary": "LangChain input before provider serialization"
+        },
+        {
+          "number": 7,
+          "image_sha256": [
+            "a88db89985d730107c5709ad13a985d6dfbd9c6a37cf6d4e4cf0d99fb17880b6",
+            "16f168b228f33eba32325fd9b689dacc1128188939172a37afa4b026bbba541f",
+            "1066fd70b6174859bc4d9b1eb7da34882ea500ecf6a159a97897cbf24b220095"
+          ],
+          "current_pixel_sha256": [
+            "4f62f0b26783e7b0fc78d2b5aeb7e8c332dcebd6783ff144229b0f1a37b8a4f1",
+            "6ff9d00a657e6404da286ab19ba4f7a92568d7671e7c07fef4dd3293c96ff708",
+            "fb49caa3beaca52e4af5f31895abc9c04af7804878b26aa036568260884f82da"
+          ],
+          "bound_tool_names": [
+            "ls",
+            "read_file",
+            "write_file",
+            "edit_file",
+            "delete",
+            "glob",
+            "grep",
+            "task",
+            "set_parameters",
+            "compare_preview",
+            "get_trial_history"
+          ],
+          "reference_image_sha256": [
+            "8431f0a97a9caae5bdd1ad7e0d6d82e94a604c5a53c49cb9abd659f3f761a41a"
+          ],
+          "boundary": "LangChain input before provider serialization"
+        },
+        {
+          "number": 8,
+          "image_sha256": [
+            "a88db89985d730107c5709ad13a985d6dfbd9c6a37cf6d4e4cf0d99fb17880b6",
+            "16f168b228f33eba32325fd9b689dacc1128188939172a37afa4b026bbba541f",
+            "1066fd70b6174859bc4d9b1eb7da34882ea500ecf6a159a97897cbf24b220095",
+            "f08d2b07834646c8723a58639933816dde0c743ab24ebc5ea932496f8d52dae5"
+          ],
+          "current_pixel_sha256": [
+            "4f62f0b26783e7b0fc78d2b5aeb7e8c332dcebd6783ff144229b0f1a37b8a4f1",
+            "6ff9d00a657e6404da286ab19ba4f7a92568d7671e7c07fef4dd3293c96ff708",
+            "fb49caa3beaca52e4af5f31895abc9c04af7804878b26aa036568260884f82da",
+            "6272fdff19586ce80642614222d5bd5d2770c6c83eb3c9b3c27bd0378e98e42e"
+          ],
+          "bound_tool_names": [
+            "ls",
+            "read_file",
+            "write_file",
+            "edit_file",
+            "delete",
+            "glob",
+            "grep",
+            "task",
+            "set_parameters",
+            "compare_preview",
+            "get_trial_history"
+          ],
+          "reference_image_sha256": [
+            "8431f0a97a9caae5bdd1ad7e0d6d82e94a604c5a53c49cb9abd659f3f761a41a"
+          ],
+          "boundary": "LangChain input before provider serialization"
+        }
+      ],
+      "requested_tools": [
+        {
+          "name": "compare_preview",
+          "args": {},
+          "id": "call_f57d4405bb7b49da98e03f62",
+          "type": "tool_call"
+        },
+        {
+          "name": "set_parameters",
+          "args": {
+            "parameters": {
+              "u_scale": 1.4
+            }
+          },
+          "id": "call_181fad3f62c941c28e5aa001",
+          "type": "tool_call"
+        },
+        {
+          "name": "compare_preview",
+          "args": {},
+          "id": "call_770c317f2348423abfcbd1bf",
+          "type": "tool_call"
+        },
+        {
+          "name": "set_parameters",
+          "args": {
+            "parameters": {
+              "u_scale": 1.0,
+              "u_blur": 0.6
+            }
+          },
+          "id": "call_fc32ef216d63491d99402776",
+          "type": "tool_call"
+        },
+        {
+          "name": "compare_preview",
+          "args": {},
+          "id": "call_f7904c4edf6d4e26a630e584",
+          "type": "tool_call"
+        },
+        {
+          "name": "set_parameters",
+          "args": {
+            "parameters": {
+              "u_bloom": 1.1,
+              "u_pink": 1.0,
+              "u_blur": 0.5
+            }
+          },
+          "id": "call_7276b88f14ad44ae87ab4e34",
+          "type": "tool_call"
+        },
+        {
+          "name": "compare_preview",
+          "args": {},
+          "id": "call_a34434cdb96c45dfbc6a26c7",
+          "type": "tool_call"
+        }
+      ],
+      "tool_results": [
+        {
+          "name": "compare_preview",
+          "status": "success",
+          "call_id": "call_f57d4405bb7b49da98e03f62",
+          "texts": [
+            "{\"revision\": 0, \"parameters\": {\"u_scale\": 0.7, \"u_bloom\": 0.2, \"u_pink\": 0.6, \"u_rim\": 1, \"u_blur\": 1.2}, \"width\": 1024, \"height\": 576, \"time\": 0, \"trial_id\": 1, \"layout\": \"reference_left_current_right\", \"image_width\": 2048, \"image_height\": 600}"
+          ],
+          "images": [
+            {
+              "image": "tool-01-image-01.png",
+              "sha256": "a88db89985d730107c5709ad13a985d6dfbd9c6a37cf6d4e4cf0d99fb17880b6",
+              "current_image": "tool-01-image-01-current.png",
+              "current_pixel_sha256": "4f62f0b26783e7b0fc78d2b5aeb7e8c332dcebd6783ff144229b0f1a37b8a4f1",
+              "metadata": {
+                "revision": 0,
+                "parameters": {
+                  "u_scale": 0.7,
+                  "u_bloom": 0.2,
+                  "u_pink": 0.6,
+                  "u_rim": 1,
+                  "u_blur": 1.2
+                },
+                "width": 1024,
+                "height": 576,
+                "time": 0,
+                "trial_id": 1,
+                "layout": "reference_left_current_right",
+                "image_width": 2048,
+                "image_height": 600
+              },
+              "provenance": "Exact current-image pixels extracted without resizing"
+            }
+          ],
+          "text": "{\"revision\": 0, \"parameters\": {\"u_scale\": 0.7, \"u_bloom\": 0.2, \"u_pink\": 0.6, \"u_rim\": 1, \"u_blur\": 1.2}, \"width\": 1024, \"height\": 576, \"time\": 0, \"trial_id\": 1, \"layout\": \"reference_left_current_right\", \"image_width\": 2048, \"image_height\": 600}"
+        },
+        {
+          "name": "set_parameters",
+          "status": "success",
+          "call_id": "call_181fad3f62c941c28e5aa001",
+          "texts": [
+            "{\"parameters\": {\"u_scale\": 1.4, \"u_bloom\": 0.2, \"u_pink\": 0.6, \"u_rim\": 1, \"u_blur\": 1.2}}"
+          ],
+          "images": [],
+          "text": "{\"parameters\": {\"u_scale\": 1.4, \"u_bloom\": 0.2, \"u_pink\": 0.6, \"u_rim\": 1, \"u_blur\": 1.2}}"
+        },
+        {
+          "name": "compare_preview",
+          "status": "success",
+          "call_id": "call_770c317f2348423abfcbd1bf",
+          "texts": [
+            "{\"revision\": 1, \"parameters\": {\"u_scale\": 1.4, \"u_bloom\": 0.2, \"u_pink\": 0.6, \"u_rim\": 1, \"u_blur\": 1.2}, \"width\": 1024, \"height\": 576, \"time\": 0, \"trial_id\": 2, \"layout\": \"reference_left_current_right\", \"image_width\": 2048, \"image_height\": 600}"
+          ],
+          "images": [
+            {
+              "image": "tool-03-image-01.png",
+              "sha256": "16f168b228f33eba32325fd9b689dacc1128188939172a37afa4b026bbba541f",
+              "current_image": "tool-03-image-01-current.png",
+              "current_pixel_sha256": "6ff9d00a657e6404da286ab19ba4f7a92568d7671e7c07fef4dd3293c96ff708",
+              "metadata": {
+                "revision": 1,
+                "parameters": {
+                  "u_scale": 1.4,
+                  "u_bloom": 0.2,
+                  "u_pink": 0.6,
+                  "u_rim": 1,
+                  "u_blur": 1.2
+                },
+                "width": 1024,
+                "height": 576,
+                "time": 0,
+                "trial_id": 2,
+                "layout": "reference_left_current_right",
+                "image_width": 2048,
+                "image_height": 600
+              },
+              "provenance": "Exact current-image pixels extracted without resizing"
+            }
+          ],
+          "text": "{\"revision\": 1, \"parameters\": {\"u_scale\": 1.4, \"u_bloom\": 0.2, \"u_pink\": 0.6, \"u_rim\": 1, \"u_blur\": 1.2}, \"width\": 1024, \"height\": 576, \"time\": 0, \"trial_id\": 2, \"layout\": \"reference_left_current_right\", \"image_width\": 2048, \"image_height\": 600}"
+        },
+        {
+          "name": "set_parameters",
+          "status": "success",
+          "call_id": "call_fc32ef216d63491d99402776",
+          "texts": [
+            "{\"parameters\": {\"u_scale\": 1, \"u_bloom\": 0.2, \"u_pink\": 0.6, \"u_rim\": 1, \"u_blur\": 0.6}}"
+          ],
+          "images": [],
+          "text": "{\"parameters\": {\"u_scale\": 1, \"u_bloom\": 0.2, \"u_pink\": 0.6, \"u_rim\": 1, \"u_blur\": 0.6}}"
+        },
+        {
+          "name": "compare_preview",
+          "status": "success",
+          "call_id": "call_f7904c4edf6d4e26a630e584",
+          "texts": [
+            "{\"revision\": 2, \"parameters\": {\"u_scale\": 1, \"u_bloom\": 0.2, \"u_pink\": 0.6, \"u_rim\": 1, \"u_blur\": 0.6}, \"width\": 1024, \"height\": 576, \"time\": 0, \"trial_id\": 3, \"layout\": \"reference_left_current_right\", \"image_width\": 2048, \"image_height\": 600}"
+          ],
+          "images": [
+            {
+              "image": "tool-05-image-01.png",
+              "sha256": "1066fd70b6174859bc4d9b1eb7da34882ea500ecf6a159a97897cbf24b220095",
+              "current_image": "tool-05-image-01-current.png",
+              "current_pixel_sha256": "fb49caa3beaca52e4af5f31895abc9c04af7804878b26aa036568260884f82da",
+              "metadata": {
+                "revision": 2,
+                "parameters": {
+                  "u_scale": 1,
+                  "u_bloom": 0.2,
+                  "u_pink": 0.6,
+                  "u_rim": 1,
+                  "u_blur": 0.6
+                },
+                "width": 1024,
+                "height": 576,
+                "time": 0,
+                "trial_id": 3,
+                "layout": "reference_left_current_right",
+                "image_width": 2048,
+                "image_height": 600
+              },
+              "provenance": "Exact current-image pixels extracted without resizing"
+            }
+          ],
+          "text": "{\"revision\": 2, \"parameters\": {\"u_scale\": 1, \"u_bloom\": 0.2, \"u_pink\": 0.6, \"u_rim\": 1, \"u_blur\": 0.6}, \"width\": 1024, \"height\": 576, \"time\": 0, \"trial_id\": 3, \"layout\": \"reference_left_current_right\", \"image_width\": 2048, \"image_height\": 600}"
+        },
+        {
+          "name": "set_parameters",
+          "status": "success",
+          "call_id": "call_7276b88f14ad44ae87ab4e34",
+          "texts": [
+            "{\"parameters\": {\"u_scale\": 1, \"u_bloom\": 1.1, \"u_pink\": 1, \"u_rim\": 1, \"u_blur\": 0.5}}"
+          ],
+          "images": [],
+          "text": "{\"parameters\": {\"u_scale\": 1, \"u_bloom\": 1.1, \"u_pink\": 1, \"u_rim\": 1, \"u_blur\": 0.5}}"
+        },
+        {
+          "name": "compare_preview",
+          "status": "success",
+          "call_id": "call_a34434cdb96c45dfbc6a26c7",
+          "texts": [
+            "{\"revision\": 3, \"parameters\": {\"u_scale\": 1, \"u_bloom\": 1.1, \"u_pink\": 1, \"u_rim\": 1, \"u_blur\": 0.5}, \"width\": 1024, \"height\": 576, \"time\": 0, \"trial_id\": 4, \"layout\": \"reference_left_current_right\", \"image_width\": 2048, \"image_height\": 600}"
+          ],
+          "images": [
+            {
+              "image": "tool-07-image-01.png",
+              "sha256": "f08d2b07834646c8723a58639933816dde0c743ab24ebc5ea932496f8d52dae5",
+              "current_image": "tool-07-image-01-current.png",
+              "current_pixel_sha256": "6272fdff19586ce80642614222d5bd5d2770c6c83eb3c9b3c27bd0378e98e42e",
+              "metadata": {
+                "revision": 3,
+                "parameters": {
+                  "u_scale": 1,
+                  "u_bloom": 1.1,
+                  "u_pink": 1,
+                  "u_rim": 1,
+                  "u_blur": 0.5
+                },
+                "width": 1024,
+                "height": 576,
+                "time": 0,
+                "trial_id": 4,
+                "layout": "reference_left_current_right",
+                "image_width": 2048,
+                "image_height": 600
+              },
+              "provenance": "Exact current-image pixels extracted without resizing"
+            }
+          ],
+          "text": "{\"revision\": 3, \"parameters\": {\"u_scale\": 1, \"u_bloom\": 1.1, \"u_pink\": 1, \"u_rim\": 1, \"u_blur\": 0.5}, \"width\": 1024, \"height\": 576, \"time\": 0, \"trial_id\": 4, \"layout\": \"reference_left_current_right\", \"image_width\": 2048, \"image_height\": 600}"
+        }
+      ],
+      "assistant_messages": [
+        "我先观察当前基线渲染与参考图的并排对比。",
+        "当前渲染明显比参考图小（约为参考图的 60–65%），且重叠区偏蓝、紫晕不足、模糊过强。第一步先增大整体缩放。",
+        "当前明显过大（约为参考图的 1.4 倍），且后方圆边界模糊过度。按第一次结果反推，目标缩放约 1.0；同时减小 u_blur 让后方圆边界更清晰。",
+        "尺寸已接近参考图。剩余主要差异：重叠区缺少参考图中明显的紫色晕染，粉色染色也偏弱，后方圆边界仍比参考图略模糊。进行第三次调整：增大 u_bloom 和 u_pink，微降 u_blur。",
+        "已完成三次调整，停止修改。最终参数：u_scale=1.0、u_bloom=1.1、u_pink=1.0、u_rim=1.0、u_blur=0.5。\n\n**已改善的方面：**\n- 尺寸与位置：当前两圆的大小、相对位置、重叠比例已与参考图基本一致。\n- 紫色晕染：重叠区的紫晕强度明显提升，方向和浓度已接近参考图。\n- 边界模糊：后方圆边界比初始版本清晰，接近参考图的柔和过渡。\n\n**剩余差异（如实报告）：**\n1. 紫晕/粉染位置偏移：参考图中紫粉色集中在重叠区的偏上（顶部偏左）位置，当前渲染的紫晕略偏下、偏右，粉色染色在上部仍比参考图淡一些。\n2. 重叠区明度：参考图重叠区整体更亮、偏灰紫；当前重叠区仍偏深蓝，暗于参考图。\n3. 后方圆边界仍比参考图略微模糊一点。\n\n这些差异部分受参数影响（如 u_pink 再提高可能改善上部粉染），但颜色分布位置更多由几何布局决定，已超出本次允许的三次修改和可用参数可完全消除的范围。当前结果在轮廓、位置、大小上已较接近参考图。"
+      ],
+      "usage": [
+        {
+          "input_tokens": 4357,
+          "output_tokens": 27,
+          "total_tokens": 4384,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 8
+          }
+        },
+        {
+          "input_tokens": 6134,
+          "output_tokens": 225,
+          "total_tokens": 6359,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 4224,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 167
+          }
+        },
+        {
+          "input_tokens": 6246,
+          "output_tokens": 6,
+          "total_tokens": 6252,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 5888,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        {
+          "input_tokens": 8010,
+          "output_tokens": 871,
+          "total_tokens": 8881,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 6016,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 792
+          }
+        },
+        {
+          "input_tokens": 8141,
+          "output_tokens": 6,
+          "total_tokens": 8147,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 7808,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        {
+          "input_tokens": 9903,
+          "output_tokens": 352,
+          "total_tokens": 10255,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 7936,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 256
+          }
+        },
+        {
+          "input_tokens": 10049,
+          "output_tokens": 6,
+          "total_tokens": 10055,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 9728,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        {
+          "input_tokens": 11809,
+          "output_tokens": 371,
+          "total_tokens": 12180,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 9856,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 79
+          }
+        }
+      ],
+      "model_responses": [
+        {
+          "number": 1,
+          "finish_reason": "tool_calls",
+          "model_name": "z-ai/glm-5.3-flash",
+          "content": "我先观察当前基线渲染与参考图的并排对比。",
+          "has_visible_content": true,
+          "tool_names": [
+            "compare_preview"
+          ]
+        },
+        {
+          "number": 2,
+          "finish_reason": "tool_calls",
+          "model_name": "z-ai/glm-5.3-flash",
+          "content": "当前渲染明显比参考图小（约为参考图的 60–65%），且重叠区偏蓝、紫晕不足、模糊过强。第一步先增大整体缩放。",
+          "has_visible_content": true,
+          "tool_names": [
+            "set_parameters"
+          ]
+        },
+        {
+          "number": 3,
+          "finish_reason": "tool_calls",
+          "model_name": "z-ai/glm-5.3-flash",
+          "content": "",
+          "has_visible_content": false,
+          "tool_names": [
+            "compare_preview"
+          ]
+        },
+        {
+          "number": 4,
+          "finish_reason": "tool_calls",
+          "model_name": "z-ai/glm-5.3-flash",
+          "content": "当前明显过大（约为参考图的 1.4 倍），且后方圆边界模糊过度。按第一次结果反推，目标缩放约 1.0；同时减小 u_blur 让后方圆边界更清晰。",
+          "has_visible_content": true,
+          "tool_names": [
+            "set_parameters"
+          ]
+        },
+        {
+          "number": 5,
+          "finish_reason": "tool_calls",
+          "model_name": "z-ai/glm-5.3-flash",
+          "content": "",
+          "has_visible_content": false,
+          "tool_names": [
+            "compare_preview"
+          ]
+        },
+        {
+          "number": 6,
+          "finish_reason": "tool_calls",
+          "model_name": "z-ai/glm-5.3-flash",
+          "content": "尺寸已接近参考图。剩余主要差异：重叠区缺少参考图中明显的紫色晕染，粉色染色也偏弱，后方圆边界仍比参考图略模糊。进行第三次调整：增大 u_bloom 和 u_pink，微降 u_blur。",
+          "has_visible_content": true,
+          "tool_names": [
+            "set_parameters"
+          ]
+        },
+        {
+          "number": 7,
+          "finish_reason": "tool_calls",
+          "model_name": "z-ai/glm-5.3-flash",
+          "content": "",
+          "has_visible_content": false,
+          "tool_names": [
+            "compare_preview"
+          ]
+        },
+        {
+          "number": 8,
+          "finish_reason": "stop",
+          "model_name": "z-ai/glm-5.3-flash",
+          "content": "已完成三次调整，停止修改。最终参数：u_scale=1.0、u_bloom=1.1、u_pink=1.0、u_rim=1.0、u_blur=0.5。\n\n**已改善的方面：**\n- 尺寸与位置：当前两圆的大小、相对位置、重叠比例已与参考图基本一致。\n- 紫色晕染：重叠区的紫晕强度明显提升，方向和浓度已接近参考图。\n- 边界模糊：后方圆边界比初始版本清晰，接近参考图的柔和过渡。\n\n**剩余差异（如实报告）：**\n1. 紫晕/粉染位置偏移：参考图中紫粉色集中在重叠区的偏上（顶部偏左）位置，当前渲染的紫晕略偏下、偏右，粉色染色在上部仍比参考图淡一些。\n2. 重叠区明度：参考图重叠区整体更亮、偏灰紫；当前重叠区仍偏深蓝，暗于参考图。\n3. 后方圆边界仍比参考图略微模糊一点。\n\n这些差异部分受参数影响（如 u_pink 再提高可能改善上部粉染），但颜色分布位置更多由几何布局决定，已超出本次允许的三次修改和可用参数可完全消除的范围。当前结果在轮廓、位置、大小上已较接近参考图。",
+          "has_visible_content": true,
+          "tool_names": []
+        }
+      ],
+      "reference_sha256": "8431f0a97a9caae5bdd1ad7e0d6d82e94a604c5a53c49cb9abd659f3f761a41a",
+      "before": {
+        "parameters": {
+          "u_scale": 0.7,
+          "u_bloom": 0.2,
+          "u_pink": 0.6,
+          "u_rim": 1,
+          "u_blur": 1.2
+        },
+        "revision": 0,
+        "sha256": "e93265be4e3a74857a8d742f659ee861c218e3f586a3d63299aa61497b61c617",
+        "pixel_sha256": "4f62f0b26783e7b0fc78d2b5aeb7e8c332dcebd6783ff144229b0f1a37b8a4f1"
+      },
+      "before_matches_baseline_pixels": true,
+      "experiment_tool_names": [
+        "set_parameters",
+        "compare_preview",
+        "get_trial_history"
+      ],
+      "task_text": "下面的图片是只读的目标参考图, 不是当前渲染图. 任务是调整工具允许的 uniform 参数, 使当前渲染尽量与参考图一致. 若有 compare_preview, 用其左参考右当前的并排图观察基线和每次修改结果; 否则调用 capture_preview 后与本参考图对照. 通过 set_parameters 提交新值, 再单独取图检查实际图片. 只修改允许参数, 不修改 Shader 源码、参数范围或参考图. 根据图像差异决定调整, 不假定知道目标参数; 尚有差异时如实说明.\n补充要求: 只允许修改工具列出的参数, 其他源码和参数固定. 本次最多修改三次, 每次重新取图对照参考图, 尽量匹配轮廓、位置、大小、亮度和光晕. 达到目标就停止, 如实报告剩余差异. 不使用其他工具或子任务. 本轮观察基线及每次更新后的当前渲染都必须调用 compare_preview, 不使用 capture_preview. 如已配置 get_trial_history, 可按需回读历史参数和截图, 自行判断是否用 set_parameters 恢复; 未配置则不调用. 参数含义: u_scale=整体缩放; u_bloom=前景圆内重叠区域的紫色晕染强度; u_pink=前景圆顶部粉色染色强度; u_rim=重叠边缘描边强度; u_blur=前景圆内后方圆边界的模糊宽度. 只依据参考图和实际渲染判断, 不假定参考图一定能在这些参数范围内精确实现.",
+      "after": {
+        "parameters": {
+          "u_scale": 1,
+          "u_bloom": 1.1,
+          "u_pink": 1,
+          "u_rim": 1,
+          "u_blur": 0.5
+        },
+        "revision": 3,
+        "sha256": "25abf7c46b2029b77113ef2beae7ac179c0f5305ca1a5992f70ce3dbfd11bdba",
+        "pixel_sha256": "6272fdff19586ce80642614222d5bd5d2770c6c83eb3c9b3c27bd0378e98e42e"
+      },
+      "elapsed_seconds": 36.67,
+      "evaluation": {
+        "only_allowed_parameter_submissions": true,
+        "all_tools_successful": true,
+        "no_other_tools_requested": true,
+        "reference_in_all_model_inputs": true,
+        "history_availability_matches_group": true,
+        "compare_only_schema_in_all_requests": true,
+        "capture_preview_requested": false,
+        "history_tool_requested": false,
+        "history_calls": 0,
+        "update_calls": 3,
+        "capture_calls": 4,
+        "compare_calls": 4,
+        "final_image_in_later_model_input": true,
+        "changed_all_requested_parameters": false,
+        "image_errors": {
+          "before": {
+            "mae_rgb_8bit": 5.259889955873843,
+            "rmse_rgb_8bit": 25.397976944868496,
+            "pixel_exact_match": false
+          },
+          "after": {
+            "mae_rgb_8bit": 1.194580078125,
+            "rmse_rgb_8bit": 7.320162186809063,
+            "pixel_exact_match": false
+          }
+        },
+        "mae_reduction_fraction": 0.7728887698893806,
+        "pixel_exact_match": false,
+        "user_visual_acceptance": "pending",
+        "capture_errors": [
+          {
+            "parameters": {
+              "u_scale": 0.7,
+              "u_bloom": 0.2,
+              "u_pink": 0.6,
+              "u_rim": 1,
+              "u_blur": 1.2
+            },
+            "revision": 0,
+            "image": "tool-01-image-01-current.png",
+            "mae_rgb_8bit": 5.259889955873843
+          },
+          {
+            "parameters": {
+              "u_scale": 1.4,
+              "u_bloom": 0.2,
+              "u_pink": 0.6,
+              "u_rim": 1,
+              "u_blur": 1.2
+            },
+            "revision": 1,
+            "image": "tool-03-image-01-current.png",
+            "mae_rgb_8bit": 9.830882884837962
+          },
+          {
+            "parameters": {
+              "u_scale": 1,
+              "u_bloom": 0.2,
+              "u_pink": 0.6,
+              "u_rim": 1,
+              "u_blur": 0.6
+            },
+            "revision": 2,
+            "image": "tool-05-image-01-current.png",
+            "mae_rgb_8bit": 1.270965576171875
+          },
+          {
+            "parameters": {
+              "u_scale": 1,
+              "u_bloom": 1.1,
+              "u_pink": 1,
+              "u_rim": 1,
+              "u_blur": 0.5
+            },
+            "revision": 3,
+            "image": "tool-07-image-01-current.png",
+            "mae_rgb_8bit": 1.194580078125
+          }
+        ],
+        "best_captured_candidate": {
+          "parameters": {
+            "u_scale": 1,
+            "u_bloom": 1.1,
+            "u_pink": 1,
+            "u_rim": 1,
+            "u_blur": 0.5
+          },
+          "revision": 3,
+          "image": "tool-07-image-01-current.png",
+          "mae_rgb_8bit": 1.194580078125
+        },
+        "final_worse_than_best": false,
+        "all_tool_images_in_model_input": true,
+        "final_revision_image_in_model_input": true,
+        "prompt_update_limit_exceeded": false
+      }
+    }
+  ],
+  "source_sha256": {
+    "src/shader_deep/experiments/__init__.py": "69c94db400b78dfbdccb7e14aa94c61f26a7b44f95460de67d25965aab8cccb0",
+    "src/shader_deep/experiments/_parameter_history.py": "64100de6fed2321c15148f61451aa4bc569cb8b0e7f2b48e31dbc103600f88c9",
+    "src/shader_deep/experiments/controlled_replay.py": "9eff301f1ef700f044f33e6b639eaec7717ae2df8c9b9f48f971ca3ca8777d2b",
+    "src/shader_deep/experiments/parameter_agent.py": "d7adbd2cad35df5e49c78718b73c2b0dd51f4edd4041d1eadb1c5e8addf0f15c",
+    "src/shader_deep/experiments/parameter_task.py": "6050fc5d09a3b34a86959555a022c860b6546defbfd8747ea7fc5e9f297b33da",
+    "src/shader_deep/experiments/parameter_tool.py": "c4ee35b27789bf2710cb66362804000f850351f5bb37a271edf36fcab180a7e3",
+    "src/shader_deep/experiments/tools/__init__.py": "8b745cc3e33ea016c9a0de598b70d7ee161e9f7572298808117a7ad9aa25d135",
+    "src/shader_deep/experiments/tools/_common.py": "e6afc8819abdd7e5cd6b7c22b8521e573654f9c58ed0aa0e654624c920102944",
+    "src/shader_deep/experiments/tools/capture_preview.py": "8a43af944459b9467e6af705f00b7a9b4724c49534e4309c4449a2580536335a",
+    "src/shader_deep/experiments/tools/compare_preview.py": "01e8911d6c3574bfc5ef4f822670d94bbbc834e1c41d2bf41213d91c93cbb714",
+    "src/shader_deep/experiments/tools/factory.py": "77f34f7b3041335850caf160a813067503f6f86fa2ff0e50db8610015292a4f2",
+    "src/shader_deep/experiments/tools/get_trial_history.py": "52f00587c0d150cf99f6070ddf90aa8c7e1af4c8ae487db9823851734508c63e",
+    "src/shader_deep/experiments/tools/set_parameters.py": "ef0c78c3409a8ed4083dcd4c6e12e0e94551af3c75d1f4b83d38d42e7a53c958",
+    "src/shader_deep/imaging/comparison.py": "67a638f308d4b69e15ddd7f6330cf8220eca2425b1d500cb9db67230d526b27e"
+  },
+  "elapsed_seconds": 67.83,
+  "rows": [
+    {
+      "group": "A",
+      "status": "completed",
+      "usage": {
+        "model_calls": 8,
+        "usage_records": 8,
+        "input_tokens": 63743,
+        "output_tokens": 957,
+        "total_tokens": 64700,
+        "cache_read_tokens": 50560,
+        "reasoning_tokens": 388
+      },
+      "history_calls": 0,
+      "before_mae": 5.259889955873843,
+      "after_mae": 1.669849537037037,
+      "reduction_percent": 68.25314690904747,
+      "final_parameters": {
+        "u_scale": 1.05,
+        "u_bloom": 1,
+        "u_pink": 1.1,
+        "u_rim": 1.5,
+        "u_blur": 0.6
+      },
+      "finish_reason": "stop",
+      "final_worse_than_best": true
+    },
+    {
+      "group": "B",
+      "status": "completed",
+      "usage": {
+        "model_calls": 8,
+        "usage_records": 8,
+        "input_tokens": 64649,
+        "output_tokens": 1864,
+        "total_tokens": 66513,
+        "cache_read_tokens": 51456,
+        "reasoning_tokens": 1302
+      },
+      "history_calls": 0,
+      "before_mae": 5.259889955873843,
+      "after_mae": 1.194580078125,
+      "reduction_percent": 77.28887698893806,
+      "final_parameters": {
+        "u_scale": 1,
+        "u_bloom": 1.1,
+        "u_pink": 1,
+        "u_rim": 1,
+        "u_blur": 0.5
+      },
+      "finish_reason": "stop",
+      "final_worse_than_best": false
+    }
+  ],
+  "totals": {
+    "model_calls": 16,
+    "usage_records": 16,
+    "input_tokens": 128392,
+    "output_tokens": 2821,
+    "total_tokens": 131213,
+    "cache_read_tokens": 102016,
+    "reasoning_tokens": 1690
+  },
+  "findings": [
+    "User supplied revision-0019.frag and reference image. Defaults/ranges from five declared parameters; drawing algorithm unchanged, only host entry adapted.",
+    "Original main and adapted mainImage baseline differ by at most one RGB level. Model sees only reference, permitted parameters and actual compare_preview images.",
+    "Absolute target parameters are unknown. Relative circle positions, individual radii and base palette are fixed in source; this test does not prove exact matching is attainable.",
+    "Single A/B trial. MAE is offline diagnostic, not perceptual score. Actual last submitted parameters are retained, with response finish reasons preserved."
+  ]
+}

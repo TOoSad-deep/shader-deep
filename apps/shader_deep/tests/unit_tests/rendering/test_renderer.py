@@ -32,3 +32,8 @@ class RendererInputTests(TestCase):
             renderer.render(SHADER, 10, 10, 0.0)
         self.assertEqual(caught.exception.stage, "init")
         self.assertIn("with block", caught.exception.log)
+
+    def test_invalid_custom_uniforms_are_rejected_before_browser_access(self) -> None:
+        for values in ({"x": True}, {"x": float("nan")}, {"x": float("inf")}, {"iTime": 0.0}, {"iResolution": 1.0}, {"x;": 1.0}):
+            with self.subTest(values=values), self.assertRaises(ValueError):
+                WebGL2Renderer().render(SHADER, 10, 10, 0.0, uniforms=values)

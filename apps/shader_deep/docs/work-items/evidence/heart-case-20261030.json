@@ -1,0 +1,1920 @@
+{
+  "model": "z-ai/glm-5.3-flash",
+  "run_dir": "apps/shader_deep/runs/run-heart-case-_keef85o",
+  "status": "finished",
+  "input_manifest": {
+    "run_dir": "apps/shader_deep/runs/run-heart-case-_keef85o",
+    "width": 1024,
+    "height": 576,
+    "time": 0.0,
+    "parameters": {
+      "u_xd": {
+        "min": 0.12,
+        "max": 0.22,
+        "initial": 0.158
+      },
+      "u_r": {
+        "min": 0.16,
+        "max": 0.24,
+        "initial": 0.2105
+      },
+      "u_yc": {
+        "min": -0.02,
+        "max": 0.1,
+        "initial": 0.0492
+      },
+      "u_tip": {
+        "min": -0.42,
+        "max": -0.26,
+        "initial": -0.3475
+      },
+      "u_wmax": {
+        "min": 0.3,
+        "max": 0.39,
+        "initial": 0.3614
+      },
+      "u_fall": {
+        "min": 0.45,
+        "max": 1.1,
+        "initial": 0.45
+      },
+      "u_glow": {
+        "min": 0.5,
+        "max": 1.4,
+        "initial": 1.0949
+      },
+      "u_hi": {
+        "min": 0.3,
+        "max": 1.3,
+        "initial": 0.55
+      }
+    },
+    "original_sha256": "9b44e97959fd6ae324261b7cc9f2fa78718bf2f961574c50fe29a2ff8c523e35",
+    "reference_sha256": "9c3755ef8ec4cb6d28d2f91130bf52e3710333abd837e3cffa99d7567db2851d",
+    "adapted_sha256": "577f30c310353764d9df4a6c97b764e8c256d259414aa22a39ae98e9ce61e893",
+    "adaptation": "Remove host-supplied version/precision/output and built-in uniform declarations; main to mainImage; gl_FragCoord.xy to pixel; u_resolution to iResolution.xy. Original drawing expressions unchanged. Unused u_time removed.",
+    "original_native_matches_adapted_pixels": false,
+    "native_adapter_comparison": {
+      "pixel_exact": false,
+      "changed_pixels": 13,
+      "total_pixels": 589824,
+      "max_channel_difference": 1,
+      "mae_rgb_8bit": 7.3468243634259255e-06,
+      "note": "Tiny numerical differences retained and disclosed; original and adapted images show the same rounded bottom and horizontal line. Original drawing expressions were not changed."
+    }
+  },
+  "groups": {
+    "A": "compare_only_without_history",
+    "B": "compare_only_with_optional_history"
+  },
+  "paired_repetitions": 1,
+  "execution_order": "Alternate first group by case; sequential execution",
+  "comparison_mode": "Current rendering observation exclusively through compare_preview in both groups; optional history in B only; identical task text; no scores, differences or best-candidate labels given to model.",
+  "limits_per_case": {
+    "model_calls": 8,
+    "timeout_seconds": 45,
+    "max_retries": 0,
+    "max_tokens": 4096,
+    "graph_steps": 32
+  },
+  "evaluation_boundary": "User reference image, unknown target parameters and attainability. Only image, supplied parameter ranges/defaults and meanings enter model context. Post-run pixel errors are diagnostics, not perceptual scores.",
+  "cases": [
+    {
+      "id": "A-heart",
+      "case_id": "heart",
+      "group": "A",
+      "history_tool_enabled": false,
+      "title": "用户心形参考匹配",
+      "parameters": {
+        "u_xd": {
+          "min": 0.12,
+          "max": 0.22,
+          "initial": 0.158
+        },
+        "u_r": {
+          "min": 0.16,
+          "max": 0.24,
+          "initial": 0.2105
+        },
+        "u_yc": {
+          "min": -0.02,
+          "max": 0.1,
+          "initial": 0.0492
+        },
+        "u_tip": {
+          "min": -0.42,
+          "max": -0.26,
+          "initial": -0.3475
+        },
+        "u_wmax": {
+          "min": 0.3,
+          "max": 0.39,
+          "initial": 0.3614
+        },
+        "u_fall": {
+          "min": 0.45,
+          "max": 1.1,
+          "initial": 0.45
+        },
+        "u_glow": {
+          "min": 0.5,
+          "max": 1.4,
+          "initial": 1.0949
+        },
+        "u_hi": {
+          "min": 0.3,
+          "max": 1.3,
+          "initial": 0.55
+        }
+      },
+      "goal": "匹配用户参考图",
+      "kind": "multiple",
+      "status": "completed",
+      "model_requests": [
+        {
+          "number": 1,
+          "image_sha256": [],
+          "current_pixel_sha256": [],
+          "bound_tool_names": [
+            "ls",
+            "read_file",
+            "write_file",
+            "edit_file",
+            "delete",
+            "glob",
+            "grep",
+            "task",
+            "set_parameters",
+            "compare_preview"
+          ],
+          "reference_image_sha256": [
+            "9c3755ef8ec4cb6d28d2f91130bf52e3710333abd837e3cffa99d7567db2851d"
+          ],
+          "boundary": "LangChain input before provider serialization"
+        },
+        {
+          "number": 2,
+          "image_sha256": [
+            "ccf7f2fb2019cc3802da84f61c52f96db4ac8e47be99c387dd9c82834b72e74e"
+          ],
+          "current_pixel_sha256": [
+            "71f16c6e5ff2eb4d005b22f13436f2db3b16c7a4db6ca95af8cceb5a30872bd7"
+          ],
+          "bound_tool_names": [
+            "ls",
+            "read_file",
+            "write_file",
+            "edit_file",
+            "delete",
+            "glob",
+            "grep",
+            "task",
+            "set_parameters",
+            "compare_preview"
+          ],
+          "reference_image_sha256": [
+            "9c3755ef8ec4cb6d28d2f91130bf52e3710333abd837e3cffa99d7567db2851d"
+          ],
+          "boundary": "LangChain input before provider serialization"
+        },
+        {
+          "number": 3,
+          "image_sha256": [
+            "ccf7f2fb2019cc3802da84f61c52f96db4ac8e47be99c387dd9c82834b72e74e"
+          ],
+          "current_pixel_sha256": [
+            "71f16c6e5ff2eb4d005b22f13436f2db3b16c7a4db6ca95af8cceb5a30872bd7"
+          ],
+          "bound_tool_names": [
+            "ls",
+            "read_file",
+            "write_file",
+            "edit_file",
+            "delete",
+            "glob",
+            "grep",
+            "task",
+            "set_parameters",
+            "compare_preview"
+          ],
+          "reference_image_sha256": [
+            "9c3755ef8ec4cb6d28d2f91130bf52e3710333abd837e3cffa99d7567db2851d"
+          ],
+          "boundary": "LangChain input before provider serialization"
+        },
+        {
+          "number": 4,
+          "image_sha256": [
+            "ccf7f2fb2019cc3802da84f61c52f96db4ac8e47be99c387dd9c82834b72e74e",
+            "d27e3275dfc3abfb1c64169b37cf7d2faa85812db664901f800dc4cb6ca518aa"
+          ],
+          "current_pixel_sha256": [
+            "71f16c6e5ff2eb4d005b22f13436f2db3b16c7a4db6ca95af8cceb5a30872bd7",
+            "cfc7c879a568f7d97e4c9c5b68df556139e066fa9d6aaf11b7e6a623283362fb"
+          ],
+          "bound_tool_names": [
+            "ls",
+            "read_file",
+            "write_file",
+            "edit_file",
+            "delete",
+            "glob",
+            "grep",
+            "task",
+            "set_parameters",
+            "compare_preview"
+          ],
+          "reference_image_sha256": [
+            "9c3755ef8ec4cb6d28d2f91130bf52e3710333abd837e3cffa99d7567db2851d"
+          ],
+          "boundary": "LangChain input before provider serialization"
+        },
+        {
+          "number": 5,
+          "image_sha256": [
+            "ccf7f2fb2019cc3802da84f61c52f96db4ac8e47be99c387dd9c82834b72e74e",
+            "d27e3275dfc3abfb1c64169b37cf7d2faa85812db664901f800dc4cb6ca518aa"
+          ],
+          "current_pixel_sha256": [
+            "71f16c6e5ff2eb4d005b22f13436f2db3b16c7a4db6ca95af8cceb5a30872bd7",
+            "cfc7c879a568f7d97e4c9c5b68df556139e066fa9d6aaf11b7e6a623283362fb"
+          ],
+          "bound_tool_names": [
+            "ls",
+            "read_file",
+            "write_file",
+            "edit_file",
+            "delete",
+            "glob",
+            "grep",
+            "task",
+            "set_parameters",
+            "compare_preview"
+          ],
+          "reference_image_sha256": [
+            "9c3755ef8ec4cb6d28d2f91130bf52e3710333abd837e3cffa99d7567db2851d"
+          ],
+          "boundary": "LangChain input before provider serialization"
+        },
+        {
+          "number": 6,
+          "image_sha256": [
+            "ccf7f2fb2019cc3802da84f61c52f96db4ac8e47be99c387dd9c82834b72e74e",
+            "d27e3275dfc3abfb1c64169b37cf7d2faa85812db664901f800dc4cb6ca518aa",
+            "f2f70b6e7128d397cd0de7cee0c59384d7b96031a0c768e180ed0141025a6e7a"
+          ],
+          "current_pixel_sha256": [
+            "71f16c6e5ff2eb4d005b22f13436f2db3b16c7a4db6ca95af8cceb5a30872bd7",
+            "cfc7c879a568f7d97e4c9c5b68df556139e066fa9d6aaf11b7e6a623283362fb",
+            "61366272af46f6570bdfe62551e16239f1dd69e23b2474ac25fd1928b1a73b1f"
+          ],
+          "bound_tool_names": [
+            "ls",
+            "read_file",
+            "write_file",
+            "edit_file",
+            "delete",
+            "glob",
+            "grep",
+            "task",
+            "set_parameters",
+            "compare_preview"
+          ],
+          "reference_image_sha256": [
+            "9c3755ef8ec4cb6d28d2f91130bf52e3710333abd837e3cffa99d7567db2851d"
+          ],
+          "boundary": "LangChain input before provider serialization"
+        },
+        {
+          "number": 7,
+          "image_sha256": [
+            "ccf7f2fb2019cc3802da84f61c52f96db4ac8e47be99c387dd9c82834b72e74e",
+            "d27e3275dfc3abfb1c64169b37cf7d2faa85812db664901f800dc4cb6ca518aa",
+            "f2f70b6e7128d397cd0de7cee0c59384d7b96031a0c768e180ed0141025a6e7a"
+          ],
+          "current_pixel_sha256": [
+            "71f16c6e5ff2eb4d005b22f13436f2db3b16c7a4db6ca95af8cceb5a30872bd7",
+            "cfc7c879a568f7d97e4c9c5b68df556139e066fa9d6aaf11b7e6a623283362fb",
+            "61366272af46f6570bdfe62551e16239f1dd69e23b2474ac25fd1928b1a73b1f"
+          ],
+          "bound_tool_names": [
+            "ls",
+            "read_file",
+            "write_file",
+            "edit_file",
+            "delete",
+            "glob",
+            "grep",
+            "task",
+            "set_parameters",
+            "compare_preview"
+          ],
+          "reference_image_sha256": [
+            "9c3755ef8ec4cb6d28d2f91130bf52e3710333abd837e3cffa99d7567db2851d"
+          ],
+          "boundary": "LangChain input before provider serialization"
+        },
+        {
+          "number": 8,
+          "image_sha256": [
+            "ccf7f2fb2019cc3802da84f61c52f96db4ac8e47be99c387dd9c82834b72e74e",
+            "d27e3275dfc3abfb1c64169b37cf7d2faa85812db664901f800dc4cb6ca518aa",
+            "f2f70b6e7128d397cd0de7cee0c59384d7b96031a0c768e180ed0141025a6e7a",
+            "3f2747c320242e76458578ec74beaa5980ef76f6e0fc2703d8b41845a0e125fa"
+          ],
+          "current_pixel_sha256": [
+            "71f16c6e5ff2eb4d005b22f13436f2db3b16c7a4db6ca95af8cceb5a30872bd7",
+            "cfc7c879a568f7d97e4c9c5b68df556139e066fa9d6aaf11b7e6a623283362fb",
+            "61366272af46f6570bdfe62551e16239f1dd69e23b2474ac25fd1928b1a73b1f",
+            "dae738c86ebe0449654355efdb5f99a95ea92252006f9748358d2ceebaa962b2"
+          ],
+          "bound_tool_names": [
+            "ls",
+            "read_file",
+            "write_file",
+            "edit_file",
+            "delete",
+            "glob",
+            "grep",
+            "task",
+            "set_parameters",
+            "compare_preview"
+          ],
+          "reference_image_sha256": [
+            "9c3755ef8ec4cb6d28d2f91130bf52e3710333abd837e3cffa99d7567db2851d"
+          ],
+          "boundary": "LangChain input before provider serialization"
+        }
+      ],
+      "requested_tools": [
+        {
+          "name": "compare_preview",
+          "args": {},
+          "id": "call_0c8dee88a9af46c182f28d9b",
+          "type": "tool_call"
+        },
+        {
+          "name": "set_parameters",
+          "args": {
+            "parameters": {
+              "u_tip": -0.27,
+              "u_wmax": 0.34,
+              "u_xd": 0.185
+            }
+          },
+          "id": "call_20e1a1860f4c4e7ca42cde2f",
+          "type": "tool_call"
+        },
+        {
+          "name": "compare_preview",
+          "args": {},
+          "id": "call_1a41f0e05f9346c09aa0b5b0",
+          "type": "tool_call"
+        },
+        {
+          "name": "set_parameters",
+          "args": {
+            "parameters": {
+              "u_fall": 0.9,
+              "u_xd": 0.17,
+              "u_wmax": 0.33
+            }
+          },
+          "id": "call_934b421a19b345e48e2d1d1b",
+          "type": "tool_call"
+        },
+        {
+          "name": "compare_preview",
+          "args": {},
+          "id": "call_3a3780d0acf346e8aef4d2a5",
+          "type": "tool_call"
+        },
+        {
+          "name": "set_parameters",
+          "args": {
+            "parameters": {
+              "u_tip": -0.31,
+              "u_xd": 0.175,
+              "u_wmax": 0.34
+            }
+          },
+          "id": "call_14a2e5e898144d31a8489dcd",
+          "type": "tool_call"
+        },
+        {
+          "name": "compare_preview",
+          "args": {},
+          "id": "call_20c526b9765f4b39995d2281",
+          "type": "tool_call"
+        }
+      ],
+      "tool_results": [
+        {
+          "name": "compare_preview",
+          "status": "success",
+          "call_id": "call_0c8dee88a9af46c182f28d9b",
+          "texts": [
+            "{\"revision\": 0, \"parameters\": {\"u_xd\": 0.158, \"u_r\": 0.2105, \"u_yc\": 0.0492, \"u_tip\": -0.3475, \"u_wmax\": 0.3614, \"u_fall\": 0.45, \"u_glow\": 1.0949, \"u_hi\": 0.55}, \"width\": 1024, \"height\": 576, \"time\": 0, \"trial_id\": 1, \"layout\": \"reference_left_current_right\", \"image_width\": 2048, \"image_height\": 600}"
+          ],
+          "images": [
+            {
+              "image": "tool-01-image-01.png",
+              "sha256": "ccf7f2fb2019cc3802da84f61c52f96db4ac8e47be99c387dd9c82834b72e74e",
+              "current_image": "tool-01-image-01-current.png",
+              "current_pixel_sha256": "71f16c6e5ff2eb4d005b22f13436f2db3b16c7a4db6ca95af8cceb5a30872bd7",
+              "metadata": {
+                "revision": 0,
+                "parameters": {
+                  "u_xd": 0.158,
+                  "u_r": 0.2105,
+                  "u_yc": 0.0492,
+                  "u_tip": -0.3475,
+                  "u_wmax": 0.3614,
+                  "u_fall": 0.45,
+                  "u_glow": 1.0949,
+                  "u_hi": 0.55
+                },
+                "width": 1024,
+                "height": 576,
+                "time": 0,
+                "trial_id": 1,
+                "layout": "reference_left_current_right",
+                "image_width": 2048,
+                "image_height": 600
+              },
+              "provenance": "Exact current-image pixels extracted without resizing"
+            }
+          ],
+          "text": "{\"revision\": 0, \"parameters\": {\"u_xd\": 0.158, \"u_r\": 0.2105, \"u_yc\": 0.0492, \"u_tip\": -0.3475, \"u_wmax\": 0.3614, \"u_fall\": 0.45, \"u_glow\": 1.0949, \"u_hi\": 0.55}, \"width\": 1024, \"height\": 576, \"time\": 0, \"trial_id\": 1, \"layout\": \"reference_left_current_right\", \"image_width\": 2048, \"image_height\": 600}"
+        },
+        {
+          "name": "set_parameters",
+          "status": "success",
+          "call_id": "call_20e1a1860f4c4e7ca42cde2f",
+          "texts": [
+            "{\"parameters\": {\"u_xd\": 0.185, \"u_r\": 0.2105, \"u_yc\": 0.0492, \"u_tip\": -0.27, \"u_wmax\": 0.34, \"u_fall\": 0.45, \"u_glow\": 1.0949, \"u_hi\": 0.55}}"
+          ],
+          "images": [],
+          "text": "{\"parameters\": {\"u_xd\": 0.185, \"u_r\": 0.2105, \"u_yc\": 0.0492, \"u_tip\": -0.27, \"u_wmax\": 0.34, \"u_fall\": 0.45, \"u_glow\": 1.0949, \"u_hi\": 0.55}}"
+        },
+        {
+          "name": "compare_preview",
+          "status": "success",
+          "call_id": "call_1a41f0e05f9346c09aa0b5b0",
+          "texts": [
+            "{\"revision\": 1, \"parameters\": {\"u_xd\": 0.185, \"u_r\": 0.2105, \"u_yc\": 0.0492, \"u_tip\": -0.27, \"u_wmax\": 0.34, \"u_fall\": 0.45, \"u_glow\": 1.0949, \"u_hi\": 0.55}, \"width\": 1024, \"height\": 576, \"time\": 0, \"trial_id\": 2, \"layout\": \"reference_left_current_right\", \"image_width\": 2048, \"image_height\": 600}"
+          ],
+          "images": [
+            {
+              "image": "tool-03-image-01.png",
+              "sha256": "d27e3275dfc3abfb1c64169b37cf7d2faa85812db664901f800dc4cb6ca518aa",
+              "current_image": "tool-03-image-01-current.png",
+              "current_pixel_sha256": "cfc7c879a568f7d97e4c9c5b68df556139e066fa9d6aaf11b7e6a623283362fb",
+              "metadata": {
+                "revision": 1,
+                "parameters": {
+                  "u_xd": 0.185,
+                  "u_r": 0.2105,
+                  "u_yc": 0.0492,
+                  "u_tip": -0.27,
+                  "u_wmax": 0.34,
+                  "u_fall": 0.45,
+                  "u_glow": 1.0949,
+                  "u_hi": 0.55
+                },
+                "width": 1024,
+                "height": 576,
+                "time": 0,
+                "trial_id": 2,
+                "layout": "reference_left_current_right",
+                "image_width": 2048,
+                "image_height": 600
+              },
+              "provenance": "Exact current-image pixels extracted without resizing"
+            }
+          ],
+          "text": "{\"revision\": 1, \"parameters\": {\"u_xd\": 0.185, \"u_r\": 0.2105, \"u_yc\": 0.0492, \"u_tip\": -0.27, \"u_wmax\": 0.34, \"u_fall\": 0.45, \"u_glow\": 1.0949, \"u_hi\": 0.55}, \"width\": 1024, \"height\": 576, \"time\": 0, \"trial_id\": 2, \"layout\": \"reference_left_current_right\", \"image_width\": 2048, \"image_height\": 600}"
+        },
+        {
+          "name": "set_parameters",
+          "status": "success",
+          "call_id": "call_934b421a19b345e48e2d1d1b",
+          "texts": [
+            "{\"parameters\": {\"u_xd\": 0.17, \"u_r\": 0.2105, \"u_yc\": 0.0492, \"u_tip\": -0.27, \"u_wmax\": 0.33, \"u_fall\": 0.9, \"u_glow\": 1.0949, \"u_hi\": 0.55}}"
+          ],
+          "images": [],
+          "text": "{\"parameters\": {\"u_xd\": 0.17, \"u_r\": 0.2105, \"u_yc\": 0.0492, \"u_tip\": -0.27, \"u_wmax\": 0.33, \"u_fall\": 0.9, \"u_glow\": 1.0949, \"u_hi\": 0.55}}"
+        },
+        {
+          "name": "compare_preview",
+          "status": "success",
+          "call_id": "call_3a3780d0acf346e8aef4d2a5",
+          "texts": [
+            "{\"revision\": 2, \"parameters\": {\"u_xd\": 0.17, \"u_r\": 0.2105, \"u_yc\": 0.0492, \"u_tip\": -0.27, \"u_wmax\": 0.33, \"u_fall\": 0.9, \"u_glow\": 1.0949, \"u_hi\": 0.55}, \"width\": 1024, \"height\": 576, \"time\": 0, \"trial_id\": 3, \"layout\": \"reference_left_current_right\", \"image_width\": 2048, \"image_height\": 600}"
+          ],
+          "images": [
+            {
+              "image": "tool-05-image-01.png",
+              "sha256": "f2f70b6e7128d397cd0de7cee0c59384d7b96031a0c768e180ed0141025a6e7a",
+              "current_image": "tool-05-image-01-current.png",
+              "current_pixel_sha256": "61366272af46f6570bdfe62551e16239f1dd69e23b2474ac25fd1928b1a73b1f",
+              "metadata": {
+                "revision": 2,
+                "parameters": {
+                  "u_xd": 0.17,
+                  "u_r": 0.2105,
+                  "u_yc": 0.0492,
+                  "u_tip": -0.27,
+                  "u_wmax": 0.33,
+                  "u_fall": 0.9,
+                  "u_glow": 1.0949,
+                  "u_hi": 0.55
+                },
+                "width": 1024,
+                "height": 576,
+                "time": 0,
+                "trial_id": 3,
+                "layout": "reference_left_current_right",
+                "image_width": 2048,
+                "image_height": 600
+              },
+              "provenance": "Exact current-image pixels extracted without resizing"
+            }
+          ],
+          "text": "{\"revision\": 2, \"parameters\": {\"u_xd\": 0.17, \"u_r\": 0.2105, \"u_yc\": 0.0492, \"u_tip\": -0.27, \"u_wmax\": 0.33, \"u_fall\": 0.9, \"u_glow\": 1.0949, \"u_hi\": 0.55}, \"width\": 1024, \"height\": 576, \"time\": 0, \"trial_id\": 3, \"layout\": \"reference_left_current_right\", \"image_width\": 2048, \"image_height\": 600}"
+        },
+        {
+          "name": "set_parameters",
+          "status": "success",
+          "call_id": "call_14a2e5e898144d31a8489dcd",
+          "texts": [
+            "{\"parameters\": {\"u_xd\": 0.175, \"u_r\": 0.2105, \"u_yc\": 0.0492, \"u_tip\": -0.31, \"u_wmax\": 0.34, \"u_fall\": 0.9, \"u_glow\": 1.0949, \"u_hi\": 0.55}}"
+          ],
+          "images": [],
+          "text": "{\"parameters\": {\"u_xd\": 0.175, \"u_r\": 0.2105, \"u_yc\": 0.0492, \"u_tip\": -0.31, \"u_wmax\": 0.34, \"u_fall\": 0.9, \"u_glow\": 1.0949, \"u_hi\": 0.55}}"
+        },
+        {
+          "name": "compare_preview",
+          "status": "success",
+          "call_id": "call_20c526b9765f4b39995d2281",
+          "texts": [
+            "{\"revision\": 3, \"parameters\": {\"u_xd\": 0.175, \"u_r\": 0.2105, \"u_yc\": 0.0492, \"u_tip\": -0.31, \"u_wmax\": 0.34, \"u_fall\": 0.9, \"u_glow\": 1.0949, \"u_hi\": 0.55}, \"width\": 1024, \"height\": 576, \"time\": 0, \"trial_id\": 4, \"layout\": \"reference_left_current_right\", \"image_width\": 2048, \"image_height\": 600}"
+          ],
+          "images": [
+            {
+              "image": "tool-07-image-01.png",
+              "sha256": "3f2747c320242e76458578ec74beaa5980ef76f6e0fc2703d8b41845a0e125fa",
+              "current_image": "tool-07-image-01-current.png",
+              "current_pixel_sha256": "dae738c86ebe0449654355efdb5f99a95ea92252006f9748358d2ceebaa962b2",
+              "metadata": {
+                "revision": 3,
+                "parameters": {
+                  "u_xd": 0.175,
+                  "u_r": 0.2105,
+                  "u_yc": 0.0492,
+                  "u_tip": -0.31,
+                  "u_wmax": 0.34,
+                  "u_fall": 0.9,
+                  "u_glow": 1.0949,
+                  "u_hi": 0.55
+                },
+                "width": 1024,
+                "height": 576,
+                "time": 0,
+                "trial_id": 4,
+                "layout": "reference_left_current_right",
+                "image_width": 2048,
+                "image_height": 600
+              },
+              "provenance": "Exact current-image pixels extracted without resizing"
+            }
+          ],
+          "text": "{\"revision\": 3, \"parameters\": {\"u_xd\": 0.175, \"u_r\": 0.2105, \"u_yc\": 0.0492, \"u_tip\": -0.31, \"u_wmax\": 0.34, \"u_fall\": 0.9, \"u_glow\": 1.0949, \"u_hi\": 0.55}, \"width\": 1024, \"height\": 576, \"time\": 0, \"trial_id\": 4, \"layout\": \"reference_left_current_right\", \"image_width\": 2048, \"image_height\": 600}"
+        }
+      ],
+      "assistant_messages": [
+        "我先取基线并排图观察当前渲染与参考图的差异。",
+        "基线对比观察到的差异：\n\n1. **位置/高度**：当前心形明显偏大偏下，底尖已经超出画面下缘；参考图的尖在画面内约 85% 高度处。→ 需要 u_tip 上移（增大，接近 -0.27）。\n2. **宽度/大小**：当前心整体略宽，参考图更紧凑。→ 略减 u_wmax。\n3. **中缝深度**：参考图两瓣之间有明显深 V 形凹口，当前两瓣几乎融合、凹口很浅。→ 增大 u_xd 使两瓣更分开。\n\n第一次修改（先解决位置、大小和凹口深度）：",
+        "参数已更新，现在取图核对修改效果。",
+        "第二次观察：u_xd 增大后两瓣分开了，但出现新问题——底部变成了平的宽底而非尖角（u_fall=0.45 收窄太慢，侧边几乎垂直导致底部截平），且整体仍偏宽。参考图的底尖是明显的尖点。\n\n第二次修改：增大 u_fall 使侧边收窄成尖底，同时把 u_xd 略回调、u_wmax 再略减以控制宽度：",
+        "第三次观察：u_fall=0.9 恢复了尖底，形态已接近参考图。剩余差异：\n1. 心形整体偏小偏上——当前底尖约在画面 76% 高度，参考图约 85%；且当前宽度略窄。→ u_tip 下移一些，u_wmax 略增。\n2. 中缝凹口仍比参考图浅。→ u_xd 略增。\n\n第三次修改（最后一次）：",
+        "已完成三次修改，达到本轮上限，现在报告最终状态。\n\n**最终参数**：u_xd=0.175, u_r=0.2105, u_yc=0.0492, u_tip=-0.31, u_wmax=0.34, u_fall=0.9, u_glow=1.0949, u_hi=0.55（仅改动 u_xd、u_tip、u_wmax、u_fall，其余保持原值）\n\n**修改过程回顾**：\n1. 第 1 次：u_tip -0.3475→-0.27（尖上移入画）、u_wmax 0.3614→0.34（收窄）、u_xd 0.158→0.185（加深凹口）——位置修正但出现平底。\n2. 第 2 次：u_fall 0.45→0.9（恢复尖底轮廓）、u_xd 回调 0.17、u_wmax 0.33——形态大幅接近。\n3. 第 3 次：u_tip →-0.31（尖下移到约画面 82% 高度）、u_xd →0.175、u_wmax →0.34。\n\n**当前与参考图的匹配情况**：\n- 轮廓、位置、大小：两瓣圆顶、深 V 中缝、收窄尖底的整体形状已一致；底尖位置和整体宽度接近参考。\n- 亮度与光晕：背景辉光和心形高光从基线起就与参考接近，未改动。\n\n**如实说明的剩余差异**：\n- 中缝凹口仍比参考图略浅（参考图的 V 形更细更深），继续增大 u_xd 会使两瓣在侧下方重新鼓出分离，受参数耦合限制难以兼顾。\n- 当前两瓣底部外侧比参考图略显下坠外凸，参考图侧边向尖部收得更利落。\n- 整体宽度仍比参考图略宽一点点。\n\n总体轮廓、位置、大小、光晕已较接近参考图，上述差异是在允许参数范围内未能完全消除的残余项。"
+      ],
+      "usage": [
+        {
+          "input_tokens": 4336,
+          "output_tokens": 30,
+          "total_tokens": 4366,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 9
+          }
+        },
+        {
+          "input_tokens": 6154,
+          "output_tokens": 1245,
+          "total_tokens": 7399,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 4096,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 1056
+          }
+        },
+        {
+          "input_tokens": 6432,
+          "output_tokens": 17,
+          "total_tokens": 6449,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 6016,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        {
+          "input_tokens": 8242,
+          "output_tokens": 1168,
+          "total_tokens": 9410,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 6272,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 1024
+          }
+        },
+        {
+          "input_tokens": 8475,
+          "output_tokens": 6,
+          "total_tokens": 8481,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 8064,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        {
+          "input_tokens": 10274,
+          "output_tokens": 736,
+          "total_tokens": 11010,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 8320,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 594
+          }
+        },
+        {
+          "input_tokens": 10505,
+          "output_tokens": 6,
+          "total_tokens": 10511,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        {
+          "input_tokens": 12304,
+          "output_tokens": 528,
+          "total_tokens": 12832,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 10368,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 63
+          }
+        }
+      ],
+      "model_responses": [
+        {
+          "number": 1,
+          "finish_reason": "tool_calls",
+          "model_name": "z-ai/glm-5.3-flash",
+          "content": "我先取基线并排图观察当前渲染与参考图的差异。",
+          "has_visible_content": true,
+          "tool_names": [
+            "compare_preview"
+          ]
+        },
+        {
+          "number": 2,
+          "finish_reason": "tool_calls",
+          "model_name": "z-ai/glm-5.3-flash",
+          "content": "基线对比观察到的差异：\n\n1. **位置/高度**：当前心形明显偏大偏下，底尖已经超出画面下缘；参考图的尖在画面内约 85% 高度处。→ 需要 u_tip 上移（增大，接近 -0.27）。\n2. **宽度/大小**：当前心整体略宽，参考图更紧凑。→ 略减 u_wmax。\n3. **中缝深度**：参考图两瓣之间有明显深 V 形凹口，当前两瓣几乎融合、凹口很浅。→ 增大 u_xd 使两瓣更分开。\n\n第一次修改（先解决位置、大小和凹口深度）：",
+          "has_visible_content": true,
+          "tool_names": [
+            "set_parameters"
+          ]
+        },
+        {
+          "number": 3,
+          "finish_reason": "tool_calls",
+          "model_name": "z-ai/glm-5.3-flash",
+          "content": "参数已更新，现在取图核对修改效果。",
+          "has_visible_content": true,
+          "tool_names": [
+            "compare_preview"
+          ]
+        },
+        {
+          "number": 4,
+          "finish_reason": "tool_calls",
+          "model_name": "z-ai/glm-5.3-flash",
+          "content": "第二次观察：u_xd 增大后两瓣分开了，但出现新问题——底部变成了平的宽底而非尖角（u_fall=0.45 收窄太慢，侧边几乎垂直导致底部截平），且整体仍偏宽。参考图的底尖是明显的尖点。\n\n第二次修改：增大 u_fall 使侧边收窄成尖底，同时把 u_xd 略回调、u_wmax 再略减以控制宽度：",
+          "has_visible_content": true,
+          "tool_names": [
+            "set_parameters"
+          ]
+        },
+        {
+          "number": 5,
+          "finish_reason": "tool_calls",
+          "model_name": "z-ai/glm-5.3-flash",
+          "content": "",
+          "has_visible_content": false,
+          "tool_names": [
+            "compare_preview"
+          ]
+        },
+        {
+          "number": 6,
+          "finish_reason": "tool_calls",
+          "model_name": "z-ai/glm-5.3-flash",
+          "content": "第三次观察：u_fall=0.9 恢复了尖底，形态已接近参考图。剩余差异：\n1. 心形整体偏小偏上——当前底尖约在画面 76% 高度，参考图约 85%；且当前宽度略窄。→ u_tip 下移一些，u_wmax 略增。\n2. 中缝凹口仍比参考图浅。→ u_xd 略增。\n\n第三次修改（最后一次）：",
+          "has_visible_content": true,
+          "tool_names": [
+            "set_parameters"
+          ]
+        },
+        {
+          "number": 7,
+          "finish_reason": "tool_calls",
+          "model_name": "z-ai/glm-5.3-flash",
+          "content": "",
+          "has_visible_content": false,
+          "tool_names": [
+            "compare_preview"
+          ]
+        },
+        {
+          "number": 8,
+          "finish_reason": "stop",
+          "model_name": "z-ai/glm-5.3-flash",
+          "content": "已完成三次修改，达到本轮上限，现在报告最终状态。\n\n**最终参数**：u_xd=0.175, u_r=0.2105, u_yc=0.0492, u_tip=-0.31, u_wmax=0.34, u_fall=0.9, u_glow=1.0949, u_hi=0.55（仅改动 u_xd、u_tip、u_wmax、u_fall，其余保持原值）\n\n**修改过程回顾**：\n1. 第 1 次：u_tip -0.3475→-0.27（尖上移入画）、u_wmax 0.3614→0.34（收窄）、u_xd 0.158→0.185（加深凹口）——位置修正但出现平底。\n2. 第 2 次：u_fall 0.45→0.9（恢复尖底轮廓）、u_xd 回调 0.17、u_wmax 0.33——形态大幅接近。\n3. 第 3 次：u_tip →-0.31（尖下移到约画面 82% 高度）、u_xd →0.175、u_wmax →0.34。\n\n**当前与参考图的匹配情况**：\n- 轮廓、位置、大小：两瓣圆顶、深 V 中缝、收窄尖底的整体形状已一致；底尖位置和整体宽度接近参考。\n- 亮度与光晕：背景辉光和心形高光从基线起就与参考接近，未改动。\n\n**如实说明的剩余差异**：\n- 中缝凹口仍比参考图略浅（参考图的 V 形更细更深），继续增大 u_xd 会使两瓣在侧下方重新鼓出分离，受参数耦合限制难以兼顾。\n- 当前两瓣底部外侧比参考图略显下坠外凸，参考图侧边向尖部收得更利落。\n- 整体宽度仍比参考图略宽一点点。\n\n总体轮廓、位置、大小、光晕已较接近参考图，上述差异是在允许参数范围内未能完全消除的残余项。",
+          "has_visible_content": true,
+          "tool_names": []
+        }
+      ],
+      "reference_sha256": "9c3755ef8ec4cb6d28d2f91130bf52e3710333abd837e3cffa99d7567db2851d",
+      "before": {
+        "parameters": {
+          "u_xd": 0.158,
+          "u_r": 0.2105,
+          "u_yc": 0.0492,
+          "u_tip": -0.3475,
+          "u_wmax": 0.3614,
+          "u_fall": 0.45,
+          "u_glow": 1.0949,
+          "u_hi": 0.55
+        },
+        "revision": 0,
+        "sha256": "d54e4fabdcf312cd76a7c01dc8e0c48b34c2653656c8828d830656cb694f05e4",
+        "pixel_sha256": "71f16c6e5ff2eb4d005b22f13436f2db3b16c7a4db6ca95af8cceb5a30872bd7"
+      },
+      "before_matches_baseline_pixels": true,
+      "experiment_tool_names": [
+        "set_parameters",
+        "compare_preview"
+      ],
+      "task_text": "下面的图片是只读的目标参考图, 不是当前渲染图. 任务是调整工具允许的 uniform 参数, 使当前渲染尽量与参考图一致. 若有 compare_preview, 用其左参考右当前的并排图观察基线和每次修改结果; 否则调用 capture_preview 后与本参考图对照. 通过 set_parameters 提交新值, 再单独取图检查实际图片. 只修改允许参数, 不修改 Shader 源码、参数范围或参考图. 根据图像差异决定调整, 不假定知道目标参数; 尚有差异时如实说明.\n补充要求: 只允许修改工具列出的参数, 其他源码和参数固定. 本次最多修改三次, 每次重新取图对照参考图, 尽量匹配轮廓、位置、大小、亮度和光晕. 达到目标就停止, 如实报告剩余差异. 不使用其他工具或子任务. 本轮观察基线及每次更新后的当前渲染都必须调用 compare_preview, 不使用 capture_preview. 如已配置 get_trial_history, 可按需回读历史参数和截图, 自行判断是否用 set_parameters 恢复; 未配置则不调用. 参数含义: u_xd=左右圆瓣水平偏移; u_r=圆瓣半径; u_yc=圆瓣中心y; u_tip=底尖y; u_wmax=主体最大半宽; u_fall=主体收窄曲线指数; u_glow=背景辉光; u_hi=心形高光增益. 只依据参考图和实际渲染判断, 不假定参考图一定能在这些参数范围内精确实现.",
+      "after": {
+        "parameters": {
+          "u_xd": 0.175,
+          "u_r": 0.2105,
+          "u_yc": 0.0492,
+          "u_tip": -0.31,
+          "u_wmax": 0.34,
+          "u_fall": 0.9,
+          "u_glow": 1.0949,
+          "u_hi": 0.55
+        },
+        "revision": 3,
+        "sha256": "52f354a03230713b959483d64310883281597f2c70ff23f5eb53d401f240a4bd",
+        "pixel_sha256": "dae738c86ebe0449654355efdb5f99a95ea92252006f9748358d2ceebaa962b2"
+      },
+      "elapsed_seconds": 58.73,
+      "evaluation": {
+        "only_allowed_parameter_submissions": true,
+        "all_tools_successful": true,
+        "no_other_tools_requested": true,
+        "reference_in_all_model_inputs": true,
+        "history_availability_matches_group": true,
+        "compare_only_schema_in_all_requests": true,
+        "capture_preview_requested": false,
+        "history_tool_requested": false,
+        "history_calls": 0,
+        "update_calls": 3,
+        "capture_calls": 4,
+        "compare_calls": 4,
+        "final_image_in_later_model_input": true,
+        "changed_all_requested_parameters": false,
+        "image_errors": {
+          "before": {
+            "mae_rgb_8bit": 10.418008309823495,
+            "rmse_rgb_8bit": 22.946552876583098,
+            "pixel_exact_match": false
+          },
+          "after": {
+            "mae_rgb_8bit": 8.305521081995082,
+            "rmse_rgb_8bit": 15.940146906397484,
+            "pixel_exact_match": false
+          }
+        },
+        "mae_reduction_fraction": 0.20277265721092552,
+        "pixel_exact_match": false,
+        "user_visual_acceptance": "pending",
+        "capture_errors": [
+          {
+            "parameters": {
+              "u_xd": 0.158,
+              "u_r": 0.2105,
+              "u_yc": 0.0492,
+              "u_tip": -0.3475,
+              "u_wmax": 0.3614,
+              "u_fall": 0.45,
+              "u_glow": 1.0949,
+              "u_hi": 0.55
+            },
+            "revision": 0,
+            "image": "tool-01-image-01-current.png",
+            "mae_rgb_8bit": 10.418008309823495
+          },
+          {
+            "parameters": {
+              "u_xd": 0.185,
+              "u_r": 0.2105,
+              "u_yc": 0.0492,
+              "u_tip": -0.27,
+              "u_wmax": 0.34,
+              "u_fall": 0.45,
+              "u_glow": 1.0949,
+              "u_hi": 0.55
+            },
+            "revision": 1,
+            "image": "tool-03-image-01-current.png",
+            "mae_rgb_8bit": 9.21432551631221
+          },
+          {
+            "parameters": {
+              "u_xd": 0.17,
+              "u_r": 0.2105,
+              "u_yc": 0.0492,
+              "u_tip": -0.27,
+              "u_wmax": 0.33,
+              "u_fall": 0.9,
+              "u_glow": 1.0949,
+              "u_hi": 0.55
+            },
+            "revision": 2,
+            "image": "tool-05-image-01-current.png",
+            "mae_rgb_8bit": 8.525119922779224
+          },
+          {
+            "parameters": {
+              "u_xd": 0.175,
+              "u_r": 0.2105,
+              "u_yc": 0.0492,
+              "u_tip": -0.31,
+              "u_wmax": 0.34,
+              "u_fall": 0.9,
+              "u_glow": 1.0949,
+              "u_hi": 0.55
+            },
+            "revision": 3,
+            "image": "tool-07-image-01-current.png",
+            "mae_rgb_8bit": 8.305521081995082
+          }
+        ],
+        "best_captured_candidate": {
+          "parameters": {
+            "u_xd": 0.175,
+            "u_r": 0.2105,
+            "u_yc": 0.0492,
+            "u_tip": -0.31,
+            "u_wmax": 0.34,
+            "u_fall": 0.9,
+            "u_glow": 1.0949,
+            "u_hi": 0.55
+          },
+          "revision": 3,
+          "image": "tool-07-image-01-current.png",
+          "mae_rgb_8bit": 8.305521081995082
+        },
+        "final_worse_than_best": false,
+        "all_tool_images_in_model_input": true,
+        "final_revision_image_in_model_input": true,
+        "prompt_update_limit_exceeded": false
+      }
+    },
+    {
+      "id": "B-heart",
+      "case_id": "heart",
+      "group": "B",
+      "history_tool_enabled": true,
+      "title": "用户心形参考匹配",
+      "parameters": {
+        "u_xd": {
+          "min": 0.12,
+          "max": 0.22,
+          "initial": 0.158
+        },
+        "u_r": {
+          "min": 0.16,
+          "max": 0.24,
+          "initial": 0.2105
+        },
+        "u_yc": {
+          "min": -0.02,
+          "max": 0.1,
+          "initial": 0.0492
+        },
+        "u_tip": {
+          "min": -0.42,
+          "max": -0.26,
+          "initial": -0.3475
+        },
+        "u_wmax": {
+          "min": 0.3,
+          "max": 0.39,
+          "initial": 0.3614
+        },
+        "u_fall": {
+          "min": 0.45,
+          "max": 1.1,
+          "initial": 0.45
+        },
+        "u_glow": {
+          "min": 0.5,
+          "max": 1.4,
+          "initial": 1.0949
+        },
+        "u_hi": {
+          "min": 0.3,
+          "max": 1.3,
+          "initial": 0.55
+        }
+      },
+      "goal": "匹配用户参考图",
+      "kind": "multiple",
+      "status": "completed",
+      "model_requests": [
+        {
+          "number": 1,
+          "image_sha256": [],
+          "current_pixel_sha256": [],
+          "bound_tool_names": [
+            "ls",
+            "read_file",
+            "write_file",
+            "edit_file",
+            "delete",
+            "glob",
+            "grep",
+            "task",
+            "set_parameters",
+            "compare_preview",
+            "get_trial_history"
+          ],
+          "reference_image_sha256": [
+            "9c3755ef8ec4cb6d28d2f91130bf52e3710333abd837e3cffa99d7567db2851d"
+          ],
+          "boundary": "LangChain input before provider serialization"
+        },
+        {
+          "number": 2,
+          "image_sha256": [
+            "ccf7f2fb2019cc3802da84f61c52f96db4ac8e47be99c387dd9c82834b72e74e"
+          ],
+          "current_pixel_sha256": [
+            "71f16c6e5ff2eb4d005b22f13436f2db3b16c7a4db6ca95af8cceb5a30872bd7"
+          ],
+          "bound_tool_names": [
+            "ls",
+            "read_file",
+            "write_file",
+            "edit_file",
+            "delete",
+            "glob",
+            "grep",
+            "task",
+            "set_parameters",
+            "compare_preview",
+            "get_trial_history"
+          ],
+          "reference_image_sha256": [
+            "9c3755ef8ec4cb6d28d2f91130bf52e3710333abd837e3cffa99d7567db2851d"
+          ],
+          "boundary": "LangChain input before provider serialization"
+        },
+        {
+          "number": 3,
+          "image_sha256": [
+            "ccf7f2fb2019cc3802da84f61c52f96db4ac8e47be99c387dd9c82834b72e74e"
+          ],
+          "current_pixel_sha256": [
+            "71f16c6e5ff2eb4d005b22f13436f2db3b16c7a4db6ca95af8cceb5a30872bd7"
+          ],
+          "bound_tool_names": [
+            "ls",
+            "read_file",
+            "write_file",
+            "edit_file",
+            "delete",
+            "glob",
+            "grep",
+            "task",
+            "set_parameters",
+            "compare_preview",
+            "get_trial_history"
+          ],
+          "reference_image_sha256": [
+            "9c3755ef8ec4cb6d28d2f91130bf52e3710333abd837e3cffa99d7567db2851d"
+          ],
+          "boundary": "LangChain input before provider serialization"
+        },
+        {
+          "number": 4,
+          "image_sha256": [
+            "ccf7f2fb2019cc3802da84f61c52f96db4ac8e47be99c387dd9c82834b72e74e",
+            "4f8547c080b5f8c48a9b289223a5e0d666c937659f37711150021d7d62766a41"
+          ],
+          "current_pixel_sha256": [
+            "71f16c6e5ff2eb4d005b22f13436f2db3b16c7a4db6ca95af8cceb5a30872bd7",
+            "080a86646bfaebc33d2605fb96606583719e608c73edc4c9f82d71364866bb05"
+          ],
+          "bound_tool_names": [
+            "ls",
+            "read_file",
+            "write_file",
+            "edit_file",
+            "delete",
+            "glob",
+            "grep",
+            "task",
+            "set_parameters",
+            "compare_preview",
+            "get_trial_history"
+          ],
+          "reference_image_sha256": [
+            "9c3755ef8ec4cb6d28d2f91130bf52e3710333abd837e3cffa99d7567db2851d"
+          ],
+          "boundary": "LangChain input before provider serialization"
+        },
+        {
+          "number": 5,
+          "image_sha256": [
+            "ccf7f2fb2019cc3802da84f61c52f96db4ac8e47be99c387dd9c82834b72e74e",
+            "4f8547c080b5f8c48a9b289223a5e0d666c937659f37711150021d7d62766a41"
+          ],
+          "current_pixel_sha256": [
+            "71f16c6e5ff2eb4d005b22f13436f2db3b16c7a4db6ca95af8cceb5a30872bd7",
+            "080a86646bfaebc33d2605fb96606583719e608c73edc4c9f82d71364866bb05"
+          ],
+          "bound_tool_names": [
+            "ls",
+            "read_file",
+            "write_file",
+            "edit_file",
+            "delete",
+            "glob",
+            "grep",
+            "task",
+            "set_parameters",
+            "compare_preview",
+            "get_trial_history"
+          ],
+          "reference_image_sha256": [
+            "9c3755ef8ec4cb6d28d2f91130bf52e3710333abd837e3cffa99d7567db2851d"
+          ],
+          "boundary": "LangChain input before provider serialization"
+        },
+        {
+          "number": 6,
+          "image_sha256": [
+            "ccf7f2fb2019cc3802da84f61c52f96db4ac8e47be99c387dd9c82834b72e74e",
+            "4f8547c080b5f8c48a9b289223a5e0d666c937659f37711150021d7d62766a41",
+            "d7bdf4427918dc3151db82e5df2cab875529dd91549c9e358beb23d8e37187b8"
+          ],
+          "current_pixel_sha256": [
+            "71f16c6e5ff2eb4d005b22f13436f2db3b16c7a4db6ca95af8cceb5a30872bd7",
+            "080a86646bfaebc33d2605fb96606583719e608c73edc4c9f82d71364866bb05",
+            "39a31889108802ea61e56aedb30a6f0d3af549cbbf43fe346719343115559a2d"
+          ],
+          "bound_tool_names": [
+            "ls",
+            "read_file",
+            "write_file",
+            "edit_file",
+            "delete",
+            "glob",
+            "grep",
+            "task",
+            "set_parameters",
+            "compare_preview",
+            "get_trial_history"
+          ],
+          "reference_image_sha256": [
+            "9c3755ef8ec4cb6d28d2f91130bf52e3710333abd837e3cffa99d7567db2851d"
+          ],
+          "boundary": "LangChain input before provider serialization"
+        },
+        {
+          "number": 7,
+          "image_sha256": [
+            "ccf7f2fb2019cc3802da84f61c52f96db4ac8e47be99c387dd9c82834b72e74e",
+            "4f8547c080b5f8c48a9b289223a5e0d666c937659f37711150021d7d62766a41",
+            "d7bdf4427918dc3151db82e5df2cab875529dd91549c9e358beb23d8e37187b8"
+          ],
+          "current_pixel_sha256": [
+            "71f16c6e5ff2eb4d005b22f13436f2db3b16c7a4db6ca95af8cceb5a30872bd7",
+            "080a86646bfaebc33d2605fb96606583719e608c73edc4c9f82d71364866bb05",
+            "39a31889108802ea61e56aedb30a6f0d3af549cbbf43fe346719343115559a2d"
+          ],
+          "bound_tool_names": [
+            "ls",
+            "read_file",
+            "write_file",
+            "edit_file",
+            "delete",
+            "glob",
+            "grep",
+            "task",
+            "set_parameters",
+            "compare_preview",
+            "get_trial_history"
+          ],
+          "reference_image_sha256": [
+            "9c3755ef8ec4cb6d28d2f91130bf52e3710333abd837e3cffa99d7567db2851d"
+          ],
+          "boundary": "LangChain input before provider serialization"
+        },
+        {
+          "number": 8,
+          "image_sha256": [
+            "ccf7f2fb2019cc3802da84f61c52f96db4ac8e47be99c387dd9c82834b72e74e",
+            "4f8547c080b5f8c48a9b289223a5e0d666c937659f37711150021d7d62766a41",
+            "d7bdf4427918dc3151db82e5df2cab875529dd91549c9e358beb23d8e37187b8",
+            "2fe28521e8bc749ae8ead8fca60f297de66b02864eb8b44cc627de4a355988cb"
+          ],
+          "current_pixel_sha256": [
+            "71f16c6e5ff2eb4d005b22f13436f2db3b16c7a4db6ca95af8cceb5a30872bd7",
+            "080a86646bfaebc33d2605fb96606583719e608c73edc4c9f82d71364866bb05",
+            "39a31889108802ea61e56aedb30a6f0d3af549cbbf43fe346719343115559a2d",
+            "95b99d29123ba71463344c2cdac554dbc4aa8bcd967eb7020a53b7dcd1022c9e"
+          ],
+          "bound_tool_names": [
+            "ls",
+            "read_file",
+            "write_file",
+            "edit_file",
+            "delete",
+            "glob",
+            "grep",
+            "task",
+            "set_parameters",
+            "compare_preview",
+            "get_trial_history"
+          ],
+          "reference_image_sha256": [
+            "9c3755ef8ec4cb6d28d2f91130bf52e3710333abd837e3cffa99d7567db2851d"
+          ],
+          "boundary": "LangChain input before provider serialization"
+        }
+      ],
+      "requested_tools": [
+        {
+          "name": "compare_preview",
+          "args": {},
+          "id": "call_aa34dd6436534cd9b5ca9444",
+          "type": "tool_call"
+        },
+        {
+          "name": "set_parameters",
+          "args": {
+            "parameters": {
+              "u_fall": 0.65,
+              "u_r": 0.195,
+              "u_tip": -0.4,
+              "u_wmax": 0.3,
+              "u_xd": 0.15
+            }
+          },
+          "id": "call_fad5c9c57205482291750401",
+          "type": "tool_call"
+        },
+        {
+          "name": "compare_preview",
+          "args": {},
+          "id": "call_13ec15b39f9246e6a6f589b7",
+          "type": "tool_call"
+        },
+        {
+          "name": "set_parameters",
+          "args": {
+            "parameters": {
+              "u_r": 0.19,
+              "u_tip": -0.31,
+              "u_wmax": 0.33,
+              "u_xd": 0.14
+            }
+          },
+          "id": "call_38c6e73d487a4a1c8be9bf5f",
+          "type": "tool_call"
+        },
+        {
+          "name": "compare_preview",
+          "args": {},
+          "id": "call_78cf938b8c98415894b63f08",
+          "type": "tool_call"
+        },
+        {
+          "name": "set_parameters",
+          "args": {
+            "parameters": {
+              "u_r": 0.2,
+              "u_tip": -0.322,
+              "u_wmax": 0.355,
+              "u_xd": 0.148
+            }
+          },
+          "id": "call_129c0515078f49f4bffd16f9",
+          "type": "tool_call"
+        },
+        {
+          "name": "compare_preview",
+          "args": {},
+          "id": "call_1ab205e232e8434d9631e87f",
+          "type": "tool_call"
+        }
+      ],
+      "tool_results": [
+        {
+          "name": "compare_preview",
+          "status": "success",
+          "call_id": "call_aa34dd6436534cd9b5ca9444",
+          "texts": [
+            "{\"revision\": 0, \"parameters\": {\"u_xd\": 0.158, \"u_r\": 0.2105, \"u_yc\": 0.0492, \"u_tip\": -0.3475, \"u_wmax\": 0.3614, \"u_fall\": 0.45, \"u_glow\": 1.0949, \"u_hi\": 0.55}, \"width\": 1024, \"height\": 576, \"time\": 0, \"trial_id\": 1, \"layout\": \"reference_left_current_right\", \"image_width\": 2048, \"image_height\": 600}"
+          ],
+          "images": [
+            {
+              "image": "tool-01-image-01.png",
+              "sha256": "ccf7f2fb2019cc3802da84f61c52f96db4ac8e47be99c387dd9c82834b72e74e",
+              "current_image": "tool-01-image-01-current.png",
+              "current_pixel_sha256": "71f16c6e5ff2eb4d005b22f13436f2db3b16c7a4db6ca95af8cceb5a30872bd7",
+              "metadata": {
+                "revision": 0,
+                "parameters": {
+                  "u_xd": 0.158,
+                  "u_r": 0.2105,
+                  "u_yc": 0.0492,
+                  "u_tip": -0.3475,
+                  "u_wmax": 0.3614,
+                  "u_fall": 0.45,
+                  "u_glow": 1.0949,
+                  "u_hi": 0.55
+                },
+                "width": 1024,
+                "height": 576,
+                "time": 0,
+                "trial_id": 1,
+                "layout": "reference_left_current_right",
+                "image_width": 2048,
+                "image_height": 600
+              },
+              "provenance": "Exact current-image pixels extracted without resizing"
+            }
+          ],
+          "text": "{\"revision\": 0, \"parameters\": {\"u_xd\": 0.158, \"u_r\": 0.2105, \"u_yc\": 0.0492, \"u_tip\": -0.3475, \"u_wmax\": 0.3614, \"u_fall\": 0.45, \"u_glow\": 1.0949, \"u_hi\": 0.55}, \"width\": 1024, \"height\": 576, \"time\": 0, \"trial_id\": 1, \"layout\": \"reference_left_current_right\", \"image_width\": 2048, \"image_height\": 600}"
+        },
+        {
+          "name": "set_parameters",
+          "status": "success",
+          "call_id": "call_fad5c9c57205482291750401",
+          "texts": [
+            "{\"parameters\": {\"u_xd\": 0.15, \"u_r\": 0.195, \"u_yc\": 0.0492, \"u_tip\": -0.4, \"u_wmax\": 0.3, \"u_fall\": 0.65, \"u_glow\": 1.0949, \"u_hi\": 0.55}}"
+          ],
+          "images": [],
+          "text": "{\"parameters\": {\"u_xd\": 0.15, \"u_r\": 0.195, \"u_yc\": 0.0492, \"u_tip\": -0.4, \"u_wmax\": 0.3, \"u_fall\": 0.65, \"u_glow\": 1.0949, \"u_hi\": 0.55}}"
+        },
+        {
+          "name": "compare_preview",
+          "status": "success",
+          "call_id": "call_13ec15b39f9246e6a6f589b7",
+          "texts": [
+            "{\"revision\": 1, \"parameters\": {\"u_xd\": 0.15, \"u_r\": 0.195, \"u_yc\": 0.0492, \"u_tip\": -0.4, \"u_wmax\": 0.3, \"u_fall\": 0.65, \"u_glow\": 1.0949, \"u_hi\": 0.55}, \"width\": 1024, \"height\": 576, \"time\": 0, \"trial_id\": 2, \"layout\": \"reference_left_current_right\", \"image_width\": 2048, \"image_height\": 600}"
+          ],
+          "images": [
+            {
+              "image": "tool-03-image-01.png",
+              "sha256": "4f8547c080b5f8c48a9b289223a5e0d666c937659f37711150021d7d62766a41",
+              "current_image": "tool-03-image-01-current.png",
+              "current_pixel_sha256": "080a86646bfaebc33d2605fb96606583719e608c73edc4c9f82d71364866bb05",
+              "metadata": {
+                "revision": 1,
+                "parameters": {
+                  "u_xd": 0.15,
+                  "u_r": 0.195,
+                  "u_yc": 0.0492,
+                  "u_tip": -0.4,
+                  "u_wmax": 0.3,
+                  "u_fall": 0.65,
+                  "u_glow": 1.0949,
+                  "u_hi": 0.55
+                },
+                "width": 1024,
+                "height": 576,
+                "time": 0,
+                "trial_id": 2,
+                "layout": "reference_left_current_right",
+                "image_width": 2048,
+                "image_height": 600
+              },
+              "provenance": "Exact current-image pixels extracted without resizing"
+            }
+          ],
+          "text": "{\"revision\": 1, \"parameters\": {\"u_xd\": 0.15, \"u_r\": 0.195, \"u_yc\": 0.0492, \"u_tip\": -0.4, \"u_wmax\": 0.3, \"u_fall\": 0.65, \"u_glow\": 1.0949, \"u_hi\": 0.55}, \"width\": 1024, \"height\": 576, \"time\": 0, \"trial_id\": 2, \"layout\": \"reference_left_current_right\", \"image_width\": 2048, \"image_height\": 600}"
+        },
+        {
+          "name": "set_parameters",
+          "status": "success",
+          "call_id": "call_38c6e73d487a4a1c8be9bf5f",
+          "texts": [
+            "{\"parameters\": {\"u_xd\": 0.14, \"u_r\": 0.19, \"u_yc\": 0.0492, \"u_tip\": -0.31, \"u_wmax\": 0.33, \"u_fall\": 0.65, \"u_glow\": 1.0949, \"u_hi\": 0.55}}"
+          ],
+          "images": [],
+          "text": "{\"parameters\": {\"u_xd\": 0.14, \"u_r\": 0.19, \"u_yc\": 0.0492, \"u_tip\": -0.31, \"u_wmax\": 0.33, \"u_fall\": 0.65, \"u_glow\": 1.0949, \"u_hi\": 0.55}}"
+        },
+        {
+          "name": "compare_preview",
+          "status": "success",
+          "call_id": "call_78cf938b8c98415894b63f08",
+          "texts": [
+            "{\"revision\": 2, \"parameters\": {\"u_xd\": 0.14, \"u_r\": 0.19, \"u_yc\": 0.0492, \"u_tip\": -0.31, \"u_wmax\": 0.33, \"u_fall\": 0.65, \"u_glow\": 1.0949, \"u_hi\": 0.55}, \"width\": 1024, \"height\": 576, \"time\": 0, \"trial_id\": 3, \"layout\": \"reference_left_current_right\", \"image_width\": 2048, \"image_height\": 600}"
+          ],
+          "images": [
+            {
+              "image": "tool-05-image-01.png",
+              "sha256": "d7bdf4427918dc3151db82e5df2cab875529dd91549c9e358beb23d8e37187b8",
+              "current_image": "tool-05-image-01-current.png",
+              "current_pixel_sha256": "39a31889108802ea61e56aedb30a6f0d3af549cbbf43fe346719343115559a2d",
+              "metadata": {
+                "revision": 2,
+                "parameters": {
+                  "u_xd": 0.14,
+                  "u_r": 0.19,
+                  "u_yc": 0.0492,
+                  "u_tip": -0.31,
+                  "u_wmax": 0.33,
+                  "u_fall": 0.65,
+                  "u_glow": 1.0949,
+                  "u_hi": 0.55
+                },
+                "width": 1024,
+                "height": 576,
+                "time": 0,
+                "trial_id": 3,
+                "layout": "reference_left_current_right",
+                "image_width": 2048,
+                "image_height": 600
+              },
+              "provenance": "Exact current-image pixels extracted without resizing"
+            }
+          ],
+          "text": "{\"revision\": 2, \"parameters\": {\"u_xd\": 0.14, \"u_r\": 0.19, \"u_yc\": 0.0492, \"u_tip\": -0.31, \"u_wmax\": 0.33, \"u_fall\": 0.65, \"u_glow\": 1.0949, \"u_hi\": 0.55}, \"width\": 1024, \"height\": 576, \"time\": 0, \"trial_id\": 3, \"layout\": \"reference_left_current_right\", \"image_width\": 2048, \"image_height\": 600}"
+        },
+        {
+          "name": "set_parameters",
+          "status": "success",
+          "call_id": "call_129c0515078f49f4bffd16f9",
+          "texts": [
+            "{\"parameters\": {\"u_xd\": 0.148, \"u_r\": 0.2, \"u_yc\": 0.0492, \"u_tip\": -0.322, \"u_wmax\": 0.355, \"u_fall\": 0.65, \"u_glow\": 1.0949, \"u_hi\": 0.55}}"
+          ],
+          "images": [],
+          "text": "{\"parameters\": {\"u_xd\": 0.148, \"u_r\": 0.2, \"u_yc\": 0.0492, \"u_tip\": -0.322, \"u_wmax\": 0.355, \"u_fall\": 0.65, \"u_glow\": 1.0949, \"u_hi\": 0.55}}"
+        },
+        {
+          "name": "compare_preview",
+          "status": "success",
+          "call_id": "call_1ab205e232e8434d9631e87f",
+          "texts": [
+            "{\"revision\": 3, \"parameters\": {\"u_xd\": 0.148, \"u_r\": 0.2, \"u_yc\": 0.0492, \"u_tip\": -0.322, \"u_wmax\": 0.355, \"u_fall\": 0.65, \"u_glow\": 1.0949, \"u_hi\": 0.55}, \"width\": 1024, \"height\": 576, \"time\": 0, \"trial_id\": 4, \"layout\": \"reference_left_current_right\", \"image_width\": 2048, \"image_height\": 600}"
+          ],
+          "images": [
+            {
+              "image": "tool-07-image-01.png",
+              "sha256": "2fe28521e8bc749ae8ead8fca60f297de66b02864eb8b44cc627de4a355988cb",
+              "current_image": "tool-07-image-01-current.png",
+              "current_pixel_sha256": "95b99d29123ba71463344c2cdac554dbc4aa8bcd967eb7020a53b7dcd1022c9e",
+              "metadata": {
+                "revision": 3,
+                "parameters": {
+                  "u_xd": 0.148,
+                  "u_r": 0.2,
+                  "u_yc": 0.0492,
+                  "u_tip": -0.322,
+                  "u_wmax": 0.355,
+                  "u_fall": 0.65,
+                  "u_glow": 1.0949,
+                  "u_hi": 0.55
+                },
+                "width": 1024,
+                "height": 576,
+                "time": 0,
+                "trial_id": 4,
+                "layout": "reference_left_current_right",
+                "image_width": 2048,
+                "image_height": 600
+              },
+              "provenance": "Exact current-image pixels extracted without resizing"
+            }
+          ],
+          "text": "{\"revision\": 3, \"parameters\": {\"u_xd\": 0.148, \"u_r\": 0.2, \"u_yc\": 0.0492, \"u_tip\": -0.322, \"u_wmax\": 0.355, \"u_fall\": 0.65, \"u_glow\": 1.0949, \"u_hi\": 0.55}, \"width\": 1024, \"height\": 576, \"time\": 0, \"trial_id\": 4, \"layout\": \"reference_left_current_right\", \"image_width\": 2048, \"image_height\": 600}"
+        }
+      ],
+      "assistant_messages": [
+        "我先取基线并排图观察当前渲染与参考图的差异。",
+        "基线对比：当前渲染的心形整体太宽、太圆，底部没有收成尖角（被屏幕下缘截断），左右圆瓣也偏大、顶部凹口太浅。参考图心形更窄、底部明显收窄成尖、凹口更深。\n\n第一次修改：缩小圆瓣半径与水平偏移（u_r 0.2105→0.195, u_xd 0.158→0.150）、缩小主体最大半宽（u_wmax 0.3614→0.300）、加深底尖（u_tip -0.3475→-0.400）、加大收窄指数（u_fall 0.45→0.65）让下部收出尖角。",
+        "第二次修改：当前主体与圆瓣衔接处出现明显台阶（圆瓣比主体宽），且整体偏低、底部尖角太靠下。调整：圆瓣略缩小并内移（u_r 0.195→0.19, u_xd 0.15→0.14），主体最大半宽略加大（u_wmax 0.30→0.33）消除台阶，底尖上移（u_tip -0.40→-0.31）使心形位置与参考一致。",
+        "第三次修改：形状已连贯，但与参考相比当前心形略偏窄小（参考宽高比约1.25，当前约1.14），且顶部凹口稍浅、底尖位置略低。调整：整体放大（u_wmax 0.33→0.355, u_r 0.19→0.20），凹口加深（u_xd 0.14→0.148），底尖略下移（u_tip -0.31→-0.322）。",
+        "已用完三次修改限额。总结最终状态：\n\n**最终参数**：u_xd=0.148, u_r=0.200, u_yc=0.0492（未动）, u_tip=-0.322, u_wmax=0.355, u_fall=0.65, u_glow=1.0949（未动）, u_hi=0.55（未动）\n\n**三轮调整回顾**：\n1. 从基线（过宽过圆、底尖被截断）收窄整体：u_wmax 0.3614→0.30、u_r 0.2105→0.195、u_xd→0.15、u_tip→-0.40、u_fall→0.65，恢复出底尖和纵向比例。\n2. 修掉圆瓣与主体的衔接台阶：u_wmax→0.33、u_r→0.19、u_xd→0.14、u_tip→-0.31 上移到位。\n3. 整体放大至接近参考尺寸并加深凹口：u_wmax→0.355、u_r→0.20、u_xd→0.148、u_tip→-0.322。\n\n**当前与参考的剩余差异**（如实报告）：\n- 当前心形左右两侧在圆瓣与主体交界高度仍有轻微的角状凸起，参考图轮廓是平滑连续的弧线；\n- 参考图心形整体略更宽、顶部凹口更深更尖锐，当前凹口稍浅；\n- 底尖比参考略钝一点，且当前渲染底部有一条参考图中不存在的细红线（这不在可调参数控制范围内，推测为渲染边框/裁切线，非参数所致）；\n- 亮度、背景辉光和红色渐变观感已比较接近。\n\n整体轮廓、位置、大小已接近参考图，但由于仅允许三次修改且部分差异可能超出这些 uniform 参数的表达范围，未做到完全一致。"
+      ],
+      "usage": [
+        {
+          "input_tokens": 4468,
+          "output_tokens": 29,
+          "total_tokens": 4497,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 8
+          }
+        },
+        {
+          "input_tokens": 6286,
+          "output_tokens": 586,
+          "total_tokens": 6872,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 4224,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 369
+          }
+        },
+        {
+          "input_tokens": 6591,
+          "output_tokens": 6,
+          "total_tokens": 6597,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 6144,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        {
+          "input_tokens": 8389,
+          "output_tokens": 1047,
+          "total_tokens": 9436,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 6400,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 887
+          }
+        },
+        {
+          "input_tokens": 8637,
+          "output_tokens": 6,
+          "total_tokens": 8643,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 8192,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        {
+          "input_tokens": 10435,
+          "output_tokens": 599,
+          "total_tokens": 11034,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 8448,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 437
+          }
+        },
+        {
+          "input_tokens": 10687,
+          "output_tokens": 6,
+          "total_tokens": 10693,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 10240,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        {
+          "input_tokens": 12487,
+          "output_tokens": 566,
+          "total_tokens": 13053,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 10496,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 128
+          }
+        }
+      ],
+      "model_responses": [
+        {
+          "number": 1,
+          "finish_reason": "tool_calls",
+          "model_name": "z-ai/glm-5.3-flash",
+          "content": "我先取基线并排图观察当前渲染与参考图的差异。",
+          "has_visible_content": true,
+          "tool_names": [
+            "compare_preview"
+          ]
+        },
+        {
+          "number": 2,
+          "finish_reason": "tool_calls",
+          "model_name": "z-ai/glm-5.3-flash",
+          "content": "基线对比：当前渲染的心形整体太宽、太圆，底部没有收成尖角（被屏幕下缘截断），左右圆瓣也偏大、顶部凹口太浅。参考图心形更窄、底部明显收窄成尖、凹口更深。\n\n第一次修改：缩小圆瓣半径与水平偏移（u_r 0.2105→0.195, u_xd 0.158→0.150）、缩小主体最大半宽（u_wmax 0.3614→0.300）、加深底尖（u_tip -0.3475→-0.400）、加大收窄指数（u_fall 0.45→0.65）让下部收出尖角。",
+          "has_visible_content": true,
+          "tool_names": [
+            "set_parameters"
+          ]
+        },
+        {
+          "number": 3,
+          "finish_reason": "tool_calls",
+          "model_name": "z-ai/glm-5.3-flash",
+          "content": "",
+          "has_visible_content": false,
+          "tool_names": [
+            "compare_preview"
+          ]
+        },
+        {
+          "number": 4,
+          "finish_reason": "tool_calls",
+          "model_name": "z-ai/glm-5.3-flash",
+          "content": "第二次修改：当前主体与圆瓣衔接处出现明显台阶（圆瓣比主体宽），且整体偏低、底部尖角太靠下。调整：圆瓣略缩小并内移（u_r 0.195→0.19, u_xd 0.15→0.14），主体最大半宽略加大（u_wmax 0.30→0.33）消除台阶，底尖上移（u_tip -0.40→-0.31）使心形位置与参考一致。",
+          "has_visible_content": true,
+          "tool_names": [
+            "set_parameters"
+          ]
+        },
+        {
+          "number": 5,
+          "finish_reason": "tool_calls",
+          "model_name": "z-ai/glm-5.3-flash",
+          "content": "",
+          "has_visible_content": false,
+          "tool_names": [
+            "compare_preview"
+          ]
+        },
+        {
+          "number": 6,
+          "finish_reason": "tool_calls",
+          "model_name": "z-ai/glm-5.3-flash",
+          "content": "第三次修改：形状已连贯，但与参考相比当前心形略偏窄小（参考宽高比约1.25，当前约1.14），且顶部凹口稍浅、底尖位置略低。调整：整体放大（u_wmax 0.33→0.355, u_r 0.19→0.20），凹口加深（u_xd 0.14→0.148），底尖略下移（u_tip -0.31→-0.322）。",
+          "has_visible_content": true,
+          "tool_names": [
+            "set_parameters"
+          ]
+        },
+        {
+          "number": 7,
+          "finish_reason": "tool_calls",
+          "model_name": "z-ai/glm-5.3-flash",
+          "content": "",
+          "has_visible_content": false,
+          "tool_names": [
+            "compare_preview"
+          ]
+        },
+        {
+          "number": 8,
+          "finish_reason": "stop",
+          "model_name": "z-ai/glm-5.3-flash",
+          "content": "已用完三次修改限额。总结最终状态：\n\n**最终参数**：u_xd=0.148, u_r=0.200, u_yc=0.0492（未动）, u_tip=-0.322, u_wmax=0.355, u_fall=0.65, u_glow=1.0949（未动）, u_hi=0.55（未动）\n\n**三轮调整回顾**：\n1. 从基线（过宽过圆、底尖被截断）收窄整体：u_wmax 0.3614→0.30、u_r 0.2105→0.195、u_xd→0.15、u_tip→-0.40、u_fall→0.65，恢复出底尖和纵向比例。\n2. 修掉圆瓣与主体的衔接台阶：u_wmax→0.33、u_r→0.19、u_xd→0.14、u_tip→-0.31 上移到位。\n3. 整体放大至接近参考尺寸并加深凹口：u_wmax→0.355、u_r→0.20、u_xd→0.148、u_tip→-0.322。\n\n**当前与参考的剩余差异**（如实报告）：\n- 当前心形左右两侧在圆瓣与主体交界高度仍有轻微的角状凸起，参考图轮廓是平滑连续的弧线；\n- 参考图心形整体略更宽、顶部凹口更深更尖锐，当前凹口稍浅；\n- 底尖比参考略钝一点，且当前渲染底部有一条参考图中不存在的细红线（这不在可调参数控制范围内，推测为渲染边框/裁切线，非参数所致）；\n- 亮度、背景辉光和红色渐变观感已比较接近。\n\n整体轮廓、位置、大小已接近参考图，但由于仅允许三次修改且部分差异可能超出这些 uniform 参数的表达范围，未做到完全一致。",
+          "has_visible_content": true,
+          "tool_names": []
+        }
+      ],
+      "reference_sha256": "9c3755ef8ec4cb6d28d2f91130bf52e3710333abd837e3cffa99d7567db2851d",
+      "before": {
+        "parameters": {
+          "u_xd": 0.158,
+          "u_r": 0.2105,
+          "u_yc": 0.0492,
+          "u_tip": -0.3475,
+          "u_wmax": 0.3614,
+          "u_fall": 0.45,
+          "u_glow": 1.0949,
+          "u_hi": 0.55
+        },
+        "revision": 0,
+        "sha256": "d54e4fabdcf312cd76a7c01dc8e0c48b34c2653656c8828d830656cb694f05e4",
+        "pixel_sha256": "71f16c6e5ff2eb4d005b22f13436f2db3b16c7a4db6ca95af8cceb5a30872bd7"
+      },
+      "before_matches_baseline_pixels": true,
+      "experiment_tool_names": [
+        "set_parameters",
+        "compare_preview",
+        "get_trial_history"
+      ],
+      "task_text": "下面的图片是只读的目标参考图, 不是当前渲染图. 任务是调整工具允许的 uniform 参数, 使当前渲染尽量与参考图一致. 若有 compare_preview, 用其左参考右当前的并排图观察基线和每次修改结果; 否则调用 capture_preview 后与本参考图对照. 通过 set_parameters 提交新值, 再单独取图检查实际图片. 只修改允许参数, 不修改 Shader 源码、参数范围或参考图. 根据图像差异决定调整, 不假定知道目标参数; 尚有差异时如实说明.\n补充要求: 只允许修改工具列出的参数, 其他源码和参数固定. 本次最多修改三次, 每次重新取图对照参考图, 尽量匹配轮廓、位置、大小、亮度和光晕. 达到目标就停止, 如实报告剩余差异. 不使用其他工具或子任务. 本轮观察基线及每次更新后的当前渲染都必须调用 compare_preview, 不使用 capture_preview. 如已配置 get_trial_history, 可按需回读历史参数和截图, 自行判断是否用 set_parameters 恢复; 未配置则不调用. 参数含义: u_xd=左右圆瓣水平偏移; u_r=圆瓣半径; u_yc=圆瓣中心y; u_tip=底尖y; u_wmax=主体最大半宽; u_fall=主体收窄曲线指数; u_glow=背景辉光; u_hi=心形高光增益. 只依据参考图和实际渲染判断, 不假定参考图一定能在这些参数范围内精确实现.",
+      "after": {
+        "parameters": {
+          "u_xd": 0.148,
+          "u_r": 0.2,
+          "u_yc": 0.0492,
+          "u_tip": -0.322,
+          "u_wmax": 0.355,
+          "u_fall": 0.65,
+          "u_glow": 1.0949,
+          "u_hi": 0.55
+        },
+        "revision": 3,
+        "sha256": "4841bbff7b982bc5c2b4cb55a9a8571ff5ccefeb2197ea3aa84b80794bc39643",
+        "pixel_sha256": "95b99d29123ba71463344c2cdac554dbc4aa8bcd967eb7020a53b7dcd1022c9e"
+      },
+      "elapsed_seconds": 38.92,
+      "evaluation": {
+        "only_allowed_parameter_submissions": true,
+        "all_tools_successful": true,
+        "no_other_tools_requested": true,
+        "reference_in_all_model_inputs": true,
+        "history_availability_matches_group": true,
+        "compare_only_schema_in_all_requests": true,
+        "capture_preview_requested": false,
+        "history_tool_requested": false,
+        "history_calls": 0,
+        "update_calls": 3,
+        "capture_calls": 4,
+        "compare_calls": 4,
+        "final_image_in_later_model_input": true,
+        "changed_all_requested_parameters": false,
+        "image_errors": {
+          "before": {
+            "mae_rgb_8bit": 10.418008309823495,
+            "rmse_rgb_8bit": 22.946552876583098,
+            "pixel_exact_match": false
+          },
+          "after": {
+            "mae_rgb_8bit": 8.782852737991897,
+            "rmse_rgb_8bit": 17.74426539858977,
+            "pixel_exact_match": false
+          }
+        },
+        "mae_reduction_fraction": 0.1569547194822022,
+        "pixel_exact_match": false,
+        "user_visual_acceptance": "pending",
+        "capture_errors": [
+          {
+            "parameters": {
+              "u_xd": 0.158,
+              "u_r": 0.2105,
+              "u_yc": 0.0492,
+              "u_tip": -0.3475,
+              "u_wmax": 0.3614,
+              "u_fall": 0.45,
+              "u_glow": 1.0949,
+              "u_hi": 0.55
+            },
+            "revision": 0,
+            "image": "tool-01-image-01-current.png",
+            "mae_rgb_8bit": 10.418008309823495
+          },
+          {
+            "parameters": {
+              "u_xd": 0.15,
+              "u_r": 0.195,
+              "u_yc": 0.0492,
+              "u_tip": -0.4,
+              "u_wmax": 0.3,
+              "u_fall": 0.65,
+              "u_glow": 1.0949,
+              "u_hi": 0.55
+            },
+            "revision": 1,
+            "image": "tool-03-image-01-current.png",
+            "mae_rgb_8bit": 9.866591276945892
+          },
+          {
+            "parameters": {
+              "u_xd": 0.14,
+              "u_r": 0.19,
+              "u_yc": 0.0492,
+              "u_tip": -0.31,
+              "u_wmax": 0.33,
+              "u_fall": 0.65,
+              "u_glow": 1.0949,
+              "u_hi": 0.55
+            },
+            "revision": 2,
+            "image": "tool-05-image-01-current.png",
+            "mae_rgb_8bit": 8.679299813729745
+          },
+          {
+            "parameters": {
+              "u_xd": 0.148,
+              "u_r": 0.2,
+              "u_yc": 0.0492,
+              "u_tip": -0.322,
+              "u_wmax": 0.355,
+              "u_fall": 0.65,
+              "u_glow": 1.0949,
+              "u_hi": 0.55
+            },
+            "revision": 3,
+            "image": "tool-07-image-01-current.png",
+            "mae_rgb_8bit": 8.782852737991897
+          }
+        ],
+        "best_captured_candidate": {
+          "parameters": {
+            "u_xd": 0.14,
+            "u_r": 0.19,
+            "u_yc": 0.0492,
+            "u_tip": -0.31,
+            "u_wmax": 0.33,
+            "u_fall": 0.65,
+            "u_glow": 1.0949,
+            "u_hi": 0.55
+          },
+          "revision": 2,
+          "image": "tool-05-image-01-current.png",
+          "mae_rgb_8bit": 8.679299813729745
+        },
+        "final_worse_than_best": true,
+        "all_tool_images_in_model_input": true,
+        "final_revision_image_in_model_input": true,
+        "prompt_update_limit_exceeded": false
+      }
+    }
+  ],
+  "source_sha256": {
+    "src/shader_deep/experiments/__init__.py": "69c94db400b78dfbdccb7e14aa94c61f26a7b44f95460de67d25965aab8cccb0",
+    "src/shader_deep/experiments/_parameter_history.py": "64100de6fed2321c15148f61451aa4bc569cb8b0e7f2b48e31dbc103600f88c9",
+    "src/shader_deep/experiments/controlled_replay.py": "9eff301f1ef700f044f33e6b639eaec7717ae2df8c9b9f48f971ca3ca8777d2b",
+    "src/shader_deep/experiments/parameter_agent.py": "d7adbd2cad35df5e49c78718b73c2b0dd51f4edd4041d1eadb1c5e8addf0f15c",
+    "src/shader_deep/experiments/parameter_task.py": "6050fc5d09a3b34a86959555a022c860b6546defbfd8747ea7fc5e9f297b33da",
+    "src/shader_deep/experiments/parameter_tool.py": "c4ee35b27789bf2710cb66362804000f850351f5bb37a271edf36fcab180a7e3",
+    "src/shader_deep/experiments/tools/__init__.py": "8b745cc3e33ea016c9a0de598b70d7ee161e9f7572298808117a7ad9aa25d135",
+    "src/shader_deep/experiments/tools/_common.py": "e6afc8819abdd7e5cd6b7c22b8521e573654f9c58ed0aa0e654624c920102944",
+    "src/shader_deep/experiments/tools/capture_preview.py": "8a43af944459b9467e6af705f00b7a9b4724c49534e4309c4449a2580536335a",
+    "src/shader_deep/experiments/tools/compare_preview.py": "01e8911d6c3574bfc5ef4f822670d94bbbc834e1c41d2bf41213d91c93cbb714",
+    "src/shader_deep/experiments/tools/factory.py": "77f34f7b3041335850caf160a813067503f6f86fa2ff0e50db8610015292a4f2",
+    "src/shader_deep/experiments/tools/get_trial_history.py": "52f00587c0d150cf99f6070ddf90aa8c7e1af4c8ae487db9823851734508c63e",
+    "src/shader_deep/experiments/tools/set_parameters.py": "ef0c78c3409a8ed4083dcd4c6e12e0e94551af3c75d1f4b83d38d42e7a53c958",
+    "src/shader_deep/imaging/comparison.py": "67a638f308d4b69e15ddd7f6330cf8220eca2425b1d500cb9db67230d526b27e"
+  },
+  "elapsed_seconds": 97.68,
+  "rows": [
+    {
+      "group": "A",
+      "status": "completed",
+      "usage": {
+        "model_calls": 8,
+        "usage_records": 8,
+        "input_tokens": 66722,
+        "output_tokens": 3736,
+        "total_tokens": 70458,
+        "cache_read_tokens": 43136,
+        "reasoning_tokens": 2746
+      },
+      "history_calls": 0,
+      "before_mae": 10.418008309823495,
+      "after_mae": 8.305521081995082,
+      "reduction_percent": 20.27726572109255,
+      "final_parameters": {
+        "u_xd": 0.175,
+        "u_r": 0.2105,
+        "u_yc": 0.0492,
+        "u_tip": -0.31,
+        "u_wmax": 0.34,
+        "u_fall": 0.9,
+        "u_glow": 1.0949,
+        "u_hi": 0.55
+      },
+      "finish_reason": "stop",
+      "final_worse_than_best": false
+    },
+    {
+      "group": "B",
+      "status": "completed",
+      "usage": {
+        "model_calls": 8,
+        "usage_records": 8,
+        "input_tokens": 67980,
+        "output_tokens": 2845,
+        "total_tokens": 70825,
+        "cache_read_tokens": 54144,
+        "reasoning_tokens": 1829
+      },
+      "history_calls": 0,
+      "before_mae": 10.418008309823495,
+      "after_mae": 8.782852737991897,
+      "reduction_percent": 15.695471948220218,
+      "final_parameters": {
+        "u_xd": 0.148,
+        "u_r": 0.2,
+        "u_yc": 0.0492,
+        "u_tip": -0.322,
+        "u_wmax": 0.355,
+        "u_fall": 0.65,
+        "u_glow": 1.0949,
+        "u_hi": 0.55
+      },
+      "finish_reason": "stop",
+      "final_worse_than_best": true
+    }
+  ],
+  "totals": {
+    "model_calls": 16,
+    "usage_records": 16,
+    "input_tokens": 134702,
+    "output_tokens": 6581,
+    "total_tokens": 141283,
+    "cache_read_tokens": 97280,
+    "reasoning_tokens": 4575
+  },
+  "findings": [
+    "Original native shader and adapted shader both show rounded bottom and horizontal line. Adapter difference is only 13 of 589824 pixels, each at most 1 RGB level.",
+    "For y < u_tip, dB = u_tip-y has no x dependence; the coverage transition produces a horizontal band below the tip. This is in shader geometry, not page border or cropping.",
+    "Both groups left u_glow and u_hi unchanged. Outline joints, notch depth, tip shape, colors and highlight remain visibly different from reference.",
+    "Target parameter values are unknown; reference is user supplied. Exact attainability within fixed shader and parameter ranges has not been established.",
+    "One A/B pair with three parameter updates each. Pixel MAE is post-run diagnostic only, not perceptual quality. History tool remains unused."
+  ]
+}

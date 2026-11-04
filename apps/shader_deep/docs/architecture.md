@@ -30,6 +30,24 @@
 | [compatibility/](../src/shader_deep/compatibility/README.md) | 旧分析和按需整合的可执行实现 | 仅供显式兼容调用及回归, 当前工作流不依赖它们 |
 | `experiments/` | 固定样本和受控清单实验 | 不自动进入完整图片流程 |
 
+独立调参实验通过调用方管理的 `ShaderPreview` 固定源码和参数白名单, `experiments/tools/` 每个工具独立一个文件, `factory.py` 负责绑定会话、固定参考图与共享历史. 旧 `experiments/parameter_tool.py` 仅转发公开工厂导入. 浏览器验证实际活跃 uniform 类型并通过 `gl.uniform1f` 赋值, 不替换源码, 也不逐次重建浏览器/program. 单帧 `WebGL2Renderer.render(..., uniforms=...)` 仍用于外层生成参考图等场景.
+
+常驻预览由 `rendering/preview.html` 和 `webgl2.js` 中的 `createShaderPreview` 提供, 页面启动时编译一次, 持续复用 program 绘制. `setParameters` 校验并合并参数, `capture` 同步绘制并导出带参数版本的 PNG, `dispose` 停止动画并释放 GPU 资源. 页面支持默认示例或调用方注入的配置, 预览参数更新保留其他当前值. 单帧接口继续在每次调用后释放 program.
+
+`shader-preview-update` 事件传递成功更新后的完整参数快照, 页面统一同步控件. 生命周期根据 `pagehide.persisted` 区分往返缓存暂停和永久关闭; `pageshow.persisted` 仅恢复已暂停且未销毁的会话, 避免重复动画循环.
+
+Python 常驻入口为 `rendering/preview.py` 的 `ShaderPreview`, 从渲染包公开导出. `with` 管理启动/关闭, 一个内部工作线程持有浏览器和页面, 外部线程的参数更新、取图及关闭串行执行. 页面通过启动配置加载调用方源码和参数, 复用同一个已编译 program; `PreviewSnapshot` 保存 PNG、不可变参数视图、参数版本、实际 iTime 和尺寸. 构造不启动资源, 启动失败与关闭都会释放浏览器及线程, 已关闭实例不能重新进入. 当前每个会话使用独立浏览器, 不连接之前手动打开的标签页; 实验 Agent 工具通过同一个会话的更新和取图接口操作预览.
+
+渲染模块内部按职责组织: `models.py` 定义统一类型与异常, `_validation.py` 执行共享校验, `preview.py` 管理公开会话与线程, `_preview_browser.py` 管理浏览器 Adapter 与页面通信. `preview.html` 提供页面结构, `preview.js` 管理控件, `webgl2.js` 管理 GPU 操作. 原 `renderer.RenderError` 导入与公开调用保持兼容, 实验工具从会话的 `parameter_specs` 副本获得参数说明. 具体依赖与接口契约见[渲染模块说明](../src/shader_deep/rendering/README.md).
+
+独立调参实验的 `build_parameter_tools(preview)` 提供 `set_parameters` 与 `capture_preview`, 仅转换模型输入、预期错误和图片消息, 不拥有浏览器或候选文件. `build_parameter_agent(preview=...)` 使用原生 Deep Agents, 可直接调用; 模型客户端沿用项目配置或显式注入, 原单工具参数保留兼容. 调用方在外层 with 内完成模型调用, 更新与取图分轮执行. 此实验不接入默认分析/生成工作流.
+
+新代码统一从 `shader_deep.experiments.tools` 导入工厂. 目录中的 `set_parameters.py`、`capture_preview.py`、`compare_preview.py`、`get_trial_history.py` 分别定义单个模型工具, `_common.py` 共用消息适配与错误处理设置. 拼图和历史存储继续留在图像模块及实验历史模块, 不混入工具定义. 详细职责见[工具 README](../src/shader_deep/experiments/tools/README.md).
+
+参考图匹配任务由 `experiments/parameter_task.py` 的 `build_reference_task` 构建: 本地 PNG 经现有图片消息适配器读成固定 data URL, 随 HumanMessage 传给模型, 不传路径或目标参数. 另用 `build_parameter_agent(preview=..., reference_path=...)` 给工具绑定同一参考图. 消息和工具分别固定参考字节, 构建之间不得修改文件, 换目标时需新建 Agent.
+
+参考图模式新增 `compare_preview` 与 `get_trial_history`: `imaging/comparison.py` 原尺度拼接左参考/右当前并加独立标题栏, 不计算误差; `experiments/_parameter_history.py` 只保存成功取图的原始快照, 工具最多返回三张所选原图与参数. 历史生命周期与本次工具绑定一致, 不跨目标共享, 不自动选优或恢复. 渲染模块不依赖参考图或比较逻辑, 仍只负责当前画布. 模型可见内容无 MAE、评分、排名或程序判断的改善结论; 评估指标仅由外层离线计算. 之前的真实模型实验未使用这些新工具, 新链路的实际精度收益待验证; 历史证据见[实验记录](work-items/parameter-agent-experiment.md).
+
 顶层 `analysis/`、`context/`、`tools/` 和旧单文件模块保留为明确的导入转发. 新实现只使用上述规范路径. `domain/legacy.py` 保留旧报告及兼容任务字段的数据模型, 不运行旧 Agent.
 
 ## 两条当前流程

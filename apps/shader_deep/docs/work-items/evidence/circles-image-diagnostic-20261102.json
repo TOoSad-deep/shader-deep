@@ -1,0 +1,118 @@
+{
+  "model": "z-ai/glm-5.3-flash",
+  "endpoint_host": "openrouter.ai",
+  "tracing_enabled": false,
+  "authorized_live_probe_limit": 2,
+  "records": [
+    {
+      "probe": "reference_user_image",
+      "content": "图片中有 2 个圆形，位于画面中央，彼此重叠：\n\n1. **左下方的圆形**：呈渐变色，从左侧的青绿色过渡到蓝色。\n2. **右上方的圆形**：呈白色或浅灰色，呈半透明磨砂质感。\n\n两圆交叠的区域因透明混合效果呈现**紫色/紫罗兰色渐变**。背景为浅灰白色。",
+      "usage": {
+        "input_tokens": 824,
+        "output_tokens": 306,
+        "total_tokens": 1130,
+        "input_token_details": {
+          "audio": 0,
+          "cache_read": 0,
+          "cache_creation": 0
+        },
+        "output_token_details": {
+          "audio": 0,
+          "reasoning": 220
+        }
+      },
+      "finish_reason": "stop"
+    },
+    {
+      "probe": "comparison_tool_image",
+      "content": "图片内容描述如下：\n\n**主要物体：**\n左右两半都展示了两个相互重叠的半透明圆形（类似维恩图/水滴交融的形状），背景为浅灰色。\n\n**颜色：**\n- 一个圆形呈**青绿色到深蓝色**的渐变（左侧偏绿青色，右下偏深蓝）\n- 另一个圆形是**浅灰白色**的半透明圆，在两者重叠区域渗出**紫色/紫红色**的渐变晕染\n\n**左右两部分的区别：**\n\n| | 左侧（Reference 参考图） | 右侧（Current 当前图） |\n|---|---|---|\n| **尺寸** | 圆形较大，占画面比例明显 | 圆形明显偏小 |\n| **清晰度** | 边缘清晰锐利 | 整体模糊、发虚（像失焦或低分辨率放大） |\n| **位置** | 偏左下方居中 | 靠近中间偏上 |\n| **重叠效果** | 紫色晕染明显、层次分明，白色圆高光清楚 | 紫色渐变模糊成一团，几乎与蓝色融为一体 |\n\n**总结：** 当前版本（右侧）相比参考版本（左侧）存在明显的**尺寸缩小**和**模糊/清晰度下降**问题，紫色的混合渐变效果也失去了左侧那种清晰的层次感。这看起来像是一次渲染对比预览，提示当前实现与参考设计存在偏差。",
+      "usage": {
+        "input_tokens": 1686,
+        "output_tokens": 315,
+        "total_tokens": 2001,
+        "input_token_details": {
+          "audio": 0,
+          "cache_read": 0,
+          "cache_creation": 0
+        },
+        "output_token_details": {
+          "audio": 0,
+          "reasoning": 1
+        }
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  "wire": [
+    {
+      "model": "z-ai/glm-5.3-flash",
+      "image_blocks": [
+        {
+          "role": "user",
+          "sha256": "8431f0a97a9caae5bdd1ad7e0d6d82e94a604c5a53c49cb9abd659f3f761a41a",
+          "dimensions": [
+            1024,
+            576
+          ],
+          "bytes": 57579,
+          "data_url": true
+        }
+      ],
+      "roles": [
+        "user"
+      ],
+      "max_completion_tokens": 4096,
+      "http_status": 200,
+      "provider": "Cohere",
+      "response_id": "gen-1793606425-ahimlMmauixcRVXxilQg",
+      "response_model": "z-ai/glm-5.3-flash",
+      "finish_reasons": [
+        "stop"
+      ]
+    },
+    {
+      "model": "z-ai/glm-5.3-flash",
+      "image_blocks": [
+        {
+          "role": "tool",
+          "sha256": "a88db89985d730107c5709ad13a985d6dfbd9c6a37cf6d4e4cf0d99fb17880b6",
+          "dimensions": [
+            2048,
+            600
+          ],
+          "bytes": 95400,
+          "data_url": true
+        }
+      ],
+      "roles": [
+        "user",
+        "assistant",
+        "tool"
+      ],
+      "max_completion_tokens": 4096,
+      "http_status": 200,
+      "provider": "Wafer",
+      "response_id": "gen-1793606428-gGdCn6vmsvf0wDGawyNW",
+      "response_model": "z-ai/glm-5.3-flash",
+      "finish_reasons": [
+        "stop"
+      ]
+    }
+  ],
+  "finished": true,
+  "totals": {
+    "input_tokens": 2510,
+    "output_tokens": 621,
+    "total_tokens": 3131
+  },
+  "assessment": {
+    "reference_probe": "Identified two overlapping colored circles and relative positions from image without textual answer hints.",
+    "tool_probe": "Identified the side-by-side image and that current objects are smaller and blurrier than reference; some location/appearance details remain subjective.",
+    "both_http_200": true,
+    "providers": [
+      "Cohere",
+      "Wafer"
+    ],
+    "conclusion": "The reported inability to see images did not reproduce in these two small probes. This establishes user-image and tool-image paths worked in these requests only. Cause of the earlier full-agent failure remains undetermined; previous route was not recorded. No claim that a defect has been fixed."
+  }
+}

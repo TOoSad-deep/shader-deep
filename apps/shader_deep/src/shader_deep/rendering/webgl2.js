@@ -1,8 +1,9 @@
 (() => {
     // 立即执行的函数为这一个页面建立画布与 WebGL2 上下文.
-    // canvas/gl 留在闭包内供多次调用复用, 只公开 window.renderShader 作为 Python 入口.
-    const canvas = document.createElement("canvas");
-    document.body.replaceChildren(canvas);
+    // 实时预览页面提供自己的画布; 原单帧入口仍自动创建画布.
+    const providedCanvas = document.querySelector("canvas[data-shader-preview]");
+    const canvas = providedCanvas || document.createElement("canvas");
+    if (!providedCanvas) document.body.replaceChildren(canvas);
     const gl = canvas.getContext("webgl2", {
         // 保留 Shader 输出的透明度, 不使用深度/模板缓冲或几何抗锯齿.
         alpha: true,
@@ -89,7 +90,25 @@ void main() {
         gl.viewport(0, 0, width, height);
     }
 
-    function draw(program, width, height, time) {
+    function setUniforms(program, uniforms) {
+        // 查询链接后的真实类型, 避免用 uniform1f 给 int、向量或数组误赋值.
+        const active = new Map();
+        const count = gl.getProgramParameter(program, gl.ACTIVE_UNIFORMS);
+        for (let index = 0; index < count; index++) {
+            const info = gl.getActiveUniform(program, index);
+            active.set(info.name, info);
+        }
+        for (const [name, value] of Object.entries(uniforms)) {
+            const info = active.get(name);
+            if (!info || info.type !== gl.FLOAT || info.size !== 1) {
+                // 未使用的 uniform 可能被编译器优化掉, 此时也不能声称已成功调参.
+                fail("uniform", "Expected an active scalar float uniform: " + name);
+            }
+            gl.uniform1f(gl.getUniformLocation(program, name), value);
+        }
+    }
+
+    function draw(program, width, height, time, uniforms) {
         // 每个候选先清成透明色, 防止 discard 的像素沿用上一帧内容.
         // 关闭混合与抖动, 使写出的颜色尽量直接对应片段 Shader 的输出.
         gl.disable(gl.BLEND);
@@ -101,6 +120,8 @@ void main() {
         // Shader 未使用某个 uniform 时其位置可为 null, WebGL 会忽略对应赋值.
         gl.uniform3f(gl.getUniformLocation(program, "iResolution"), width, height, 1);
         gl.uniform1f(gl.getUniformLocation(program, "iTime"), time);
+        // 自定义参数通过 WebGL API 赋值, 无需改动 GLSL 字符串.
+        setUniforms(program, uniforms);
         gl.drawArrays(gl.TRIANGLES, 0, 3);
         const error = gl.getError();
         if (error !== gl.NO_ERROR || gl.isContextLost()) {
@@ -117,7 +138,126 @@ void main() {
         return png;
     }
 
-    window.renderShader = ({ glsl_code, width, height, time }) => {
+    window.createShaderPreview = ({ glsl_code, width, height, parameters, time = 0 }) => {
+        // 一个会话只编译一次. program 留在此闭包中, 直到 dispose 统一释放.
+        // parameters 由宿主页面提供, 不由后续调参调用扩大名称或范围.
+        const specs = structuredClone(parameters);
+        const values = {};
+        const shaders = [];
+        let program = null;
+        let frame = null;
+        let disposed = false;
+        let paused = false;
+        let error = null;
+        let revision = 0;
+        let renderedTime = 0;
+        const started = performance.now();
+
+        function validate(updates) {
+            for (const [name, value] of Object.entries(updates)) {
+                if (!Object.hasOwn(specs, name) || name === "iTime" || name === "iResolution") {
+                    fail("uniform", "Parameter is not allowed: " + name);
+                }
+                const spec = specs[name];
+                if (!Number.isFinite(value) || value < spec.min || value > spec.max) {
+                    fail("uniform", "Parameter is outside its range: " + name);
+                }
+            }
+        }
+
+        function dispose() {
+            // 页面退出或宿主显式关闭时, 同时停止动画和释放 GPU 资源.
+            if (disposed) return;
+            disposed = true;
+            cancelAnimationFrame(frame);
+            gl.useProgram(null);
+            if (program) gl.deleteProgram(program);
+            shaders.forEach(shader => gl.deleteShader(shader));
+            window.removeEventListener("pagehide", hide);
+            window.removeEventListener("pageshow", show);
+        }
+
+        function hide(event) {
+            // 往返缓存会保留这个页面和闭包, 此时只暂停, 不永久销毁 program.
+            if (!event.persisted) return dispose();
+            paused = true;
+            cancelAnimationFrame(frame);
+            frame = null;
+        }
+
+        function show(event) {
+            // 只恢复曾暂停的会话; 重复 pageshow 不额外创建动画循环.
+            if (!event.persisted || !paused || disposed) return;
+            paused = false;
+            tick();
+        }
+
+        function render() {
+            if (disposed) fail("preview", "Preview is closed");
+            if (error) throw error;
+            if (gl.isContextLost()) fail("context", "WebGL2 context was lost");
+            // time=null 表示动画时间; 数值则固定时间, 便于之后比较参数效果.
+            const seconds = time === null ? (performance.now() - started) / 1000 : time;
+            draw(program, width, height, seconds, values);
+            renderedTime = seconds;
+        }
+
+        function tick() {
+            if (paused || disposed) return;
+            try {
+                render();
+                frame = requestAnimationFrame(tick);
+            } catch (cause) {
+                error = cause;
+                window.dispatchEvent(new CustomEvent("shader-preview-error", { detail: cause.message }));
+                dispose();
+            }
+        }
+
+        try {
+            for (const [name, spec] of Object.entries(specs)) {
+                if (![spec.min, spec.max, spec.initial].every(Number.isFinite) || spec.min > spec.max) {
+                    fail("uniform", "Invalid parameter configuration: " + name);
+                }
+                values[name] = spec.initial;
+            }
+            validate(values);
+            resize(width, height);
+            program = gl.createProgram();
+            if (!program) fail("link", "Could not allocate program");
+            prepareProgram(program, glsl_code, shaders);
+            render();
+            frame = requestAnimationFrame(tick);
+            window.addEventListener("pagehide", hide);
+            window.addEventListener("pageshow", show);
+        } catch (cause) {
+            dispose();
+            throw cause;
+        }
+
+        return {
+            setParameters(updates) {
+                // 先检查整组再更新, 避免一部分参数已更新后才发现另一项无效.
+                validate(updates);
+                render(); // 先确认会话仍可用, 再修改保存的参数.
+                Object.assign(values, updates);
+                revision += 1;
+                render();
+                const result = { revision, parameters: { ...values } };
+                // 统一通知页面: 滑块、重置按钮和后续外部工具调用共用一个显示入口.
+                window.dispatchEvent(new CustomEvent("shader-preview-update", { detail: result }));
+                return result;
+            },
+            capture() {
+                // 在同一 JS 调用内绘制并导出, 返回图片与参数版本的一致快照.
+                render();
+                return { revision, parameters: { ...values }, time: renderedTime, png: exportPng() };
+            },
+            dispose,
+        };
+    };
+
+    window.renderShader = ({ glsl_code, width, height, time, uniforms = {} }) => {
         // 每次调用拥有独立 program/shader, 画布与上下文跨调用复用.
         // 成功与失败都返回可序列化对象, 由 Python 再统一转换成字节或 RenderError.
         const shaders = [];
@@ -132,7 +272,7 @@ void main() {
                 fail("link", "Could not allocate program");
             }
             prepareProgram(program, glsl_code, shaders);
-            draw(program, width, height, time);
+            draw(program, width, height, time, uniforms);
             return { ok: true, png: exportPng() };
         } catch (error) {
             return { ok: false, stage: error.stage || "render", message: error.message || String(error) };

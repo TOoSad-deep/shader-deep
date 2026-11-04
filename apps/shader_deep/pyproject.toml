@@ -35,7 +35,7 @@ where = ["src"]
 
 [tool.setuptools.package-data]
 "shader_deep.resources" = ["analysis.yaml"]
-"shader_deep.rendering" = ["webgl2.js"]
+"shader_deep.rendering" = ["webgl2.js", "preview.html", "preview.js"]
 
 [dependency-groups]
 test = []
