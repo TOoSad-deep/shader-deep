@@ -1,5 +1,7 @@
 # Shader Deep
 
+项目状态: [总体进度、当前重点与新思路](docs/progress.md). 跨会话继续工作时先从这里恢复全局, 再进入对应任务记录.
+
 开发入口: [模块导航与架构](docs/architecture.md#模块导航) · [开发与验证](docs/development.md) · [文档同步约定](AGENTS.md#文档同步) · [设计决策](docs/decisions/0001-agent-oriented-layout.md). 历史改造与验证按需查对应任务记录.
 
 下游开发设计: [整体架构与模块设计](docs/generation-architecture.md)提供目录、接口与四个实施分支入口; [宏观分析](docs/generation-execution-design.md)说明流程选择和审查依据. 01 至 04 已接入, 最新的[两元素整图组合](docs/work-items/generation-04-scene-composition.md)复用单方案生成与两方案比较产物; 真实模型效果仍需单独验收.
