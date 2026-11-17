@@ -1,0 +1,231 @@
+[
+  {
+    "target": "F1",
+    "mechanisms": [
+      "M1",
+      "M7"
+    ],
+    "origins": [
+      {
+        "sketch_id": "S1"
+      },
+      {
+        "sketch_id": "S1",
+        "alternative_index": 0
+      },
+      {
+        "sketch_id": "S1",
+        "alternative_index": 1
+      }
+    ]
+  },
+  {
+    "target": "F2",
+    "mechanisms": [
+      "M5"
+    ],
+    "origins": [
+      {
+        "sketch_id": "S1"
+      },
+      {
+        "sketch_id": "S1",
+        "alternative_index": 0
+      },
+      {
+        "sketch_id": "S1",
+        "alternative_index": 1
+      }
+    ]
+  },
+  {
+    "target": "F3",
+    "mechanisms": [
+      "M1",
+      "M2",
+      "M6"
+    ],
+    "origins": [
+      {
+        "sketch_id": "S1"
+      },
+      {
+        "sketch_id": "S1",
+        "alternative_index": 0
+      },
+      {
+        "sketch_id": "S1",
+        "alternative_index": 1
+      }
+    ]
+  },
+  {
+    "target": "F4",
+    "mechanisms": [
+      "M5"
+    ],
+    "origins": [
+      {
+        "sketch_id": "S1"
+      },
+      {
+        "sketch_id": "S1",
+        "alternative_index": 0
+      },
+      {
+        "sketch_id": "S1",
+        "alternative_index": 1
+      }
+    ]
+  },
+  {
+    "target": "F5",
+    "mechanisms": [
+      "M1",
+      "M3",
+      "M6"
+    ],
+    "origins": [
+      {
+        "sketch_id": "S1"
+      },
+      {
+        "sketch_id": "S1",
+        "alternative_index": 0
+      },
+      {
+        "sketch_id": "S1",
+        "alternative_index": 1
+      }
+    ]
+  },
+  {
+    "target": "F6",
+    "mechanisms": [
+      "M5"
+    ],
+    "origins": [
+      {
+        "sketch_id": "S1"
+      },
+      {
+        "sketch_id": "S1",
+        "alternative_index": 0
+      },
+      {
+        "sketch_id": "S1",
+        "alternative_index": 1
+      }
+    ]
+  },
+  {
+    "target": "F7",
+    "mechanisms": [
+      "M1",
+      "M4",
+      "M6"
+    ],
+    "origins": [
+      {
+        "sketch_id": "S1"
+      },
+      {
+        "sketch_id": "S1",
+        "alternative_index": 0
+      }
+    ]
+  },
+  {
+    "target": "F8",
+    "mechanisms": [
+      "M5"
+    ],
+    "origins": [
+      {
+        "sketch_id": "S1"
+      },
+      {
+        "sketch_id": "S1",
+        "alternative_index": 0
+      },
+      {
+        "sketch_id": "S1",
+        "alternative_index": 1
+      }
+    ]
+  },
+  {
+    "target": "R1",
+    "mechanisms": [
+      "M1",
+      "M2",
+      "M3",
+      "M4"
+    ],
+    "origins": [
+      {
+        "sketch_id": "S1"
+      },
+      {
+        "sketch_id": "S1",
+        "alternative_index": 0
+      },
+      {
+        "sketch_id": "S1",
+        "alternative_index": 1
+      }
+    ]
+  },
+  {
+    "target": "R2",
+    "mechanisms": [
+      "M5",
+      "M7"
+    ],
+    "origins": [
+      {
+        "sketch_id": "S1"
+      },
+      {
+        "sketch_id": "S1",
+        "alternative_index": 0
+      },
+      {
+        "sketch_id": "S1",
+        "alternative_index": 1
+      }
+    ]
+  },
+  {
+    "target": "R3",
+    "mechanisms": [
+      "M5",
+      "M7"
+    ],
+    "origins": [
+      {
+        "sketch_id": "S1"
+      },
+      {
+        "sketch_id": "S1",
+        "alternative_index": 0
+      },
+      {
+        "sketch_id": "S1",
+        "alternative_index": 1
+      }
+    ]
+  },
+  {
+    "target": "F7",
+    "mechanisms": [
+      "M4"
+    ],
+    "origins": [
+      {
+        "sketch_id": "S1",
+        "alternative_index": 1
+      }
+    ]
+  }
+]

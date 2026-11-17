@@ -1,0 +1,66 @@
+{
+  "reviewer": "Codex",
+  "rubric_source": "experiment.json",
+  "comparison": "against historical R1 and intermediate R2, single sample only",
+  "cases": {
+    "pink": {
+      "coverage": "主体色场、两段亮带、轮廓/边沿与柔影均有记录, 拆成六F可讨论",
+      "relations": "所选R转为光照方向解释, 仍未明确记录亮带与轮廓的共同约束",
+      "facts": "圆心偏左、底部留白与亮带强度表述不够准确",
+      "assessment": "mixed"
+    },
+    "windows": {
+      "coverage": "重复整体E已消失, 碎片仍拆成多项分布属性; 青绿色底色漏记",
+      "relations": "色带与行向对应已覆盖; 部分内容F/R重复",
+      "facts": "形态整体合理, 将消散方向作为成因的表述偏强",
+      "assessment": "mixed"
+    },
+    "frosted": {
+      "coverage": "交叠变色和变软集中在R, 重复明显减少; 灰背景漏记",
+      "relations": "一个R覆盖位置与外观两种判断, 非按数量判错; 内容偏长",
+      "facts": "浅色圆较背景更亮的说法需复核, 坐标不构成测量",
+      "assessment": "ownership_improved_other_issues"
+    },
+    "balls": {
+      "coverage": "阴影与面板-群体布局已覆盖; 左右两E保留了分布但重复单件模板",
+      "relations": "布局明确; 簇内咬合和叠压描述过强",
+      "facts": "背景误作均匀灰底, 阴影显著程度被低估",
+      "assessment": "mixed"
+    },
+    "liquid-retry": {
+      "coverage": "网格留在上下文, 交互变化仍主要写在F",
+      "relations": "R2缺背景参与项, 两滴之间的R不能完整表示背景变化",
+      "facts": "位移与光源判断强于可确认观察; gaps混入精确折射判断",
+      "assessment": "regressed"
+    },
+    "cool-s-distance": {
+      "assessment": "transport_failed"
+    },
+    "flat-water-effects2": {
+      "coverage": "反光被独立成E, 光晕在天空/亮圆F中重复",
+      "relations": "补出了倒影对齐和波纹对应, 交互目标仍分散",
+      "facts": "亮带向下变窄变暗、近处波纹更清晰与原图相反; 精确海平线位置误填gaps",
+      "assessment": "mixed"
+    },
+    "buffer-bloom": {
+      "coverage": "三个核心与各自光晕均有记录; 黑底漏记",
+      "relations": "补出斜向布局和光晕交叠两类关系",
+      "facts": "倒置心形被描述为正置, 星形姿态亦不准",
+      "assessment": "relations_improved_facts_unresolved"
+    },
+    "auroras": {
+      "coverage": "星空、极光、水面与暗边界覆盖, 天空底色在E中合理保留",
+      "relations": "倒影主要归R, 关键配合存在",
+      "facts": "细分较多且用了大量未测坐标; 星点不可见原因的判断偏强",
+      "assessment": "broadly_retained"
+    },
+    "dna-helis": {
+      "coverage": "节点、连线和周期起伏覆盖; 黑色背景仍漏记, 部分分布内容重复",
+      "relations": "端点和间距-杆长对应存在",
+      "facts": "裁切方向较旧稿克制, 仍有未经测量的角度/数量和杆倾角描述",
+      "assessment": "mixed"
+    }
+  },
+  "pending": [],
+  "acceptance": "语义稳定性未通过, 不将completed视作质量验收"
+}

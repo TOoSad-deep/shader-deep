@@ -1,0 +1,96 @@
+{
+  "analysis_protocol": "scene_observations_v1",
+  "stop_reason": "completed",
+  "error": null,
+  "report_path": "report",
+  "options": {
+    "max_model_calls": 8,
+    "max_output_tokens": 163840,
+    "max_request_retries": 0,
+    "request_timeout_seconds": 45,
+    "stream_model_responses": true,
+    "output_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-observer-traced-20261111/dna-helis"
+  },
+  "deprecated_option_diagnostics": [],
+  "execution": {
+    "analysis_protocol": "scene_observations_v1",
+    "execution": "deep_agents_single_observer",
+    "state": "accepted",
+    "reason": null,
+    "model_calls": 1,
+    "validation_errors": 0,
+    "tool_refusals": 0,
+    "max_model_calls": 8,
+    "reference_sha256": "4ba233c4280ddbf1add81261151878c24c006b33defab9752c80d36e03b4fa38",
+    "accepted_snapshot": "results/observations.json",
+    "resource_read_results": [],
+    "model_id": "z-ai/glm-5.3-flash",
+    "rule_sha256": "c6e5d8ab6e32d8d738a6bc71a1650b8d1af81d5c12d1bb5c30113a37b4223b8b",
+    "resource_sha256": {
+      "SKILL.md": "c6e5d8ab6e32d8d738a6bc71a1650b8d1af81d5c12d1bb5c30113a37b4223b8b",
+      "references/grouping.md": "ecb110a27e76a68ab0ef5ef6a42f9231927e58718cc830209407b46b4fbee75f",
+      "references/relations.md": "88c11dd1105f168ded3eb5e255e7481ae2b318f7f90b8b973f83700f23e0b543",
+      "references/uncertainty.md": "8c5b8adcf19d45c3204465cf1aad383b404bde20dd1cd6a8cc21cfc5f0727e76"
+    },
+    "skill_bundle_sha256": "e886d1ceb850dec6f14a4e66b15bbfdcb3abf9229cad60bf3b478912af64f095",
+    "elapsed_seconds": 25.594394125015242,
+    "elapsed_scope": "analysis_before_publication",
+    "token_usage": {
+      "input_tokens": 3616,
+      "output_tokens": 3848,
+      "total_tokens": 7464
+    },
+    "usage_scope": "sdk_reported_responses_only",
+    "http_request_count": null
+  },
+  "blackboard": {
+    "targets": {
+      "T1": {
+        "version": "T1",
+        "request": "分析整张图, 按已确认的粒度输出上下文、多元素E、F与R, 只描述可见观察, 通过提交工具交付。",
+        "reference_path": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/single-observer-new-cases-20261110-uyrhcnj9/dna-helis/run-sxzsa961/report/reference.png",
+        "constraints": [],
+        "protected_features": []
+      }
+    },
+    "tasks": {
+      "A1": {
+        "id": "A1",
+        "role": "analysis",
+        "target_version": "T1",
+        "objective": "分析整张图, 按已确认的粒度输出上下文、多元素E、F与R, 只描述可见观察, 通过提交工具交付。",
+        "baseline_id": null,
+        "candidate_ids": [],
+        "related_result_ids": [],
+        "experiment_id": null,
+        "hypothesis": null,
+        "allowed_changes": [],
+        "stop_conditions": [],
+        "parent_task_id": null,
+        "lens_config": null,
+        "analysis_purpose": "initial",
+        "analysis_gap": null,
+        "expected_evidence": null,
+        "evidence_ids": [],
+        "analysis_outline": null,
+        "generation_binding": null
+      }
+    },
+    "candidates": {},
+    "results": {
+      "run-aapiptaa-scene-observations": {
+        "id": "run-aapiptaa-scene-observations",
+        "task_id": "A1",
+        "status": "completed",
+        "summary": "全图 E/F/R 观察包已交付: report/manifest.json; 观察完成不代表 M/S 规划或视觉验收完成",
+        "candidate_ids": [],
+        "observations": [],
+        "hypotheses": [],
+        "limitations": [],
+        "recommendation": null,
+        "analysis_detail": null,
+        "analysis_protocol": "scene_observations_v1"
+      }
+    }
+  }
+}

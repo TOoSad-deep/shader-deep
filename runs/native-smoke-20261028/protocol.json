@@ -1,0 +1,11 @@
+{
+  "sample": "glow_border.png",
+  "explorers": 2,
+  "orchestrator_node_limit": 8,
+  "worker_node_limit": 4,
+  "integrator_node_limit": 2,
+  "wall_seconds": 300,
+  "request_timeout_seconds": 50,
+  "request_retries": 0,
+  "scope": "one real-model smoke; graph limits exclude SDK summary calls; no reruns"
+}

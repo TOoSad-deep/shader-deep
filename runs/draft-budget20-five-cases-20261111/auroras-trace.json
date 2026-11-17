@@ -1,0 +1,11 @@
+{
+  "trace_id": "01a1c8c3-8a21-7172-be5c-d744364b3194",
+  "url": "https://smith.langchain.com/o/fcb09333-f0ce-45e7-9ea2-c4750cdfbd16/projects/p/2e0945b1-fc78-4930-96bb-3085745b703a/r/01a1c8c3-8a21-7172-be5c-d744364b3194?poll=true",
+  "root_finished": true,
+  "runs": 25,
+  "llm_runs": 2,
+  "tool_runs": 1,
+  "image_in_llm_input": true,
+  "llm_outputs_present": true,
+  "error_runs": 10
+}

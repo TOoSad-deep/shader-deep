@@ -1,0 +1,38 @@
+[
+  {
+    "case": "frosted",
+    "process_exit": 0
+  },
+  {
+    "case": "windows",
+    "process_exit": 0
+  },
+  {
+    "case": "liquid-retry",
+    "process_exit": 0
+  },
+  {
+    "case": "flat-water-effects2",
+    "process_exit": 0
+  },
+  {
+    "case": "cool-s-distance",
+    "process_exit": 0
+  },
+  {
+    "case": "dna-helis",
+    "process_exit": 0
+  },
+  {
+    "case": "balls",
+    "process_exit": 0
+  },
+  {
+    "case": "buffer-bloom",
+    "process_exit": 0
+  },
+  {
+    "case": "auroras",
+    "process_exit": 0
+  }
+]

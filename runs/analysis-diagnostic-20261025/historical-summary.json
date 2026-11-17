@@ -1,0 +1,280 @@
+[
+  {
+    "run": "apps/shader_deep/runs/main-agent-skill-20261001/drive-home",
+    "sealed": false,
+    "tasks": [
+      {
+        "task": "exploration-1",
+        "status": "pending",
+        "model_calls": 0,
+        "attempt_count": 0,
+        "final_error": null,
+        "rejection_categories": {},
+        "rejections": [],
+        "request_failures": [],
+        "first_submission_success": null,
+        "accepted_on_call": null
+      },
+      {
+        "task": "exploration-2",
+        "status": "pending",
+        "model_calls": 0,
+        "attempt_count": 0,
+        "final_error": null,
+        "rejection_categories": {},
+        "rejections": [],
+        "request_failures": [],
+        "first_submission_success": null,
+        "accepted_on_call": null
+      },
+      {
+        "task": "exploration-3",
+        "status": "pending",
+        "model_calls": 0,
+        "attempt_count": 0,
+        "final_error": null,
+        "rejection_categories": {},
+        "rejections": [],
+        "request_failures": [],
+        "first_submission_success": null,
+        "accepted_on_call": null
+      }
+    ]
+  },
+  {
+    "run": "apps/shader_deep/runs/main-agent-skill-20261001/hypnotic-ripples",
+    "sealed": false,
+    "tasks": [
+      {
+        "task": "exploration-1",
+        "status": "pending",
+        "model_calls": 0,
+        "attempt_count": 0,
+        "final_error": null,
+        "rejection_categories": {},
+        "rejections": [],
+        "request_failures": [],
+        "first_submission_success": null,
+        "accepted_on_call": null
+      },
+      {
+        "task": "exploration-2",
+        "status": "pending",
+        "model_calls": 0,
+        "attempt_count": 0,
+        "final_error": null,
+        "rejection_categories": {},
+        "rejections": [],
+        "request_failures": [],
+        "first_submission_success": null,
+        "accepted_on_call": null
+      },
+      {
+        "task": "exploration-3",
+        "status": "pending",
+        "model_calls": 0,
+        "attempt_count": 0,
+        "final_error": null,
+        "rejection_categories": {},
+        "rejections": [],
+        "request_failures": [],
+        "first_submission_success": null,
+        "accepted_on_call": null
+      }
+    ]
+  },
+  {
+    "run": "apps/shader_deep/runs/main-agent-skill-20261001/windows-95",
+    "sealed": false,
+    "tasks": [
+      {
+        "task": "exploration-1",
+        "status": "pending",
+        "model_calls": 0,
+        "attempt_count": 0,
+        "final_error": null,
+        "rejection_categories": {},
+        "rejections": [],
+        "request_failures": [],
+        "first_submission_success": null,
+        "accepted_on_call": null
+      },
+      {
+        "task": "exploration-2",
+        "status": "pending",
+        "model_calls": 0,
+        "attempt_count": 0,
+        "final_error": null,
+        "rejection_categories": {},
+        "rejections": [],
+        "request_failures": [],
+        "first_submission_success": null,
+        "accepted_on_call": null
+      },
+      {
+        "task": "exploration-3",
+        "status": "pending",
+        "model_calls": 0,
+        "attempt_count": 0,
+        "final_error": null,
+        "rejection_categories": {},
+        "rejections": [],
+        "request_failures": [],
+        "first_submission_success": null,
+        "accepted_on_call": null
+      }
+    ]
+  },
+  {
+    "run": "apps/shader_deep/runs/main-agent-skill-20261001/auroras",
+    "sealed": false,
+    "tasks": [
+      {
+        "task": "exploration-1",
+        "status": "pending",
+        "model_calls": 0,
+        "attempt_count": 0,
+        "final_error": null,
+        "rejection_categories": {},
+        "rejections": [],
+        "request_failures": [],
+        "first_submission_success": null,
+        "accepted_on_call": null
+      },
+      {
+        "task": "exploration-2",
+        "status": "pending",
+        "model_calls": 0,
+        "attempt_count": 0,
+        "final_error": null,
+        "rejection_categories": {},
+        "rejections": [],
+        "request_failures": [],
+        "first_submission_success": null,
+        "accepted_on_call": null
+      },
+      {
+        "task": "exploration-3",
+        "status": "pending",
+        "model_calls": 0,
+        "attempt_count": 0,
+        "final_error": null,
+        "rejection_categories": {},
+        "rejections": [],
+        "request_failures": [],
+        "first_submission_success": null,
+        "accepted_on_call": null
+      }
+    ]
+  },
+  {
+    "run": "apps/shader_deep/runs/main-agent-skill-20261001/2d-physics-balls",
+    "sealed": false,
+    "tasks": [
+      {
+        "task": "exploration-1",
+        "status": "pending",
+        "model_calls": 0,
+        "attempt_count": 0,
+        "final_error": null,
+        "rejection_categories": {},
+        "rejections": [],
+        "request_failures": [],
+        "first_submission_success": null,
+        "accepted_on_call": null
+      },
+      {
+        "task": "exploration-2",
+        "status": "pending",
+        "model_calls": 0,
+        "attempt_count": 0,
+        "final_error": null,
+        "rejection_categories": {},
+        "rejections": [],
+        "request_failures": [],
+        "first_submission_success": null,
+        "accepted_on_call": null
+      },
+      {
+        "task": "exploration-3",
+        "status": "pending",
+        "model_calls": 0,
+        "attempt_count": 0,
+        "final_error": null,
+        "rejection_categories": {},
+        "rejections": [],
+        "request_failures": [],
+        "first_submission_success": null,
+        "accepted_on_call": null
+      }
+    ]
+  },
+  {
+    "run": "apps/shader_deep/runs/simple-pic-20261003-c74pny/analysis-low/run-b_4qfmm3",
+    "sealed": true,
+    "tasks": [
+      {
+        "task": "exploration-1",
+        "status": "failed",
+        "model_calls": 3,
+        "attempt_count": 2,
+        "final_error": "AnalysisLimitError: Analysis model-call budget exhausted",
+        "rejection_categories": {
+          "json_syntax": 1,
+          "schema_validation": 1,
+          "business_rejection": 1
+        },
+        "rejections": [
+          {
+            "call": 1,
+            "category": "json_syntax",
+            "message": null
+          },
+          {
+            "call": 2,
+            "category": "schema_validation",
+            "message": "参数校验失败, 请修正后完整提交: \nreport.sketches.0.parameter_hints: Extra inputs are not permitted"
+          },
+          {
+            "call": 3,
+            "category": "business_rejection",
+            "message": "提交被拒绝: sketches.S1.name: 疑似未标记对象引用 'neon_frame'; 使用 [[ID]]; text='neon_frame 单 Pass 复现草图'"
+          }
+        ],
+        "request_failures": [],
+        "first_submission_success": false,
+        "accepted_on_call": null
+      },
+      {
+        "task": "exploration-2",
+        "status": "failed",
+        "model_calls": 3,
+        "attempt_count": 2,
+        "final_error": "AnalysisLimitError: Analysis model-call budget exhausted",
+        "rejection_categories": {
+          "json_syntax": 3
+        },
+        "rejections": [
+          {
+            "call": 1,
+            "category": "json_syntax",
+            "message": null
+          },
+          {
+            "call": 2,
+            "category": "json_syntax",
+            "message": null
+          },
+          {
+            "call": 3,
+            "category": "json_syntax",
+            "message": null
+          }
+        ],
+        "request_failures": [],
+        "first_submission_success": false,
+        "accepted_on_call": null
+      }
+    ]
+  }
+]

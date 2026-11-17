@@ -1,0 +1,82 @@
+[
+  {
+    "case": "pink-circle",
+    "returncode": 0,
+    "planning": "completed",
+    "model_calls": 6,
+    "counts": {
+      "mechanisms": 8,
+      "sketches": 1,
+      "targets": 11
+    },
+    "trace_url": "https://smith.langchain.com/o/fcb09333-f0ce-45e7-9ea2-c4750cdfbd16/projects/p/2e0945b1-fc78-4930-96bb-3085745b703a/r/01a1c92b-2be8-78c0-863d-443ed1622f7d?poll=true"
+  },
+  {
+    "case": "liquid-glass",
+    "returncode": 0,
+    "planning": "completed",
+    "model_calls": 6,
+    "counts": {
+      "mechanisms": 7,
+      "sketches": 1,
+      "targets": 11
+    },
+    "trace_url": "https://smith.langchain.com/o/fcb09333-f0ce-45e7-9ea2-c4750cdfbd16/projects/p/2e0945b1-fc78-4930-96bb-3085745b703a/r/01a1c92b-2be8-7c03-9221-3aef6911f70b?poll=true"
+  },
+  {
+    "case": "2d-physics-balls",
+    "returncode": 0,
+    "planning": "completed",
+    "model_calls": 5,
+    "counts": {
+      "mechanisms": 5,
+      "sketches": 1,
+      "targets": 8
+    },
+    "trace_url": "https://smith.langchain.com/o/fcb09333-f0ce-45e7-9ea2-c4750cdfbd16/projects/p/2e0945b1-fc78-4930-96bb-3085745b703a/r/01a1c931-5677-7813-900b-933970ff1fe5?poll=true"
+  },
+  {
+    "case": "windows-95",
+    "returncode": -2,
+    "planning": null,
+    "model_calls": null,
+    "counts": null,
+    "trace_url": null
+  },
+  {
+    "case": "flat-water-effects2",
+    "returncode": 0,
+    "planning": "completed",
+    "model_calls": 3,
+    "counts": {
+      "mechanisms": 9,
+      "sketches": 1,
+      "targets": 12
+    },
+    "trace_url": "https://smith.langchain.com/o/fcb09333-f0ce-45e7-9ea2-c4750cdfbd16/projects/p/2e0945b1-fc78-4930-96bb-3085745b703a/r/01a1c94a-d825-73c2-b9ff-c602c7df22fa?poll=true"
+  },
+  {
+    "case": "dna-helis",
+    "returncode": -2,
+    "planning": null,
+    "model_calls": null,
+    "counts": null,
+    "trace_url": null
+  },
+  {
+    "case": "cool-s-distance",
+    "returncode": -2,
+    "planning": null,
+    "model_calls": null,
+    "counts": null,
+    "trace_url": null
+  },
+  {
+    "case": "auroras",
+    "returncode": 0,
+    "planning": "failed",
+    "model_calls": 1,
+    "counts": null,
+    "trace_url": "https://smith.langchain.com/o/fcb09333-f0ce-45e7-9ea2-c4750cdfbd16/projects/p/2e0945b1-fc78-4930-96bb-3085745b703a/r/01a1c957-e6b9-7283-adf2-556e687b46c3?poll=true"
+  }
+]

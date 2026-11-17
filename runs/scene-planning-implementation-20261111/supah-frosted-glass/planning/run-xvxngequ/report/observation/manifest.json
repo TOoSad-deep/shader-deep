@@ -1,0 +1,13 @@
+{
+  "schema_version": "scene_observations_v1",
+  "reference": {
+    "path": "reference.png",
+    "sha256": "4b98572449bf26744a76d3f9271bc10397e3b1c05512b2fcab5624442f7a6252"
+  },
+  "status": "completed",
+  "context_notes": [
+    "极简抽象构图: 全图仅浅灰纯色底与两个部分重叠的圆形, 无其他对象、文字或边框."
+  ],
+  "open_questions": [],
+  "gaps": []
+}

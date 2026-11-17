@@ -1,0 +1,21 @@
+{
+  "image": "windows-95",
+  "run_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/element-split-20261001/windows-95",
+  "status": "dispatch_prepared_not_started",
+  "planning_model_calls": 1,
+  "elements": 3,
+  "target": {
+    "id": "flag_solid_head",
+    "name": "旗面主体 (黑色波浪网格 + 四色旗面块)",
+    "region": "画面中部偏右, 约 x 0.45-0.74, y 0.19-0.84",
+    "feature_ids": []
+  },
+  "directions": [
+    "黑色网格框架的形态观察: 波浪边框的走向与起伏位置、框架线条的粗细变化、网格如何把旗面划分为若干区域, 记录轮廓采样点或分段描述",
+    "四块彩色色面的颜色与边界观察: 各色块的色调倾向与相对位置(上/下、左/右), 每块边缘的弯曲方向与相邻黑色分隔线的关系, 记录大致角点坐标",
+    "旗面整体姿态与占位观察: 旗面在画布中的位置与尺寸比例、整体倾斜角度、波浪弯曲的主要方向与幅度, 记录外接区域与关键基准点"
+  ],
+  "worker_attempts": 0,
+  "worker_model_calls": 0,
+  "elapsed_seconds": 32.69
+}

@@ -1,0 +1,22 @@
+{
+  "schema_version": "scene_observations_v1",
+  "reference": {
+    "path": "reference.png",
+    "sha256": "2ea796bd2f17cb908e340317b4059df0632ce7630f8cd829f723b59e074cfb67"
+  },
+  "status": "partial",
+  "context_notes": [
+    "画面为一个光滑平面上的水珠场景: 背景从左上亮白灰渐变到右下深蓝灰, 平面上有均匀细浅灰网格线, 网格线大致垂直/水平, 间距约150px",
+    "左上方光源使右下区域阴影较重, 整体呈冷灰蓝色调"
+  ],
+  "open_questions": [],
+  "gaps": [
+    {
+      "refs": [
+        "E1",
+        "E2"
+      ],
+      "description": "水滴内部网格线是否表示折射错位难以精确判断, 仅为可见的线段偏淡与轻微不连续"
+    }
+  ]
+}

@@ -1,0 +1,470 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Shader Deep 整体架构",
+    "locale": "zh-CN",
+    "output": ".archify/architecture-shader-deep-20261022-172236/shader-deep.html",
+    "quality_profile": "showcase",
+    "repository": {
+      "url": "https://github.com/TOoSad-deep/shader-deep.git",
+      "revision": "a15c928d74fbc40f76eaf0a338b946753d110b76"
+    }
+  },
+  "components": [
+    {
+      "id": "main",
+      "type": "backend",
+      "label": "分析入口与主 Agent",
+      "sublabel": "固定原图 · 读取编排 skill",
+      "pos": [
+        40,
+        40
+      ],
+      "size": [
+        244,
+        76
+      ],
+      "sources": [
+        {
+          "path": "apps/shader_deep/src/shader_deep/agents/main/agent.py",
+          "line": 38,
+          "end_line": 134
+        },
+        {
+          "path": "apps/shader_deep/src/shader_deep/workflows/analysis.py",
+          "line": 83,
+          "end_line": 127
+        }
+      ],
+      "tag": "shader-deep-analyze"
+    },
+    {
+      "id": "host",
+      "type": "backend",
+      "label": "分析宿主与协调器",
+      "sublabel": "校验工具权限 · 调度与交付",
+      "pos": [
+        420,
+        40
+      ],
+      "size": [
+        244,
+        76
+      ],
+      "sources": [
+        {
+          "path": "apps/shader_deep/src/shader_deep/workflows/five_analysis.py",
+          "line": 577,
+          "end_line": 619
+        },
+        {
+          "path": "apps/shader_deep/src/shader_deep/workflows/five_analysis.py",
+          "line": 311,
+          "end_line": 390
+        },
+        {
+          "path": "apps/shader_deep/src/shader_deep/workflows/analysis.py",
+          "line": 58,
+          "end_line": 79
+        }
+      ]
+    },
+    {
+      "id": "explorers",
+      "type": "backend",
+      "label": "独立探索 Agent",
+      "sublabel": "同一目标 · 独立历史 · F/R/M/S",
+      "pos": [
+        800,
+        40
+      ],
+      "size": [
+        244,
+        76
+      ],
+      "sources": [
+        {
+          "path": "apps/shader_deep/src/shader_deep/workflows/five_analysis.py",
+          "line": 262,
+          "end_line": 301
+        },
+        {
+          "path": "apps/shader_deep/src/shader_deep/agents/five_analysis/agent.py",
+          "line": 175,
+          "end_line": 210
+        }
+      ],
+      "tag": "一批 2–3 个方向"
+    },
+    {
+      "id": "report",
+      "type": "database",
+      "label": "五库报告包",
+      "sublabel": "元素 / 特征 / 关系 / 机制 / 草图",
+      "pos": [
+        40,
+        245
+      ],
+      "size": [
+        244,
+        76
+      ],
+      "sources": [
+        {
+          "path": "apps/shader_deep/src/shader_deep/workflows/analysis.py",
+          "line": 58,
+          "end_line": 79
+        },
+        {
+          "path": "apps/shader_deep/src/shader_deep/infrastructure/storage/report_package.py",
+          "line": 139,
+          "end_line": 145
+        }
+      ]
+    },
+    {
+      "id": "integrator",
+      "type": "backend",
+      "label": "整合 Agent",
+      "sublabel": "只提议合并既有 F/R/M",
+      "pos": [
+        420,
+        245
+      ],
+      "size": [
+        244,
+        76
+      ],
+      "sources": [
+        {
+          "path": "apps/shader_deep/src/shader_deep/agents/five_analysis/agent.py",
+          "line": 213,
+          "end_line": 256
+        },
+        {
+          "path": "apps/shader_deep/src/shader_deep/workflows/five_analysis.py",
+          "line": 311,
+          "end_line": 390
+        }
+      ],
+      "tag": "先 V0 · 成功发布 V1"
+    },
+    {
+      "id": "state",
+      "type": "database",
+      "label": "TaskStore 权威记录",
+      "sublabel": "commit.json · 回执 · 不可变版本",
+      "pos": [
+        800,
+        245
+      ],
+      "size": [
+        244,
+        76
+      ],
+      "sources": [
+        {
+          "path": "apps/shader_deep/src/shader_deep/runtime/task_store/store.py",
+          "line": 149,
+          "end_line": 162
+        },
+        {
+          "path": "apps/shader_deep/src/shader_deep/runtime/task_store/store.py",
+          "line": 338,
+          "end_line": 361
+        },
+        {
+          "path": "apps/shader_deep/src/shader_deep/runtime/task_store/store.py",
+          "line": 481,
+          "end_line": 530
+        }
+      ]
+    },
+    {
+      "id": "prepare",
+      "type": "backend",
+      "label": "生成入口与输入准备",
+      "sublabel": "固定原图、方案、背景与基线",
+      "pos": [
+        40,
+        460
+      ],
+      "size": [
+        244,
+        76
+      ],
+      "sources": [
+        {
+          "path": "apps/shader_deep/src/shader_deep/workflows/generation_from_report.py",
+          "line": 94,
+          "end_line": 197
+        },
+        {
+          "path": "apps/shader_deep/src/shader_deep/workflows/generation_comparison.py",
+          "line": 105,
+          "end_line": 173
+        },
+        {
+          "path": "apps/shader_deep/src/shader_deep/workflows/scene_generation.py",
+          "line": 47,
+          "end_line": 94
+        }
+      ],
+      "tag": "显式草图选择"
+    },
+    {
+      "id": "generator",
+      "type": "backend",
+      "label": "生成 Agent 与上下文",
+      "sublabel": "请求级材料 · GLSL 修正与自检",
+      "pos": [
+        420,
+        460
+      ],
+      "size": [
+        244,
+        76
+      ],
+      "sources": [
+        {
+          "path": "apps/shader_deep/src/shader_deep/agents/generation/agent.py",
+          "line": 44,
+          "end_line": 70
+        },
+        {
+          "path": "apps/shader_deep/src/shader_deep/agents/generation/middleware.py",
+          "line": 55,
+          "end_line": 59
+        },
+        {
+          "path": "apps/shader_deep/src/shader_deep/workflows/generation.py",
+          "line": 144,
+          "end_line": 165
+        }
+      ],
+      "tag": "shader-deep / Python API"
+    },
+    {
+      "id": "session",
+      "type": "backend",
+      "label": "RenderSession 受限执行",
+      "sublabel": "预算 · 串行工具 · 选择资格",
+      "pos": [
+        800,
+        460
+      ],
+      "size": [
+        244,
+        76
+      ],
+      "sources": [
+        {
+          "path": "apps/shader_deep/src/shader_deep/agents/generation/tools/session.py",
+          "line": 61,
+          "end_line": 88
+        },
+        {
+          "path": "apps/shader_deep/src/shader_deep/agents/generation/tools/render.py",
+          "line": 21,
+          "end_line": 65
+        },
+        {
+          "path": "apps/shader_deep/src/shader_deep/agents/generation/tools/finish.py",
+          "line": 15,
+          "end_line": 92
+        }
+      ],
+      "tag": "成功渲染 + 预览已入请求"
+    },
+    {
+      "id": "artifacts",
+      "type": "database",
+      "label": "生成运行与候选制品",
+      "sublabel": "GLSL / PNG / run.json / 自检",
+      "pos": [
+        420,
+        680
+      ],
+      "size": [
+        244,
+        76
+      ],
+      "sources": [
+        {
+          "path": "apps/shader_deep/src/shader_deep/agents/generation/tools/render.py",
+          "line": 39,
+          "end_line": 104
+        },
+        {
+          "path": "apps/shader_deep/src/shader_deep/agents/generation/tools/session.py",
+          "line": 102,
+          "end_line": 122
+        },
+        {
+          "path": "apps/shader_deep/src/shader_deep/workflows/generation.py",
+          "line": 119,
+          "end_line": 123
+        }
+      ]
+    },
+    {
+      "id": "renderer",
+      "type": "backend",
+      "label": "独立 WebGL2 渲染器",
+      "sublabel": "Playwright → Chromium → PNG",
+      "pos": [
+        800,
+        680
+      ],
+      "size": [
+        244,
+        76
+      ],
+      "sources": [
+        {
+          "path": "apps/shader_deep/src/shader_deep/rendering/renderer.py",
+          "line": 91,
+          "end_line": 158
+        }
+      ],
+      "tag": "单 Pass · 固定尺寸与时间"
+    }
+  ],
+  "connections": [
+    {
+      "id": "main-tools",
+      "from": "main",
+      "to": "host",
+      "label": "业务工具"
+    },
+    {
+      "id": "host-explore",
+      "from": "host",
+      "to": "explorers",
+      "label": "并行派发"
+    },
+    {
+      "id": "host-integrate",
+      "from": "host",
+      "to": "integrator",
+      "label": "终态后整合"
+    },
+    {
+      "id": "host-store",
+      "from": "host",
+      "to": "state",
+      "label": "任务 / 版本"
+    },
+    {
+      "id": "explore-submit",
+      "from": "explorers",
+      "to": "state",
+      "label": "校验后提交"
+    },
+    {
+      "id": "integrate-submit",
+      "from": "integrator",
+      "to": "state",
+      "label": "合并建议"
+    },
+    {
+      "id": "host-report",
+      "from": "host",
+      "to": "report",
+      "label": "发布文件包"
+    },
+    {
+      "id": "report-input",
+      "from": "report",
+      "to": "prepare",
+      "label": "显式选择后读取",
+      "variant": "emphasis"
+    },
+    {
+      "id": "prepare-agent",
+      "from": "prepare",
+      "to": "generator",
+      "label": "固定材料",
+      "variant": "emphasis"
+    },
+    {
+      "id": "agent-tools",
+      "from": "generator",
+      "to": "session",
+      "label": "三个工具",
+      "variant": "emphasis"
+    },
+    {
+      "id": "session-feedback",
+      "from": "session",
+      "to": "generator",
+      "label": "预览 / 错误回读"
+    },
+    {
+      "id": "session-render",
+      "from": "session",
+      "to": "renderer",
+      "label": "编译 / 绘制"
+    },
+    {
+      "id": "renderer-result",
+      "from": "renderer",
+      "to": "session",
+      "label": "PNG / 错误"
+    },
+    {
+      "id": "session-save",
+      "from": "session",
+      "to": "artifacts",
+      "label": "保存候选与终态"
+    },
+    {
+      "id": "agent-read",
+      "from": "generator",
+      "to": "artifacts",
+      "label": "读取当前候选"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "两条入口，显式交接",
+      "items": [
+        "分析从 PNG 与用户要求出发，主 Agent 登记元素，再冻结唯一目标和本批探索方向。",
+        "报告模式要求调用方指定草图、可选局部备选与背景；分析结束不会自动启动生成。",
+        "生成也可直接从 PNG 启动，复用同一个生成与渲染闭环。"
+      ]
+    },
+    {
+      "dot": "violet",
+      "title": "程序控制状态，Agent 提议内容",
+      "items": [
+        "探索各自产出特征 F、关系 R、机制 M、草图 S；整合只合并 F/R/M，程序更新引用并保留草图。",
+        "协调器先保存 V0；整合或 V1 校验失败时保留 V0、partial 与缺口。没有合法基线则 failed。",
+        "TaskStore 的 commit.json 是分析提交权威记录；分析 run.json 是派生投影，生成 run.json 也不是模型会话检查点。"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "生成的三个工具与结束条件",
+      "items": [
+        "render_shader 提交单 Pass mainImage；finish_shader 只能选择本会话成功渲染且预览已进入后续请求的候选。",
+        "stop_generation 保存受阻原因和下一步建议；预算耗尽与异常也会结束本轮。不会自动换方案。",
+        "模型调用数与渲染尝试数分别限制，失败渲染仍计数；最终交付读取已选 GLSL 文件。",
+        "预览回读通过上下文中间件装配；completed 表示生成自检结束，视觉相似度仍需用户验收。"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "已实现扩展与图示范围",
+      "items": [
+        "两方案比较：共同条件下顺序运行两个独立会话，保存比较索引，人工另行选择。",
+        "两元素整图：读取两个已选来源，创建全新会话生成整图，旧候选不进入本轮可选集合。",
+        "此图展示应用职责与主链路；领域校验、模型客户端及存储辅助函数归入调用它们的子系统。",
+        "显式四库兼容流程、实验与上游 SDK 内部未展开；默认五库探索未接入旧流程的按需测量工具。",
+        "依据当前已提交源码静态核对；未发起真实模型运行或视觉效果验收。"
+      ]
+    }
+  ]
+}

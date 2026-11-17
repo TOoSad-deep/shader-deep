@@ -1,0 +1,441 @@
+{
+  "attempts": 10,
+  "valid_packages": 9,
+  "statuses": {
+    "completed": 7,
+    "partial": 2,
+    "failed": 1
+  },
+  "logical_calls_all_attempts": 19,
+  "sdk_reported_tokens_all_attempts": 181618,
+  "usage_unknown_attempts": 1,
+  "median_seconds_valid_packages": 82.44855112499499,
+  "read_success_valid_cases": 7,
+  "rows": [
+    {
+      "case": "pink",
+      "returncode": 0,
+      "process_seconds": 32.33819604200835,
+      "status": "completed",
+      "run_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-observer-skill-r3-20261110/pink/run-p_x395ie",
+      "report_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-observer-skill-r3-20261110/pink/run-p_x395ie/report",
+      "metrics": {
+        "model_id": "z-ai/glm-5.3-flash",
+        "model_calls": 2,
+        "validation_errors": 0,
+        "tool_refusals": 0,
+        "resource_sha256": {
+          "SKILL.md": "a0498160deb62e81660204efca64a0bc8ee3d307a10778b3f64eb4f4afea866d",
+          "references/grouping.md": "b9a2f5953eb637366edc2e1778b01e80d17289a2c0b739e86c1eb03684143356",
+          "references/relations.md": "ccdd8666dfc809da1d81476ec584ed0138ed47597e022359c49424c743a4e983",
+          "references/uncertainty.md": "970c019332014e066ec6f43ff73938b042406040931fae023c68a0bab8a04b2c"
+        },
+        "skill_bundle_sha256": "20e27ab234e3e121c4d7614a1d11971c3511c958171b376f738ababb8511064e",
+        "resource_read_results": [
+          {
+            "path": "/skills/scene-observer/references/relations.md",
+            "status": "success"
+          }
+        ],
+        "elapsed_seconds": 30.82006908299809,
+        "token_usage": {
+          "input_tokens": 6105,
+          "output_tokens": 2040,
+          "total_tokens": 8145
+        },
+        "reason": null
+      },
+      "counts": {
+        "E": 1,
+        "F": 6,
+        "R": 1
+      },
+      "gaps": [],
+      "formal_reader": "passed"
+    },
+    {
+      "case": "frosted",
+      "returncode": 0,
+      "process_seconds": 83.91001912498905,
+      "status": "completed",
+      "run_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-observer-skill-r3-20261110/frosted/run-uv2zfxb4",
+      "report_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-observer-skill-r3-20261110/frosted/run-uv2zfxb4/report",
+      "metrics": {
+        "model_id": "z-ai/glm-5.3-flash",
+        "model_calls": 3,
+        "validation_errors": 1,
+        "tool_refusals": 0,
+        "resource_sha256": {
+          "SKILL.md": "a0498160deb62e81660204efca64a0bc8ee3d307a10778b3f64eb4f4afea866d",
+          "references/grouping.md": "b9a2f5953eb637366edc2e1778b01e80d17289a2c0b739e86c1eb03684143356",
+          "references/relations.md": "ccdd8666dfc809da1d81476ec584ed0138ed47597e022359c49424c743a4e983",
+          "references/uncertainty.md": "970c019332014e066ec6f43ff73938b042406040931fae023c68a0bab8a04b2c"
+        },
+        "skill_bundle_sha256": "20e27ab234e3e121c4d7614a1d11971c3511c958171b376f738ababb8511064e",
+        "resource_read_results": [
+          {
+            "path": "/skills/scene-observer/references/relations.md",
+            "status": "success"
+          }
+        ],
+        "elapsed_seconds": 82.44855112499499,
+        "token_usage": {
+          "input_tokens": 17794,
+          "output_tokens": 6910,
+          "total_tokens": 24704
+        },
+        "reason": null
+      },
+      "counts": {
+        "E": 2,
+        "F": 3,
+        "R": 1
+      },
+      "gaps": [],
+      "formal_reader": "passed"
+    },
+    {
+      "case": "liquid-retry",
+      "returncode": 1,
+      "process_seconds": 11.207516875001602,
+      "status": "partial",
+      "run_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-observer-skill-r3-20261110/liquid-retry/run-zzksz6_m",
+      "report_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-observer-skill-r3-20261110/liquid-retry/run-zzksz6_m/report",
+      "metrics": {
+        "model_id": "z-ai/glm-5.3-flash",
+        "model_calls": 1,
+        "validation_errors": 0,
+        "tool_refusals": 0,
+        "resource_sha256": {
+          "SKILL.md": "a0498160deb62e81660204efca64a0bc8ee3d307a10778b3f64eb4f4afea866d",
+          "references/grouping.md": "b9a2f5953eb637366edc2e1778b01e80d17289a2c0b739e86c1eb03684143356",
+          "references/relations.md": "ccdd8666dfc809da1d81476ec584ed0138ed47597e022359c49424c743a4e983",
+          "references/uncertainty.md": "970c019332014e066ec6f43ff73938b042406040931fae023c68a0bab8a04b2c"
+        },
+        "skill_bundle_sha256": "20e27ab234e3e121c4d7614a1d11971c3511c958171b376f738ababb8511064e",
+        "resource_read_results": [],
+        "elapsed_seconds": 9.842735416998039,
+        "token_usage": {
+          "input_tokens": 3290,
+          "output_tokens": 525,
+          "total_tokens": 3815
+        },
+        "reason": null
+      },
+      "counts": {
+        "E": 2,
+        "F": 4,
+        "R": 2
+      },
+      "gaps": [
+        {
+          "refs": [
+            "E1",
+            "E2"
+          ],
+          "description": "水滴内部网格线是否表示折射错位难以精确判断, 仅为可见的线段偏淡与轻微不连续"
+        }
+      ],
+      "formal_reader": "passed"
+    },
+    {
+      "case": "windows",
+      "returncode": 0,
+      "process_seconds": 105.72092600000906,
+      "status": "completed",
+      "run_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-observer-skill-r3-20261110/windows/run-s6_p904h",
+      "report_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-observer-skill-r3-20261110/windows/run-s6_p904h/report",
+      "metrics": {
+        "model_id": "z-ai/glm-5.3-flash",
+        "model_calls": 2,
+        "validation_errors": 0,
+        "tool_refusals": 0,
+        "resource_sha256": {
+          "SKILL.md": "a0498160deb62e81660204efca64a0bc8ee3d307a10778b3f64eb4f4afea866d",
+          "references/grouping.md": "b9a2f5953eb637366edc2e1778b01e80d17289a2c0b739e86c1eb03684143356",
+          "references/relations.md": "ccdd8666dfc809da1d81476ec584ed0138ed47597e022359c49424c743a4e983",
+          "references/uncertainty.md": "970c019332014e066ec6f43ff73938b042406040931fae023c68a0bab8a04b2c"
+        },
+        "skill_bundle_sha256": "20e27ab234e3e121c4d7614a1d11971c3511c958171b376f738ababb8511064e",
+        "resource_read_results": [
+          {
+            "path": "/skills/scene-observer/references/grouping.md",
+            "status": "success"
+          },
+          {
+            "path": "/skills/scene-observer/references/relations.md",
+            "status": "success"
+          }
+        ],
+        "elapsed_seconds": 104.25998366699787,
+        "token_usage": {
+          "input_tokens": 10132,
+          "output_tokens": 7657,
+          "total_tokens": 17789
+        },
+        "reason": null
+      },
+      "counts": {
+        "E": 2,
+        "F": 6,
+        "R": 2
+      },
+      "gaps": [],
+      "formal_reader": "passed"
+    },
+    {
+      "case": "cool-s-distance",
+      "returncode": 1,
+      "process_seconds": 21.696348375000525,
+      "status": "failed",
+      "run_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-observer-skill-r3-20261110/cool-s-distance/run-xu_rvbxm",
+      "report_dir": null,
+      "metrics": {
+        "model_id": "z-ai/glm-5.3-flash",
+        "model_calls": 1,
+        "validation_errors": 0,
+        "tool_refusals": 0,
+        "resource_sha256": {
+          "SKILL.md": "a0498160deb62e81660204efca64a0bc8ee3d307a10778b3f64eb4f4afea866d",
+          "references/grouping.md": "b9a2f5953eb637366edc2e1778b01e80d17289a2c0b739e86c1eb03684143356",
+          "references/relations.md": "ccdd8666dfc809da1d81476ec584ed0138ed47597e022359c49424c743a4e983",
+          "references/uncertainty.md": "970c019332014e066ec6f43ff73938b042406040931fae023c68a0bab8a04b2c"
+        },
+        "skill_bundle_sha256": "20e27ab234e3e121c4d7614a1d11971c3511c958171b376f738ababb8511064e",
+        "resource_read_results": [],
+        "elapsed_seconds": 20.391253417008556,
+        "token_usage": null,
+        "reason": "OpenAIConnectionError: Connection error."
+      }
+    },
+    {
+      "case": "flat-water-effects2",
+      "returncode": 1,
+      "process_seconds": 21.430331750001642,
+      "status": "partial",
+      "run_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-observer-skill-r3-20261110/flat-water-effects2/run-xqgpke40",
+      "report_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-observer-skill-r3-20261110/flat-water-effects2/run-xqgpke40/report",
+      "metrics": {
+        "model_id": "z-ai/glm-5.3-flash",
+        "model_calls": 1,
+        "validation_errors": 0,
+        "tool_refusals": 0,
+        "resource_sha256": {
+          "SKILL.md": "a0498160deb62e81660204efca64a0bc8ee3d307a10778b3f64eb4f4afea866d",
+          "references/grouping.md": "b9a2f5953eb637366edc2e1778b01e80d17289a2c0b739e86c1eb03684143356",
+          "references/relations.md": "ccdd8666dfc809da1d81476ec584ed0138ed47597e022359c49424c743a4e983",
+          "references/uncertainty.md": "970c019332014e066ec6f43ff73938b042406040931fae023c68a0bab8a04b2c"
+        },
+        "skill_bundle_sha256": "20e27ab234e3e121c4d7614a1d11971c3511c958171b376f738ababb8511064e",
+        "resource_read_results": [],
+        "elapsed_seconds": 20.09528275000048,
+        "token_usage": {
+          "input_tokens": 2206,
+          "output_tokens": 771,
+          "total_tokens": 2977
+        },
+        "reason": null
+      },
+      "counts": {
+        "E": 4,
+        "F": 8,
+        "R": 3
+      },
+      "gaps": [
+        {
+          "refs": [
+            "E1",
+            "F1"
+          ],
+          "description": "天空与海面颜色相近, 海平线位置依据色带边界与波纹起始判断, 精确高度存在近似"
+        }
+      ],
+      "formal_reader": "passed"
+    },
+    {
+      "case": "balls",
+      "returncode": 0,
+      "process_seconds": 161.0124995840015,
+      "status": "completed",
+      "run_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-observer-skill-r3-20261110/balls/run-gx54burv",
+      "report_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-observer-skill-r3-20261110/balls/run-gx54burv/report",
+      "metrics": {
+        "model_id": "z-ai/glm-5.3-flash",
+        "model_calls": 2,
+        "validation_errors": 0,
+        "tool_refusals": 0,
+        "resource_sha256": {
+          "SKILL.md": "a0498160deb62e81660204efca64a0bc8ee3d307a10778b3f64eb4f4afea866d",
+          "references/grouping.md": "b9a2f5953eb637366edc2e1778b01e80d17289a2c0b739e86c1eb03684143356",
+          "references/relations.md": "ccdd8666dfc809da1d81476ec584ed0138ed47597e022359c49424c743a4e983",
+          "references/uncertainty.md": "970c019332014e066ec6f43ff73938b042406040931fae023c68a0bab8a04b2c"
+        },
+        "skill_bundle_sha256": "20e27ab234e3e121c4d7614a1d11971c3511c958171b376f738ababb8511064e",
+        "resource_read_results": [
+          {
+            "path": "/skills/scene-observer/references/grouping.md",
+            "status": "success"
+          },
+          {
+            "path": "/skills/scene-observer/references/relations.md",
+            "status": "success"
+          }
+        ],
+        "elapsed_seconds": 159.7195493330073,
+        "token_usage": {
+          "input_tokens": 9018,
+          "output_tokens": 15233,
+          "total_tokens": 24251
+        },
+        "reason": null
+      },
+      "counts": {
+        "E": 3,
+        "F": 6,
+        "R": 3
+      },
+      "gaps": [],
+      "formal_reader": "passed"
+    },
+    {
+      "case": "buffer-bloom",
+      "returncode": 0,
+      "process_seconds": 71.50326516700443,
+      "status": "completed",
+      "run_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-observer-skill-r3-20261110/buffer-bloom/run-j_tw4ifk",
+      "report_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-observer-skill-r3-20261110/buffer-bloom/run-j_tw4ifk/report",
+      "metrics": {
+        "model_id": "z-ai/glm-5.3-flash",
+        "model_calls": 2,
+        "validation_errors": 0,
+        "tool_refusals": 0,
+        "resource_sha256": {
+          "SKILL.md": "a0498160deb62e81660204efca64a0bc8ee3d307a10778b3f64eb4f4afea866d",
+          "references/grouping.md": "b9a2f5953eb637366edc2e1778b01e80d17289a2c0b739e86c1eb03684143356",
+          "references/relations.md": "ccdd8666dfc809da1d81476ec584ed0138ed47597e022359c49424c743a4e983",
+          "references/uncertainty.md": "970c019332014e066ec6f43ff73938b042406040931fae023c68a0bab8a04b2c"
+        },
+        "skill_bundle_sha256": "20e27ab234e3e121c4d7614a1d11971c3511c958171b376f738ababb8511064e",
+        "resource_read_results": [
+          {
+            "path": "/skills/scene-observer/references/relations.md",
+            "status": "success"
+          },
+          {
+            "path": "/skills/scene-observer/references/grouping.md",
+            "status": "success"
+          }
+        ],
+        "elapsed_seconds": 70.1989661250118,
+        "token_usage": {
+          "input_tokens": 8607,
+          "output_tokens": 5219,
+          "total_tokens": 13826
+        },
+        "reason": null
+      },
+      "counts": {
+        "E": 3,
+        "F": 6,
+        "R": 2
+      },
+      "gaps": [],
+      "formal_reader": "passed"
+    },
+    {
+      "case": "auroras",
+      "returncode": 0,
+      "process_seconds": 129.21733804199903,
+      "status": "completed",
+      "run_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-observer-skill-r3-20261110/auroras/run-v5vfvr0a",
+      "report_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-observer-skill-r3-20261110/auroras/run-v5vfvr0a/report",
+      "metrics": {
+        "model_id": "z-ai/glm-5.3-flash",
+        "model_calls": 3,
+        "validation_errors": 1,
+        "tool_refusals": 0,
+        "resource_sha256": {
+          "SKILL.md": "a0498160deb62e81660204efca64a0bc8ee3d307a10778b3f64eb4f4afea866d",
+          "references/grouping.md": "b9a2f5953eb637366edc2e1778b01e80d17289a2c0b739e86c1eb03684143356",
+          "references/relations.md": "ccdd8666dfc809da1d81476ec584ed0138ed47597e022359c49424c743a4e983",
+          "references/uncertainty.md": "970c019332014e066ec6f43ff73938b042406040931fae023c68a0bab8a04b2c"
+        },
+        "skill_bundle_sha256": "20e27ab234e3e121c4d7614a1d11971c3511c958171b376f738ababb8511064e",
+        "resource_read_results": [
+          {
+            "path": "/skills/scene-observer/references/relations.md",
+            "status": "success"
+          },
+          {
+            "path": "/skills/scene-observer/references/grouping.md",
+            "status": "success"
+          }
+        ],
+        "elapsed_seconds": 127.89466366601118,
+        "token_usage": {
+          "input_tokens": 22296,
+          "output_tokens": 10562,
+          "total_tokens": 32858
+        },
+        "reason": null
+      },
+      "counts": {
+        "E": 4,
+        "F": 11,
+        "R": 3
+      },
+      "gaps": [],
+      "formal_reader": "passed"
+    },
+    {
+      "case": "dna-helis",
+      "returncode": 0,
+      "process_seconds": 392.6609564169921,
+      "status": "completed",
+      "run_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-observer-skill-r3-20261110/dna-helis/run-vf3hkbm3",
+      "report_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-observer-skill-r3-20261110/dna-helis/run-vf3hkbm3/report",
+      "metrics": {
+        "model_id": "z-ai/glm-5.3-flash",
+        "model_calls": 2,
+        "validation_errors": 0,
+        "tool_refusals": 0,
+        "resource_sha256": {
+          "SKILL.md": "a0498160deb62e81660204efca64a0bc8ee3d307a10778b3f64eb4f4afea866d",
+          "references/grouping.md": "b9a2f5953eb637366edc2e1778b01e80d17289a2c0b739e86c1eb03684143356",
+          "references/relations.md": "ccdd8666dfc809da1d81476ec584ed0138ed47597e022359c49424c743a4e983",
+          "references/uncertainty.md": "970c019332014e066ec6f43ff73938b042406040931fae023c68a0bab8a04b2c"
+        },
+        "skill_bundle_sha256": "20e27ab234e3e121c4d7614a1d11971c3511c958171b376f738ababb8511064e",
+        "resource_read_results": [
+          {
+            "path": "/skills/scene-observer/references/grouping.md",
+            "status": "success"
+          },
+          {
+            "path": "/skills/scene-observer/references/relations.md",
+            "status": "success"
+          },
+          {
+            "path": "/skills/scene-observer/references/uncertainty.md",
+            "status": "success"
+          }
+        ],
+        "elapsed_seconds": 391.34440908300166,
+        "token_usage": {
+          "input_tokens": 19681,
+          "output_tokens": 33572,
+          "total_tokens": 53253
+        },
+        "reason": null
+      },
+      "counts": {
+        "E": 2,
+        "F": 7,
+        "R": 2
+      },
+      "gaps": [],
+      "formal_reader": "passed"
+    }
+  ],
+  "quality_note": "程序状态与资源读取均不证明语义质量; 人工审阅单独记录"
+}

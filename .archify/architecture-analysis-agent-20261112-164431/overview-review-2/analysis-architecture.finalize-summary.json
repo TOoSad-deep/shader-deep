@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "ok": true,
+  "command": "finalize",
+  "status": "pass",
+  "type": "architecture",
+  "quality": "showcase",
+  "specification": {
+    "path": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/.archify/architecture-analysis-agent-20261112-164431/candidate.json",
+    "sha256": "5a7146cee827624e7b04060e8c1cdd34b3ac2561c5ad4fcce81d89efc34e3610",
+    "bytes": 9087
+  },
+  "artifact": {
+    "path": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/.archify/architecture-analysis-agent-20261112-164431/analysis-architecture.html",
+    "sha256": "55f8ecee59e33eac9c9c6497918cf25d5018b653734525cdb9d4d9c67cbbbc17",
+    "bytes": 824938
+  },
+  "gates": {
+    "validate": "pass",
+    "deliver": "pass",
+    "check": "pass",
+    "browser-check": "pass"
+  },
+  "diagnostics": [],
+  "diagnosticSummary": {
+    "total": 0,
+    "shown": 0,
+    "truncated": false
+  },
+  "evidence": {
+    "receipt": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/.archify/architecture-analysis-agent-20261112-164431/overview-review-2/analysis-architecture.finalize.json",
+    "summaryReceipt": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/.archify/architecture-analysis-agent-20261112-164431/overview-review-2/analysis-architecture.finalize-summary.json",
+    "browserCheckReceipt": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/.archify/architecture-analysis-agent-20261112-164431/overview-review-2/analysis-architecture.browser-check.json"
+  },
+  "update": {
+    "status": "current",
+    "installedVersion": "3.2.0",
+    "availableVersion": "3.2.0",
+    "releaseNotes": null,
+    "checkedAt": "2026-11-11T08:14:40.277Z",
+    "source": "cache",
+    "noticeRequired": false,
+    "noticeText": null
+  },
+  "visualReview": "not-requested",
+  "durationMs": 1901,
+  "browserCheck": {
+    "requested": true,
+    "ran": true
+  }
+}

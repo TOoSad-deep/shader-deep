@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "8bdc059a-de26-4dd8-bdcc-74a3249d8e3c",
+  "status": "current",
+  "command": "deliver",
+  "type": "architecture",
+  "input": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/.archify/architecture-shader-deep-20261104-105143/candidate.json",
+  "output": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/.archify/architecture-shader-deep-20261104-105143/shader-deep.html",
+  "specification": {
+    "sha256": "667e3dd385ca96b22568d4418a386ab602d8afba26b45a1714def5b7a0746afa",
+    "bytes": 12551
+  },
+  "artifact": {
+    "sha256": "1b955b58cbd9945744ba97ff574e6742512a4629e236abf88d7ffbb79eb16bf5",
+    "bytes": 844617
+  }
+}

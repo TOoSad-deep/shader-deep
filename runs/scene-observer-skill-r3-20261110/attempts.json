@@ -1,0 +1,82 @@
+[
+  {
+    "case": "pink",
+    "returncode": 0,
+    "process_seconds": 32.33819604200835,
+    "status": "completed",
+    "run_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-observer-skill-r3-20261110/pink/run-p_x395ie",
+    "report_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-observer-skill-r3-20261110/pink/run-p_x395ie/report"
+  },
+  {
+    "case": "frosted",
+    "returncode": 0,
+    "process_seconds": 83.91001912498905,
+    "status": "completed",
+    "run_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-observer-skill-r3-20261110/frosted/run-uv2zfxb4",
+    "report_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-observer-skill-r3-20261110/frosted/run-uv2zfxb4/report"
+  },
+  {
+    "case": "liquid-retry",
+    "returncode": 1,
+    "process_seconds": 11.207516875001602,
+    "status": "partial",
+    "run_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-observer-skill-r3-20261110/liquid-retry/run-zzksz6_m",
+    "report_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-observer-skill-r3-20261110/liquid-retry/run-zzksz6_m/report"
+  },
+  {
+    "case": "windows",
+    "returncode": 0,
+    "process_seconds": 105.72092600000906,
+    "status": "completed",
+    "run_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-observer-skill-r3-20261110/windows/run-s6_p904h",
+    "report_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-observer-skill-r3-20261110/windows/run-s6_p904h/report"
+  },
+  {
+    "case": "cool-s-distance",
+    "returncode": 1,
+    "process_seconds": 21.696348375000525,
+    "status": "failed",
+    "run_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-observer-skill-r3-20261110/cool-s-distance/run-xu_rvbxm",
+    "report_dir": null
+  },
+  {
+    "case": "flat-water-effects2",
+    "returncode": 1,
+    "process_seconds": 21.430331750001642,
+    "status": "partial",
+    "run_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-observer-skill-r3-20261110/flat-water-effects2/run-xqgpke40",
+    "report_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-observer-skill-r3-20261110/flat-water-effects2/run-xqgpke40/report"
+  },
+  {
+    "case": "balls",
+    "returncode": 0,
+    "process_seconds": 161.0124995840015,
+    "status": "completed",
+    "run_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-observer-skill-r3-20261110/balls/run-gx54burv",
+    "report_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-observer-skill-r3-20261110/balls/run-gx54burv/report"
+  },
+  {
+    "case": "buffer-bloom",
+    "returncode": 0,
+    "process_seconds": 71.50326516700443,
+    "status": "completed",
+    "run_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-observer-skill-r3-20261110/buffer-bloom/run-j_tw4ifk",
+    "report_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-observer-skill-r3-20261110/buffer-bloom/run-j_tw4ifk/report"
+  },
+  {
+    "case": "auroras",
+    "returncode": 0,
+    "process_seconds": 129.21733804199903,
+    "status": "completed",
+    "run_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-observer-skill-r3-20261110/auroras/run-v5vfvr0a",
+    "report_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-observer-skill-r3-20261110/auroras/run-v5vfvr0a/report"
+  },
+  {
+    "case": "dna-helis",
+    "returncode": 0,
+    "process_seconds": 392.6609564169921,
+    "status": "completed",
+    "run_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-observer-skill-r3-20261110/dna-helis/run-vf3hkbm3",
+    "report_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-observer-skill-r3-20261110/dna-helis/run-vf3hkbm3/report"
+  }
+]

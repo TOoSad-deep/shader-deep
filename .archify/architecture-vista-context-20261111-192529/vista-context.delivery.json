@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "7364d40e-815a-4ede-878d-a9aee4a9b57b",
+  "status": "current",
+  "command": "deliver",
+  "type": "architecture",
+  "input": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/.archify/architecture-vista-context-20261111-192529/candidate.json",
+  "output": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/.archify/architecture-vista-context-20261111-192529/vista-context.html",
+  "specification": {
+    "sha256": "5ddbba9df240983c8194f5ee73eddd21b4ed3cfe26d8f846d886854ebf5f66c5",
+    "bytes": 4622
+  },
+  "artifact": {
+    "sha256": "5c97acf4b7de2237e6970057b6808df0c133f3e2a2505ff781598b59353b80e1",
+    "bytes": 821357
+  }
+}

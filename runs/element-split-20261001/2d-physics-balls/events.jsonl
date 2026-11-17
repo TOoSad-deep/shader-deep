@@ -1,0 +1,9 @@
+{"run_id": "2d-physics-balls", "task_id": "planning", "attempt_id": "f2bad4b79f904aafbb14bdc7de8843cc", "event": "task_started", "model_call": 0}
+{"run_id": "2d-physics-balls", "task_id": "planning", "attempt_id": "f2bad4b79f904aafbb14bdc7de8843cc", "event": "model_started", "model_call": 1}
+{"run_id": "2d-physics-balls", "task_id": "planning", "attempt_id": "f2bad4b79f904aafbb14bdc7de8843cc", "event": "request_sizes", "model_call": 1, "system_chars": 219, "tool_schema_chars": 1125, "message_text_chars": 234, "image_count": 1, "message_count": 1, "tool_history_chars": 0}
+{"run_id": "2d-physics-balls", "task_id": "planning", "attempt_id": "f2bad4b79f904aafbb14bdc7de8843cc", "event": "request_started", "model_call": 1, "attempt": 1}
+{"run_id": "2d-physics-balls", "task_id": "planning", "attempt_id": "f2bad4b79f904aafbb14bdc7de8843cc", "event": "request_completed", "model_call": 1, "attempt": 1, "elapsed_seconds": 71.082}
+{"run_id": "2d-physics-balls", "task_id": "planning", "attempt_id": "f2bad4b79f904aafbb14bdc7de8843cc", "event": "model_completed", "model_call": 1}
+{"run_id": "2d-physics-balls", "task_id": "planning", "attempt_id": "f2bad4b79f904aafbb14bdc7de8843cc", "event": "model_usage", "model_call": 1, "input_tokens": 1863, "output_tokens": 3390, "total_tokens": 5253, "input_token_details": {"audio": 0, "cache_creation": 0, "cache_read": 0}, "output_token_details": {"audio": 0, "reasoning": 2816}}
+{"run_id": "2d-physics-balls", "task_id": "planning", "attempt_id": "f2bad4b79f904aafbb14bdc7de8843cc", "event": "tool_result", "model_call": 1, "tool": "submit_target_plan", "call_id": "call_4633399b79094420a2f2ebcb", "outcome": "success", "scope": "planning"}
+{"run_id": "2d-physics-balls", "task_id": "planning", "attempt_id": "f2bad4b79f904aafbb14bdc7de8843cc", "event": "task_completed", "model_call": 1}

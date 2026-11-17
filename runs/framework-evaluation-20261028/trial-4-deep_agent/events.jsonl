@@ -1,0 +1,5 @@
+{"run_id": "trial-4-deep_agent", "task_id": "worker", "attempt_id": "8ffc77f13f8049048425cc841a8652d0", "event": "task_started", "model_call": 0}
+{"run_id": "trial-4-deep_agent", "task_id": "worker", "attempt_id": "8ffc77f13f8049048425cc841a8652d0", "event": "model_started", "model_call": 1}
+{"run_id": "trial-4-deep_agent", "task_id": "worker", "attempt_id": "8ffc77f13f8049048425cc841a8652d0", "event": "request_sizes", "model_call": 1, "system_chars": 991, "tool_schema_chars": 5070, "message_text_chars": 288, "image_count": 1, "message_count": 1, "tool_history_chars": 0}
+{"run_id": "trial-4-deep_agent", "task_id": "worker", "attempt_id": "8ffc77f13f8049048425cc841a8652d0", "event": "request_started", "model_call": 1, "attempt": 1}
+{"run_id": "trial-4-deep_agent", "task_id": "worker", "attempt_id": "8ffc77f13f8049048425cc841a8652d0", "event": "request_failed", "model_call": 1, "attempt": 1, "error_type": "APIError", "elapsed_seconds": 114.667}

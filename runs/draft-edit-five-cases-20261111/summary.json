@@ -1,0 +1,169 @@
+{
+  "cases": 5,
+  "statuses": {
+    "completed": 3,
+    "failed": 2
+  },
+  "trace_verified": 5,
+  "project": "shader-deep",
+  "tag": "draft-edit-five-cases-20261111",
+  "skill_bundle_sha256": "694f9915c74197e410de283ceb0a4c33c0383950a27b2dc2e47bb71489070ab6",
+  "rows": [
+    {
+      "case": "cool-s-distance",
+      "status": "completed",
+      "run_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/draft-edit-five-cases-20261111/cool-s-distance/run-_sle9rke",
+      "report_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/draft-edit-five-cases-20261111/cool-s-distance/run-_sle9rke/report",
+      "trace": {
+        "trace_id": "01a1c87a-e1d7-7023-a0df-9a4818c66103",
+        "url": "https://smith.langchain.com/o/fcb09333-f0ce-45e7-9ea2-c4750cdfbd16/projects/p/2e0945b1-fc78-4930-96bb-3085745b703a/r/01a1c87a-e1d7-7023-a0df-9a4818c66103?poll=true",
+        "root_finished": true,
+        "runs": 95,
+        "llm_runs": 7,
+        "tool_runs": 7,
+        "image_in_llm_input": true,
+        "llm_outputs_present": true,
+        "error_runs": 0
+      },
+      "reason": null,
+      "draft_path": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/draft-edit-five-cases-20261111/cool-s-distance/run-_sle9rke/draft/observations.json",
+      "draft_revision": "6c7b51227d4d63ffe443ad86ac2faf8a613d950103853adf00941bc730abf8e8",
+      "seen_revision": "6c7b51227d4d63ffe443ad86ac2faf8a613d950103853adf00941bc730abf8e8",
+      "accepted_revision": "6c7b51227d4d63ffe443ad86ac2faf8a613d950103853adf00941bc730abf8e8",
+      "model": "z-ai/glm-5.3-flash",
+      "elapsed_seconds": 508.6079626660212,
+      "model_calls": 7,
+      "trace_verified": true,
+      "counts": {
+        "E": 2,
+        "F": 5,
+        "R": 3
+      },
+      "gaps": [],
+      "formal_reader": "passed",
+      "successful_edits": 3
+    },
+    {
+      "case": "flat-water-effects2",
+      "status": "completed",
+      "run_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/draft-edit-five-cases-20261111/flat-water-effects2/run-p78wrn5t",
+      "report_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/draft-edit-five-cases-20261111/flat-water-effects2/run-p78wrn5t/report",
+      "trace": {
+        "trace_id": "01a1c87a-e298-7670-814c-54c8b50966eb",
+        "url": "https://smith.langchain.com/o/fcb09333-f0ce-45e7-9ea2-c4750cdfbd16/projects/p/2e0945b1-fc78-4930-96bb-3085745b703a/r/01a1c87a-e298-7670-814c-54c8b50966eb?poll=true",
+        "root_finished": true,
+        "runs": 82,
+        "llm_runs": 6,
+        "tool_runs": 6,
+        "image_in_llm_input": true,
+        "llm_outputs_present": true,
+        "error_runs": 0
+      },
+      "reason": null,
+      "draft_path": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/draft-edit-five-cases-20261111/flat-water-effects2/run-p78wrn5t/draft/observations.json",
+      "draft_revision": "e51b5523803d62402523928ca455d0ebb17e80d0fbef53941aed130456bcfd25",
+      "seen_revision": "e51b5523803d62402523928ca455d0ebb17e80d0fbef53941aed130456bcfd25",
+      "accepted_revision": "e51b5523803d62402523928ca455d0ebb17e80d0fbef53941aed130456bcfd25",
+      "model": "z-ai/glm-5.3-flash",
+      "elapsed_seconds": 77.5327951250074,
+      "model_calls": 6,
+      "trace_verified": true,
+      "counts": {
+        "E": 4,
+        "F": 7,
+        "R": 3
+      },
+      "gaps": [],
+      "formal_reader": "passed",
+      "successful_edits": 1
+    },
+    {
+      "case": "dna-helis",
+      "status": "completed",
+      "run_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/draft-edit-five-cases-20261111/dna-helis/run-ylqg7ahv",
+      "report_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/draft-edit-five-cases-20261111/dna-helis/run-ylqg7ahv/report",
+      "trace": {
+        "trace_id": "01a1c87a-deff-78b0-a3ba-73b38a99e840",
+        "url": "https://smith.langchain.com/o/fcb09333-f0ce-45e7-9ea2-c4750cdfbd16/projects/p/2e0945b1-fc78-4930-96bb-3085745b703a/r/01a1c87a-deff-78b0-a3ba-73b38a99e840?poll=true",
+        "root_finished": true,
+        "runs": 82,
+        "llm_runs": 6,
+        "tool_runs": 6,
+        "image_in_llm_input": true,
+        "llm_outputs_present": true,
+        "error_runs": 1
+      },
+      "reason": null,
+      "draft_path": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/draft-edit-five-cases-20261111/dna-helis/run-ylqg7ahv/draft/observations.json",
+      "draft_revision": "494a4f30a2ff9d17cdf74546a1a33e8dbb160b1016315db4a2dabaaa203d503e",
+      "seen_revision": "494a4f30a2ff9d17cdf74546a1a33e8dbb160b1016315db4a2dabaaa203d503e",
+      "accepted_revision": "494a4f30a2ff9d17cdf74546a1a33e8dbb160b1016315db4a2dabaaa203d503e",
+      "model": "z-ai/glm-5.3-flash",
+      "elapsed_seconds": 170.09347266698023,
+      "model_calls": 6,
+      "trace_verified": true,
+      "counts": {
+        "E": 3,
+        "F": 7,
+        "R": 3
+      },
+      "gaps": [],
+      "formal_reader": "passed",
+      "successful_edits": 1
+    },
+    {
+      "case": "buffer-bloom",
+      "status": "failed",
+      "run_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/draft-edit-five-cases-20261111/buffer-bloom/run-5v4kx2kp",
+      "report_dir": null,
+      "trace": {
+        "trace_id": "01a1c87c-73b4-7e03-8680-af28b96b6860",
+        "url": "https://smith.langchain.com/o/fcb09333-f0ce-45e7-9ea2-c4750cdfbd16/projects/p/2e0945b1-fc78-4930-96bb-3085745b703a/r/01a1c87c-73b4-7e03-8680-af28b96b6860?poll=true",
+        "root_finished": true,
+        "runs": 100,
+        "llm_runs": 7,
+        "tool_runs": 6,
+        "image_in_llm_input": true,
+        "llm_outputs_present": true,
+        "error_runs": 1
+      },
+      "reason": "model_call_limit",
+      "draft_path": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/draft-edit-five-cases-20261111/buffer-bloom/run-5v4kx2kp/draft/observations.json",
+      "draft_revision": "18c83f469b9a10e31ce3bbd16d752e1a0f8a5a4d429220ed5cd323cad3093dd4",
+      "seen_revision": null,
+      "accepted_revision": null,
+      "model": "z-ai/glm-5.3-flash",
+      "elapsed_seconds": 211.16391537501477,
+      "model_calls": 8,
+      "trace_verified": true,
+      "successful_edits": 2
+    },
+    {
+      "case": "auroras",
+      "status": "failed",
+      "run_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/draft-edit-five-cases-20261111/auroras/run-0fdxcyfu",
+      "report_dir": null,
+      "trace": {
+        "trace_id": "01a1c87e-359b-75e3-aa02-a61a1519b197",
+        "url": "https://smith.langchain.com/o/fcb09333-f0ce-45e7-9ea2-c4750cdfbd16/projects/p/2e0945b1-fc78-4930-96bb-3085745b703a/r/01a1c87e-359b-75e3-aa02-a61a1519b197?poll=true",
+        "root_finished": true,
+        "runs": 100,
+        "llm_runs": 7,
+        "tool_runs": 9,
+        "image_in_llm_input": true,
+        "llm_outputs_present": true,
+        "error_runs": 2
+      },
+      "reason": "model_call_limit",
+      "draft_path": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/draft-edit-five-cases-20261111/auroras/run-0fdxcyfu/draft/observations.json",
+      "draft_revision": "180d2823359f37d1762a17c9a3aa3480fcc370d8b63f1d4798ec43b120f100b8",
+      "seen_revision": null,
+      "accepted_revision": null,
+      "model": "z-ai/glm-5.3-flash",
+      "elapsed_seconds": 162.89051887500682,
+      "model_calls": 8,
+      "trace_verified": true,
+      "successful_edits": 2
+    }
+  ]
+}

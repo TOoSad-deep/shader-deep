@@ -1,0 +1,30 @@
+{
+  "name": "top_left_green_gear",
+  "category": "notched_outline",
+  "image": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/analysis-optimized-real-4-20261027/reference.png",
+  "sha256": "7beeab6b0c683e16ed213393b2a8850b28c1c2e3a89963c671f8902d6d194523",
+  "target": {
+    "id": "E1",
+    "name": "最左上方绿色齿轮状圆片",
+    "region": "原图左侧彩色堆叠区域中最左上方的绿色圆片, 包含中心孔和外轮廓",
+    "feature_ids": []
+  },
+  "target_box": {
+    "left": 200,
+    "top": 346,
+    "right": 322,
+    "bottom": 469
+  },
+  "user_request": "请分析参考图中的一个指定元素: 彩色圆片堆中最左上方的绿色齿轮状圆片, 包含中心孔和外轮廓。以过程式 Shader 复现为目标, 独立分析可见特征、关系、候选实现机制和草图方案, 明确不确定项与缺口。本轮只分析该目标。",
+  "direction": "围绕目标的可见特征和相互关系, 提出可用于过程式 Shader 的实现机制和草图。",
+  "human_checks": [
+    "目标是左上绿色圆片, 不扩大到整幅布局",
+    "区分绿色实体、中心孔和外轮廓缺口",
+    "精确数量或颜色须有依据, 未确认内容保留未知",
+    "M表达实现原理和可调方向, 草图选择与正文一致"
+  ],
+  "unknown_truth": [
+    "单图不能唯一确定原始Shader实现机制"
+  ],
+  "engineering_only": false
+}

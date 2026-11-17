@@ -1,0 +1,149 @@
+[
+  {
+    "run": "apps/shader_deep/runs/openrouter-glm-5.3-flash-20260930/run-28oh9q47",
+    "task": "exploration-1",
+    "status": "failed",
+    "calls": 3,
+    "error": "ValueError: 逻辑任务的两次修复额度已耗尽",
+    "categories": {
+      "business_rejection": 2,
+      "schema_validation": 1
+    },
+    "request_errors": {},
+    "rejected_responses": [
+      "提交被拒绝: features.F.mechanism_refs: 引用不存在或类型错误; 要求 ['mechanisms']; text='M'",
+      "提交被拒绝: mechanisms.M1.method_or_conditions[1]: 可复用机制不能绑定本图消费者; text='框体为规则圆角矩形且轴对齐(与 [[F8]] 观测一致)'",
+      "参数校验失败, 请修正后完整提交: \nreport.features_note: Extra inputs are not permitted"
+    ]
+  },
+  {
+    "run": "apps/shader_deep/runs/openrouter-glm-5.3-flash-20260930/run-28oh9q47",
+    "task": "exploration-2",
+    "status": "cancelled",
+    "calls": 3,
+    "error": "协调器停止等待, 撤销执行权限",
+    "categories": {
+      "business_rejection": 2,
+      "json_syntax": 1
+    },
+    "request_errors": {},
+    "rejected_responses": [
+      "提交被拒绝: mechanisms.M5.method_or_conditions[0]: 疑似未标记对象引用 'M1'; 使用 [[ID]]; text='分别渲染一套蓝色辉光与一套青绿辉光(各用 M1/M2), 再用随位置变化的权重(如左侧权重偏蓝、右下偏青绿)加色混合, 近似周向色相渐变而不显式定义色板。'",
+      "JSON syntax error: Expecting value; line 1, column 12. Quoted data near error: \"{\\\"report\\\": \". Escape quotes inside strings and submit exactly one JSON object.",
+      "提交被拒绝: sketches.S2.alternatives[0].composition: 组织说明引用了未采用机制; 请提供有效 composition; text='与默认方案相同的 [[M1]]/[[M2]]/[[M4]] 分层, 但不着色为单一色板: 用 [[M5]] 渲染蓝色系与青绿系两套辉光, 按空间权重(左偏蓝、右下偏青绿)混合得到周向渐变, 适合色板插值出现断层时使用。层次组织同默认: 纯黑底 → 外晕 → 内晕 → 白核。'"
+    ]
+  },
+  {
+    "run": "apps/shader_deep/runs/openrouter-glm-5.3-flash-20260930/run-28oh9q47",
+    "task": "exploration-3",
+    "status": "failed",
+    "calls": 4,
+    "error": "ValueError: 逻辑任务的两次修复额度已耗尽",
+    "categories": {
+      "schema_validation": 1,
+      "business_rejection": 2
+    },
+    "request_errors": {},
+    "rejected_responses": [
+      "参数校验失败, 请修正后完整提交: \nreport.sketches.0.alternatives.0.conditions: Input should be a valid tuple\nreport.sketches.1.alternatives.0.conditions: Input should be a valid tuple",
+      "提交被拒绝: sketches.S1.alternatives[0].composition: 疑似未标记对象引用 'R2'; 使用 [[ID]]; text='把 R2 的角度插值直接并进 exp 衰减的着色分支，省一层 smoothstep'",
+      "提交被拒绝: F.mechanism_refs: 候选机制为空必须记录对应缺口; text='()'"
+    ]
+  },
+  {
+    "run": "apps/shader_deep/runs/openrouter-glm-5.3-flash-20260930/run-_28t737e",
+    "task": "exploration-1",
+    "status": "succeeded",
+    "calls": 1,
+    "error": null,
+    "categories": {},
+    "request_errors": {},
+    "rejected_responses": []
+  },
+  {
+    "run": "apps/shader_deep/runs/openrouter-glm-5.3-flash-20260930/run-_28t737e",
+    "task": "exploration-2",
+    "status": "failed",
+    "calls": 3,
+    "error": "ValueError: 逻辑任务的两次修复额度已耗尽",
+    "categories": {
+      "business_rejection": 2,
+      "schema_validation": 1
+    },
+    "request_errors": {},
+    "rejected_responses": [
+      "提交被拒绝: features.F: 包内对象 ID 重复; text='F'",
+      "参数校验失败, 请修正后完整提交: \nreport.sketches.0.alternatives.0.reason: Field required",
+      "提交被拒绝: sketches.S_diag_gradient_variant.default: 草图未覆盖本来源观察目标; 必须记录对应 gaps; text=\"['F_black_bg']\""
+    ]
+  },
+  {
+    "run": "apps/shader_deep/runs/openrouter-glm-5.3-flash-20260930/run-_28t737e",
+    "task": "exploration-3",
+    "status": "failed",
+    "calls": 3,
+    "error": "ValueError: 逻辑任务的两次修复额度已耗尽",
+    "categories": {
+      "business_rejection": 2,
+      "schema_validation": 1
+    },
+    "request_errors": {},
+    "rejected_responses": [
+      "提交被拒绝: features.F: 包内对象 ID 重复; text='F'",
+      "提交被拒绝: F.mechanism_refs: 候选机制为空必须记录对应缺口; text='()'",
+      "参数校验失败, 请修正后完整提交: \nreport.relations.0.participants: Field required\nreport.relations.1.participants: Field required\nreport.relations.2.participants: Field required\nreport.relations_note: Extra inputs are not permitted"
+    ]
+  },
+  {
+    "run": "apps/shader_deep/runs/openrouter-glm-5.3-flash-20260930/run-pv442kjb",
+    "task": "exploration-1",
+    "status": "failed",
+    "calls": 4,
+    "error": "ValueError: 逻辑任务的两次修复额度已耗尽",
+    "categories": {
+      "schema_validation": 1,
+      "business_rejection": 2
+    },
+    "request_errors": {},
+    "rejected_responses": [
+      "参数校验失败, 请修正后完整提交: \nreport.features.2.mechanism_refs.0.reason2: Extra inputs are not permitted",
+      "提交被拒绝: relations.R.participants: 引用不得重复; text=\"('F', 'F')\"",
+      "提交被拒绝: sketches.sk_neon_frame_sdf_v1.composition: 疑似未标记对象引用 'M1'; 使用 [[ID]]; text='以 M1 生成圆角矩形有向距离场，按 M2 对内外分区指数衰减产生不对称辉光；颜色统一走 M3 色相函数保证核与辉同色；再以 M4 叠加一层宽弱晕近似 [[F10]]；用 M5 白化核心。整体单 Pass 加法合成于黑底（[[F9]]）。角部膨大 [[F6]] 默认仅靠两侧辉光自然叠加近似，亮度不均 [[F8]] 默认不启用，均见 alternatives 与 gaps。'"
+    ]
+  },
+  {
+    "run": "apps/shader_deep/runs/openrouter-glm-5.3-flash-20260930/run-pv442kjb",
+    "task": "exploration-2",
+    "status": "failed",
+    "calls": 3,
+    "error": "ValueError: 逻辑任务的两次修复额度已耗尽",
+    "categories": {
+      "schema_validation": 1,
+      "business_rejection": 2
+    },
+    "request_errors": {},
+    "rejected_responses": [
+      "参数校验失败, 请修正后完整提交: \nreport.features.0.type: Extra inputs are not permitted\nreport.features.1.type: Extra inputs are not permitted\nreport.features.2.type: Extra inputs are not permitted\nreport.features.3.type: Extra inputs are not permitted",
+      "提交被拒绝: sketches.S1.default: 选择目标必须是已有特征或关系; text='composite'",
+      "提交被拒绝: features.F.mechanism_refs: 引用不存在或类型错误; 要求 ['mechanisms']; text='M'"
+    ]
+  },
+  {
+    "run": "apps/shader_deep/runs/openrouter-glm-5.3-flash-20260930/run-pv442kjb",
+    "task": "exploration-3",
+    "status": "failed",
+    "calls": 3,
+    "error": "ValueError: 逻辑任务的两次修复额度已耗尽",
+    "categories": {
+      "business_rejection": 3
+    },
+    "request_errors": {
+      "RemoteProtocolError": 1
+    },
+    "rejected_responses": [
+      "提交被拒绝: sketches.S1.composition: 疑似未标记对象引用 'M1'; 使用 [[ID]]; text='面向单 Pass GLSL 的默认组织：逐像素求 sdRoundedBox 有符号距离 d（M1）确定 [[neon_frame_01]] 几何；以 |d| 窄带取核心线（[[F1]]），d 双侧指数辉光取非对称参数并叠加一层远晕（M2+M3）复现外宽内窄（[[F3]]/[[F4]]/[[F9]]）；色相由周边弧长参数驱动（M4）给核心与辉光统一染色（[[F6]]，见 [[R1]]）；在对应左下角的参数窗口做白热过曝（M5）复现亮度峰值（[[F7]]，见 [[R2]]）；内侧辉光额外压暗、框内基底近黑（M6）保证 [[F5]]；全部在线性空间合成后 gamma 输出、纯黑背景（M7）维持 [[F8]] 的对照关系。所有数值（σ、线宽、圆角半径、热点窗口位置）均为待标定的观感估计，见 gaps。'",
+      "提交被拒绝: sketches.S1.default: 选择目标必须是已有特征或关系; text='geometry'",
+      "提交被拒绝: features.F.mechanism_refs: 引用不存在或类型错误; 要求 ['mechanisms']; text='M'"
+    ]
+  }
+]

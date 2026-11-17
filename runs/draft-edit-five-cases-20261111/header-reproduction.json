@@ -1,0 +1,25 @@
+[
+  {
+    "header": "@@ lines 1-100 of 103 | next offset 100 @@",
+    "recognized": false,
+    "range": null
+  },
+  {
+    "header": "@@ lines 101-103 of 103 @@",
+    "recognized": true,
+    "range": [
+      "101",
+      "103",
+      "103"
+    ]
+  },
+  {
+    "header": "@@ lines 1-103 of 103 @@",
+    "recognized": true,
+    "range": [
+      "1",
+      "103",
+      "103"
+    ]
+  }
+]

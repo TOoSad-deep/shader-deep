@@ -1,0 +1,385 @@
+{
+  "date": "2026-10-28",
+  "scope": "worker-only exploratory factory comparison; production unchanged",
+  "protocol": {
+    "status": "prepared",
+    "purpose": "worker-only framework feasibility, not default migration",
+    "model": "z-ai/glm-5.3-flash",
+    "reasoning": null,
+    "sample": "glow_border, deterministic 128x128 engineering fixture",
+    "order": [
+      "deep_agent",
+      "create_agent",
+      "create_agent",
+      "deep_agent"
+    ],
+    "max_total_logical_calls": 8,
+    "max_output_tokens_per_call": 8192,
+    "network_retries": 0,
+    "per_trial_wall_seconds": 240,
+    "request_timeout_seconds": 90,
+    "observation_tools": false,
+    "target_crop": false,
+    "human_acceptance": false,
+    "quality_checks": [
+      "rounded cyan outline",
+      "bright core distinct from outer halo",
+      "dark center/background retained",
+      "mechanisms remain candidates"
+    ],
+    "source_hashes": {
+      "src/shader_deep/agents/analysis/execution.py": "b1f65c0fa767cec223be21203cf75c1e2d4544637eb6fe00b2b6cc8698eb59c4",
+      "src/shader_deep/agents/analysis/exploration.py": "38e094d6d28f10cb0e302d397d2a8d0edfac540a5f0c53eadd4fb3716d14ad97",
+      "src/shader_deep/runtime/middleware.py": "c58855cfb8a6a029940ffa2618787680e3c20e27badbefee0953fcf85c94ca19",
+      "src/shader_deep/runtime/five_analysis_loop.py": "c0160c7603f034da251af74306e235060c0919d3215ea7e1d7adfed1ca8c9167",
+      "src/shader_deep/runtime/model_loop.py": "02980c6e8168858ed5cae84bf1e7c3b80f755d8d5dbc512883ea7b0c6aad7a73",
+      "src/shader_deep/agents/analysis/prompts.py": "50a0513f1ff516b46e95033cde8f5e35dd973fefe78663e9fcd12666de865745",
+      "src/shader_deep/infrastructure/llm/transport.py": "562db002ba96752bab044bed7094039ac3864a9a5ea6ec5dc691af7eb551fa70",
+      "uv.lock": "51c48401c95857fe27b518b35737d410746ccca5a834d9e308dfe49cd4fb0fff"
+    },
+    "driver_sha256": "87bf98c1bc13ee6896dbcf8adfbcd64fa29acb4c184adaf6e1f256696cd5bb27"
+  },
+  "preflight": {
+    "versions": {
+      "deepagents": "0.7.13",
+      "langchain": "1.4.0",
+      "langchain-core": "1.6.2",
+      "langgraph": "1.2.11",
+      "langchain-openai": "1.6.0"
+    },
+    "offline_tests": 51,
+    "passed": true,
+    "assembly": [
+      {
+        "condition": "deep_agent",
+        "assembly_ms_median": 6.6736660000970005,
+        "graph_nodes": [
+          "PatchToolCallsMiddleware.before_agent",
+          "SummarizationMiddleware.before_model",
+          "__end__",
+          "__start__",
+          "model",
+          "tools"
+        ],
+        "assembly_samples": 5
+      },
+      {
+        "condition": "create_agent",
+        "assembly_ms_median": 1.2362500001472654,
+        "graph_nodes": [
+          "SummarizationMiddleware.before_model",
+          "__end__",
+          "__start__",
+          "model",
+          "tools"
+        ],
+        "assembly_samples": 5
+      },
+      {
+        "condition": "create_agent",
+        "assembly_ms_median": 1.1979999999311985,
+        "graph_nodes": [
+          "SummarizationMiddleware.before_model",
+          "__end__",
+          "__start__",
+          "model",
+          "tools"
+        ],
+        "assembly_samples": 5
+      },
+      {
+        "condition": "deep_agent",
+        "assembly_ms_median": 6.3521669999317965,
+        "graph_nodes": [
+          "PatchToolCallsMiddleware.before_agent",
+          "SummarizationMiddleware.before_model",
+          "__end__",
+          "__start__",
+          "model",
+          "tools"
+        ],
+        "assembly_samples": 5
+      }
+    ]
+  },
+  "edge_probe": [
+    {
+      "condition": "deep_agent",
+      "receipt": [
+        {
+          "characters": 1607,
+          "contains_tail": false,
+          "is_preview": true
+        }
+      ],
+      "status": "succeeded"
+    },
+    {
+      "condition": "create_agent",
+      "receipt": [
+        {
+          "characters": 90024,
+          "contains_tail": true,
+          "is_preview": false
+        }
+      ],
+      "status": "succeeded"
+    }
+  ],
+  "measurement_correction": {
+    "kind": "measurement_bug_fix",
+    "failure": "trial-1: payload capture iterated over content=None after first rejected submission; no second payload was completed",
+    "change": "Treat a null message content as an empty sequence when counting image blocks; model requests and budgets are unchanged.",
+    "initial_driver_sha256": "87bf98c1bc13ee6896dbcf8adfbcd64fa29acb4c184adaf6e1f256696cd5bb27",
+    "corrected_driver_sha256": "9c6dc63dbdb9c5419d098462b40670269b862df2d0e7df784f74c13f30a10350",
+    "scope": "No paid rerun. Trials 1 and 3 ran the initial recorder and failed at null assistant content before completing the second payload. Exclude both from end-to-end comparison; retain first request and usage. Trial 2 completed both recorded requests; trial 4 uses corrected recorder.",
+    "reusable_driver_sha256": "6c591a10479008f05b2f3befbfd0f956810f404d6ca1885f50c1628f07a8f7dc",
+    "offline_fix_check": "null assistant content and image block counting passed without network"
+  },
+  "trials": [
+    {
+      "condition": "deep_agent",
+      "number": 1,
+      "model": "z-ai/glm-5.3-flash",
+      "sample_sha256": "677ad234571bc8e5ab204a6d8b2bfec4aa8e920ee3711282433f525f9691ab8d",
+      "status": "failed",
+      "error": "TypeError: 'NoneType' object is not iterable",
+      "elapsed_seconds": 67.96853379200002,
+      "calls": 2,
+      "network_attempts": 2,
+      "repairs": 1,
+      "requests": [
+        {
+          "payload_sha256": "d55cfd5ac8960d29237086d447999eb281ba90a4671c87bde363ccd400671f61",
+          "messages_sha256": "cbf8fbbb00689a0aecb45fc3e4356c9b4e671288bca1ddf7a1b1d850dfdac041",
+          "tools_sha256": "a7e10d7ca51d15947125db521644cd5ce2aed9a9935b4d8d08ec4d6a84c9d010",
+          "payload_bytes": 13382,
+          "tool_names": [
+            "submit_exploration"
+          ],
+          "image_blocks": 1
+        }
+      ],
+      "usage": [
+        {
+          "run_id": "trial-1-deep_agent",
+          "task_id": "worker",
+          "attempt_id": "d50aaff0c419479a905efa44805b973f",
+          "event": "model_usage",
+          "model_call": 1,
+          "input_tokens": 2123,
+          "output_tokens": 3218,
+          "total_tokens": 5341,
+          "input_token_details": {
+            "audio": 0,
+            "cache_creation": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 295
+          }
+        }
+      ],
+      "tool_outcomes": [
+        {
+          "tool": "submit_exploration",
+          "outcome": "rejected"
+        }
+      ],
+      "counts": null,
+      "interpretation": "measurement_invalid"
+    },
+    {
+      "condition": "create_agent",
+      "number": 2,
+      "model": "z-ai/glm-5.3-flash",
+      "sample_sha256": "677ad234571bc8e5ab204a6d8b2bfec4aa8e920ee3711282433f525f9691ab8d",
+      "status": "failed",
+      "error": "AnalysisLimitError: Analysis model-call budget exhausted",
+      "elapsed_seconds": 93.40812933300094,
+      "calls": 2,
+      "network_attempts": 2,
+      "repairs": 1,
+      "requests": [
+        {
+          "payload_sha256": "d55cfd5ac8960d29237086d447999eb281ba90a4671c87bde363ccd400671f61",
+          "messages_sha256": "cbf8fbbb00689a0aecb45fc3e4356c9b4e671288bca1ddf7a1b1d850dfdac041",
+          "tools_sha256": "a7e10d7ca51d15947125db521644cd5ce2aed9a9935b4d8d08ec4d6a84c9d010",
+          "payload_bytes": 13382,
+          "tool_names": [
+            "submit_exploration"
+          ],
+          "image_blocks": 1
+        },
+        {
+          "payload_sha256": "ab4be25162d1d5e05bf3dec62a520a6cc8e68c48d4b042991380423310f1e4ac",
+          "messages_sha256": "d54f25854c7fe1861a307959e07e74c50b22cbd11f22910d9fc87322d79b0f89",
+          "tools_sha256": "a7e10d7ca51d15947125db521644cd5ce2aed9a9935b4d8d08ec4d6a84c9d010",
+          "payload_bytes": 57141,
+          "tool_names": [
+            "submit_exploration"
+          ],
+          "image_blocks": 1
+        }
+      ],
+      "usage": [
+        {
+          "run_id": "trial-2-create_agent",
+          "task_id": "worker",
+          "attempt_id": "05b135a0b5f2432497d6ce48dcc1845f",
+          "event": "model_usage",
+          "model_call": 1,
+          "input_tokens": 2123,
+          "output_tokens": 8123,
+          "total_tokens": 10246,
+          "input_token_details": {
+            "audio": 0,
+            "cache_creation": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 5487
+          }
+        },
+        {
+          "run_id": "trial-2-create_agent",
+          "task_id": "worker",
+          "attempt_id": "05b135a0b5f2432497d6ce48dcc1845f",
+          "event": "model_usage",
+          "model_call": 2,
+          "input_tokens": 4682,
+          "output_tokens": 2562,
+          "total_tokens": 7244,
+          "input_token_details": {
+            "audio": 0,
+            "cache_creation": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 27
+          }
+        }
+      ],
+      "tool_outcomes": [
+        {
+          "tool": "submit_exploration",
+          "outcome": "rejected"
+        },
+        {
+          "tool": "submit_exploration",
+          "outcome": "rejected"
+        }
+      ],
+      "counts": null,
+      "interpretation": "business_validation_failed_within_budget"
+    },
+    {
+      "condition": "create_agent",
+      "number": 3,
+      "model": "z-ai/glm-5.3-flash",
+      "sample_sha256": "677ad234571bc8e5ab204a6d8b2bfec4aa8e920ee3711282433f525f9691ab8d",
+      "status": "failed",
+      "error": "TypeError: 'NoneType' object is not iterable",
+      "elapsed_seconds": 87.90170283300176,
+      "calls": 2,
+      "network_attempts": 2,
+      "repairs": 1,
+      "requests": [
+        {
+          "payload_sha256": "d55cfd5ac8960d29237086d447999eb281ba90a4671c87bde363ccd400671f61",
+          "messages_sha256": "cbf8fbbb00689a0aecb45fc3e4356c9b4e671288bca1ddf7a1b1d850dfdac041",
+          "tools_sha256": "a7e10d7ca51d15947125db521644cd5ce2aed9a9935b4d8d08ec4d6a84c9d010",
+          "payload_bytes": 13382,
+          "tool_names": [
+            "submit_exploration"
+          ],
+          "image_blocks": 1
+        }
+      ],
+      "usage": [
+        {
+          "run_id": "trial-3-create_agent",
+          "task_id": "worker",
+          "attempt_id": "b604c562e2034561b45c4d66d7a0e2f2",
+          "event": "model_usage",
+          "model_call": 1,
+          "input_tokens": 2121,
+          "output_tokens": 7392,
+          "total_tokens": 9513,
+          "input_token_details": {
+            "audio": 0,
+            "cache_creation": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 5015
+          }
+        }
+      ],
+      "tool_outcomes": [
+        {
+          "tool": "submit_exploration",
+          "outcome": "rejected"
+        }
+      ],
+      "counts": null,
+      "interpretation": "measurement_invalid"
+    },
+    {
+      "condition": "deep_agent",
+      "number": 4,
+      "model": "z-ai/glm-5.3-flash",
+      "sample_sha256": "677ad234571bc8e5ab204a6d8b2bfec4aa8e920ee3711282433f525f9691ab8d",
+      "status": "failed",
+      "error": "APIError: Upstream error from Reka: The model is at capacity. Retry after the Retry-After delay.",
+      "elapsed_seconds": 114.73204641699886,
+      "calls": 1,
+      "network_attempts": 1,
+      "repairs": 0,
+      "requests": [
+        {
+          "payload_sha256": "d55cfd5ac8960d29237086d447999eb281ba90a4671c87bde363ccd400671f61",
+          "messages_sha256": "cbf8fbbb00689a0aecb45fc3e4356c9b4e671288bca1ddf7a1b1d850dfdac041",
+          "tools_sha256": "a7e10d7ca51d15947125db521644cd5ce2aed9a9935b4d8d08ec4d6a84c9d010",
+          "payload_bytes": 13382,
+          "tool_names": [
+            "submit_exploration"
+          ],
+          "image_blocks": 1
+        }
+      ],
+      "usage": [],
+      "tool_outcomes": [],
+      "counts": null,
+      "interpretation": "upstream_capacity_failure"
+    }
+  ],
+  "logical_call_counter_total": 7,
+  "captured_payload_total": 5,
+  "usage_records": 4,
+  "input_tokens_reported": 11049,
+  "output_tokens_reported": 21295,
+  "first_request_hashes": [
+    "d55cfd5ac8960d29237086d447999eb281ba90a4671c87bde363ccd400671f61"
+  ],
+  "decision": "do_not_change_default; worker create_agent worth further scoped validation; keep main Deep Agents and host dispatch",
+  "limitations": [
+    "single synthetic image",
+    "two trials invalidated by recorder null-content bug",
+    "one trial upstream capacity failure",
+    "no accepted report",
+    "no valid end-to-end baseline/comparator pair",
+    "no dollar cost data"
+  ],
+  "sdk_source_sha256": {
+    "graph.py": "2c0c9a5fc4a836b17d31076834d884d00a705f369317eb30fd1ceddec3b12e95",
+    "middleware/subagents.py": "fb72d2961baabdb9a541c6fe36df46712f4f987a88df7260d6b8b6e132425d25",
+    "middleware/filesystem.py": "08ec6d6970e4acb6021d0eacbef29b37bb1e9c1964df23c6b432911c02638853",
+    "middleware/patch_tool_calls.py": "a989963b68d828012cc411e1e75e4507f15665c029d9202423f9ec0fe9494071"
+  },
+  "production_source_unchanged": true
+}

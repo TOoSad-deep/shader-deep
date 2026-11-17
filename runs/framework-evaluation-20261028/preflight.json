@@ -1,0 +1,63 @@
+{
+  "versions": {
+    "deepagents": "0.7.13",
+    "langchain": "1.4.0",
+    "langchain-core": "1.6.2",
+    "langgraph": "1.2.11",
+    "langchain-openai": "1.6.0"
+  },
+  "offline_tests": 51,
+  "passed": true,
+  "assembly": [
+    {
+      "condition": "deep_agent",
+      "assembly_ms_median": 6.6736660000970005,
+      "graph_nodes": [
+        "PatchToolCallsMiddleware.before_agent",
+        "SummarizationMiddleware.before_model",
+        "__end__",
+        "__start__",
+        "model",
+        "tools"
+      ],
+      "assembly_samples": 5
+    },
+    {
+      "condition": "create_agent",
+      "assembly_ms_median": 1.2362500001472654,
+      "graph_nodes": [
+        "SummarizationMiddleware.before_model",
+        "__end__",
+        "__start__",
+        "model",
+        "tools"
+      ],
+      "assembly_samples": 5
+    },
+    {
+      "condition": "create_agent",
+      "assembly_ms_median": 1.1979999999311985,
+      "graph_nodes": [
+        "SummarizationMiddleware.before_model",
+        "__end__",
+        "__start__",
+        "model",
+        "tools"
+      ],
+      "assembly_samples": 5
+    },
+    {
+      "condition": "deep_agent",
+      "assembly_ms_median": 6.3521669999317965,
+      "graph_nodes": [
+        "PatchToolCallsMiddleware.before_agent",
+        "SummarizationMiddleware.before_model",
+        "__end__",
+        "__start__",
+        "model",
+        "tools"
+      ],
+      "assembly_samples": 5
+    }
+  ]
+}

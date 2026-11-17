@@ -1,0 +1,21 @@
+{
+  "schema_version": "scene_observations_v1",
+  "reference": {
+    "path": "reference.png",
+    "sha256": "65753b7f316b7c140d10b185124e757f01101939597723197207969e27e3bdae"
+  },
+  "status": "partial",
+  "context_notes": [
+    "整图为暖色调海面日落/日出场景，画面上下分为天空与水面两大区域，无船只、云朵等其他可见物体。",
+    "空气朦胧，远处低对比，水面远端与天空在地平线附近融合，颜色整体由上方深红过渡到水面灰粉与前景暗绿灰。"
+  ],
+  "open_questions": [],
+  "gaps": [
+    {
+      "refs": [
+        "E2"
+      ],
+      "description": "太阳圆盘与光晕之间无清晰边界，核心的实际直径无法从图上确定。"
+    }
+  ]
+}

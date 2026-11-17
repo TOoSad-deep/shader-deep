@@ -1,0 +1,13 @@
+{
+  "schema_version": "scene_observations_v1",
+  "reference": {
+    "path": "reference.png",
+    "sha256": "aeb6a0855a711be65b4167ae80becf283b35e499ee609748fe5bfe41e23675ff"
+  },
+  "status": "completed",
+  "context_notes": [
+    "深色发光图形展示图, 三个亮色图形沿对角线自右上向左下排布, 整体呈霓虹光效风格"
+  ],
+  "open_questions": [],
+  "gaps": []
+}

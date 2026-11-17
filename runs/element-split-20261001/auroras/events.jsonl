@@ -1,0 +1,9 @@
+{"run_id": "auroras", "task_id": "planning", "attempt_id": "832a5c3a25a84c93bd9e0074fbb631dc", "event": "task_started", "model_call": 0}
+{"run_id": "auroras", "task_id": "planning", "attempt_id": "832a5c3a25a84c93bd9e0074fbb631dc", "event": "model_started", "model_call": 1}
+{"run_id": "auroras", "task_id": "planning", "attempt_id": "832a5c3a25a84c93bd9e0074fbb631dc", "event": "request_sizes", "model_call": 1, "system_chars": 219, "tool_schema_chars": 1125, "message_text_chars": 234, "image_count": 1, "message_count": 1, "tool_history_chars": 0}
+{"run_id": "auroras", "task_id": "planning", "attempt_id": "832a5c3a25a84c93bd9e0074fbb631dc", "event": "request_started", "model_call": 1, "attempt": 1}
+{"run_id": "auroras", "task_id": "planning", "attempt_id": "832a5c3a25a84c93bd9e0074fbb631dc", "event": "request_completed", "model_call": 1, "attempt": 1, "elapsed_seconds": 54.453}
+{"run_id": "auroras", "task_id": "planning", "attempt_id": "832a5c3a25a84c93bd9e0074fbb631dc", "event": "model_completed", "model_call": 1}
+{"run_id": "auroras", "task_id": "planning", "attempt_id": "832a5c3a25a84c93bd9e0074fbb631dc", "event": "model_usage", "model_call": 1, "input_tokens": 1863, "output_tokens": 887, "total_tokens": 2750, "input_token_details": {"audio": 0, "cache_creation": 0, "cache_read": 0}, "output_token_details": {"audio": 0, "reasoning": 827}}
+{"run_id": "auroras", "task_id": "planning", "attempt_id": "832a5c3a25a84c93bd9e0074fbb631dc", "event": "tool_result", "model_call": 1, "tool": "submit_target_plan", "call_id": "call_789eda9001544ce789055c89", "outcome": "success", "scope": "planning"}
+{"run_id": "auroras", "task_id": "planning", "attempt_id": "832a5c3a25a84c93bd9e0074fbb631dc", "event": "task_completed", "model_call": 1}

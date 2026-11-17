@@ -1,0 +1,13 @@
+{
+  "schema_version": "scene_observations_v1",
+  "reference": {
+    "path": "reference.png",
+    "sha256": "dd712a5d2528d4db56bcbb6b10c66f946ca7c33579a0eb2ec23af90e4fbc7493"
+  },
+  "status": "completed",
+  "context_notes": [
+    "横幅静态图形画面, 除背景环纹与中央 8 字图形外无其他物件或文字"
+  ],
+  "open_questions": [],
+  "gaps": []
+}

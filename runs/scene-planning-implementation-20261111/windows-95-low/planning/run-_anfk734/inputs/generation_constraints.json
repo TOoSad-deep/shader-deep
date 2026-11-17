@@ -1,0 +1,13 @@
+{
+  "width": 1280,
+  "height": 720,
+  "time": 0.0,
+  "language": "GLSL ES 3.00",
+  "entry_point": "mainImage(out vec4, in vec2)",
+  "passes": 1,
+  "uniforms": [
+    "iResolution",
+    "iTime"
+  ],
+  "external_textures": false
+}

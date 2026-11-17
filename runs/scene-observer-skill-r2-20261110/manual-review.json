@@ -1,0 +1,59 @@
+{
+  "rubric_source": "experiment.json",
+  "status_is_not_quality": true,
+  "reviewer": "Codex",
+  "cases": {
+    "pink": {
+      "coverage": "外部柔影退到上下文; 下部色场重复",
+      "relations": "顺轮廓仍漏轮廓参与项",
+      "facts": "右下亮带误称比左上短且弱",
+      "assessment": "regressed"
+    },
+    "windows": {
+      "coverage": "主要外观存在, 但整体E重复概括已列部分",
+      "relations": "色带衔接存在; 框格随形未明确",
+      "facts": "碎片约四行与图不符; 未证明运动",
+      "assessment": "regressed"
+    },
+    "frosted": {
+      "coverage": "紫色交叠外观仍作为独立F, 变软未清楚表达",
+      "relations": "F4与R2重复, R1混入交互",
+      "facts": "E1颜色消失与交叠透显不一致",
+      "assessment": "unresolved"
+    },
+    "balls": {
+      "coverage": "补出面板与群体布局, 自报缺口为空; 面板柔影漏看",
+      "relations": "R1关键布局覆盖, 紧密接触被写成咬合与遮挡",
+      "facts": "未见明显投影与原图不符",
+      "assessment": "mixed"
+    },
+    "liquid-retry": {
+      "coverage": "主要目标保留, 雾感和对比变化在F/R重复",
+      "relations": "覆盖网格与相对布局已描述",
+      "facts": "格线双影和位移措辞强于可确认观察; 像素估数非测量",
+      "assessment": "regressed"
+    },
+    "flat-water-effects2": {
+      "coverage": "关键反光仍列F, 随波纹关系补出",
+      "relations": "R1/R3捕捉反光对应, 与F8局部重复",
+      "facts": "精确程度提高但并未实际测量; 前景模糊仍不明确",
+      "assessment": "mixed"
+    },
+    "cool-s-distance": {
+      "assessment": "transport_failed"
+    },
+    "buffer-bloom": {
+      "assessment": "transport_failed"
+    },
+    "auroras": {
+      "assessment": "transport_failed"
+    },
+    "dna-helis": {
+      "coverage": "节点和连线覆盖, 黑色背景漏记",
+      "relations": "端点对应存在; 长短变化在F4与R2重复",
+      "facts": "点径两倍估计偏大, 靠近边界的杆更斜缺乏依据",
+      "assessment": "mixed"
+    }
+  },
+  "pending": []
+}

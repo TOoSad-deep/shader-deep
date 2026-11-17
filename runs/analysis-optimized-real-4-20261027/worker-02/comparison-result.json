@@ -1,0 +1,393 @@
+{
+  "sample": "top_left_green_gear",
+  "pair": "context",
+  "condition": "compact_history",
+  "repeat": 2,
+  "directory": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/analysis-optimized-real-4-20261027/worker-02",
+  "engineering_only": false,
+  "status": "failed",
+  "error": "ValueError: 逻辑任务的两次修复额度已耗尽",
+  "elapsed_seconds": 265.93078633298865,
+  "model_calls": 10,
+  "request_attempts": 9,
+  "repair_calls": 2,
+  "request_sizes": [
+    {
+      "run_id": "worker-02",
+      "task_id": "worker",
+      "attempt_id": "ef754993fa61435bb54d14df7537f317",
+      "event": "request_sizes",
+      "model_call": 1,
+      "system_chars": 3625,
+      "tool_schema_chars": 12352,
+      "message_text_chars": 1007,
+      "image_count": 2,
+      "message_count": 1,
+      "tool_history_chars": 0
+    },
+    {
+      "run_id": "worker-02",
+      "task_id": "worker",
+      "attempt_id": "ef754993fa61435bb54d14df7537f317",
+      "event": "request_sizes",
+      "model_call": 2,
+      "system_chars": 3625,
+      "tool_schema_chars": 12352,
+      "message_text_chars": 5757,
+      "image_count": 3,
+      "message_count": 5,
+      "tool_history_chars": 2102
+    },
+    {
+      "run_id": "worker-02",
+      "task_id": "worker",
+      "attempt_id": "ef754993fa61435bb54d14df7537f317",
+      "event": "request_sizes",
+      "model_call": 3,
+      "system_chars": 3625,
+      "tool_schema_chars": 12352,
+      "message_text_chars": 10299,
+      "image_count": 4,
+      "message_count": 6,
+      "tool_history_chars": 3082
+    },
+    {
+      "run_id": "worker-02",
+      "task_id": "worker",
+      "attempt_id": "ef754993fa61435bb54d14df7537f317",
+      "event": "request_sizes",
+      "model_call": 4,
+      "system_chars": 3625,
+      "tool_schema_chars": 12352,
+      "message_text_chars": 13986,
+      "image_count": 6,
+      "message_count": 6,
+      "tool_history_chars": 3199
+    },
+    {
+      "run_id": "worker-02",
+      "task_id": "worker",
+      "attempt_id": "ef754993fa61435bb54d14df7537f317",
+      "event": "request_sizes",
+      "model_call": 5,
+      "system_chars": 3625,
+      "tool_schema_chars": 12352,
+      "message_text_chars": 13748,
+      "image_count": 6,
+      "message_count": 4,
+      "tool_history_chars": 1285
+    },
+    {
+      "run_id": "worker-02",
+      "task_id": "worker",
+      "attempt_id": "ef754993fa61435bb54d14df7537f317",
+      "event": "request_sizes",
+      "model_call": 6,
+      "system_chars": 3625,
+      "tool_schema_chars": 12352,
+      "message_text_chars": 13216,
+      "image_count": 6,
+      "message_count": 4,
+      "tool_history_chars": 1367
+    },
+    {
+      "run_id": "worker-02",
+      "task_id": "worker",
+      "attempt_id": "ef754993fa61435bb54d14df7537f317",
+      "event": "request_sizes",
+      "model_call": 7,
+      "system_chars": 3625,
+      "tool_schema_chars": 12352,
+      "message_text_chars": 19170,
+      "image_count": 6,
+      "message_count": 5,
+      "tool_history_chars": 3387
+    },
+    {
+      "run_id": "worker-02",
+      "task_id": "worker",
+      "attempt_id": "ef754993fa61435bb54d14df7537f317",
+      "event": "request_sizes",
+      "model_call": 8,
+      "system_chars": 3625,
+      "tool_schema_chars": 12352,
+      "message_text_chars": 16600,
+      "image_count": 6,
+      "message_count": 4,
+      "tool_history_chars": 3358
+    },
+    {
+      "run_id": "worker-02",
+      "task_id": "worker",
+      "attempt_id": "ef754993fa61435bb54d14df7537f317",
+      "event": "request_sizes",
+      "model_call": 9,
+      "system_chars": 3625,
+      "tool_schema_chars": 12352,
+      "message_text_chars": 15348,
+      "image_count": 6,
+      "message_count": 4,
+      "tool_history_chars": 251
+    },
+    {
+      "run_id": "worker-02",
+      "task_id": "worker",
+      "attempt_id": "ef754993fa61435bb54d14df7537f317",
+      "event": "request_sizes",
+      "model_call": 10,
+      "system_chars": 3625,
+      "tool_schema_chars": 12352,
+      "message_text_chars": 15244,
+      "image_count": 6,
+      "message_count": 4,
+      "tool_history_chars": 108
+    }
+  ],
+  "usage": [
+    {
+      "run_id": "worker-02",
+      "task_id": "worker",
+      "attempt_id": "ef754993fa61435bb54d14df7537f317",
+      "event": "model_usage",
+      "model_call": 1,
+      "input_tokens": 7095,
+      "output_tokens": 1208,
+      "total_tokens": 8303,
+      "input_token_details": {
+        "audio": 0,
+        "cache_creation": 0,
+        "cache_read": 0
+      },
+      "output_token_details": {
+        "audio": 0,
+        "reasoning": 1073
+      }
+    },
+    {
+      "run_id": "worker-02",
+      "task_id": "worker",
+      "attempt_id": "ef754993fa61435bb54d14df7537f317",
+      "event": "model_usage",
+      "model_call": 2,
+      "input_tokens": 9965,
+      "output_tokens": 4820,
+      "total_tokens": 14785,
+      "input_token_details": {
+        "audio": 0,
+        "cache_creation": 0,
+        "cache_read": 0
+      },
+      "output_token_details": {
+        "audio": 0,
+        "reasoning": 4570
+      }
+    },
+    {
+      "run_id": "worker-02",
+      "task_id": "worker",
+      "attempt_id": "ef754993fa61435bb54d14df7537f317",
+      "event": "model_usage",
+      "model_call": 3,
+      "input_tokens": 15195,
+      "output_tokens": 10660,
+      "total_tokens": 25855,
+      "input_token_details": {
+        "audio": 0,
+        "cache_creation": 0,
+        "cache_read": 5440
+      },
+      "output_token_details": {
+        "audio": 0,
+        "reasoning": 10250
+      }
+    },
+    {
+      "run_id": "worker-02",
+      "task_id": "worker",
+      "attempt_id": "ef754993fa61435bb54d14df7537f317",
+      "event": "model_usage",
+      "model_call": 4,
+      "input_tokens": 22360,
+      "output_tokens": 8964,
+      "total_tokens": 31324,
+      "input_token_details": {
+        "audio": 0,
+        "cache_creation": 0,
+        "cache_read": 5440
+      },
+      "output_token_details": {
+        "audio": 0,
+        "reasoning": 8062
+      }
+    },
+    {
+      "run_id": "worker-02",
+      "task_id": "worker",
+      "attempt_id": "ef754993fa61435bb54d14df7537f317",
+      "event": "model_usage",
+      "model_call": 5,
+      "input_tokens": 20694,
+      "output_tokens": 10029,
+      "total_tokens": 30723,
+      "input_token_details": {
+        "audio": 0,
+        "cache_creation": 0,
+        "cache_read": 5440
+      },
+      "output_token_details": {
+        "audio": 0,
+        "reasoning": 9485
+      }
+    },
+    {
+      "run_id": "worker-02",
+      "task_id": "worker",
+      "attempt_id": "ef754993fa61435bb54d14df7537f317",
+      "event": "model_usage",
+      "model_call": 6,
+      "input_tokens": 21904,
+      "output_tokens": 8151,
+      "total_tokens": 30055,
+      "input_token_details": {
+        "audio": 0,
+        "cache_creation": 0,
+        "cache_read": 5440
+      },
+      "output_token_details": {
+        "audio": 0,
+        "reasoning": 6645
+      }
+    },
+    {
+      "run_id": "worker-02",
+      "task_id": "worker",
+      "attempt_id": "ef754993fa61435bb54d14df7537f317",
+      "event": "model_usage",
+      "model_call": 7,
+      "input_tokens": 22281,
+      "output_tokens": 295,
+      "total_tokens": 22576,
+      "input_token_details": {
+        "audio": 0,
+        "cache_creation": 0,
+        "cache_read": 0
+      },
+      "output_token_details": {
+        "audio": 0,
+        "reasoning": 214
+      }
+    },
+    {
+      "run_id": "worker-02",
+      "task_id": "worker",
+      "attempt_id": "ef754993fa61435bb54d14df7537f317",
+      "event": "model_usage",
+      "model_call": 8,
+      "input_tokens": 14409,
+      "output_tokens": 4337,
+      "total_tokens": 18746,
+      "input_token_details": {
+        "audio": 0,
+        "cache_creation": 0,
+        "cache_read": 0
+      },
+      "output_token_details": {
+        "audio": 0,
+        "reasoning": 3144
+      }
+    },
+    {
+      "run_id": "worker-02",
+      "task_id": "worker",
+      "attempt_id": "ef754993fa61435bb54d14df7537f317",
+      "event": "model_usage",
+      "model_call": 9,
+      "input_tokens": 16671,
+      "output_tokens": 1726,
+      "total_tokens": 18397,
+      "input_token_details": {
+        "audio": 0,
+        "cache_creation": 0,
+        "cache_read": 5440
+      },
+      "output_token_details": {
+        "audio": 0,
+        "reasoning": 504
+      }
+    }
+  ],
+  "token_usage": [
+    {
+      "model_call": 1,
+      "input_tokens": 7095,
+      "output_tokens": 1208,
+      "reasoning_tokens": 1073
+    },
+    {
+      "model_call": 2,
+      "input_tokens": 9965,
+      "output_tokens": 4820,
+      "reasoning_tokens": 4570
+    },
+    {
+      "model_call": 3,
+      "input_tokens": 15195,
+      "output_tokens": 10660,
+      "reasoning_tokens": 10250
+    },
+    {
+      "model_call": 4,
+      "input_tokens": 22360,
+      "output_tokens": 8964,
+      "reasoning_tokens": 8062
+    },
+    {
+      "model_call": 5,
+      "input_tokens": 20694,
+      "output_tokens": 10029,
+      "reasoning_tokens": 9485
+    },
+    {
+      "model_call": 6,
+      "input_tokens": 21904,
+      "output_tokens": 8151,
+      "reasoning_tokens": 6645
+    },
+    {
+      "model_call": 7,
+      "input_tokens": 22281,
+      "output_tokens": 295,
+      "reasoning_tokens": 214
+    },
+    {
+      "model_call": 8,
+      "input_tokens": 14409,
+      "output_tokens": 4337,
+      "reasoning_tokens": 3144
+    },
+    {
+      "model_call": 9,
+      "input_tokens": 16671,
+      "output_tokens": 1726,
+      "reasoning_tokens": 504
+    },
+    {
+      "model_call": 10,
+      "input_tokens": null,
+      "output_tokens": null,
+      "reasoning_tokens": null
+    }
+  ],
+  "usage_missing_calls": 1,
+  "first_submission": null,
+  "final_submission": null,
+  "counts": null,
+  "report_chars": null,
+  "quality_review": {
+    "status": "pending_human_review",
+    "observation_errors": null,
+    "omissions": null,
+    "unsupported_precision": null,
+    "lost_requirements": null
+  }
+}

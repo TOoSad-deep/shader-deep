@@ -1,0 +1,12 @@
+{
+  "status": "failed",
+  "selected_version": null,
+  "target_element_id": "elem_center_border",
+  "open_questions": [],
+  "gaps": [
+    {
+      "refs": [],
+      "description": "主图结束时未形成合法五库基线"
+    }
+  ]
+}

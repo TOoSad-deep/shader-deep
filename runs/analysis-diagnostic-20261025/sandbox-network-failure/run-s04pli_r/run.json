@@ -1,0 +1,168 @@
+{
+  "analysis_protocol": "five_libraries_v1",
+  "stop_reason": "failed",
+  "report_path": null,
+  "selected_version": null,
+  "target_element_id": null,
+  "gaps": [
+    {
+      "refs": [],
+      "description": "分析未形成合法基线: RuntimeError: 持续主 Agent 未完成: 主恢复决策未完成: OpenAIConnectionError: Connection error."
+    }
+  ],
+  "open_questions": [],
+  "options": {
+    "max_tasks": 3,
+    "max_parallel": 3,
+    "max_worker_calls": 0,
+    "max_main_calls": 0,
+    "output_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/analysis-diagnostic-20261025/simple",
+    "max_measurements": 8,
+    "max_request_retries": 2,
+    "request_timeout_seconds": 240,
+    "stream_model_responses": true,
+    "max_output_tokens": 163840,
+    "outline_max_output_tokens": null,
+    "integration_max_output_tokens": null,
+    "worker_max_output_tokens": null,
+    "max_comparison_targets": 12,
+    "library_page_chars": 8000,
+    "_output_token_sources": [
+      [
+        "max_output_tokens",
+        "yaml",
+        163840
+      ]
+    ],
+    "max_repeated_no_progress": 0,
+    "max_context_tokens": 262144,
+    "request_image_tokens": 4096,
+    "request_token_margin": 2048,
+    "max_integration_calls": 12,
+    "max_integration_packages": 24,
+    "integration_no_progress": 3,
+    "integration_history_tokens": 16384
+  },
+  "execution": {
+    "generation": 1,
+    "package_path": null,
+    "receipts": {},
+    "revision": 17,
+    "schema_version": "task_store_v1",
+    "sealed": true,
+    "tasks": {
+      "main": {
+        "attempts": [
+          {
+            "attempt_id": "ba5990a8e45843bd99203c364236cd18",
+            "error": "OpenAIConnectionError: Connection error.",
+            "generation": 1,
+            "input_version": "a8ad19b9bada65c53ff9dc84bc45a4bf652bb90ab0637afe8cb58780d1755f49",
+            "status": "failed"
+          },
+          {
+            "attempt_id": "68510de43a9547f49da4de252874d4cf",
+            "error": "OpenAIConnectionError: Connection error.",
+            "generation": 1,
+            "input_version": "a8ad19b9bada65c53ff9dc84bc45a4bf652bb90ab0637afe8cb58780d1755f49",
+            "status": "failed"
+          }
+        ],
+        "error": "主恢复决策未完成: OpenAIConnectionError: Connection error.",
+        "input_fingerprint": "abf035da9304a63952a6f785ed8d80f7c9813f6f436987a581acbfec25014546",
+        "input_version": "a8ad19b9bada65c53ff9dc84bc45a4bf652bb90ab0637afe8cb58780d1755f49",
+        "model_calls": 2,
+        "payload": {
+          "reference_fingerprint": "a78c5ae570de3bcd76598a1d77f29527c277b6b526c93eb9513b209fd3e6345c",
+          "reference_path": "reference.png",
+          "user_request": "请分析参考图中的一个指定元素: 图中央的完整霓虹圆角矩形边框, 包含紧邻边框的光晕。以过程式 Shader 复现为目标, 独立分析可见特征、关系、候选实现机制和草图方案, 明确不确定项与缺口。本轮只分析该目标。"
+        },
+        "repairs": 0,
+        "result_path": null,
+        "status": "cancelled"
+      },
+      "planning": {
+        "attempts": [],
+        "error": "流程异常终止: RuntimeError: 持续主 Agent 未完成: 主恢复决策未完成: OpenAIConnectionError: Connection error.",
+        "input_fingerprint": "abf035da9304a63952a6f785ed8d80f7c9813f6f436987a581acbfec25014546",
+        "input_version": "a8ad19b9bada65c53ff9dc84bc45a4bf652bb90ab0637afe8cb58780d1755f49",
+        "model_calls": 0,
+        "payload": {
+          "reference_fingerprint": "a78c5ae570de3bcd76598a1d77f29527c277b6b526c93eb9513b209fd3e6345c",
+          "reference_path": "reference.png",
+          "user_request": "请分析参考图中的一个指定元素: 图中央的完整霓虹圆角矩形边框, 包含紧邻边框的光晕。以过程式 Shader 复现为目标, 独立分析可见特征、关系、候选实现机制和草图方案, 明确不确定项与缺口。本轮只分析该目标。"
+        },
+        "repairs": 0,
+        "result_path": null,
+        "status": "cancelled"
+      },
+      "recovery-main": {
+        "attempts": [
+          {
+            "attempt_id": "530d574a41eb492fa83a091f2c7bd457",
+            "error": "OpenAIConnectionError: Connection error.",
+            "generation": 1,
+            "input_version": "a8ad19b9bada65c53ff9dc84bc45a4bf652bb90ab0637afe8cb58780d1755f49",
+            "status": "failed"
+          }
+        ],
+        "error": "OpenAIConnectionError: Connection error.",
+        "input_fingerprint": "f50f1ba75bb1a0ee340f3825303ff1c674055dc3f0b0a55c05259b1c63a4aee6",
+        "input_version": "a8ad19b9bada65c53ff9dc84bc45a4bf652bb90ab0637afe8cb58780d1755f49",
+        "model_calls": 1,
+        "payload": {
+          "error": "OpenAIConnectionError: Connection error.",
+          "failed_attempt_id": "68510de43a9547f49da4de252874d4cf",
+          "input_version": "a8ad19b9bada65c53ff9dc84bc45a4bf652bb90ab0637afe8cb58780d1755f49",
+          "original_task_id": "main",
+          "user_request": "请分析参考图中的一个指定元素: 图中央的完整霓虹圆角矩形边框, 包含紧邻边框的光晕。以过程式 Shader 复现为目标, 独立分析可见特征、关系、候选实现机制和草图方案, 明确不确定项与缺口。本轮只分析该目标。"
+        },
+        "repairs": 0,
+        "result_path": null,
+        "status": "failed"
+      }
+    },
+    "versions": {
+      "final_projection": {
+        "fingerprint": "93cb0f4a7f58232d5013ac0abf584100e8a071fbdd36e43edf2796886841d668",
+        "path": "results/93cb0f4a7f58232d5013ac0abf584100e8a071fbdd36e43edf2796886841d668.json"
+      }
+    }
+  },
+  "blackboard": {
+    "targets": {
+      "T1": {
+        "version": "T1",
+        "request": "请分析参考图中的一个指定元素: 图中央的完整霓虹圆角矩形边框, 包含紧邻边框的光晕。以过程式 Shader 复现为目标, 独立分析可见特征、关系、候选实现机制和草图方案, 明确不确定项与缺口。本轮只分析该目标。",
+        "reference_path": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/apps/shader_deep/test_pic/shiny-rectancle.png",
+        "constraints": [],
+        "protected_features": []
+      }
+    },
+    "tasks": {
+      "A1": {
+        "id": "A1",
+        "role": "analysis",
+        "target_version": "T1",
+        "objective": "请分析参考图中的一个指定元素: 图中央的完整霓虹圆角矩形边框, 包含紧邻边框的光晕。以过程式 Shader 复现为目标, 独立分析可见特征、关系、候选实现机制和草图方案, 明确不确定项与缺口。本轮只分析该目标。",
+        "baseline_id": null,
+        "candidate_ids": [],
+        "related_result_ids": [],
+        "experiment_id": null,
+        "hypothesis": null,
+        "allowed_changes": [],
+        "stop_conditions": [],
+        "parent_task_id": null,
+        "lens_config": null,
+        "analysis_purpose": "initial",
+        "analysis_gap": null,
+        "expected_evidence": null,
+        "evidence_ids": [],
+        "analysis_outline": null,
+        "generation_binding": null
+      }
+    },
+    "candidates": {},
+    "results": {}
+  }
+}

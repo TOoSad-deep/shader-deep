@@ -1,0 +1,48 @@
+{
+  "case": "buffer-bloom-r1",
+  "source_observation": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/draft-budget20-five-cases-20261111/buffer-bloom/run-dr3mzom2/report",
+  "trace_id": "01a1c939-078b-72b3-a4ee-a919e1ea9ebc",
+  "planning": {
+    "status": "completed",
+    "error": null,
+    "run_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-planning-implementation-20261111/buffer-bloom-r1/planning/run-io2iricx",
+    "report_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-planning-implementation-20261111/buffer-bloom-r1/planning/run-io2iricx/report",
+    "execution": {
+      "planning_protocol": "scene_planning_v1",
+      "execution": "deep_agents_single_planner",
+      "state": "accepted",
+      "reason": null,
+      "model_calls": 4,
+      "max_model_calls": 20,
+      "validation_errors": 0,
+      "tool_refusals": 0,
+      "observation_sha256": "6e45a449c30a98d913697e7addfc90143f95abb96cb2e77bda513d59cf1b6abf",
+      "reference_sha256": "aeb6a0855a711be65b4167ae80becf283b35e499ee609748fe5bfe41e23675ff",
+      "draft_path": "draft/planning.json",
+      "draft_revision": "0633b508411ba9a5e3f0a691112c6bb583a1d035d80596b880416532a6908b58",
+      "seen_revision": "0633b508411ba9a5e3f0a691112c6bb583a1d035d80596b880416532a6908b58",
+      "accepted_revision": "0633b508411ba9a5e3f0a691112c6bb583a1d035d80596b880416532a6908b58",
+      "accepted_snapshot": "results/planning.json",
+      "resource_read_results": [],
+      "model_id": "z-ai/glm-5.3-flash",
+      "reasoning_effort": null,
+      "rule_sha256": "83d291f3db988cf6f786f54cb8aba0105f98b1f34363a5771672af1fd5d7f88f",
+      "resource_sha256": {
+        "SKILL.md": "83d291f3db988cf6f786f54cb8aba0105f98b1f34363a5771672af1fd5d7f88f",
+        "references/mechanisms.md": "c6ccf4db4c1d96be0663395e323e014ac3d0b6f9b50a3da7a4d281eee49c0416",
+        "references/alternatives.md": "29ef92abdb48279a92ae9e97f21fa733c364d126e17b9b727343a64e1a4f412e",
+        "references/conditions-and-gaps.md": "2d1ca84910cbd9a4ae4493c573a7164e90773c8bd064e043af15fb2ab8d273e6"
+      },
+      "skill_bundle_sha256": "02a44a5a21561f928bfe4086a3483c372e6800ecda6c17d2d43df20b7f1d98e2",
+      "elapsed_seconds": 219.40230466597131,
+      "elapsed_scope": "planning_before_publication",
+      "token_usage": {
+        "input_tokens": 118432,
+        "output_tokens": 32270,
+        "total_tokens": 150702
+      },
+      "usage_scope": "sdk_reported_responses_only",
+      "http_request_count": null
+    }
+  }
+}

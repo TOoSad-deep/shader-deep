@@ -1,0 +1,18 @@
+{
+  "status": "partial",
+  "run_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/single-observer-new-cases-20261110-uyrhcnj9/buffer-bloom/run-dpi3qoq6",
+  "report_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/single-observer-new-cases-20261110-uyrhcnj9/buffer-bloom/run-dpi3qoq6/report",
+  "result": {
+    "id": "run-dpi3qoq6-scene-observations",
+    "task_id": "A1",
+    "status": "partial",
+    "summary": "全图 E/F/R 观察包已交付: report/manifest.json; 观察完成不代表 M/S 规划或视觉验收完成",
+    "candidate_ids": [],
+    "observations": [],
+    "hypotheses": [],
+    "limitations": [],
+    "recommendation": null,
+    "analysis_detail": null,
+    "analysis_protocol": "scene_observations_v1"
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "schema_version": "five_libraries_v1",
+  "reference": {
+    "path": "reference.png",
+    "sha256": "7beeab6b0c683e16ed213393b2a8850b28c1c2e3a89963c671f8902d6d194523"
+  },
+  "target_element_id": "E",
+  "status": "partial",
+  "open_questions": [],
+  "gaps": [
+    {
+      "refs": [],
+      "description": "占"
+    },
+    {
+      "refs": [
+        "E"
+      ],
+      "description": "exploration-2 未完成: ValueError: 逻辑任务的两次修复额度已耗尽"
+    },
+    {
+      "refs": [
+        "E"
+      ],
+      "description": "exploration-3 未完成: ValueError: 逻辑任务的两次修复额度已耗尽"
+    },
+    {
+      "refs": [],
+      "description": "持续主 Agent 未完成交付: RuntimeError: 持续主 Agent 未完成: ValueError: 逻辑任务的两次修复额度已耗尽"
+    }
+  ]
+}

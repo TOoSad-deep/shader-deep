@@ -1,0 +1,13 @@
+{
+  "schema_version": "scene_observations_v1",
+  "reference": {
+    "path": "reference.png",
+    "sha256": "cbc9a23997fd40f772044174fa87c8776e7b18b559ecc268476ba79bee15279c"
+  },
+  "status": "completed",
+  "context_notes": [
+    "静态夜景, 未见人造结构与生物; 主体为极光夜空与水面倒影景观"
+  ],
+  "open_questions": [],
+  "gaps": []
+}

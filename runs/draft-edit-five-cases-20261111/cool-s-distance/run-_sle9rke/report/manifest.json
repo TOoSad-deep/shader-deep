@@ -1,0 +1,14 @@
+{
+  "schema_version": "scene_observations_v1",
+  "reference": {
+    "path": "reference.png",
+    "sha256": "dd712a5d2528d4db56bcbb6b10c66f946ca7c33579a0eb2ec23af90e4fbc7493"
+  },
+  "status": "completed",
+  "context_notes": [
+    "1280x720 横幅画面, 构图左右对称、上下近似镜像, 中央徽章为唯一焦点",
+    "背景条纹呈细密波纹状起伏, 除徽章外无其他文字或装饰对象"
+  ],
+  "open_questions": [],
+  "gaps": []
+}

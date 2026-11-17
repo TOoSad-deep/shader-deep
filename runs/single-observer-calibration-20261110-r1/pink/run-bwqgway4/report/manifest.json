@@ -1,0 +1,13 @@
+{
+  "schema_version": "scene_observations_v1",
+  "reference": {
+    "path": "reference.png",
+    "sha256": "e1923ac438f2de7645ee0c4ec2c4d0742720c83a2764561f6490dc4bcf427682"
+  },
+  "status": "completed",
+  "context_notes": [
+    "纯白色纯色背景, 单个粉色球体居中占据画面大部分区域"
+  ],
+  "open_questions": [],
+  "gaps": []
+}

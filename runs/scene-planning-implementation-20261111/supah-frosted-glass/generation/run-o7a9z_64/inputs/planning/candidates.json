@@ -1,0 +1,160 @@
+[
+  {
+    "target": "F1",
+    "mechanisms": [
+      "M1"
+    ],
+    "origins": [
+      {
+        "sketch_id": "S1"
+      },
+      {
+        "sketch_id": "S1",
+        "alternative_index": 0
+      }
+    ]
+  },
+  {
+    "target": "F2",
+    "mechanisms": [
+      "M2"
+    ],
+    "origins": [
+      {
+        "sketch_id": "S1"
+      },
+      {
+        "sketch_id": "S1",
+        "alternative_index": 0
+      }
+    ]
+  },
+  {
+    "target": "F3",
+    "mechanisms": [
+      "M2"
+    ],
+    "origins": [
+      {
+        "sketch_id": "S1"
+      },
+      {
+        "sketch_id": "S1",
+        "alternative_index": 0
+      }
+    ]
+  },
+  {
+    "target": "F4",
+    "mechanisms": [
+      "M3"
+    ],
+    "origins": [
+      {
+        "sketch_id": "S1"
+      }
+    ]
+  },
+  {
+    "target": "F5",
+    "mechanisms": [
+      "M3"
+    ],
+    "origins": [
+      {
+        "sketch_id": "S1"
+      }
+    ]
+  },
+  {
+    "target": "F6",
+    "mechanisms": [
+      "M4"
+    ],
+    "origins": [
+      {
+        "sketch_id": "S1"
+      },
+      {
+        "sketch_id": "S1",
+        "alternative_index": 0
+      }
+    ]
+  },
+  {
+    "target": "R1",
+    "mechanisms": [
+      "M2",
+      "M3"
+    ],
+    "origins": [
+      {
+        "sketch_id": "S1"
+      }
+    ]
+  },
+  {
+    "target": "R2",
+    "mechanisms": [
+      "M3",
+      "M4",
+      "M5"
+    ],
+    "origins": [
+      {
+        "sketch_id": "S1"
+      }
+    ]
+  },
+  {
+    "target": "F4",
+    "mechanisms": [
+      "M6"
+    ],
+    "origins": [
+      {
+        "sketch_id": "S1",
+        "alternative_index": 0
+      }
+    ]
+  },
+  {
+    "target": "F5",
+    "mechanisms": [
+      "M6"
+    ],
+    "origins": [
+      {
+        "sketch_id": "S1",
+        "alternative_index": 0
+      }
+    ]
+  },
+  {
+    "target": "R1",
+    "mechanisms": [
+      "M2",
+      "M6"
+    ],
+    "origins": [
+      {
+        "sketch_id": "S1",
+        "alternative_index": 0
+      }
+    ]
+  },
+  {
+    "target": "R2",
+    "mechanisms": [
+      "M6",
+      "M4",
+      "M5"
+    ],
+    "origins": [
+      {
+        "sketch_id": "S1",
+        "alternative_index": 0
+      }
+    ]
+  }
+]

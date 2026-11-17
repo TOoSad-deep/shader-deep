@@ -1,0 +1,21 @@
+{
+  "image": "auroras",
+  "run_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/element-split-20261001/auroras",
+  "status": "dispatch_prepared_not_started",
+  "planning_model_calls": 1,
+  "elements": 1,
+  "target": {
+    "id": "e",
+    "name": "x",
+    "region": "x",
+    "feature_ids": []
+  },
+  "directions": [
+    "极",
+    "色",
+    "分"
+  ],
+  "worker_attempts": 0,
+  "worker_model_calls": 0,
+  "elapsed_seconds": 54.49
+}

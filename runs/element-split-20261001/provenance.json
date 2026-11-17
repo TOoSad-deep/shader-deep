@@ -1,0 +1,17 @@
+{
+  "git_head": "3135be882e1981e65ec5af1d959684081ad62128",
+  "git_status": " M apps/shader_deep/.env.example\n M apps/shader_deep/AGENTS.md\n M apps/shader_deep/README.md\n M apps/shader_deep/docs/architecture.md\n M apps/shader_deep/src/shader_deep/agents/five_analysis/agent.py\n M apps/shader_deep/src/shader_deep/agents/five_analysis/audit.py\n M apps/shader_deep/src/shader_deep/agents/five_analysis/prompts.py\n M apps/shader_deep/src/shader_deep/cli/analysis.py\n M apps/shader_deep/src/shader_deep/infrastructure/llm/client.py\n M apps/shader_deep/src/shader_deep/infrastructure/llm/transport.py\n M apps/shader_deep/src/shader_deep/workflows/analysis.py\n M apps/shader_deep/src/shader_deep/workflows/five_analysis.py\n M apps/shader_deep/tests/unit_tests/fixtures/_generation_fixture.py\n M apps/shader_deep/tests/unit_tests/infrastructure/test_config.py\n M apps/shader_deep/tests/unit_tests/workflows/test_five_public_api.py\n?? apps/shader_deep/1.txt\n?? apps/shader_deep/docs/discussions/\n?? apps/shader_deep/docs/work-items/analysis-logging.md\n?? apps/shader_deep/docs/work-items/openrouter-analysis-validation.md\n?? apps/shader_deep/src/shader_deep/infrastructure/analysis_logging.py\n?? apps/shader_deep/src/shader_deep/infrastructure/llm/openrouter.py\n?? apps/shader_deep/tests/unit_tests/infrastructure/test_analysis_logging.py\n?? apps/shader_deep/tests/unit_tests/runtime/test_openrouter_transport.py\n?? runs/\n",
+  "source_sha256": {
+    "apps/shader_deep/src/shader_deep/agents/five_analysis/agent.py": "45d2608d57a7042187fc9d5481703cbbbf0bfb7844b4d5c3bd236550946bb822",
+    "apps/shader_deep/src/shader_deep/agents/five_analysis/prompts.py": "8953504cac7b9f1beb226636c5fbc1269520dd33e21435fe93e609705fb6a0a8",
+    "apps/shader_deep/src/shader_deep/agents/five_analysis/contracts.py": "7d2e178e47dca400fdc8fc9d53c9883f82259251b06062f71a6d42dafc84f155",
+    "apps/shader_deep/src/shader_deep/agents/five_analysis/audit.py": "110aaab0f0cad280bf71533a9e5b26a08bf7980b502f686c48a4a466db2f9d85",
+    "apps/shader_deep/src/shader_deep/workflows/five_analysis.py": "eb219ae5bd10c7c53a59803ed66319e7cbbacfbc3f0e5af40ed1944f6155f8e3",
+    "apps/shader_deep/src/shader_deep/infrastructure/llm/client.py": "00270af9e6e546ad71e837b6b27a22cbedf44cd4bc0dc3a18febd38e33c079fd",
+    "apps/shader_deep/src/shader_deep/infrastructure/llm/transport.py": "c393869a880a8d81bdf31210bbf20249c2d49d300dac5581bfd9f3e98fcbc311",
+    "apps/shader_deep/src/shader_deep/infrastructure/llm/openrouter.py": "7475f6a7fa64aa26be5dd9cdd7dff0d026a0f93e3ffaf44d6ad5b40877a4beb8",
+    "apps/shader_deep/src/shader_deep/infrastructure/analysis_logging.py": "5e2f5597159e93b6e7de3024b50fed1122f429c6cb9d3c5b7998ab641295a991",
+    "apps/shader_deep/src/shader_deep/resources/analysis.yaml": "a0663b4dd9da7649ef451e4707c80aa35e4efc5ca072c6eaa8b9a55674209bdc"
+  },
+  "harness_sha256": "118ec950f17a16b6dfbef9333fcc303c7d4b4a4058ef593ec139ab6b79245af1"
+}

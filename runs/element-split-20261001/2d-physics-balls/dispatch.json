@@ -1,0 +1,74 @@
+{
+  "status": "dispatch_prepared_not_started",
+  "boundary": "_explore -> _wait_workers (before ThreadPoolExecutor)",
+  "parallel_requested": 3,
+  "worker_started_count": 0,
+  "tasks": {
+    "exploration-1": {
+      "attempts": [],
+      "error": null,
+      "input_fingerprint": "d16f6b299b06d46bc68c30d0c4bd03e02881457f38bc4348774e907934e7817f",
+      "input_version": "8a7a5fb34303a1bddacf47d7636cd13e034b8dd96eaf1e8bffa28c513568aa49",
+      "model_calls": 0,
+      "payload": {
+        "direction": "外轮廓齿形观察: 数清单个齿轮凸齿的数目, 描绘凸齿与凹谷沿圆周的交替节奏, 以及齿顶和齿谷处的圆角与平滑程度",
+        "reference_fingerprint": "890fac0231ab798ddd1b1f6cd267fab0beaaf41bf18eb126dad1d141ea420ffc",
+        "reference_path": "reference.png",
+        "target": {
+          "feature_ids": [],
+          "id": "gear_single",
+          "name": "齿轮单元 (重复基元)",
+          "region": "全图重复出现; 采样示例: 左上角绿色齿轮 约 (205,355)-(310,460), 直径约 100px 的扇贝形齿轮轮廓, 中心带白色圆孔"
+        },
+        "user_request": "为后续 Shader 复刻分析这张参考图: 先拆分可辨识的视觉元素, 给出各元素的名称和明确范围; 自主选择本轮一个目标元素, 为它制定默认三个相互独立的开放探索方向. 主阶段只做元素定位、范围划定和任务编排."
+      },
+      "repairs": 0,
+      "result_path": null,
+      "status": "pending"
+    },
+    "exploration-2": {
+      "attempts": [],
+      "error": null,
+      "input_fingerprint": "9ed2c110f406e0844f9bd5a284542d37007c57e3d3bfa1f5e5047c2daefe7b55",
+      "input_version": "8a7a5fb34303a1bddacf47d7636cd13e034b8dd96eaf1e8bffa28c513568aa49",
+      "model_calls": 0,
+      "payload": {
+        "direction": "中心孔与比例观察: 测量中心白孔直径相对齿轮外径的占比, 孔缘是锐利还是柔化, 并记录内外轮廓之间的整体比例关系",
+        "reference_fingerprint": "890fac0231ab798ddd1b1f6cd267fab0beaaf41bf18eb126dad1d141ea420ffc",
+        "reference_path": "reference.png",
+        "target": {
+          "feature_ids": [],
+          "id": "gear_single",
+          "name": "齿轮单元 (重复基元)",
+          "region": "全图重复出现; 采样示例: 左上角绿色齿轮 约 (205,355)-(310,460), 直径约 100px 的扇贝形齿轮轮廓, 中心带白色圆孔"
+        },
+        "user_request": "为后续 Shader 复刻分析这张参考图: 先拆分可辨识的视觉元素, 给出各元素的名称和明确范围; 自主选择本轮一个目标元素, 为它制定默认三个相互独立的开放探索方向. 主阶段只做元素定位、范围划定和任务编排."
+      },
+      "repairs": 0,
+      "result_path": null,
+      "status": "pending"
+    },
+    "exploration-3": {
+      "attempts": [],
+      "error": null,
+      "input_fingerprint": "e7dec8094aa9f2fa564d917aab95f51beb7b071a1e9863d6dc88b3d23e05ebf5",
+      "input_version": "8a7a5fb34303a1bddacf47d7636cd13e034b8dd96eaf1e8bffa28c513568aa49",
+      "model_calls": 0,
+      "payload": {
+        "direction": "颜色与表面观察: 对比绿/黄/红/蓝四种填充的色相与明度差异, 同一齿形换色后是否保持一致, 检查有无渐变、描边或边缘过渡特征",
+        "reference_fingerprint": "890fac0231ab798ddd1b1f6cd267fab0beaaf41bf18eb126dad1d141ea420ffc",
+        "reference_path": "reference.png",
+        "target": {
+          "feature_ids": [],
+          "id": "gear_single",
+          "name": "齿轮单元 (重复基元)",
+          "region": "全图重复出现; 采样示例: 左上角绿色齿轮 约 (205,355)-(310,460), 直径约 100px 的扇贝形齿轮轮廓, 中心带白色圆孔"
+        },
+        "user_request": "为后续 Shader 复刻分析这张参考图: 先拆分可辨识的视觉元素, 给出各元素的名称和明确范围; 自主选择本轮一个目标元素, 为它制定默认三个相互独立的开放探索方向. 主阶段只做元素定位、范围划定和任务编排."
+      },
+      "repairs": 0,
+      "result_path": null,
+      "status": "pending"
+    }
+  }
+}

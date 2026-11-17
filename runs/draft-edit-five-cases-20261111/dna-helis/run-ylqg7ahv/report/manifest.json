@@ -1,0 +1,13 @@
+{
+  "schema_version": "scene_observations_v1",
+  "reference": {
+    "path": "reference.png",
+    "sha256": "4ba233c4280ddbf1add81261151878c24c006b33defab9752c80d36e03b4fa38"
+  },
+  "status": "completed",
+  "context_notes": [
+    "灰度抽象图形, 无文字与标尺; 整体为一条从左下向右上延伸的双螺旋波浪结构"
+  ],
+  "open_questions": [],
+  "gaps": []
+}

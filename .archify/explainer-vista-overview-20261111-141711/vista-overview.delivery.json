@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "888768ed-0a67-4992-b48f-a0d5abc61feb",
+  "status": "current",
+  "command": "deliver",
+  "type": "explainer",
+  "input": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/.archify/explainer-vista-overview-20261111-141711/candidate.archify.md",
+  "output": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/.archify/explainer-vista-overview-20261111-141711/vista-overview.html",
+  "specification": {
+    "sha256": "623a36008a8bbfbef853adfde2b624b0112c7062c3fabdc1e673668606477cd9",
+    "bytes": 11664
+  },
+  "artifact": {
+    "sha256": "178af86effc4510e562e897f5777918282b4c4be438a7249c56794d0950a002f",
+    "bytes": 1804010
+  },
+  "explainer": {
+    "preparedSha256": "81efc1dbc82498a56b0e543a30db0ff654044da1477e2cb97ac75a7e07005d61",
+    "dependencies": [
+      {
+        "kind": "image",
+        "id": "image-106d44fb77d4",
+        "path": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/.archify/explainer-vista-overview-20261111-141711/assets/reference.png",
+        "sha256": "e88b9993f42d8097f56bca2eec398d109a410b86e1260837c5b448260248a990",
+        "bytes": 3432
+      },
+      {
+        "kind": "image",
+        "id": "image-e116691509dc",
+        "path": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/.archify/explainer-vista-overview-20261111-141711/assets/baseline.png",
+        "sha256": "24950067adfb74e717ba60e2b4d8293dfdbfac5a52a9f4ffb3b4f5e9ca812a30",
+        "bytes": 3304
+      },
+      {
+        "kind": "image",
+        "id": "image-e60830d50077",
+        "path": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/.archify/explainer-vista-overview-20261111-141711/assets/memory.png",
+        "sha256": "a51f038b8325fc7927b47d4cc350572f24750ef26ab0930cb31007319315f0b4",
+        "bytes": 3684
+      },
+      {
+        "kind": "image",
+        "id": "image-8a56219c1582",
+        "path": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/.archify/explainer-vista-overview-20261111-141711/assets/probe.png",
+        "sha256": "30d3b57a6bbe0ab823b0f580971a33fad2c118fd98fe69f1b510631de6890fc5",
+        "bytes": 1154
+      },
+      {
+        "kind": "data",
+        "id": "chart-45b5b1a3f539",
+        "path": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/.archify/explainer-vista-overview-20261111-141711/tokens.json",
+        "sha256": "9009e4ee27c498a90278bbe7f38b7bd8f5000cffc3b57e25cb8a21df91bcab17",
+        "bytes": 112
+      },
+      {
+        "kind": "diagram-spec",
+        "id": "system-map",
+        "inline": true,
+        "sha256": "862815f125f92ad8c1fdeb8c46344932573f7a8626bd26674be1758703bfd878",
+        "bytes": 1555
+      },
+      {
+        "kind": "diagram-spec",
+        "id": "run-tree",
+        "inline": true,
+        "sha256": "188630ea28848bed06820f48852fef044f88538b6687c5dd383c25b863d24a12",
+        "bytes": 649
+      },
+      {
+        "kind": "diagram-spec",
+        "id": "recall-sequence",
+        "inline": true,
+        "sha256": "13a1de3ad503895afea45985df4d294d26a46e68e9c7de341ca06cdfa88ad11a",
+        "bytes": 1566
+      },
+      {
+        "kind": "diagram-spec",
+        "id": "finish-flow",
+        "inline": true,
+        "sha256": "45213091d907aa9ada86f6123ec256b9637b2047fbd6d4db0a04c3ea4d741c54",
+        "bytes": 1143
+      }
+    ]
+  }
+}

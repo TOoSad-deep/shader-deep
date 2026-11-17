@@ -1,0 +1,9 @@
+{"run_id": "drive-home", "task_id": "planning", "attempt_id": "f8a9282b700e42ac922bc0f306e2986f", "event": "task_started", "model_call": 0}
+{"run_id": "drive-home", "task_id": "planning", "attempt_id": "f8a9282b700e42ac922bc0f306e2986f", "event": "model_started", "model_call": 1}
+{"run_id": "drive-home", "task_id": "planning", "attempt_id": "f8a9282b700e42ac922bc0f306e2986f", "event": "request_sizes", "model_call": 1, "system_chars": 219, "tool_schema_chars": 1125, "message_text_chars": 234, "image_count": 1, "message_count": 1, "tool_history_chars": 0}
+{"run_id": "drive-home", "task_id": "planning", "attempt_id": "f8a9282b700e42ac922bc0f306e2986f", "event": "request_started", "model_call": 1, "attempt": 1}
+{"run_id": "drive-home", "task_id": "planning", "attempt_id": "f8a9282b700e42ac922bc0f306e2986f", "event": "request_completed", "model_call": 1, "attempt": 1, "elapsed_seconds": 147.025}
+{"run_id": "drive-home", "task_id": "planning", "attempt_id": "f8a9282b700e42ac922bc0f306e2986f", "event": "model_completed", "model_call": 1}
+{"run_id": "drive-home", "task_id": "planning", "attempt_id": "f8a9282b700e42ac922bc0f306e2986f", "event": "model_usage", "model_call": 1, "input_tokens": 1863, "output_tokens": 2433, "total_tokens": 4296, "input_token_details": {"audio": 0, "cache_creation": 0, "cache_read": 0}, "output_token_details": {"audio": 0, "reasoning": 2372}}
+{"run_id": "drive-home", "task_id": "planning", "attempt_id": "f8a9282b700e42ac922bc0f306e2986f", "event": "tool_result", "model_call": 1, "tool": "submit_target_plan", "call_id": "call_fcc1ed32c35549939aad06c0", "outcome": "success", "scope": "planning"}
+{"run_id": "drive-home", "task_id": "planning", "attempt_id": "f8a9282b700e42ac922bc0f306e2986f", "event": "task_completed", "model_call": 1}

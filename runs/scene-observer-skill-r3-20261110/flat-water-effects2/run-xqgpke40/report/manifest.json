@@ -1,0 +1,19 @@
+{
+  "schema_version": "scene_observations_v1",
+  "reference": {
+    "path": "reference.png",
+    "sha256": "65753b7f316b7c140d10b185124e757f01101939597723197207969e27e3bdae"
+  },
+  "status": "partial",
+  "context_notes": [],
+  "open_questions": [],
+  "gaps": [
+    {
+      "refs": [
+        "E1",
+        "F1"
+      ],
+      "description": "天空与海面颜色相近, 海平线位置依据色带边界与波纹起始判断, 精确高度存在近似"
+    }
+  ]
+}

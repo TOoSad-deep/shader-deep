@@ -1,0 +1,46 @@
+{
+  "analysis_protocol": "scene_observations_v1",
+  "stop_reason": "partial",
+  "error": null,
+  "report_path": "report",
+  "options": {
+    "max_model_calls": 8,
+    "max_output_tokens": 163840,
+    "max_request_retries": 0,
+    "request_timeout_seconds": 45,
+    "stream_model_responses": true,
+    "output_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-observer-traced-20261111/cool-s-distance"
+  },
+  "deprecated_option_diagnostics": [],
+  "execution": {
+    "analysis_protocol": "scene_observations_v1",
+    "execution": "deep_agents_single_observer",
+    "state": "accepted",
+    "reason": null,
+    "model_calls": 1,
+    "validation_errors": 0,
+    "tool_refusals": 0,
+    "max_model_calls": 8,
+    "reference_sha256": "dd712a5d2528d4db56bcbb6b10c66f946ca7c33579a0eb2ec23af90e4fbc7493",
+    "accepted_snapshot": "results/observations.json",
+    "resource_read_results": [],
+    "model_id": "z-ai/glm-5.3-flash",
+    "rule_sha256": "c6e5d8ab6e32d8d738a6bc71a1650b8d1af81d5c12d1bb5c30113a37b4223b8b",
+    "resource_sha256": {
+      "SKILL.md": "c6e5d8ab6e32d8d738a6bc71a1650b8d1af81d5c12d1bb5c30113a37b4223b8b",
+      "references/grouping.md": "ecb110a27e76a68ab0ef5ef6a42f9231927e58718cc830209407b46b4fbee75f",
+      "references/relations.md": "88c11dd1105f168ded3eb5e255e7481ae2b318f7f90b8b973f83700f23e0b543",
+      "references/uncertainty.md": "8c5b8adcf19d45c3204465cf1aad383b404bde20dd1cd6a8cc21cfc5f0727e76"
+    },
+    "skill_bundle_sha256": "e886d1ceb850dec6f14a4e66b15bbfdcb3abf9229cad60bf3b478912af64f095",
+    "elapsed_seconds": 32.212128374987515,
+    "elapsed_scope": "analysis_before_publication",
+    "token_usage": {
+      "input_tokens": 2532,
+      "output_tokens": 470,
+      "total_tokens": 3002
+    },
+    "usage_scope": "sdk_reported_responses_only",
+    "http_request_count": null
+  }
+}

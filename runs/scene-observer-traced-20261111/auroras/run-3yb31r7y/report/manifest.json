@@ -1,0 +1,18 @@
+{
+  "schema_version": "scene_observations_v1",
+  "reference": {
+    "path": "reference.png",
+    "sha256": "cbc9a23997fd40f772044174fa87c8776e7b18b559ecc268476ba79bee15279c"
+  },
+  "status": "partial",
+  "context_notes": [
+    "极光夜景整体氛围, 画面上下大致对称, 由天际线分隔天空与水面"
+  ],
+  "open_questions": [],
+  "gaps": [
+    {
+      "refs": [],
+      "description": "水面波纹与倒影的逐项细节受分辨率限制, 仅能描述整体分布与柔化程度"
+    }
+  ]
+}

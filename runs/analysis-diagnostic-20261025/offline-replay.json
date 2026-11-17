@@ -1,0 +1,44 @@
+[
+  {
+    "task": "exploration-1",
+    "call": 1,
+    "historical_category": "json_syntax",
+    "current_result": "json_syntax",
+    "error": "Expecting ',' delimiter: line 1 column 145 (char 144)"
+  },
+  {
+    "task": "exploration-2",
+    "call": 1,
+    "historical_category": "json_syntax",
+    "current_result": "json_syntax",
+    "error": "Expecting ',' delimiter: line 1 column 553 (char 552)"
+  },
+  {
+    "task": "exploration-2",
+    "call": 2,
+    "historical_category": "json_syntax",
+    "current_result": "json_syntax",
+    "error": "Expecting ',' delimiter: line 1 column 172 (char 171)"
+  },
+  {
+    "task": "exploration-2",
+    "call": 3,
+    "historical_category": "json_syntax",
+    "current_result": "json_syntax",
+    "error": "Expecting ',' delimiter: line 1 column 617 (char 616)"
+  },
+  {
+    "task": "exploration-1",
+    "call": 2,
+    "historical_category": null,
+    "current_result": "schema_validation",
+    "error": "1 validation error for ExplorationSubmission\nsketches.0.parameter_hints\n  Extra inputs are not permitted [type=extra_forbidden, input_value='外边界约 x:0.27-0.75...5-0.10, 内侧较窄。', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden"
+  },
+  {
+    "task": "exploration-1",
+    "call": 3,
+    "historical_category": null,
+    "current_result": "business_rejection",
+    "error": "sketches.S1.name: 疑似未标记对象引用 'neon_frame'; 使用 [[ID]]; text='neon_frame 单 Pass 复现草图'"
+  }
+]

@@ -1,0 +1,12 @@
+{
+  "analysis_protocol": "five_libraries_v1",
+  "execution": "deep_agents_native",
+  "user_request": "只分析中央发光边框本体。使用两个探索方向，每个方向只记录少量最必要的特征，给出一个简单草图；整合只做有把握的去重。",
+  "reference_sha256": "677ad234571bc8e5ab204a6d8b2bfec4aa8e920ee3711282433f525f9691ab8d",
+  "elements": [],
+  "plan": null,
+  "tasks": {},
+  "versions": [],
+  "closed": true,
+  "baseline_error": null
+}

@@ -1,0 +1,229 @@
+[
+  {
+    "case": "cool-s-distance",
+    "status": "completed",
+    "steps": [
+      {
+        "name": "save_observation_draft",
+        "error": false,
+        "status": "success",
+        "created": true,
+        "saved": true,
+        "revision": "899e78a9367a2693f0c1873770b0309f4c320900bc7b83d860503ee52be8e02b"
+      },
+      {
+        "name": "read_file",
+        "error": false,
+        "status": "success"
+      },
+      {
+        "name": "edit_file",
+        "error": false,
+        "status": "success"
+      },
+      {
+        "name": "edit_file",
+        "error": false,
+        "status": "success"
+      },
+      {
+        "name": "edit_file",
+        "error": false,
+        "status": "success"
+      },
+      {
+        "name": "read_file",
+        "error": false,
+        "status": "success"
+      },
+      {
+        "name": "finish_analysis",
+        "error": false,
+        "status": "success",
+        "accepted": true,
+        "accepted_revision": "6c7b51227d4d63ffe443ad86ac2faf8a613d950103853adf00941bc730abf8e8"
+      }
+    ]
+  },
+  {
+    "case": "flat-water-effects2",
+    "status": "completed",
+    "steps": [
+      {
+        "name": "save_observation_draft",
+        "error": false,
+        "status": "success",
+        "created": true,
+        "saved": true,
+        "revision": "763e3a75567f7ef982d54ddedffd28ef2fcaa23c961190665cdad0098f686b14"
+      },
+      {
+        "name": "edit_file",
+        "error": false,
+        "status": "error",
+        "code": "non_unique_replacement"
+      },
+      {
+        "name": "read_file",
+        "error": false,
+        "status": "success"
+      },
+      {
+        "name": "edit_file",
+        "error": false,
+        "status": "success"
+      },
+      {
+        "name": "read_file",
+        "error": false,
+        "status": "success"
+      },
+      {
+        "name": "finish_analysis",
+        "error": false,
+        "status": "success",
+        "accepted": true,
+        "accepted_revision": "e51b5523803d62402523928ca455d0ebb17e80d0fbef53941aed130456bcfd25"
+      }
+    ]
+  },
+  {
+    "case": "dna-helis",
+    "status": "completed",
+    "steps": [
+      {
+        "name": "save_observation_draft",
+        "error": true,
+        "status": null
+      },
+      {
+        "name": "save_observation_draft",
+        "error": false,
+        "status": "success",
+        "created": true,
+        "saved": true,
+        "revision": "f75824970e41cfd9f3ced23dbea288f65fcc1885a4e9053dae26e1bb26cb6465"
+      },
+      {
+        "name": "read_file",
+        "error": false,
+        "status": "success"
+      },
+      {
+        "name": "edit_file",
+        "error": false,
+        "status": "success"
+      },
+      {
+        "name": "read_file",
+        "error": false,
+        "status": "success"
+      },
+      {
+        "name": "finish_analysis",
+        "error": false,
+        "status": "success",
+        "accepted": true,
+        "accepted_revision": "494a4f30a2ff9d17cdf74546a1a33e8dbb160b1016315db4a2dabaaa203d503e"
+      }
+    ]
+  },
+  {
+    "case": "buffer-bloom",
+    "status": "failed",
+    "steps": [
+      {
+        "name": "save_observation_draft",
+        "error": false,
+        "status": "success",
+        "created": true,
+        "saved": true,
+        "revision": "4cf08e7aea251e27145ac9deb47eca32942e368f6a70fc2679be714fe1c4c7af"
+      },
+      {
+        "name": "read_file",
+        "error": false,
+        "status": "success"
+      },
+      {
+        "name": "edit_file",
+        "error": false,
+        "status": "success"
+      },
+      {
+        "name": "edit_file",
+        "error": false,
+        "status": "success"
+      },
+      {
+        "name": "read_file",
+        "error": false,
+        "status": "success"
+      },
+      {
+        "name": "finish_analysis",
+        "error": true,
+        "status": null
+      },
+      {
+        "name": "read_file",
+        "error": false,
+        "status": "success"
+      }
+    ]
+  },
+  {
+    "case": "auroras",
+    "status": "failed",
+    "steps": [
+      {
+        "name": "save_observation_draft",
+        "error": false,
+        "status": "success",
+        "created": true,
+        "saved": true,
+        "revision": "97482bb4262477ca77e48f563a0183dff2e8279c0c0d0f0ebbfc9687354d0fba"
+      },
+      {
+        "name": "read_file",
+        "error": false,
+        "status": "success"
+      },
+      {
+        "name": "edit_file",
+        "error": false,
+        "status": "success"
+      },
+      {
+        "name": "edit_file",
+        "error": false,
+        "status": "success"
+      },
+      {
+        "name": "read_file",
+        "error": false,
+        "status": "success"
+      },
+      {
+        "name": "read_file",
+        "error": false,
+        "status": "success"
+      },
+      {
+        "name": "finish_analysis",
+        "error": true,
+        "status": null
+      },
+      {
+        "name": "finish_analysis",
+        "error": true,
+        "status": null
+      },
+      {
+        "name": "read_file",
+        "error": false,
+        "status": "success"
+      }
+    ]
+  }
+]

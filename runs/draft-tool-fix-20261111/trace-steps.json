@@ -1,0 +1,192 @@
+[
+  {
+    "case": "buffer-bloom",
+    "status": "failed",
+    "steps": [
+      {
+        "name": "save_observation_draft",
+        "error": false,
+        "status": "success",
+        "created": true,
+        "saved": true,
+        "revision": "4958807cb91c513da3b4336d017eda7bf16f3f47e142e5c593daec31a54a459d"
+      },
+      {
+        "name": "read_file",
+        "error": false,
+        "status": "success"
+      },
+      {
+        "name": "edit_file",
+        "error": false,
+        "status": "success"
+      },
+      {
+        "name": "edit_file",
+        "error": false,
+        "status": "success"
+      },
+      {
+        "name": "edit_file",
+        "error": false,
+        "status": "success"
+      },
+      {
+        "name": "edit_file",
+        "error": false,
+        "status": "success"
+      },
+      {
+        "name": "edit_file",
+        "error": false,
+        "status": "success"
+      },
+      {
+        "name": "edit_file",
+        "error": false,
+        "status": "success"
+      },
+      {
+        "name": "edit_file",
+        "error": false,
+        "status": "success"
+      },
+      {
+        "name": "edit_file",
+        "error": false,
+        "status": "success"
+      },
+      {
+        "name": "read_file",
+        "error": false,
+        "status": "success"
+      },
+      {
+        "name": "edit_file",
+        "error": false,
+        "status": "success"
+      },
+      {
+        "name": "edit_file",
+        "error": false,
+        "status": "success"
+      },
+      {
+        "name": "edit_file",
+        "error": false,
+        "status": "success"
+      },
+      {
+        "name": "edit_file",
+        "error": false,
+        "status": "success"
+      },
+      {
+        "name": "edit_file",
+        "error": false,
+        "status": "success"
+      },
+      {
+        "name": "edit_file",
+        "error": false,
+        "status": "success"
+      },
+      {
+        "name": "finish_analysis",
+        "error": true,
+        "status": null
+      },
+      {
+        "name": "read_file",
+        "error": false,
+        "status": "success"
+      }
+    ]
+  },
+  {
+    "case": "auroras",
+    "status": "completed",
+    "steps": [
+      {
+        "name": "save_observation_draft",
+        "error": false,
+        "status": "success",
+        "created": true,
+        "saved": true,
+        "revision": "e2aef71f86cd3bc8c1e205297e25753e153595e4857068e66a8d2812b647636a"
+      },
+      {
+        "name": "read_file",
+        "error": false,
+        "status": "success"
+      },
+      {
+        "name": "edit_file",
+        "error": false,
+        "status": "success"
+      },
+      {
+        "name": "edit_file",
+        "error": false,
+        "status": "success"
+      },
+      {
+        "name": "edit_file",
+        "error": false,
+        "status": "success"
+      },
+      {
+        "name": "edit_file",
+        "error": false,
+        "status": "success"
+      },
+      {
+        "name": "edit_file",
+        "error": false,
+        "status": "success"
+      },
+      {
+        "name": "edit_file",
+        "error": false,
+        "status": "success"
+      },
+      {
+        "name": "edit_file",
+        "error": false,
+        "status": "success"
+      },
+      {
+        "name": "edit_file",
+        "error": false,
+        "status": "success"
+      },
+      {
+        "name": "edit_file",
+        "error": false,
+        "status": "success"
+      },
+      {
+        "name": "read_file",
+        "error": false,
+        "status": "success"
+      },
+      {
+        "name": "edit_file",
+        "error": false,
+        "status": "success"
+      },
+      {
+        "name": "read_file",
+        "error": false,
+        "status": "success"
+      },
+      {
+        "name": "finish_analysis",
+        "error": false,
+        "status": "success",
+        "accepted": true,
+        "accepted_revision": "3a37e38ac787053902b0e7cf5d82d159e43873218a87870c5cb55ae73dfd7c94"
+      }
+    ]
+  }
+]

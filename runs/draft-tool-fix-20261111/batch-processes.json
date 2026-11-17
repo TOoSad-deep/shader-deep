@@ -1,0 +1,10 @@
+[
+  {
+    "case": "auroras",
+    "process_exit": 0
+  },
+  {
+    "case": "buffer-bloom",
+    "process_exit": 0
+  }
+]

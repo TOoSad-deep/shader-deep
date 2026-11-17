@@ -1,0 +1,423 @@
+{
+  "schema_version": 1,
+  "diagram_type": "dataflow",
+  "meta": {
+    "title": "Shader Deep：分析流程与五库数据流",
+    "locale": "zh-CN",
+    "output": ".archify/dataflow-analysis-20261023-173924/analysis.html",
+    "quality_profile": "showcase",
+    "repository": {
+      "url": "https://github.com/TOoSad-deep/shader-deep.git",
+      "revision": "30d6d5fb21318f780eb5e6e4f6b9ca6f15f2e553",
+      "link_mode": "local-only"
+    }
+  },
+  "stages": [
+    {
+      "label": "固定输入 / 读取视图"
+    },
+    {
+      "label": "主控 / 独立探索"
+    },
+    {
+      "label": "汇集 / 最终交付"
+    },
+    {
+      "label": "五库版本"
+    },
+    {
+      "label": "语义整合 / 校验"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "inputs",
+      "type": "backend",
+      "label": "固定本轮输入",
+      "sublabel": "PNG + 用户要求",
+      "stage": 0,
+      "row": 1,
+      "sources": [
+        {
+          "path": "apps/shader_deep/src/shader_deep/workflows/analysis.py",
+          "line": 104,
+          "end_line": 126
+        }
+      ],
+      "tag": "输入版本"
+    },
+    {
+      "id": "main",
+      "type": "backend",
+      "label": "持续主 Agent",
+      "sublabel": "读 skill · 定目标",
+      "stage": 1,
+      "row": 0,
+      "sources": [
+        {
+          "path": "apps/shader_deep/src/shader_deep/agents/main/agent.py",
+          "line": 91,
+          "end_line": 135
+        },
+        {
+          "path": "apps/shader_deep/src/shader_deep/workflows/five_analysis.py",
+          "line": 577,
+          "end_line": 618
+        }
+      ],
+      "tag": "只派发一批"
+    },
+    {
+      "id": "workers",
+      "type": "backend",
+      "label": "独立探索 × 2–3",
+      "sublabel": "各自产出 F/R/M/S",
+      "stage": 1,
+      "row": 2,
+      "sources": [
+        {
+          "path": "apps/shader_deep/src/shader_deep/agents/five_analysis/agent.py",
+          "line": 175,
+          "end_line": 210
+        },
+        {
+          "path": "apps/shader_deep/src/shader_deep/workflows/five_analysis.py",
+          "line": 262,
+          "end_line": 301
+        }
+      ],
+      "tag": "隔离历史"
+    },
+    {
+      "id": "collect",
+      "type": "backend",
+      "label": "程序汇集",
+      "sublabel": "校验 · 统一 ID",
+      "stage": 2,
+      "row": 2,
+      "sources": [
+        {
+          "path": "apps/shader_deep/src/shader_deep/workflows/five_analysis.py",
+          "line": 644,
+          "end_line": 694
+        },
+        {
+          "path": "apps/shader_deep/src/shader_deep/domain/five_libraries/operations.py",
+          "line": 115,
+          "end_line": 155
+        },
+        {
+          "path": "apps/shader_deep/src/shader_deep/runtime/task_store/store.py",
+          "line": 338,
+          "end_line": 361
+        }
+      ],
+      "tag": "读取已提交结果"
+    },
+    {
+      "id": "baseline",
+      "type": "database",
+      "label": "V0 固定基线",
+      "sublabel": "未去重的完整五库",
+      "stage": 3,
+      "row": 2,
+      "sources": [
+        {
+          "path": "apps/shader_deep/src/shader_deep/workflows/five_analysis.py",
+          "line": 322,
+          "end_line": 333
+        }
+      ],
+      "tag": "保留所有草图"
+    },
+    {
+      "id": "integration",
+      "type": "backend",
+      "label": "整合 Agent",
+      "sublabel": "仅读 V0 · 合并建议",
+      "stage": 4,
+      "row": 2,
+      "sources": [
+        {
+          "path": "apps/shader_deep/src/shader_deep/agents/five_analysis/agent.py",
+          "line": 213,
+          "end_line": 256
+        }
+      ],
+      "tag": "仅 F / R / M"
+    },
+    {
+      "id": "validate",
+      "type": "backend",
+      "label": "程序校验与发布",
+      "sublabel": "重写引用 · 保留方案",
+      "stage": 4,
+      "row": 4,
+      "sources": [
+        {
+          "path": "apps/shader_deep/src/shader_deep/workflows/five_analysis.py",
+          "line": 353,
+          "end_line": 390
+        }
+      ],
+      "tag": "失败保留 V0"
+    },
+    {
+      "id": "version",
+      "type": "database",
+      "label": "V1 整合版本",
+      "sublabel": "通过校验才发布",
+      "stage": 3,
+      "row": 4,
+      "sources": [
+        {
+          "path": "apps/shader_deep/src/shader_deep/workflows/five_analysis.py",
+          "line": 359,
+          "end_line": 390
+        }
+      ],
+      "tag": "仍可有缺口"
+    },
+    {
+      "id": "delivery",
+      "type": "backend",
+      "label": "结束与交付",
+      "sublabel": "主 Agent 请求结束",
+      "stage": 2,
+      "row": 4,
+      "sources": [
+        {
+          "path": "apps/shader_deep/src/shader_deep/workflows/five_analysis.py",
+          "line": 700,
+          "end_line": 733
+        },
+        {
+          "path": "apps/shader_deep/src/shader_deep/workflows/analysis.py",
+          "line": 56,
+          "end_line": 79
+        }
+      ],
+      "tag": "程序判定状态"
+    },
+    {
+      "id": "package",
+      "type": "database",
+      "label": "完整报告包",
+      "sublabel": "五库 + 入口 + 原图",
+      "stage": 1,
+      "row": 4,
+      "sources": [
+        {
+          "path": "apps/shader_deep/src/shader_deep/infrastructure/storage/report_package.py",
+          "line": 102,
+          "end_line": 145
+        },
+        {
+          "path": "apps/shader_deep/src/shader_deep/workflows/analysis.py",
+          "line": 68,
+          "end_line": 77
+        }
+      ],
+      "tag": "封存包指针"
+    },
+    {
+      "id": "reader",
+      "type": "backend",
+      "label": "按草图读取",
+      "sublabel": "显式选择方案",
+      "stage": 0,
+      "row": 4,
+      "sources": [
+        {
+          "path": "apps/shader_deep/src/shader_deep/infrastructure/storage/report_package.py",
+          "line": 174,
+          "end_line": 217
+        }
+      ],
+      "tag": "生成另行调用"
+    },
+    {
+      "id": "failed",
+      "type": "backend",
+      "label": "无可用基线",
+      "sublabel": "failed · 不伪造空包",
+      "stage": 2,
+      "row": 0,
+      "sources": [
+        {
+          "path": "apps/shader_deep/src/shader_deep/workflows/five_analysis.py",
+          "line": 676,
+          "end_line": 680
+        },
+        {
+          "path": "apps/shader_deep/src/shader_deep/workflows/analysis.py",
+          "line": 56,
+          "end_line": 59
+        }
+      ],
+      "tag": "明确失败"
+    }
+  ],
+  "flows": [
+    {
+      "id": "input-main",
+      "to": "main",
+      "label": "原图与要求",
+      "variant": "default",
+      "from": "inputs"
+    },
+    {
+      "id": "input-worker",
+      "to": "workers",
+      "label": "原图与要求",
+      "variant": "default",
+      "from": "inputs"
+    },
+    {
+      "id": "main-worker",
+      "to": "workers",
+      "label": "目标与方向",
+      "variant": "default",
+      "from": "main"
+    },
+    {
+      "id": "main-collect",
+      "to": "collect",
+      "label": "目标与整合请求",
+      "variant": "default",
+      "from": "main"
+    },
+    {
+      "id": "worker-collect",
+      "to": "collect",
+      "label": "已提交报告",
+      "variant": "emphasis",
+      "from": "workers"
+    },
+    {
+      "id": "collect-v0",
+      "to": "baseline",
+      "label": "汇集五库",
+      "variant": "emphasis",
+      "from": "collect"
+    },
+    {
+      "id": "collect-failed",
+      "to": "failed",
+      "label": "无合法特征",
+      "variant": "default",
+      "from": "collect"
+    },
+    {
+      "id": "v0-integrate",
+      "to": "integration",
+      "label": "目录与正文",
+      "variant": "emphasis",
+      "from": "baseline"
+    },
+    {
+      "id": "integrate-validate",
+      "to": "validate",
+      "label": "合并建议",
+      "variant": "default",
+      "from": "integration"
+    },
+    {
+      "id": "v0-validate",
+      "to": "validate",
+      "label": "原始五库",
+      "variant": "default",
+      "from": "baseline"
+    },
+    {
+      "id": "validate-v1",
+      "to": "version",
+      "label": "校验通过",
+      "variant": "emphasis",
+      "from": "validate"
+    },
+    {
+      "id": "v1-delivery",
+      "to": "delivery",
+      "label": "V1 与缺口",
+      "variant": "emphasis",
+      "from": "version"
+    },
+    {
+      "id": "fallback",
+      "to": "delivery",
+      "label": "失败用 V0",
+      "variant": "default",
+      "from": "validate"
+    },
+    {
+      "id": "input-delivery",
+      "to": "delivery",
+      "label": "固定原图",
+      "variant": "default",
+      "from": "inputs"
+    },
+    {
+      "id": "delivery-package",
+      "to": "package",
+      "label": "选定快照",
+      "variant": "emphasis",
+      "from": "delivery"
+    },
+    {
+      "id": "package-reader",
+      "to": "reader",
+      "label": "所选方案正文",
+      "variant": "default",
+      "from": "package"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "先看上半部，再沿底部读回报告",
+      "items": [
+        "主 Agent 完整读取编排 skill 后登记元素，再冻结一个目标、范围和一批方向。元素初始 feature_ids 为空，不提供共享观察答案。",
+        "dispatch_exploration 内部并行执行独立 worker 并等待本批结束；主 Agent 可按结果 ID 回读，再请求整合和结束。",
+        "本图展示默认五库流程的数据契约；多个探索实例聚合为一个节点，底层模型传输和旧四库兼容流程省略。"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "五库：观察、候选与方案分开",
+      "items": [
+        "E 元素引用 F 特征；R 关系引用元素或特征；F/R 的 mechanism_refs 指向候选 M 机制。",
+        "S 草图以 default 为 F/R 选择共同采用的 M；composition 说明组织，alternatives 保存局部备选。草图是结构化方案，不是已生成图片。",
+        "每个探索 Agent 独立提交 F/R/M/S、open_questions 和 gaps；不读兄弟报告。目标与原图一致，各自任务方向不同。"
+      ]
+    },
+    {
+      "dot": "violet",
+      "title": "V0 → V1：合并不重组方案",
+      "items": [
+        "程序按来源把局部 ID 转为包内 ID，同时重写结构引用和 [[ID]]，建立元素特征引用，再发布不可变 V0。",
+        "整合 Agent 必须回读全部 F/R/M 正文；只提交旧项到保留项的合并，不新增机制、不修改或去重草图。",
+        "程序拒绝关系端点塌缩、选择撞键和共同机制塌缩。整合失败或 V1 发布失败保留 V0，并记录 partial 与 gaps。"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "TaskStore 是权威执行记录",
+      "items": [
+        "合法结果先写文件，再原子替换 commit.json 发布任务终态、路径及回执；成功重复提交返回原回执，过期执行和封存后写入受阻。",
+        "同一任务允许有限修复与重派，恢复不改变目标、方向或输入，不引入兄弟报告。未完成任务保留为 gaps。",
+        "TaskStore 保存任务、attempt、计数和版本指针；公开黑板保存目标与结果索引，run.json 是派生投影，不是完整模型会话检查点。"
+      ]
+    },
+    {
+      "dot": "orange",
+      "title": "交付与生成之间有显式选择",
+      "items": [
+        "完整包含 manifest.json、五库 JSON、README.md 与固定 reference.png。文件写齐并验证后发布，包指针与封存状态来自同一权威记录。",
+        "completed 表示无记录的交付缺口，仍可有 open_questions；partial 保留合法产物，failed 没有合法基线。",
+        "read_sketch 提供所选方案及相关正文，保留公共状态与缺口。调用方显式选择后另行启动生成；分析不自动生成 Shader，也不证明视觉相似。",
+        "默认探索只有提交工具，未接入旧流程的像素测量能力。本图依据源码，未运行真实模型或渲染验收。"
+      ]
+    }
+  ]
+}

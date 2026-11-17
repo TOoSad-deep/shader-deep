@@ -1,0 +1,114 @@
+[
+  {
+    "target": "F1",
+    "mechanisms": [
+      "M1"
+    ],
+    "origins": [
+      {
+        "sketch_id": "S1"
+      }
+    ]
+  },
+  {
+    "target": "F2",
+    "mechanisms": [
+      "M3"
+    ],
+    "origins": [
+      {
+        "sketch_id": "S1"
+      }
+    ]
+  },
+  {
+    "target": "F3",
+    "mechanisms": [
+      "M2"
+    ],
+    "origins": [
+      {
+        "sketch_id": "S1"
+      }
+    ]
+  },
+  {
+    "target": "F4",
+    "mechanisms": [
+      "M4"
+    ],
+    "origins": [
+      {
+        "sketch_id": "S1"
+      }
+    ]
+  },
+  {
+    "target": "F5",
+    "mechanisms": [
+      "M4"
+    ],
+    "origins": [
+      {
+        "sketch_id": "S1"
+      }
+    ]
+  },
+  {
+    "target": "F6",
+    "mechanisms": [
+      "M4"
+    ],
+    "origins": [
+      {
+        "sketch_id": "S1"
+      }
+    ]
+  },
+  {
+    "target": "F7",
+    "mechanisms": [
+      "M4"
+    ],
+    "origins": [
+      {
+        "sketch_id": "S1"
+      }
+    ]
+  },
+  {
+    "target": "R1",
+    "mechanisms": [
+      "M4"
+    ],
+    "origins": [
+      {
+        "sketch_id": "S1"
+      }
+    ]
+  },
+  {
+    "target": "R2",
+    "mechanisms": [
+      "M3",
+      "M4"
+    ],
+    "origins": [
+      {
+        "sketch_id": "S1"
+      }
+    ]
+  },
+  {
+    "target": "R3",
+    "mechanisms": [
+      "M1",
+      "M5"
+    ],
+    "origins": [
+      {
+        "sketch_id": "S1"
+      }
+    ]
+  }
+]

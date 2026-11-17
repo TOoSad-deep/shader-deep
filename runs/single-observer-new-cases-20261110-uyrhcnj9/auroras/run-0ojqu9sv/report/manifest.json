@@ -1,0 +1,14 @@
+{
+  "schema_version": "scene_observations_v1",
+  "reference": {
+    "path": "reference.png",
+    "sha256": "cbc9a23997fd40f772044174fa87c8776e7b18b559ecc268476ba79bee15279c"
+  },
+  "status": "completed",
+  "context_notes": [
+    "夜晚极光海景: 上半幅为星空与绿色极光, 中下部一条深色山丘剪影横贯全宽, 剪影以下至画面底缘为暗色水面; 地平线约在画面高度三分之二略上方",
+    "整体色调: 夜空与水面近黑偏蓝, 极光以青绿、亮绿为主, 局部晕带蓝紫; 画面光源感均来自极光本身"
+  ],
+  "open_questions": [],
+  "gaps": []
+}

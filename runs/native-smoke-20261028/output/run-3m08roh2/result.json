@@ -1,0 +1,12 @@
+{
+  "status": "failed",
+  "selected_version": null,
+  "target_element_id": null,
+  "open_questions": [],
+  "gaps": [
+    {
+      "refs": [],
+      "description": "OpenAIConnectionError: Connection error."
+    }
+  ]
+}

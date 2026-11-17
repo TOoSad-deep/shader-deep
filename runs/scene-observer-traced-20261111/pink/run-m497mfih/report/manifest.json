@@ -1,0 +1,16 @@
+{
+  "schema_version": "scene_observations_v1",
+  "reference": {
+    "path": "reference.png",
+    "sha256": "e1923ac438f2de7645ee0c4ec2c4d0742720c83a2764561f6490dc4bcf427682"
+  },
+  "status": "partial",
+  "context_notes": [],
+  "open_questions": [],
+  "gaps": [
+    {
+      "refs": [],
+      "description": "球体下方极浅投影的具体范围与浓度接近白底分辨极限, 仅能确认存在与柔和性状, 无法可靠描述其边界形状"
+    }
+  ]
+}

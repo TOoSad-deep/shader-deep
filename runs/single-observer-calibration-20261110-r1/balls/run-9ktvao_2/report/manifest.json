@@ -1,0 +1,27 @@
+{
+  "schema_version": "scene_observations_v1",
+  "reference": {
+    "path": "reference.png",
+    "sha256": "7beeab6b0c683e16ed213393b2a8850b28c1c2e3a89963c671f8902d6d194523"
+  },
+  "status": "partial",
+  "context_notes": [
+    "图像整体为浅灰底上一张居中的白色大圆角卡片, 卡片外围有柔和投影, 卡片内无文字或线条, 上部约三分之二留白, 所有可见图形集中在卡片下部边缘附近。"
+  ],
+  "open_questions": [
+    {
+      "refs": [
+        "F5"
+      ],
+      "description": "左右密集簇内相邻齿轮存在部分边缘重叠, 具体前后压叠顺序从单图难以完全判读。"
+    }
+  ],
+  "gaps": [
+    {
+      "refs": [
+        "F5"
+      ],
+      "description": "左右密集簇内齿轮交叠处的前后遮盖顺序在部分位置难以逐枚确认。"
+    }
+  ]
+}

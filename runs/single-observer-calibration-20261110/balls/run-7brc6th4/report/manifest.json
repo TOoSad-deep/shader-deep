@@ -1,0 +1,28 @@
+{
+  "schema_version": "scene_observations_v1",
+  "reference": {
+    "path": "reference.png",
+    "sha256": "7beeab6b0c683e16ed213393b2a8850b28c1c2e3a89963c671f8902d6d194523"
+  },
+  "status": "partial",
+  "context_notes": [
+    "画面底色为极浅灰白, 中央一张白色大圆角面板占据绝大部分画面, 四周留窄边; 图中无文字或其他图形。",
+    "整图为平涂色块、边缘清晰的图形风格, 无渐变与纹理; 可见主体仅为面板与其下半部的四色齿轮状小件堆积。"
+  ],
+  "open_questions": [
+    {
+      "refs": [
+        "F3"
+      ],
+      "description": "单件周缘凸齿的确切数量未能逐一清点, 目测约8个。"
+    }
+  ],
+  "gaps": [
+    {
+      "refs": [
+        "E1"
+      ],
+      "description": "面板外缘是否带极淡柔影或描边无法从图中辨认, 当前仅能确认与外围浅灰底的清晰色界。"
+    }
+  ]
+}

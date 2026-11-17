@@ -1,0 +1,21 @@
+{
+  "image": "2d-physics-balls",
+  "run_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/element-split-20261001/2d-physics-balls",
+  "status": "dispatch_prepared_not_started",
+  "planning_model_calls": 1,
+  "elements": 5,
+  "target": {
+    "id": "gear_single",
+    "name": "齿轮单元 (重复基元)",
+    "region": "全图重复出现; 采样示例: 左上角绿色齿轮 约 (205,355)-(310,460), 直径约 100px 的扇贝形齿轮轮廓, 中心带白色圆孔",
+    "feature_ids": []
+  },
+  "directions": [
+    "外轮廓齿形观察: 数清单个齿轮凸齿的数目, 描绘凸齿与凹谷沿圆周的交替节奏, 以及齿顶和齿谷处的圆角与平滑程度",
+    "中心孔与比例观察: 测量中心白孔直径相对齿轮外径的占比, 孔缘是锐利还是柔化, 并记录内外轮廓之间的整体比例关系",
+    "颜色与表面观察: 对比绿/黄/红/蓝四种填充的色相与明度差异, 同一齿形换色后是否保持一致, 检查有无渐变、描边或边缘过渡特征"
+  ],
+  "worker_attempts": 0,
+  "worker_model_calls": 0,
+  "elapsed_seconds": 71.11
+}

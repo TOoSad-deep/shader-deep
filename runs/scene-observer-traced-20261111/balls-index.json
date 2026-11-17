@@ -1,0 +1,21 @@
+{
+  "status": "completed",
+  "run_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-observer-traced-20261111/balls/run-4n0e8rhy",
+  "report_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-observer-traced-20261111/balls/run-4n0e8rhy/report",
+  "result": {
+    "id": "run-4n0e8rhy-scene-observations",
+    "task_id": "A1",
+    "status": "completed",
+    "summary": "全图 E/F/R 观察包已交付: report/manifest.json; 观察完成不代表 M/S 规划或视觉验收完成",
+    "candidate_ids": [],
+    "observations": [],
+    "hypotheses": [],
+    "limitations": [],
+    "recommendation": null,
+    "analysis_detail": null,
+    "analysis_protocol": "scene_observations_v1"
+  },
+  "trace_id": "01a1c82c-e9dc-7352-9531-484f72ee4918",
+  "project": "shader-deep",
+  "exit_code": 0
+}

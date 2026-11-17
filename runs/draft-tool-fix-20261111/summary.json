@@ -1,0 +1,105 @@
+{
+  "cases": 3,
+  "statuses": {
+    "failed": 1,
+    "completed": 2
+  },
+  "trace_verified": 3,
+  "project": "shader-deep",
+  "tag": "draft-tool-fix-20261111",
+  "skill_bundle_sha256": "a62b9c6ca088ff97bd17204a75e801364754efe1af5769c60080afa13fdc6df3",
+  "rows": [
+    {
+      "case": "buffer-bloom",
+      "status": "failed",
+      "run_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/draft-tool-fix-20261111/buffer-bloom/run-xxjsjo1x",
+      "report_dir": null,
+      "trace": {
+        "trace_id": "01a1c8b0-34b1-7470-8564-25f12277228f",
+        "url": "https://smith.langchain.com/o/fcb09333-f0ce-45e7-9ea2-c4750cdfbd16/projects/p/2e0945b1-fc78-4930-96bb-3085745b703a/r/01a1c8b0-34b1-7470-8564-25f12277228f?poll=true",
+        "root_finished": true,
+        "runs": 100,
+        "llm_runs": 5,
+        "tool_runs": 14,
+        "image_in_llm_input": true,
+        "llm_outputs_present": true,
+        "error_runs": 1
+      },
+      "reason": "model_call_limit",
+      "draft_path": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/draft-tool-fix-20261111/buffer-bloom/run-xxjsjo1x/draft/observations.json",
+      "draft_revision": "84b4522e86e833129ee0f9eac34ed35ce7221b782ad1fd307ae9dcf2e3408ea1",
+      "seen_revision": null,
+      "accepted_revision": null,
+      "model": "z-ai/glm-5.3-flash",
+      "elapsed_seconds": 122.30196874999092,
+      "model_calls": 8,
+      "trace_verified": true
+    },
+    {
+      "case": "auroras",
+      "status": "completed",
+      "run_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/draft-tool-fix-20261111/auroras/run-og3q5b2c",
+      "report_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/draft-tool-fix-20261111/auroras/run-og3q5b2c/report",
+      "trace": {
+        "trace_id": "01a1c8b0-33fa-73e3-8a99-ba853c4036ae",
+        "url": "https://smith.langchain.com/o/fcb09333-f0ce-45e7-9ea2-c4750cdfbd16/projects/p/2e0945b1-fc78-4930-96bb-3085745b703a/r/01a1c8b0-33fa-73e3-8a99-ba853c4036ae?poll=true",
+        "root_finished": true,
+        "runs": 100,
+        "llm_runs": 5,
+        "tool_runs": 15,
+        "image_in_llm_input": true,
+        "llm_outputs_present": true,
+        "error_runs": 0
+      },
+      "reason": null,
+      "draft_path": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/draft-tool-fix-20261111/auroras/run-og3q5b2c/draft/observations.json",
+      "draft_revision": "3a37e38ac787053902b0e7cf5d82d159e43873218a87870c5cb55ae73dfd7c94",
+      "seen_revision": "3a37e38ac787053902b0e7cf5d82d159e43873218a87870c5cb55ae73dfd7c94",
+      "accepted_revision": "3a37e38ac787053902b0e7cf5d82d159e43873218a87870c5cb55ae73dfd7c94",
+      "model": "z-ai/glm-5.3-flash",
+      "elapsed_seconds": 122.97056012498797,
+      "model_calls": 5,
+      "trace_verified": true,
+      "counts": {
+        "E": 5,
+        "F": 11,
+        "R": 4
+      },
+      "gaps": [],
+      "formal_reader": "passed"
+    },
+    {
+      "case": "buffer-bloom-12",
+      "status": "completed",
+      "run_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/draft-tool-fix-20261111/buffer-bloom-12/run-x7p1rhgm",
+      "report_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/draft-tool-fix-20261111/buffer-bloom-12/run-x7p1rhgm/report",
+      "trace": {
+        "trace_id": "01a1c8b9-d9dd-7540-a7e4-c8c645468639",
+        "url": "https://smith.langchain.com/o/fcb09333-f0ce-45e7-9ea2-c4750cdfbd16/projects/p/2e0945b1-fc78-4930-96bb-3085745b703a/r/01a1c8b9-d9dd-7540-a7e4-c8c645468639?poll=true",
+        "root_finished": true,
+        "runs": 85,
+        "llm_runs": 5,
+        "tool_runs": 9,
+        "image_in_llm_input": true,
+        "llm_outputs_present": true,
+        "error_runs": 0
+      },
+      "reason": null,
+      "draft_path": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/draft-tool-fix-20261111/buffer-bloom-12/run-x7p1rhgm/draft/observations.json",
+      "draft_revision": "b3fc6b2a4bc382a0f7c48f1c89711d56de12ff9653c93243dffb19d1736e697f",
+      "seen_revision": "b3fc6b2a4bc382a0f7c48f1c89711d56de12ff9653c93243dffb19d1736e697f",
+      "accepted_revision": "b3fc6b2a4bc382a0f7c48f1c89711d56de12ff9653c93243dffb19d1736e697f",
+      "model": "z-ai/glm-5.3-flash",
+      "elapsed_seconds": 132.28582266700687,
+      "model_calls": 5,
+      "trace_verified": true,
+      "counts": {
+        "E": 4,
+        "F": 9,
+        "R": 2
+      },
+      "gaps": [],
+      "formal_reader": "passed"
+    }
+  ]
+}

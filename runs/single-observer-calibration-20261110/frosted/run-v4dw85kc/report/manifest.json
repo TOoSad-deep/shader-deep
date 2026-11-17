@@ -1,0 +1,36 @@
+{
+  "schema_version": "scene_observations_v1",
+  "reference": {
+    "path": "reference.png",
+    "sha256": "4b98572449bf26744a76d3f9271bc10397e3b1c05512b2fcab5624442f7a6252"
+  },
+  "status": "partial",
+  "context_notes": [
+    "浅灰近白的纯色背景，画面无其他可见元素",
+    "两个圆形主体位于画面中部偏左，构图整体居中偏左"
+  ],
+  "open_questions": [
+    {
+      "refs": [
+        "E2"
+      ],
+      "description": "浅色圆右下边缘与背景灰度接近，边界的确切延伸范围因对比过低难以完全确认"
+    },
+    {
+      "refs": [
+        "E1",
+        "E2"
+      ],
+      "description": "交叠区下方被遮挡的蓝圆轮廓确切走向无法直接确认"
+    }
+  ],
+  "gaps": [
+    {
+      "refs": [
+        "E1",
+        "E2"
+      ],
+      "description": "右圆覆盖处蓝圆颜色改变的实现方式（如透明度或混色）无法从本帧确认"
+    }
+  ]
+}

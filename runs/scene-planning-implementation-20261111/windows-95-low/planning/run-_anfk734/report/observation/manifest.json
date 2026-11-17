@@ -1,0 +1,11 @@
+{
+  "schema_version": "scene_observations_v1",
+  "reference": {
+    "path": "reference.png",
+    "sha256": "80c35a1f92b2e537114d4615a85a6865411aa2d7c193ee7fdddf3155c8a59fcc"
+  },
+  "status": "completed",
+  "context_notes": [],
+  "open_questions": [],
+  "gaps": []
+}

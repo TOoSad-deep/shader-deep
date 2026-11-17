@@ -1,0 +1,22 @@
+{
+  "status": "finished",
+  "completed": [
+    {
+      "condition": "deep_agent",
+      "number": 1
+    },
+    {
+      "condition": "create_agent",
+      "number": 2
+    },
+    {
+      "condition": "create_agent",
+      "number": 3
+    },
+    {
+      "condition": "deep_agent",
+      "number": 4
+    }
+  ],
+  "active": null
+}

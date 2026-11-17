@@ -1,0 +1,191 @@
+{
+  "experiment": {
+    "date": "2026-11-10",
+    "model": "z-ai/glm-5.3-flash",
+    "endpoint": "https://openrouter.ai/api/v1",
+    "prompt": "分析整张图, 按已确认的粒度输出上下文、多元素E、F与R, 只描述可见观察, 通过提交工具交付。",
+    "rule_sha256": "9e9df9f77d51044a2a3a50e67642d14c313729de17e4f65d9b316de15978c699",
+    "examples_sha256": "5a7ad70090b757a97eb6e232649dd998d2bfeb8b0b7cd0b5df3fffe0597aec0f",
+    "codex_reference_sha256": "a403f0833578add92f4946e1933cd5688d19947ad6b1bab22e1d7363fbb40010",
+    "reference_visibility": "Codex修订稿仅作离线对照, 未加入运行规则或模型请求",
+    "max_model_calls": 8,
+    "max_output_tokens": 163840,
+    "max_request_retries": 0,
+    "request_timeout_seconds": 45,
+    "extra_tracing": false
+  },
+  "reference_review_scope": "Codex修订稿仅作对照; counts不是通过阈值, 未进行用户视觉验收",
+  "package_roundtrip": "5/5 read_observation_package通过, 原图/规则/样例hash一致",
+  "status_counts": {
+    "completed": 3,
+    "partial": 2
+  },
+  "results": [
+    {
+      "case": "cool-s-distance",
+      "status": "completed",
+      "run_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/single-observer-new-cases-20261110-uyrhcnj9/cool-s-distance/run-bb_zhez8",
+      "report_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/single-observer-new-cases-20261110-uyrhcnj9/cool-s-distance/run-bb_zhez8/report",
+      "counts": {
+        "elements": 2,
+        "features": 8,
+        "relations": 2
+      },
+      "model_calls": 3,
+      "elapsed_seconds": 228.64476250000007,
+      "token_usage": {
+        "input_tokens": 38151,
+        "output_tokens": 25169,
+        "total_tokens": 63320
+      },
+      "validation_errors": 1,
+      "tool_refusals": 0,
+      "reference_review": {
+        "reference_counts": [
+          2,
+          4,
+          2
+        ],
+        "assessment": "需复核",
+        "notes": [
+          "主体、内外条纹、白边和暗带大体覆盖",
+          "拆成8项F, 存在形状与内部组织拆分更细的情况",
+          "R强调同轴对位和暗晕压暗, 局部随形与中部边线接续关系未按参考稿明确组织"
+        ]
+      }
+    },
+    {
+      "case": "flat-water-effects2",
+      "status": "partial",
+      "run_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/single-observer-new-cases-20261110-uyrhcnj9/flat-water-effects2/run-y4xzrs0f",
+      "report_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/single-observer-new-cases-20261110-uyrhcnj9/flat-water-effects2/run-y4xzrs0f/report",
+      "counts": {
+        "elements": 3,
+        "features": 10,
+        "relations": 0
+      },
+      "model_calls": 1,
+      "elapsed_seconds": 18.583352749992628,
+      "token_usage": {
+        "input_tokens": 9436,
+        "output_tokens": 1488,
+        "total_tokens": 10924
+      },
+      "validation_errors": 0,
+      "tool_refusals": 0,
+      "reference_review": {
+        "reference_counts": [
+          2,
+          4,
+          2
+        ],
+        "assessment": "关键关系缺失",
+        "notes": [
+          "反光路径写成水面F, 未提交亮圆与水面的布局/反光R",
+          "太阳核心精确直径未确定被列为必要gaps, 超出当前观察精度要求",
+          "太阳底缘贴近地平线的描述需对照原图复核"
+        ]
+      }
+    },
+    {
+      "case": "dna-helis",
+      "status": "completed",
+      "run_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/single-observer-new-cases-20261110-uyrhcnj9/dna-helis/run-sxzsa961",
+      "report_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/single-observer-new-cases-20261110-uyrhcnj9/dna-helis/run-sxzsa961/report",
+      "counts": {
+        "elements": 2,
+        "features": 4,
+        "relations": 2
+      },
+      "model_calls": 2,
+      "elapsed_seconds": 344.06813050000346,
+      "token_usage": {
+        "input_tokens": 34142,
+        "output_tokens": 36787,
+        "total_tokens": 70929
+      },
+      "validation_errors": 0,
+      "tool_refusals": 0,
+      "reference_review": {
+        "reference_counts": [
+          1,
+          4,
+          2
+        ],
+        "assessment": "需确认元素边界并修正事实",
+        "notes": [
+          "点群与杆群拆成两个E, 属于与参考稿不同的复合对象粒度",
+          "端点连接和杆长配合已表达",
+          "左下圆点被底缘截断、右上暗圆被右缘截断的描述不符合图中裁切方向/范围"
+        ]
+      }
+    },
+    {
+      "case": "buffer-bloom",
+      "status": "partial",
+      "run_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/single-observer-new-cases-20261110-uyrhcnj9/buffer-bloom/run-dpi3qoq6",
+      "report_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/single-observer-new-cases-20261110-uyrhcnj9/buffer-bloom/run-dpi3qoq6/report",
+      "counts": {
+        "elements": 4,
+        "features": 7,
+        "relations": 0
+      },
+      "model_calls": 1,
+      "elapsed_seconds": 18.110603624998475,
+      "token_usage": {
+        "input_tokens": 3154,
+        "output_tokens": 1382,
+        "total_tokens": 4536
+      },
+      "validation_errors": 0,
+      "tool_refusals": 0,
+      "reference_review": {
+        "reference_counts": [
+          3,
+          6,
+          2
+        ],
+        "assessment": "关键关系缺失",
+        "notes": [
+          "三个主体及各自柔光已表达, 黑背景额外建E",
+          "斜向排列被概括为垂直排列, 倒置心形方向不明确",
+          "漏掉主体斜排与柔光交叠R",
+          "已能描述主要外观却以像素级精确颜色/软硬未知填必要gaps"
+        ]
+      }
+    },
+    {
+      "case": "auroras",
+      "status": "completed",
+      "run_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/single-observer-new-cases-20261110-uyrhcnj9/auroras/run-0ojqu9sv",
+      "report_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/single-observer-new-cases-20261110-uyrhcnj9/auroras/run-0ojqu9sv/report",
+      "counts": {
+        "elements": 4,
+        "features": 10,
+        "relations": 4
+      },
+      "model_calls": 2,
+      "elapsed_seconds": 147.64257466600975,
+      "token_usage": {
+        "input_tokens": 17311,
+        "output_tokens": 10526,
+        "total_tokens": 27837
+      },
+      "validation_errors": 0,
+      "tool_refusals": 0,
+      "reference_review": {
+        "reference_counts": [
+          3,
+          7,
+          3
+        ],
+        "assessment": "主要交互覆盖, 粒度待确认",
+        "notes": [
+          "倒影关系已捕获",
+          "极光按空间区块拆得更细, 地景独立为E, 属于可讨论的替代粒度",
+          "剪影前后遮挡、星点被光晕盖过的说法因果较强, 应收紧为可见对比与分布"
+        ]
+      }
+    }
+  ]
+}

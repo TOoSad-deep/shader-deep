@@ -1,0 +1,13 @@
+{
+  "schema_version": "scene_observations_v1",
+  "reference": {
+    "path": "reference.png",
+    "sha256": "cbc9a23997fd40f772044174fa87c8776e7b18b559ecc268476ba79bee15279c"
+  },
+  "status": "completed",
+  "context_notes": [
+    "整图为夜间极光海景, 地平线约在画面中下部, 之上为星空与极光, 之下为倒映极光的水面"
+  ],
+  "open_questions": [],
+  "gaps": []
+}

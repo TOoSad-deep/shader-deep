@@ -1,0 +1,72 @@
+{
+  "case": "buffer-bloom",
+  "source_observation": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/draft-budget20-five-cases-20261111/buffer-bloom/run-dr3mzom2/report",
+  "trace_id": "01a1c926-518e-7fb3-8cfe-4dc4fd6f2425",
+  "planning": {
+    "status": "completed",
+    "error": null,
+    "run_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-planning-implementation-20261111/buffer-bloom/planning/run-lpy1hj6e",
+    "report_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-planning-implementation-20261111/buffer-bloom/planning/run-lpy1hj6e/report",
+    "execution": {
+      "planning_protocol": "scene_planning_v1",
+      "execution": "deep_agents_single_planner",
+      "state": "accepted",
+      "reason": null,
+      "model_calls": 6,
+      "max_model_calls": 20,
+      "validation_errors": 0,
+      "tool_refusals": 0,
+      "observation_sha256": "6e45a449c30a98d913697e7addfc90143f95abb96cb2e77bda513d59cf1b6abf",
+      "reference_sha256": "aeb6a0855a711be65b4167ae80becf283b35e499ee609748fe5bfe41e23675ff",
+      "draft_path": "draft/planning.json",
+      "draft_revision": "228ae124769276f02b7131a05316cba30bb0901616576c54ee090e7bf3c5ffbe",
+      "seen_revision": "228ae124769276f02b7131a05316cba30bb0901616576c54ee090e7bf3c5ffbe",
+      "accepted_revision": "228ae124769276f02b7131a05316cba30bb0901616576c54ee090e7bf3c5ffbe",
+      "accepted_snapshot": "results/planning.json",
+      "resource_read_results": [],
+      "model_id": "z-ai/glm-5.3-flash",
+      "reasoning_effort": null,
+      "rule_sha256": "3b8554e6006176713e1e6977df8e1097a719bcdd7d6d8bc8a68bf60d44ec10ea",
+      "resource_sha256": {
+        "SKILL.md": "3b8554e6006176713e1e6977df8e1097a719bcdd7d6d8bc8a68bf60d44ec10ea",
+        "references/mechanisms.md": "c6ccf4db4c1d96be0663395e323e014ac3d0b6f9b50a3da7a4d281eee49c0416",
+        "references/alternatives.md": "c0e7ff089ebee25f5e3ff41f773cbbee209ea9243dcedb0259aa83a6d89195a0",
+        "references/conditions-and-gaps.md": "2d1ca84910cbd9a4ae4493c573a7164e90773c8bd064e043af15fb2ab8d273e6"
+      },
+      "skill_bundle_sha256": "d379740d9a1cc16aeaea1bb3cc3433edd85ad3ec42c8d7aaabed8fa8c886d500",
+      "elapsed_seconds": 133.34530466698925,
+      "elapsed_scope": "planning_before_publication",
+      "token_usage": {
+        "input_tokens": 70730,
+        "output_tokens": 8246,
+        "total_tokens": 78976
+      },
+      "usage_scope": "sdk_reported_responses_only",
+      "http_request_count": null
+    }
+  },
+  "selected_sketch": "S1",
+  "selection_rule": "first complete sketch, otherwise first declared sketch",
+  "counts": {
+    "mechanisms": 7,
+    "sketches": 1,
+    "targets": 11
+  },
+  "planning_sha256": "04d8f823cfdd67b86a872e928f549a5fa7604a991d2409ee3f8d66a32d98b0b4",
+  "observation_sha256": "6e45a449c30a98d913697e7addfc90143f95abb96cb2e77bda513d59cf1b6abf",
+  "generation": {
+    "stop_reason": "completed",
+    "run_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-planning-implementation-20261111/buffer-bloom/generation/run-zwm_06kv",
+    "attempts": 3,
+    "model_calls": 4,
+    "candidate_id": "run-zwm_06kv-c003",
+    "code_path": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-planning-implementation-20261111/buffer-bloom/generation/run-zwm_06kv/candidate-003.glsl",
+    "preview_path": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-planning-implementation-20261111/buffer-bloom/generation/run-zwm_06kv/candidate-003.png",
+    "assessment": [
+      "选择 c003 (基于 S1 方案第三次参数/合成方式修正后的渲染结果)。改善: 将 M6 实心核心由加法叠加改为混合覆盖, 三体轮廓较 c001/c002 明显清晰; 光晕强度与衰减系数收敛 (约0.6/3.0-3.2), 背景恢复近黑, 保留中部偏紫粉、左下偏蓝、右上暖棕的残留晕染 (F2); 三体沿右上-左下对角线均匀排列, 星暖黄橙晕、圆粉紫红晕、心蓝晕向下偏置扩散, 交叠形成暖黄→紫粉→蓝过渡 (R1/R2/R3/F8)。方案遵循: M1-M7 全部按 selected 机制实现, 心形以 180° 旋转实现倒置姿态 (F7), 星形旋转约 -8°、圆角 0.015。仍存在的差异: (1) 星形五角尖点在参考图中清晰外伸, 本候选中核心轮廓仍偏圆钝、近似圆角多边形, 尖角辨识度不足, 是主要缺口; (2) 心形底部双瓣间浅凹口在本候选中不明显, 呈近似水滴轮廓; (3) 圆形核心的边缘淡粉色带比参考略窄, 晕的粉紫成分略偏红; (4) 整体光晕范围仍比参考略收敛。这些属于方案内数值可调范围 (星形圆角量、内半径比与晕/核心对比), 未改变固定方案结构。"
+    ]
+  },
+  "elapsed_seconds": 266.4511794169957,
+  "code_changed_during_run": true,
+  "trace_url": "https://smith.langchain.com/o/fcb09333-f0ce-45e7-9ea2-c4750cdfbd16/projects/p/2e0945b1-fc78-4930-96bb-3085745b703a/r/01a1c926-518e-7fb3-8cfe-4dc4fd6f2425?poll=true"
+}

@@ -1,0 +1,60 @@
+{
+  "case": "2d-physics-balls",
+  "source_observation": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-observer-traced-20261111/balls/run-4n0e8rhy/report",
+  "trace_id": "01a1c931-5677-7813-900b-933970ff1fe5",
+  "planning": {
+    "status": "completed",
+    "error": null,
+    "run_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-planning-implementation-20261111/2d-physics-balls/planning/run-5qpnc_et",
+    "report_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-planning-implementation-20261111/2d-physics-balls/planning/run-5qpnc_et/report",
+    "execution": {
+      "planning_protocol": "scene_planning_v1",
+      "execution": "deep_agents_single_planner",
+      "state": "accepted",
+      "reason": null,
+      "model_calls": 5,
+      "max_model_calls": 20,
+      "validation_errors": 0,
+      "tool_refusals": 0,
+      "observation_sha256": "cfa9a5c840dbee39d783446ddba08e1f3b6bad8deea681fb13312b53ecf24bb1",
+      "reference_sha256": "7beeab6b0c683e16ed213393b2a8850b28c1c2e3a89963c671f8902d6d194523",
+      "draft_path": "draft/planning.json",
+      "draft_revision": "9578430b561f7cf4de0f531ee45ee787d061c6b40cd247775b6bee6370bb2bb8",
+      "seen_revision": "9578430b561f7cf4de0f531ee45ee787d061c6b40cd247775b6bee6370bb2bb8",
+      "accepted_revision": "9578430b561f7cf4de0f531ee45ee787d061c6b40cd247775b6bee6370bb2bb8",
+      "accepted_snapshot": "results/planning.json",
+      "resource_read_results": [],
+      "model_id": "z-ai/glm-5.3-flash",
+      "reasoning_effort": null,
+      "rule_sha256": "3b8554e6006176713e1e6977df8e1097a719bcdd7d6d8bc8a68bf60d44ec10ea",
+      "resource_sha256": {
+        "SKILL.md": "3b8554e6006176713e1e6977df8e1097a719bcdd7d6d8bc8a68bf60d44ec10ea",
+        "references/mechanisms.md": "c6ccf4db4c1d96be0663395e323e014ac3d0b6f9b50a3da7a4d281eee49c0416",
+        "references/alternatives.md": "c0e7ff089ebee25f5e3ff41f773cbbee209ea9243dcedb0259aa83a6d89195a0",
+        "references/conditions-and-gaps.md": "2d1ca84910cbd9a4ae4493c573a7164e90773c8bd064e043af15fb2ab8d273e6"
+      },
+      "skill_bundle_sha256": "d379740d9a1cc16aeaea1bb3cc3433edd85ad3ec42c8d7aaabed8fa8c886d500",
+      "elapsed_seconds": 855.6156978330109,
+      "elapsed_scope": "planning_before_publication",
+      "token_usage": {
+        "input_tokens": 350699,
+        "output_tokens": 85818,
+        "total_tokens": 436517
+      },
+      "usage_scope": "sdk_reported_responses_only",
+      "http_request_count": null
+    }
+  },
+  "selected_sketch": "S1",
+  "selection_rule": "first complete sketch, otherwise first declared sketch",
+  "counts": {
+    "mechanisms": 5,
+    "sketches": 1,
+    "targets": 8
+  },
+  "planning_sha256": "a79a01980aa852870aa3a843253d5cb6b2f79e7bf4227000e6ac2192e9fca446",
+  "observation_sha256": "cfa9a5c840dbee39d783446ddba08e1f3b6bad8deea681fb13312b53ecf24bb1",
+  "elapsed_seconds": 855.6623362500104,
+  "code_changed_during_run": true,
+  "trace_url": "https://smith.langchain.com/o/fcb09333-f0ce-45e7-9ea2-c4750cdfbd16/projects/p/2e0945b1-fc78-4930-96bb-3085745b703a/r/01a1c931-5677-7813-900b-933970ff1fe5?poll=true"
+}

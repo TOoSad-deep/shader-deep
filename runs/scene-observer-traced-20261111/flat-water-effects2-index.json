@@ -1,0 +1,21 @@
+{
+  "status": "completed",
+  "run_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-observer-traced-20261111/flat-water-effects2/run-puqxsb8c",
+  "report_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-observer-traced-20261111/flat-water-effects2/run-puqxsb8c/report",
+  "result": {
+    "id": "run-puqxsb8c-scene-observations",
+    "task_id": "A1",
+    "status": "completed",
+    "summary": "全图 E/F/R 观察包已交付: report/manifest.json; 观察完成不代表 M/S 规划或视觉验收完成",
+    "candidate_ids": [],
+    "observations": [],
+    "hypotheses": [],
+    "limitations": [],
+    "recommendation": null,
+    "analysis_detail": null,
+    "analysis_protocol": "scene_observations_v1"
+  },
+  "trace_id": "01a1c82e-0734-75a2-8130-a048d141cfa1",
+  "project": "shader-deep",
+  "exit_code": 0
+}

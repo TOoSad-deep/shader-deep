@@ -1,0 +1,31 @@
+{
+  "analysis_protocol": "scene_observations_v1",
+  "execution": "deep_agents_single_observer",
+  "state": "accepted",
+  "reason": null,
+  "model_calls": 1,
+  "validation_errors": 0,
+  "tool_refusals": 0,
+  "max_model_calls": 8,
+  "reference_sha256": "4b98572449bf26744a76d3f9271bc10397e3b1c05512b2fcab5624442f7a6252",
+  "accepted_snapshot": "results/observations.json",
+  "resource_read_results": [],
+  "model_id": "z-ai/glm-5.3-flash",
+  "rule_sha256": "c6e5d8ab6e32d8d738a6bc71a1650b8d1af81d5c12d1bb5c30113a37b4223b8b",
+  "resource_sha256": {
+    "SKILL.md": "c6e5d8ab6e32d8d738a6bc71a1650b8d1af81d5c12d1bb5c30113a37b4223b8b",
+    "references/grouping.md": "ecb110a27e76a68ab0ef5ef6a42f9231927e58718cc830209407b46b4fbee75f",
+    "references/relations.md": "88c11dd1105f168ded3eb5e255e7481ae2b318f7f90b8b973f83700f23e0b543",
+    "references/uncertainty.md": "8c5b8adcf19d45c3204465cf1aad383b404bde20dd1cd6a8cc21cfc5f0727e76"
+  },
+  "skill_bundle_sha256": "e886d1ceb850dec6f14a4e66b15bbfdcb3abf9229cad60bf3b478912af64f095",
+  "elapsed_seconds": 17.873387375002494,
+  "elapsed_scope": "analysis_before_publication",
+  "token_usage": {
+    "input_tokens": 2532,
+    "output_tokens": 421,
+    "total_tokens": 2953
+  },
+  "usage_scope": "sdk_reported_responses_only",
+  "http_request_count": null
+}

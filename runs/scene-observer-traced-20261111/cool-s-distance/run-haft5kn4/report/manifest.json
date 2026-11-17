@@ -1,0 +1,16 @@
+{
+  "schema_version": "scene_observations_v1",
+  "reference": {
+    "path": "reference.png",
+    "sha256": "dd712a5d2528d4db56bcbb6b10c66f946ca7c33579a0eb2ec23af90e4fbc7493"
+  },
+  "status": "partial",
+  "context_notes": [],
+  "open_questions": [],
+  "gaps": [
+    {
+      "refs": [],
+      "description": "S字母内部与背景波纹的具体刻线细节因分辨率限制较细, 无法逐条确认; 仅影响细微纹理, 不影响主要外观识别"
+    }
+  ]
+}

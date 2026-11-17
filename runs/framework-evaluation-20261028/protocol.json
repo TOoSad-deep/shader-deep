@@ -1,0 +1,38 @@
+{
+  "status": "prepared",
+  "purpose": "worker-only framework feasibility, not default migration",
+  "model": "z-ai/glm-5.3-flash",
+  "reasoning": null,
+  "sample": "glow_border, deterministic 128x128 engineering fixture",
+  "order": [
+    "deep_agent",
+    "create_agent",
+    "create_agent",
+    "deep_agent"
+  ],
+  "max_total_logical_calls": 8,
+  "max_output_tokens_per_call": 8192,
+  "network_retries": 0,
+  "per_trial_wall_seconds": 240,
+  "request_timeout_seconds": 90,
+  "observation_tools": false,
+  "target_crop": false,
+  "human_acceptance": false,
+  "quality_checks": [
+    "rounded cyan outline",
+    "bright core distinct from outer halo",
+    "dark center/background retained",
+    "mechanisms remain candidates"
+  ],
+  "source_hashes": {
+    "src/shader_deep/agents/analysis/execution.py": "b1f65c0fa767cec223be21203cf75c1e2d4544637eb6fe00b2b6cc8698eb59c4",
+    "src/shader_deep/agents/analysis/exploration.py": "38e094d6d28f10cb0e302d397d2a8d0edfac540a5f0c53eadd4fb3716d14ad97",
+    "src/shader_deep/runtime/middleware.py": "c58855cfb8a6a029940ffa2618787680e3c20e27badbefee0953fcf85c94ca19",
+    "src/shader_deep/runtime/five_analysis_loop.py": "c0160c7603f034da251af74306e235060c0919d3215ea7e1d7adfed1ca8c9167",
+    "src/shader_deep/runtime/model_loop.py": "02980c6e8168858ed5cae84bf1e7c3b80f755d8d5dbc512883ea7b0c6aad7a73",
+    "src/shader_deep/agents/analysis/prompts.py": "50a0513f1ff516b46e95033cde8f5e35dd973fefe78663e9fcd12666de865745",
+    "src/shader_deep/infrastructure/llm/transport.py": "562db002ba96752bab044bed7094039ac3864a9a5ea6ec5dc691af7eb551fa70",
+    "uv.lock": "51c48401c95857fe27b518b35737d410746ccca5a834d9e308dfe49cd4fb0fff"
+  },
+  "driver_sha256": "87bf98c1bc13ee6896dbcf8adfbcd64fa29acb4c184adaf6e1f256696cd5bb27"
+}

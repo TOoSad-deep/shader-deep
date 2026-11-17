@@ -1,0 +1,1 @@
+{"trial": 2, "mode": "staged", "status": "succeeded", "model_calls": 11, "repairs": 2, "elapsed_seconds": 365.019, "counts": {"features": 4, "relations": 4, "mechanisms": 4, "sketches": 1, "open_questions": 4, "gaps": 3}, "error": null}

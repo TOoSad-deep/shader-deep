@@ -1,0 +1,21 @@
+{
+  "image": "drive-home",
+  "run_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/element-split-20261001/drive-home",
+  "status": "dispatch_prepared_not_started",
+  "planning_model_calls": 1,
+  "elements": 1,
+  "target": {
+    "id": "e",
+    "name": "b",
+    "region": "g",
+    "feature_ids": []
+  },
+  "directions": [
+    "单",
+    "颗",
+    "水"
+  ],
+  "worker_attempts": 0,
+  "worker_model_calls": 0,
+  "elapsed_seconds": 147.06
+}

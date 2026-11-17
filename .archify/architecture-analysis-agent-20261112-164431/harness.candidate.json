@@ -1,0 +1,381 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "分析 Agent · 共用 Harness 与状态归属",
+    "locale": "zh-CN",
+    "output": ".archify/architecture-analysis-agent-20261112-164431/analysis-harness.html",
+    "quality_profile": "showcase",
+    "repository": {
+      "url": "https://github.com/TOoSad-deep/shader-deep.git",
+      "revision": "784e6de3b246d967c9782072f268526fce2cb60a",
+      "link_mode": "local-only"
+    }
+  },
+  "components": [
+    {
+      "id": "context",
+      "type": "backend",
+      "label": "固定输入中间件",
+      "sublabel": "原图 · 业务材料 · 剩余预算",
+      "pos": [
+        40,
+        40
+      ],
+      "size": [
+        240,
+        82
+      ],
+      "sources": [
+        {
+          "path": "apps/shader_deep/src/shader_deep/agents/analysis/native.py",
+          "line": 96,
+          "end_line": 127
+        },
+        {
+          "path": "apps/shader_deep/src/shader_deep/agents/planning/native.py",
+          "line": 81,
+          "end_line": 111
+        },
+        {
+          "path": "apps/shader_deep/src/shader_deep/workflows/planning/session.py",
+          "line": 60,
+          "end_line": 75
+        }
+      ],
+      "tag": "每次实际主请求注入"
+    },
+    {
+      "id": "sdk",
+      "type": "backend",
+      "label": "Deep Agents 原生图",
+      "sublabel": "角色指令 · 消息 · 摘要 · 工具循环",
+      "pos": [
+        430,
+        40
+      ],
+      "size": [
+        270,
+        82
+      ],
+      "sources": [
+        {
+          "path": "apps/shader_deep/src/shader_deep/agents/analysis/native.py",
+          "line": 159,
+          "end_line": 172
+        },
+        {
+          "path": "apps/shader_deep/src/shader_deep/agents/planning/native.py",
+          "line": 158,
+          "end_line": 170
+        }
+      ],
+      "tag": "观察／规划分别装配"
+    },
+    {
+      "id": "model",
+      "type": "external",
+      "label": "模型服务适配",
+      "sublabel": "ChatOpenAI · Chat Completions",
+      "pos": [
+        870,
+        40
+      ],
+      "size": [
+        260,
+        82
+      ],
+      "sources": [
+        {
+          "path": "apps/shader_deep/src/shader_deep/infrastructure/llm/client.py",
+          "line": 29,
+          "end_line": 56
+        },
+        {
+          "path": "apps/shader_deep/src/shader_deep/infrastructure/llm/client.py",
+          "line": 59,
+          "end_line": 79
+        },
+        {
+          "path": "apps/shader_deep/src/shader_deep/agents/analysis/native.py",
+          "line": 152,
+          "end_line": 171
+        }
+      ]
+    },
+    {
+      "id": "guard",
+      "type": "security",
+      "label": "DraftToolGuard",
+      "sublabel": "工具白名单 · 顺序 · 终态与预算",
+      "pos": [
+        430,
+        300
+      ],
+      "size": [
+        270,
+        82
+      ],
+      "sources": [
+        {
+          "path": "apps/shader_deep/src/shader_deep/agents/draft_runtime.py",
+          "line": 217,
+          "end_line": 267
+        },
+        {
+          "path": "apps/shader_deep/src/shader_deep/agents/draft_runtime.py",
+          "line": 269,
+          "end_line": 318
+        },
+        {
+          "path": "apps/shader_deep/src/shader_deep/agents/analysis/native.py",
+          "line": 81,
+          "end_line": 93
+        }
+      ]
+    },
+    {
+      "id": "session",
+      "type": "backend",
+      "label": "业务 Session",
+      "sublabel": "固定输入 · 版本回执 · 接受快照",
+      "pos": [
+        870,
+        300
+      ],
+      "size": [
+        260,
+        82
+      ],
+      "sources": [
+        {
+          "path": "apps/shader_deep/src/shader_deep/workflows/analysis/session.py",
+          "line": 135,
+          "end_line": 163
+        },
+        {
+          "path": "apps/shader_deep/src/shader_deep/workflows/analysis/session.py",
+          "line": 171,
+          "end_line": 233
+        },
+        {
+          "path": "apps/shader_deep/src/shader_deep/workflows/planning/session.py",
+          "line": 169,
+          "end_line": 220
+        }
+      ]
+    },
+    {
+      "id": "backend",
+      "type": "backend",
+      "label": "CompositeBackend",
+      "sublabel": "StateBackend + DraftBackend",
+      "pos": [
+        430,
+        560
+      ],
+      "size": [
+        270,
+        82
+      ],
+      "sources": [
+        {
+          "path": "apps/shader_deep/src/shader_deep/agents/analysis/native.py",
+          "line": 159,
+          "end_line": 171
+        },
+        {
+          "path": "apps/shader_deep/src/shader_deep/agents/draft_runtime.py",
+          "line": 149,
+          "end_line": 192
+        },
+        {
+          "path": "apps/shader_deep/src/shader_deep/infrastructure/storage/json_draft.py",
+          "line": 227,
+          "end_line": 267
+        }
+      ]
+    },
+    {
+      "id": "state",
+      "type": "database",
+      "label": "会话内文件状态",
+      "sublabel": "只读规则 · SDK 外置材料",
+      "pos": [
+        40,
+        560
+      ],
+      "size": [
+        240,
+        82
+      ],
+      "sources": [
+        {
+          "path": "apps/shader_deep/src/shader_deep/agents/analysis/native.py",
+          "line": 40,
+          "end_line": 59
+        },
+        {
+          "path": "apps/shader_deep/src/shader_deep/agents/planning/native.py",
+          "line": 48,
+          "end_line": 59
+        },
+        {
+          "path": "apps/shader_deep/src/shader_deep/agents/analysis/README.md",
+          "line": 5,
+          "end_line": 35
+        }
+      ]
+    },
+    {
+      "id": "disk",
+      "type": "database",
+      "label": "本轮磁盘制品",
+      "sublabel": "draft/ · results/ · manifest.json",
+      "pos": [
+        870,
+        560
+      ],
+      "size": [
+        260,
+        82
+      ],
+      "sources": [
+        {
+          "path": "apps/shader_deep/src/shader_deep/infrastructure/storage/json_draft.py",
+          "line": 190,
+          "end_line": 225
+        },
+        {
+          "path": "apps/shader_deep/src/shader_deep/infrastructure/storage/json_draft.py",
+          "line": 239,
+          "end_line": 258
+        },
+        {
+          "path": "apps/shader_deep/src/shader_deep/workflows/analysis/session.py",
+          "line": 207,
+          "end_line": 233
+        }
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "inject_context",
+      "from": "context",
+      "to": "sdk",
+      "label": "逐轮注入",
+      "variant": "default"
+    },
+    {
+      "id": "request_model",
+      "from": "sdk",
+      "to": "model",
+      "label": "模型请求",
+      "variant": "emphasis"
+    },
+    {
+      "id": "model_response",
+      "from": "model",
+      "to": "sdk",
+      "label": "文本与工具调用",
+      "variant": "default"
+    },
+    {
+      "id": "dispatch_tools",
+      "from": "sdk",
+      "to": "guard",
+      "label": "工具请求",
+      "variant": "emphasis"
+    },
+    {
+      "id": "control_calls",
+      "from": "guard",
+      "to": "sdk",
+      "label": "终态与预算门禁",
+      "variant": "default"
+    },
+    {
+      "id": "business_tools",
+      "from": "guard",
+      "to": "session",
+      "label": "保存／完成／停止",
+      "variant": "emphasis"
+    },
+    {
+      "id": "file_tools",
+      "from": "guard",
+      "to": "backend",
+      "label": "read_file / edit_file",
+      "variant": "emphasis"
+    },
+    {
+      "id": "read_resources",
+      "from": "backend",
+      "to": "state",
+      "label": "读取规则与外置材料",
+      "variant": "default"
+    },
+    {
+      "id": "draft_io",
+      "from": "backend",
+      "to": "disk",
+      "label": "草稿回读与局部编辑",
+      "variant": "default"
+    },
+    {
+      "id": "accept_snapshot",
+      "from": "session",
+      "to": "disk",
+      "label": "初稿／接受快照／诊断",
+      "variant": "emphasis"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "两套角色各有五个工具",
+      "items": [
+        "观察使用 save_observation_draft、read_file、edit_file、finish_analysis、stop_analysis。",
+        "规划使用 save_planning_draft、read_file、edit_file、finish_planning、stop_planning。",
+        "FixedInput 限制模型可见工具，DraftToolGuard 再核查执行权限。写入分别限定到 /draft/observations.json 或 /draft/planning.json。"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "保存、复核与局部修订",
+      "items": [
+        "首次保存完整 JSON。随后 read_file 回读，同一 Agent 对照固定材料复核，再用 edit_file 修正唯一匹配片段。",
+        "磁盘字节哈希构成 revision。编辑使用请求绑定版本，同批工具按声明顺序执行，返回修改摘要与定位诊断。",
+        "字段结构在写入前校验。跨条目业务问题可暂存，完成时统一校验。"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "完成必须通过版本门禁",
+      "items": [
+        "DraftReadTracker 累计同版本草稿实际进入成功主请求的全部行。每次修改后重新完整回读。",
+        "下一轮模型响应才能调用无参数 finish。Session 执行领域校验，快照写入成功后标记 accepted。",
+        "stop 或主调用预算耗尽保留草稿与原因。终态门禁先于后续摘要和主模型计数。"
+      ]
+    },
+    {
+      "dot": "violet",
+      "title": "上下文与记忆归属",
+      "items": [
+        "主 SKILL 正文直接进入 system prompt。复杂边界参考预置到 StateBackend，通过 read_file 按需披露。",
+        "SDK 管理本图消息、摘要及外置材料。Session 维护业务状态、版本和预算。磁盘记录草稿、历史字节与接受结果。",
+        "当前观察和规划的记忆范围是各自本次运行。跨阶段通过正式文件包传递事实。"
+      ]
+    },
+    {
+      "dot": "slate",
+      "title": "配置与源码依据",
+      "items": [
+        "观察和规划默认主模型调用预算均为 20。网络重试另计，显式 CLI 参数可以覆盖配置。",
+        "观察 YAML 每次输出上限 163840，直接构造 AnalysisOptions 默认 16384。规划默认 32768。",
+        "依据当前未提交工作树的独立本地证据快照。图中的模型节点表示环境变量配置的服务，实际型号随运行配置确定。"
+      ]
+    }
+  ]
+}

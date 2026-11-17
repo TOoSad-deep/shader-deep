@@ -1,0 +1,14 @@
+{
+  "schema_version": "scene_observations_v1",
+  "reference": {
+    "path": "reference.png",
+    "sha256": "2ea796bd2f17cb908e340317b4059df0632ce7630f8cd829f723b59e074cfb67"
+  },
+  "status": "completed",
+  "context_notes": [
+    "静态俯视光滑格面（瓷砖/玻璃类台面），除两处水渍外无其他物件",
+    "仅描述可见外观与配合，不推断成因或运动"
+  ],
+  "open_questions": [],
+  "gaps": []
+}

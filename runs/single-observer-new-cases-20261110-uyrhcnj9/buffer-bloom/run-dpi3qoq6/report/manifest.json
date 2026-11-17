@@ -1,0 +1,31 @@
+{
+  "schema_version": "scene_observations_v1",
+  "reference": {
+    "path": "reference.png",
+    "sha256": "aeb6a0855a711be65b4167ae80becf283b35e499ee609748fe5bfe41e23675ff"
+  },
+  "status": "partial",
+  "context_notes": [
+    "背景为纯深色近黑，无地平线或其它环境元素，画面主体为三个发光形状沿垂直方向排列",
+    "整体为暗色发光场景，各形状的发光晕是画面主要亮度来源"
+  ],
+  "open_questions": [
+    {
+      "refs": [
+        "F2",
+        "F4"
+      ],
+      "description": "星体左下方光晕的淡紫色调是星体光晕自身还是圆形粉色光晕上延所致，单图无法完全区分"
+    }
+  ],
+  "gaps": [
+    {
+      "refs": [
+        "F1",
+        "F3",
+        "F5"
+      ],
+      "description": "三个形状轮廓边缘的精确像素级颜色与软硬程度无法从单图精确确认，但已能描述主要外观"
+    }
+  ]
+}

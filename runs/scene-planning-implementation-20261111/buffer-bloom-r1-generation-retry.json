@@ -1,0 +1,12 @@
+{
+  "trace_id": "01a1c945-f498-7673-878a-c7e7ea9da295",
+  "planning_sha256": "4dcebf8dc838be716241aa03c55e1b7b3319aaded3cad0bfe68d3a184d45971f",
+  "stop_reason": "completed",
+  "run_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-planning-implementation-20261111/buffer-bloom-r1/generation-retry/run-5a7u1293",
+  "attempts": 5,
+  "max_attempts": 6,
+  "model_calls": 6,
+  "code_path": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-planning-implementation-20261111/buffer-bloom-r1/generation-retry/run-5a7u1293/candidate-005.glsl",
+  "preview_path": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-planning-implementation-20261111/buffer-bloom-r1/generation-retry/run-5a7u1293/candidate-005.png",
+  "trace_url": "https://smith.langchain.com/o/fcb09333-f0ce-45e7-9ea2-c4750cdfbd16/projects/p/2e0945b1-fc78-4930-96bb-3085745b703a/r/01a1c945-f498-7673-878a-c7e7ea9da295?poll=true"
+}

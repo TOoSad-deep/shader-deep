@@ -1,0 +1,25 @@
+{
+  "analysis_protocol": "scene_observations_v1",
+  "stop_reason": "partial",
+  "error": null,
+  "report_path": "report",
+  "options": {
+    "max_model_calls": 8,
+    "max_output_tokens": 163840,
+    "max_request_retries": 0,
+    "request_timeout_seconds": 45,
+    "stream_model_responses": true,
+    "output_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/single-observer-calibration-20261110/frosted"
+  },
+  "deprecated_option_diagnostics": [],
+  "execution": {
+    "analysis_protocol": "scene_observations_v1",
+    "execution": "deep_agents_single_observer",
+    "state": "accepted",
+    "reason": null,
+    "model_calls": 1,
+    "max_model_calls": 8,
+    "reference_sha256": "4b98572449bf26744a76d3f9271bc10397e3b1c05512b2fcab5624442f7a6252",
+    "accepted_snapshot": "results/observations.json"
+  }
+}

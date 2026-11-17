@@ -1,0 +1,9 @@
+{"run_id": "windows-95", "task_id": "planning", "attempt_id": "d84e89f931c049bab6313420d3264300", "event": "task_started", "model_call": 0}
+{"run_id": "windows-95", "task_id": "planning", "attempt_id": "d84e89f931c049bab6313420d3264300", "event": "model_started", "model_call": 1}
+{"run_id": "windows-95", "task_id": "planning", "attempt_id": "d84e89f931c049bab6313420d3264300", "event": "request_sizes", "model_call": 1, "system_chars": 219, "tool_schema_chars": 1125, "message_text_chars": 234, "image_count": 1, "message_count": 1, "tool_history_chars": 0}
+{"run_id": "windows-95", "task_id": "planning", "attempt_id": "d84e89f931c049bab6313420d3264300", "event": "request_started", "model_call": 1, "attempt": 1}
+{"run_id": "windows-95", "task_id": "planning", "attempt_id": "d84e89f931c049bab6313420d3264300", "event": "request_completed", "model_call": 1, "attempt": 1, "elapsed_seconds": 32.665}
+{"run_id": "windows-95", "task_id": "planning", "attempt_id": "d84e89f931c049bab6313420d3264300", "event": "model_completed", "model_call": 1}
+{"run_id": "windows-95", "task_id": "planning", "attempt_id": "d84e89f931c049bab6313420d3264300", "event": "model_usage", "model_call": 1, "input_tokens": 1863, "output_tokens": 1484, "total_tokens": 3347, "input_token_details": {"audio": 0, "cache_creation": 0, "cache_read": 0}, "output_token_details": {"audio": 0, "reasoning": 863}}
+{"run_id": "windows-95", "task_id": "planning", "attempt_id": "d84e89f931c049bab6313420d3264300", "event": "tool_result", "model_call": 1, "tool": "submit_target_plan", "call_id": "call_58c617d6d4764205906d628c", "outcome": "success", "scope": "planning"}
+{"run_id": "windows-95", "task_id": "planning", "attempt_id": "d84e89f931c049bab6313420d3264300", "event": "task_completed", "model_call": 1}

@@ -1,0 +1,14 @@
+{
+  "schema_version": "scene_observations_v1",
+  "reference": {
+    "path": "reference.png",
+    "sha256": "e1923ac438f2de7645ee0c4ec2c4d0742720c83a2764561f6490dc4bcf427682"
+  },
+  "status": "completed",
+  "context_notes": [
+    "纯白/近白背景, 画面中除单个粉色圆球外无其他可见物体",
+    "球体居中略偏左, 画面四周保留少量白色留白, 底部留白略窄因延伸的柔影"
+  ],
+  "open_questions": [],
+  "gaps": []
+}

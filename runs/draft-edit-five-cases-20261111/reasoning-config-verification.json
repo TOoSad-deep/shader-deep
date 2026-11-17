@@ -1,0 +1,32 @@
+[
+  {
+    "case": "cool-s-distance",
+    "invocation_params_available": true,
+    "reasoning": {},
+    "reasoning_effort": null
+  },
+  {
+    "case": "flat-water-effects2",
+    "invocation_params_available": true,
+    "reasoning": {},
+    "reasoning_effort": null
+  },
+  {
+    "case": "dna-helis",
+    "invocation_params_available": true,
+    "reasoning": {},
+    "reasoning_effort": null
+  },
+  {
+    "case": "buffer-bloom",
+    "invocation_params_available": true,
+    "reasoning": {},
+    "reasoning_effort": null
+  },
+  {
+    "case": "auroras",
+    "invocation_params_available": true,
+    "reasoning": {},
+    "reasoning_effort": null
+  }
+]

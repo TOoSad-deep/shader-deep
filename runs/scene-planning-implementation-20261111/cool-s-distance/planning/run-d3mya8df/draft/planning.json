@@ -1,0 +1,131 @@
+{
+  "mechanisms": [
+    {
+      "id": "M1",
+      "name": "整图同心暖橙环纹场",
+      "method": "以画面中心为源对每个像素求向径 r = length(p)（p 为未做纵横比拉伸的归一化坐标），d = r*ringFreq，条纹函数 band = smoothstep 剪切的三角波 tri(fract(d)) 取值 [0,1]，再做幕次锐化 s=pow(tri,gamma)。颜色 mixing：col = mix(暖亮橙 baseA, 深棕 baseB, s)，再乘全幅亮度 gain 与细颗粒 grain。输出可重复求值的底层颜色 image(vec2 p)->vec3；可调因素为 ringFreq、gamma、baseA/baseB 色相与 gain/grain 强度。conditions: 需以",
+      "conditions": []
+    },
+    {
+      "id": "M2",
+      "name": "边缘水平镜像折带缝(herringbone 端点)",
+      "method": "在底层色场之后叠加非圆变形：构造 q.y = sqrt(abs(q.y)*s_shape)+k_true 作为新的纵向量代入 M1 的 d=length 组合中，即 d' = length(vec2(q.x, q.y'))，其中 k_true≈0.05、s_shape 是略小于 1 的压缩系数（由横幅纵横比换算，令左右两端上下两瓣环纹在中线处收拢成对并出现可见的共用水平接缝；abs+sqrt 使原本的圆形环在 |y| 处由弧形软折叠改为共尖角堆叠，从而在远离中心处近似拉平）。此机制直接替换 M1 中 d 的定义而非新增图层，其余 band/mixing 完全复用 [[M1]] 输出管线；可调因素为 s_shape 与 k_true，共同决定折带角度与接缝清晰度。conditions: 只使用整幅坐标 p 原样求解（不做任何 per-pixel 变形以外的多层混合），必须作用在 L=before 背景层与之后的 F3 外白描边形状依赖之前完成的整图空间上，以免影响后续 SDF 计算；结果自然满足 F2 所述",
+      "conditions": []
+    },
+    {
+      "id": "M3",
+      "name": "8 字轮廓符号距离场(白描边母版)",
+      "method": "先于所有颜色输出前求解 F3 母版：以 uv=p*vec2(aspect,1.0)*shapeScale 归一化作图区坐标系，逐段构造 minSdf：上下两个斜切六边形 lobe 依 sdHexPrism/q 变体作多段线 SDF 并对尖角端点做圆滑处理，再经 sdSmoothUnion(kwaist≈0.10) 合并成竖向总形；腰段 S 弯通过把下瓣中心点沿弯折方向偏移 waistBend 得到非对称摆位；最外圈白色亮边由 lineSDF = abs(minSdf)-edgeW 直接给出可调的细描边厚度通道。输出 SDF 场 dOuter(vec2 p)->float 以及' dEdge = smoothstep(w±aa) 亮白条'' mask 在轴指标内=1 的分区判别两路信号供后续多层复用。可调因素为 shapeScale、kwaist、waistBend 与 edgeW。conditions: 本机制只负责几何分层与以后各层共用的空间坐标约定，本身不产生像素颜色；需要 F5 的腰部自交关系存在且平滑参数在窄区间内以保证 S 脊连续、不需额外修复路径",
+      "conditions": []
+    },
+    {
+      "id": "M4",
+      "name": "层层嵌套浮雕蓝条(金属质感)",
+      "method": "以 [[M3]] 输出的 dOuter 为基准，构造多重环内壳：d_i = abs(dOuter)-i*stripeGap (i=0..N-1) 分别调制双色，即 stripeCol_i = mix(deepNavy, brightCyan, smoothstep(-w/2,w/2,d_i)) 以逐圈带状分色；再叠加浮雕式高光脊 h_i = exp(-abs(d_i)*kHi) 和暗缝 sh_i = exp(-abs(d_i)*kSh)，把最终条纹亮度按 h_i-sh_i 微调得到凸起受光效果；上下瓣各自‘ rounder 细长窄内圈’ 是由第 N-1 圈沿着形状端点往内再挤出一条加宽的 arc 段实现。所有 8 字区域的总色调 C_fig = Σ stripeCol_i *（该圈在不在圈内判定） 累加后与背景合成输出 figure(vec2 p)->vec3 layer。可调因素为 stripeGap、w、deepNavy/brightCyan、kHi/kSh 与内圈数 N。conditions: 需要至少 3 层亮蓝/深蓝相间且在腰部折弯处与 [[M3]] 的 SDF 同步折弯收拢（即使用同一 dOuter 母版，不引入独立第二套形状坐标）；",
+      "conditions": []
+    },
+    {
+      "id": "M5",
+      "name": "紧贴图形四周的柔和暗晕",
+      "method": "在 [[M4]] 蓝色层输出之后，以 F3 的 dOuter 为基准构造 halo：haloDark = smoothstep(0.0, haloFall, dOuter) 与 haloDark2 = smoothstep(0.0, haloFall*2.0, dOuter) 两次衰减取差，形成紧贴处最深、向外渐恢复暖橙亮度的连续暗晕；然后把背景输出 [[M1]]+[[M2]] 的颜色与该暗晕乘积（color *= 1.0 - haloStrength*haloDark…）叠加，实现 R2 所述",
+      "conditions": []
+    },
+    {
+      "id": "M6",
+      "name": "整图合成与抗锯齿",
+      "method": "最终合成阶段依次串接：背景层 [[M1]]+[[M2]] -> 暗晕 [[M5]] -> 蓝色图形层 [[M4]]（乘以 [[M3]] 的 mask 通道混合贴回）-> [[M3]] 的白描边条（以最上层颜色覆盖）-> 边缘 AA，用 fwidth 对每个 smoothstep 边界重算，保证所有几何与颜色边界平滑过渡。可调因素为合成顺序的各层不透明度与全局 AA 宽度。conditions: 需要保证单 Pass 内部各层按序计算且不互相干扰；所有层的 SDF 与 halo 均基于同一份 [[M3]] 坐标，不使用第二个 SDF；",
+      "conditions": []
+    }
+  ],
+  "sketches": [
+    {
+      "id": "S1",
+      "name": "整图单 Pass 实现方案",
+      "default": {
+        "F1": [
+          "M1",
+          "M2"
+        ],
+        "F2": [
+          "M2"
+        ],
+        "F3": [
+          "M3",
+          "M6"
+        ],
+        "F4": [
+          "M4",
+          "M6"
+        ],
+        "F5": [
+          "M3",
+          "M4"
+        ],
+        "R1": [
+          "M1",
+          "M2",
+          "M6"
+        ],
+        "R2": [
+          "M5"
+        ],
+        "R3": [
+          "M3",
+          "M4"
+        ]
+      },
+      "composition": "自上而下按序计算：首先在 mainImage 中取归一化未拉伸坐标 p=fragCoord/iResolution*2-1，连同纵横比 aspect=iResolution.x/iResolution.y。第一步以 [[M1]] 在整图生成底层 image(p) 暖橙环纹：r=length(p)（未做 y 拉伸，保证源点在画面中心），d=r*ringFreq，band=smoothstep 剪切三角波 tri(fract(d)) 幂次锐化后 mix(暖亮橙, 深棕)，再乘全幅亮度 gain 与细颗粒 grain。F1 的环纹即由此铺满至四边，且不受 [[M2]] 的非圆变形影响，保持 [[M1]] 纯圆的同心条件与 [[M2]] 的水平接缝折带在单一空间上同时成立。第二步 [[M2]] 在此基础上把 q.y=sqrt(abs(q.y)*s_shape)+k_true 代入 d=length(vec2(q.x,q.y')) 以覆盖 F2：左右两侧环纹渐趋平直，左右边中部高度处上下两组环纹对称相拢形成水平接缝；s_shape 与 k_true 由横幅纵横比换算调参，使整幅背景与 F2 的对称折点一致。第三步 [[M3]] 在同一空间上计算 F3/F5 的母版 dOuter：以 p*vec2(aspect,1.0)*shapeScale 归一化作图区，上瓣斜切六边形与下瓣斜切六边形经 sdSmoothUnion(kwaist≈0.10) 拼接；腰段 S 弯通过把下瓣中心点沿弯折方向偏移 waistBend 得到非对称摆位，使 F5 的中腰 S 形自交折弯与两端尖角同时成立；由此输出 dOuter 与 mask 通道，供后续层共用。第四步 [[M4]] 在 [[M3]] 的 dOuter 上叠加 F4 的层层嵌套蓝条：d_i=abs(dOuter)-i*stripeGap，逐圈 mix(deepNavy,brightCyan,smoothstep(-w/2,w/2,d_i))；每圈叠加 exp 脊高光 h_i 与 exp 暗缝 sh_i，形成金属光泽；第 N-1 圈沿形状端点往内加宽挤出一条上下瓣的圆角细长窄内圈。所有 8 字区域总色调累加后与背景合成输出 figure(p) 层。由于 [[M4]] 与 [[M3]] 共用同一 dOuter 母版（无第二套形状坐标），F5 的内部嵌套条纹在腰部折弯处自然与 [[M3]] 的 S 脊同步折弯收拢，满足 R3。第五步 [[M5]] 在 [[M4]] 蓝色层之后，以 dOuter 为基准构造 haloDark=smoothstep(0.0,haloFall,dOuter) 与 haloDark2=smoothstep(0.0,haloFall*2.0,dOuter) 两次衰减取差形成紧贴处最深、向外渐恢复暖橙亮度的连续暗晕，把背景色与暗晕乘积叠加，即 R2 所述",
+      "gaps": [],
+      "alternatives": []
+    },
+    {
+      "id": "S2",
+      "name": "整图单 Pass 实现方案(备选环距渐变分布)",
+      "default": {
+        "F1": [
+          "M1"
+        ],
+        "F2": [
+          "M2"
+        ],
+        "F3": [
+          "M3",
+          "M6"
+        ],
+        "F4": [
+          "M4",
+          "M6"
+        ],
+        "F5": [
+          "M3",
+          "M4"
+        ],
+        "R1": [
+          "M1",
+          "M2",
+          "M6"
+        ],
+        "R2": [
+          "M5"
+        ],
+        "R3": [
+          "M3",
+          "M4"
+        ]
+      },
+      "composition": "与 [[S1]] 的 [[M1]]-[[M6]] 完整管线一致，仅把 [[M1]] 的环距 ringFreq 从常数改为‘ ringFreq = baseFreq * mix(1.0, taper, smoothstep(0.0,1.0, r/rMax)) ’——按 F1 的环距大致均匀，随径向渐近趋缓（即环距缓慢向外递增），使环纹在远离中心处更趋平直、与 F2 的左右折带过渡更自然；taper 与 rMax 由横幅纵横比换算调参。其余步骤与 [[S1]] 完全相同：[[M2]] 折带、[[M3]] 母版、[[M4]] 蓝条、[[M5]] 暗晕、[[M6]] 合成与 AA。该方案与 [[S1]] 的区别仅在 [[M1]] 的环距分布；其余 F/R 全部一致。",
+      "gaps": [],
+      "alternatives": []
+    }
+  ],
+  "extra_candidates": [
+    {
+      "target": "F4",
+      "mechanisms": [
+        "M4",
+        "M3"
+      ],
+      "reason": "F4 需要 8 字图内嵌套条纹与最外白描边平行随形，是 [[S1]] 的关键表现；但 [[S1]] 已通过 [[M4]] 与 [[M3]] 共用同一 dOuter 母版实现，且为避免重复计算不再单独列出，作为 [[S1]] 的既有组成部分。"
+    }
+  ]
+}

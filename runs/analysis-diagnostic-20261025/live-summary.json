@@ -1,0 +1,734 @@
+[
+  {
+    "sample": "simple",
+    "metadata": {
+      "sample": "simple",
+      "image": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/apps/shader_deep/test_pic/shiny-rectancle.png",
+      "sha256": "4ee0da315723a6692a21fd12252978da4d6a6246dec7e9e508591e053bd88927",
+      "prompt": "请分析参考图中的一个指定元素: 图中央的完整霓虹圆角矩形边框, 包含紧邻边框的光晕。以过程式 Shader 复现为目标, 独立分析可见特征、关系、候选实现机制和草图方案, 明确不确定项与缺口。本轮只分析该目标。",
+      "started_utc": "2026-10-25T15:42:36.231676+00:00",
+      "observation_timeout_seconds": 900,
+      "command": [
+        "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/apps/shader_deep/.venv/bin/python3",
+        "-m",
+        "shader_deep.cli.analysis",
+        "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/apps/shader_deep/test_pic/shiny-rectancle.png",
+        "请分析参考图中的一个指定元素: 图中央的完整霓虹圆角矩形边框, 包含紧邻边框的光晕。以过程式 Shader 复现为目标, 独立分析可见特征、关系、候选实现机制和草图方案, 明确不确定项与缺口。本轮只分析该目标。",
+        "--output-dir",
+        "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/analysis-diagnostic-20261025/simple",
+        "--log-level",
+        "WARNING"
+      ],
+      "exit_code": 1,
+      "observation_timed_out": false,
+      "elapsed_seconds": 187.24,
+      "ended_utc": "2026-10-25T15:45:43.468056+00:00"
+    },
+    "runs": [
+      {
+        "directory": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/analysis-diagnostic-20261025/simple/run-vdxkdio_",
+        "sealed": true,
+        "tasks": [
+          {
+            "task": "elements",
+            "status": "succeeded",
+            "model_calls": 0,
+            "attempts": 1,
+            "final_error": null,
+            "first_submission_success": null,
+            "submission_count": 0,
+            "rejection_categories": {},
+            "rejections": [],
+            "request_failures": [],
+            "network_seconds": 0
+          },
+          {
+            "task": "exploration-1",
+            "status": "failed",
+            "model_calls": 3,
+            "attempts": 2,
+            "final_error": "ValueError: 逻辑任务的两次修复额度已耗尽",
+            "first_submission_success": false,
+            "submission_count": 3,
+            "rejection_categories": {
+              "business_rejection": 3
+            },
+            "rejections": [
+              {
+                "run_id": "run-vdxkdio_",
+                "task_id": "exploration-1",
+                "attempt_id": "204fbf5dffff4875ae46fa4abcb40336",
+                "event": "tool_rejected",
+                "model_call": 1,
+                "tool": "submit_exploration",
+                "category": "business_rejection",
+                "message": "提交被拒绝: features.F.mechanism_refs: 引用不存在或类型错误; 要求 ['mechanisms']; text='M'"
+              },
+              {
+                "run_id": "run-vdxkdio_",
+                "task_id": "exploration-1",
+                "attempt_id": "204fbf5dffff4875ae46fa4abcb40336",
+                "event": "tool_rejected",
+                "model_call": 2,
+                "tool": "submit_exploration",
+                "category": "business_rejection",
+                "message": "提交被拒绝: features.F.mechanism_refs: 引用不存在或类型错误; 要求 ['mechanisms']; text='M'"
+              },
+              {
+                "run_id": "run-vdxkdio_",
+                "task_id": "exploration-1",
+                "attempt_id": "204fbf5dffff4875ae46fa4abcb40336",
+                "event": "tool_rejected",
+                "model_call": 3,
+                "tool": "submit_exploration",
+                "category": "business_rejection",
+                "message": "提交被拒绝: features.F.mechanism_refs: 引用不存在或类型错误; 要求 ['mechanisms']; text='M'"
+              }
+            ],
+            "request_failures": [],
+            "network_seconds": 51.492
+          },
+          {
+            "task": "exploration-2",
+            "status": "failed",
+            "model_calls": 3,
+            "attempts": 2,
+            "final_error": "ValueError: 逻辑任务的两次修复额度已耗尽",
+            "first_submission_success": false,
+            "submission_count": 3,
+            "rejection_categories": {
+              "business_rejection": 3
+            },
+            "rejections": [
+              {
+                "run_id": "run-vdxkdio_",
+                "task_id": "exploration-2",
+                "attempt_id": "63b5664713d84360b21d1131d068c71b",
+                "event": "tool_rejected",
+                "model_call": 1,
+                "tool": "submit_exploration",
+                "category": "business_rejection",
+                "message": "提交被拒绝: sketches.E: 包内对象 ID 重复; text='E'"
+              },
+              {
+                "run_id": "run-vdxkdio_",
+                "task_id": "exploration-2",
+                "attempt_id": "63b5664713d84360b21d1131d068c71b",
+                "event": "tool_rejected",
+                "model_call": 2,
+                "tool": "submit_exploration",
+                "category": "business_rejection",
+                "message": "提交被拒绝: features.F: 包内对象 ID 重复; text='F'"
+              },
+              {
+                "run_id": "run-vdxkdio_",
+                "task_id": "exploration-2",
+                "attempt_id": "63b5664713d84360b21d1131d068c71b",
+                "event": "tool_rejected",
+                "model_call": 3,
+                "tool": "submit_exploration",
+                "category": "business_rejection",
+                "message": "提交被拒绝: features.F: 包内对象 ID 重复; text='F'"
+              }
+            ],
+            "request_failures": [],
+            "network_seconds": 165.75
+          },
+          {
+            "task": "exploration-3",
+            "status": "failed",
+            "model_calls": 3,
+            "attempts": 2,
+            "final_error": "ValueError: 逻辑任务的两次修复额度已耗尽",
+            "first_submission_success": false,
+            "submission_count": 3,
+            "rejection_categories": {
+              "business_rejection": 3
+            },
+            "rejections": [
+              {
+                "run_id": "run-vdxkdio_",
+                "task_id": "exploration-3",
+                "attempt_id": "27f9b1e404c243168eb4f596eb7a744c",
+                "event": "tool_rejected",
+                "model_call": 1,
+                "tool": "submit_exploration",
+                "category": "business_rejection",
+                "message": "提交被拒绝: relations.R.participants: 引用不得重复; text=\"('F', 'F')\""
+              },
+              {
+                "run_id": "run-vdxkdio_",
+                "task_id": "exploration-3",
+                "attempt_id": "27f9b1e404c243168eb4f596eb7a744c",
+                "event": "tool_rejected",
+                "model_call": 2,
+                "tool": "submit_exploration",
+                "category": "business_rejection",
+                "message": "提交被拒绝: relations.R.participants: 引用不得重复; text=\"('F', 'F')\""
+              },
+              {
+                "run_id": "run-vdxkdio_",
+                "task_id": "exploration-3",
+                "attempt_id": "27f9b1e404c243168eb4f596eb7a744c",
+                "event": "tool_rejected",
+                "model_call": 3,
+                "tool": "submit_exploration",
+                "category": "business_rejection",
+                "message": "提交被拒绝: relations.R.participants: 引用不得重复; text=\"('F', 'F')\""
+              }
+            ],
+            "request_failures": [],
+            "network_seconds": 35.007
+          },
+          {
+            "task": "main",
+            "status": "succeeded",
+            "model_calls": 4,
+            "attempts": 1,
+            "final_error": null,
+            "first_submission_success": null,
+            "submission_count": 0,
+            "rejection_categories": {},
+            "rejections": [],
+            "request_failures": [],
+            "network_seconds": 20.088
+          },
+          {
+            "task": "planning",
+            "status": "succeeded",
+            "model_calls": 0,
+            "attempts": 1,
+            "final_error": null,
+            "first_submission_success": null,
+            "submission_count": 0,
+            "rejection_categories": {},
+            "rejections": [],
+            "request_failures": [],
+            "network_seconds": 0
+          }
+        ],
+        "usage": {
+          "input_tokens": 30466,
+          "output_tokens": 21802,
+          "total_tokens": 52268
+        },
+        "run_metadata": {
+          "stop_reason": "failed",
+          "selected_version": null,
+          "gaps": [
+            {
+              "refs": [],
+              "description": "主 Agent 结束时尚未形成合法五库基线"
+            }
+          ],
+          "open_questions": []
+        }
+      }
+    ]
+  },
+  {
+    "sample": "medium",
+    "metadata": {
+      "sample": "medium",
+      "image": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/apps/shader_deep/test_pic/2d-physics-balls.png",
+      "sha256": "7beeab6b0c683e16ed213393b2a8850b28c1c2e3a89963c671f8902d6d194523",
+      "prompt": "请分析参考图中的一个指定元素: 彩色圆片堆中最左上方的绿色齿轮状圆片, 包含中心孔和外轮廓。以过程式 Shader 复现为目标, 独立分析可见特征、关系、候选实现机制和草图方案, 明确不确定项与缺口。本轮只分析该目标。",
+      "started_utc": "2026-10-25T15:45:43.469643+00:00",
+      "observation_timeout_seconds": 900,
+      "command": [
+        "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/apps/shader_deep/.venv/bin/python3",
+        "-m",
+        "shader_deep.cli.analysis",
+        "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/apps/shader_deep/test_pic/2d-physics-balls.png",
+        "请分析参考图中的一个指定元素: 彩色圆片堆中最左上方的绿色齿轮状圆片, 包含中心孔和外轮廓。以过程式 Shader 复现为目标, 独立分析可见特征、关系、候选实现机制和草图方案, 明确不确定项与缺口。本轮只分析该目标。",
+        "--output-dir",
+        "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/analysis-diagnostic-20261025/medium",
+        "--log-level",
+        "WARNING"
+      ],
+      "exit_code": 1,
+      "observation_timed_out": false,
+      "elapsed_seconds": 202.93,
+      "ended_utc": "2026-10-25T15:49:06.399829+00:00"
+    },
+    "runs": [
+      {
+        "directory": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/analysis-diagnostic-20261025/medium/run-cypp_mel",
+        "sealed": true,
+        "tasks": [
+          {
+            "task": "elements",
+            "status": "succeeded",
+            "model_calls": 0,
+            "attempts": 1,
+            "final_error": null,
+            "first_submission_success": null,
+            "submission_count": 0,
+            "rejection_categories": {},
+            "rejections": [],
+            "request_failures": [],
+            "network_seconds": 0
+          },
+          {
+            "task": "exploration-1",
+            "status": "succeeded",
+            "model_calls": 2,
+            "attempts": 1,
+            "final_error": null,
+            "first_submission_success": false,
+            "submission_count": 2,
+            "rejection_categories": {
+              "business_rejection": 1
+            },
+            "rejections": [
+              {
+                "run_id": "run-cypp_mel",
+                "task_id": "exploration-1",
+                "attempt_id": "f71dc3ff21314b90bf72b1629918a7a0",
+                "event": "tool_rejected",
+                "model_call": 1,
+                "tool": "submit_exploration",
+                "category": "business_rejection",
+                "message": "提交被拒绝: F.mechanism_refs: 候选机制为空必须记录对应缺口; text='()'"
+              }
+            ],
+            "request_failures": [],
+            "network_seconds": 31.962,
+            "accepted_on_call": 2,
+            "report_counts": {
+              "features": 1,
+              "relations": 0,
+              "mechanisms": 0,
+              "sketches": 0,
+              "open_questions": 0,
+              "gaps": 1
+            }
+          },
+          {
+            "task": "exploration-2",
+            "status": "failed",
+            "model_calls": 3,
+            "attempts": 2,
+            "final_error": "ValueError: 逻辑任务的两次修复额度已耗尽",
+            "first_submission_success": false,
+            "submission_count": 3,
+            "rejection_categories": {
+              "business_rejection": 3
+            },
+            "rejections": [
+              {
+                "run_id": "run-cypp_mel",
+                "task_id": "exploration-2",
+                "attempt_id": "a0a2745cb2b748398348a80f180e9afc",
+                "event": "tool_rejected",
+                "model_call": 1,
+                "tool": "submit_exploration",
+                "category": "business_rejection",
+                "message": "提交被拒绝: features: 无观察特征必须保留缺口; text='()'"
+              },
+              {
+                "run_id": "run-cypp_mel",
+                "task_id": "exploration-2",
+                "attempt_id": "a0a2745cb2b748398348a80f180e9afc",
+                "event": "tool_rejected",
+                "model_call": 2,
+                "tool": "submit_exploration",
+                "category": "business_rejection",
+                "message": "提交被拒绝: features.F: 包内对象 ID 重复; text='F'"
+              },
+              {
+                "run_id": "run-cypp_mel",
+                "task_id": "exploration-2",
+                "attempt_id": "a0a2745cb2b748398348a80f180e9afc",
+                "event": "tool_rejected",
+                "model_call": 3,
+                "tool": "submit_exploration",
+                "category": "business_rejection",
+                "message": "提交被拒绝: features.F: 包内对象 ID 重复; text='F'"
+              }
+            ],
+            "request_failures": [],
+            "network_seconds": 125.208
+          },
+          {
+            "task": "exploration-3",
+            "status": "failed",
+            "model_calls": 3,
+            "attempts": 2,
+            "final_error": "ValueError: 逻辑任务的两次修复额度已耗尽",
+            "first_submission_success": false,
+            "submission_count": 3,
+            "rejection_categories": {
+              "business_rejection": 3
+            },
+            "rejections": [
+              {
+                "run_id": "run-cypp_mel",
+                "task_id": "exploration-3",
+                "attempt_id": "99c45dc40e954df68b1158eda1caa627",
+                "event": "tool_rejected",
+                "model_call": 1,
+                "tool": "submit_exploration",
+                "category": "business_rejection",
+                "message": "提交被拒绝: features.F.mechanism_refs: 引用不得重复; text=\"('M', 'M')\""
+              },
+              {
+                "run_id": "run-cypp_mel",
+                "task_id": "exploration-3",
+                "attempt_id": "99c45dc40e954df68b1158eda1caa627",
+                "event": "tool_rejected",
+                "model_call": 2,
+                "tool": "submit_exploration",
+                "category": "business_rejection",
+                "message": "提交被拒绝: features.F.mechanism_refs: 引用不得重复; text=\"('M', 'M')\""
+              },
+              {
+                "run_id": "run-cypp_mel",
+                "task_id": "exploration-3",
+                "attempt_id": "99c45dc40e954df68b1158eda1caa627",
+                "event": "tool_rejected",
+                "model_call": 3,
+                "tool": "submit_exploration",
+                "category": "business_rejection",
+                "message": "提交被拒绝: features.F.mechanism_refs: 引用不得重复; text=\"('M', 'M')\""
+              }
+            ],
+            "request_failures": [],
+            "network_seconds": 66.641
+          },
+          {
+            "task": "integration",
+            "status": "succeeded",
+            "model_calls": 2,
+            "attempts": 1,
+            "final_error": null,
+            "first_submission_success": null,
+            "submission_count": 0,
+            "rejection_categories": {},
+            "rejections": [],
+            "request_failures": [],
+            "network_seconds": 8.348
+          },
+          {
+            "task": "main",
+            "status": "failed",
+            "model_calls": 9,
+            "attempts": 1,
+            "final_error": "ValueError: 逻辑任务的两次修复额度已耗尽",
+            "first_submission_success": null,
+            "submission_count": 0,
+            "rejection_categories": {
+              "business_rejection": 3
+            },
+            "rejections": [
+              {
+                "run_id": "run-cypp_mel",
+                "task_id": "main",
+                "attempt_id": "4160ea0540af4c59b2219a8343d87cea",
+                "event": "tool_rejected",
+                "model_call": 3,
+                "tool": "submit_elements",
+                "category": "business_rejection",
+                "message": "提交被拒绝: 已接受的元素目录不可改写"
+              },
+              {
+                "run_id": "run-cypp_mel",
+                "task_id": "main",
+                "attempt_id": "4160ea0540af4c59b2219a8343d87cea",
+                "event": "tool_rejected",
+                "model_call": 8,
+                "tool": "dispatch_exploration",
+                "category": "business_rejection",
+                "message": "提交被拒绝: 单批探索已经冻结, 不能更换目标或方向"
+              },
+              {
+                "run_id": "run-cypp_mel",
+                "task_id": "main",
+                "attempt_id": "4160ea0540af4c59b2219a8343d87cea",
+                "event": "tool_rejected",
+                "model_call": 9,
+                "tool": "read_analysis_result",
+                "category": "business_rejection",
+                "message": "提交被拒绝: 结果引用必须指向本轮已接受的元素、探索或五库版本"
+              }
+            ],
+            "request_failures": [],
+            "network_seconds": 67.891
+          },
+          {
+            "task": "planning",
+            "status": "succeeded",
+            "model_calls": 0,
+            "attempts": 1,
+            "final_error": null,
+            "first_submission_success": null,
+            "submission_count": 0,
+            "rejection_categories": {},
+            "rejections": [],
+            "request_failures": [],
+            "network_seconds": 0
+          }
+        ],
+        "usage": {
+          "input_tokens": 42808,
+          "output_tokens": 19131,
+          "total_tokens": 61939
+        },
+        "run_metadata": {
+          "stop_reason": "partial",
+          "selected_version": "V1",
+          "gaps": [
+            {
+              "refs": [],
+              "description": "占"
+            },
+            {
+              "refs": [
+                "E"
+              ],
+              "description": "exploration-2 未完成: ValueError: 逻辑任务的两次修复额度已耗尽"
+            },
+            {
+              "refs": [
+                "E"
+              ],
+              "description": "exploration-3 未完成: ValueError: 逻辑任务的两次修复额度已耗尽"
+            },
+            {
+              "refs": [],
+              "description": "持续主 Agent 未完成交付: RuntimeError: 持续主 Agent 未完成: ValueError: 逻辑任务的两次修复额度已耗尽"
+            }
+          ],
+          "open_questions": []
+        }
+      }
+    ]
+  },
+  {
+    "sample": "complex",
+    "metadata": {
+      "sample": "complex",
+      "image": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/apps/shader_deep/test_pic/supah-frosted-glass.png",
+      "sha256": "4b98572449bf26744a76d3f9271bc10397e3b1c05512b2fcab5624442f7a6252",
+      "prompt": "请分析参考图中的一个指定元素: 画面右上方的前景磨砂玻璃圆片, 包含它与后方蓝色圆片重叠的区域。以过程式 Shader 复现为目标, 独立分析可见特征、关系、候选实现机制和草图方案, 明确不确定项与缺口。本轮只分析该目标。",
+      "started_utc": "2026-10-25T15:49:06.400869+00:00",
+      "observation_timeout_seconds": 900,
+      "command": [
+        "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/apps/shader_deep/.venv/bin/python3",
+        "-m",
+        "shader_deep.cli.analysis",
+        "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/apps/shader_deep/test_pic/supah-frosted-glass.png",
+        "请分析参考图中的一个指定元素: 画面右上方的前景磨砂玻璃圆片, 包含它与后方蓝色圆片重叠的区域。以过程式 Shader 复现为目标, 独立分析可见特征、关系、候选实现机制和草图方案, 明确不确定项与缺口。本轮只分析该目标。",
+        "--output-dir",
+        "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/analysis-diagnostic-20261025/complex",
+        "--log-level",
+        "WARNING"
+      ],
+      "exit_code": 1,
+      "observation_timed_out": false,
+      "elapsed_seconds": 257.21,
+      "ended_utc": "2026-10-25T15:53:23.610959+00:00"
+    },
+    "runs": [
+      {
+        "directory": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/analysis-diagnostic-20261025/complex/run-b4e5ucy4",
+        "sealed": true,
+        "tasks": [
+          {
+            "task": "elements",
+            "status": "succeeded",
+            "model_calls": 0,
+            "attempts": 1,
+            "final_error": null,
+            "first_submission_success": null,
+            "submission_count": 0,
+            "rejection_categories": {},
+            "rejections": [],
+            "request_failures": [],
+            "network_seconds": 0
+          },
+          {
+            "task": "exploration-1",
+            "status": "failed",
+            "model_calls": 3,
+            "attempts": 2,
+            "final_error": "ValueError: 逻辑任务的两次修复额度已耗尽",
+            "first_submission_success": false,
+            "submission_count": 3,
+            "rejection_categories": {
+              "business_rejection": 3
+            },
+            "rejections": [
+              {
+                "run_id": "run-b4e5ucy4",
+                "task_id": "exploration-1",
+                "attempt_id": "39b5b2f4874d489e923b80dc1d47cb26",
+                "event": "tool_rejected",
+                "model_call": 1,
+                "tool": "submit_exploration",
+                "category": "business_rejection",
+                "message": "提交被拒绝: elements.f.name: 疑似未标记对象引用 'f'; 使用 [[ID]]; text='f'"
+              },
+              {
+                "run_id": "run-b4e5ucy4",
+                "task_id": "exploration-1",
+                "attempt_id": "39b5b2f4874d489e923b80dc1d47cb26",
+                "event": "tool_rejected",
+                "model_call": 2,
+                "tool": "submit_exploration",
+                "category": "business_rejection",
+                "message": "提交被拒绝: relations.R.participants: 引用不得重复; text=\"('F', 'F')\""
+              },
+              {
+                "run_id": "run-b4e5ucy4",
+                "task_id": "exploration-1",
+                "attempt_id": "39b5b2f4874d489e923b80dc1d47cb26",
+                "event": "tool_rejected",
+                "model_call": 3,
+                "tool": "submit_exploration",
+                "category": "business_rejection",
+                "message": "提交被拒绝: relations.R.participants: 引用不得重复; text=\"('F', 'F')\""
+              }
+            ],
+            "request_failures": [],
+            "network_seconds": 230.529
+          },
+          {
+            "task": "exploration-2",
+            "status": "failed",
+            "model_calls": 3,
+            "attempts": 2,
+            "final_error": "ValueError: 逻辑任务的两次修复额度已耗尽",
+            "first_submission_success": false,
+            "submission_count": 3,
+            "rejection_categories": {
+              "business_rejection": 3
+            },
+            "rejections": [
+              {
+                "run_id": "run-b4e5ucy4",
+                "task_id": "exploration-2",
+                "attempt_id": "1d520864e26d45d29255c94e9a247ffb",
+                "event": "tool_rejected",
+                "model_call": 1,
+                "tool": "submit_exploration",
+                "category": "business_rejection",
+                "message": "提交被拒绝: features.F: 包内对象 ID 重复; text='F'"
+              },
+              {
+                "run_id": "run-b4e5ucy4",
+                "task_id": "exploration-2",
+                "attempt_id": "1d520864e26d45d29255c94e9a247ffb",
+                "event": "tool_rejected",
+                "model_call": 2,
+                "tool": "submit_exploration",
+                "category": "business_rejection",
+                "message": "提交被拒绝: features.F: 包内对象 ID 重复; text='F'"
+              },
+              {
+                "run_id": "run-b4e5ucy4",
+                "task_id": "exploration-2",
+                "attempt_id": "1d520864e26d45d29255c94e9a247ffb",
+                "event": "tool_rejected",
+                "model_call": 3,
+                "tool": "submit_exploration",
+                "category": "business_rejection",
+                "message": "提交被拒绝: features.F.mechanism_refs: 引用不存在或类型错误; 要求 ['mechanisms']; text='M'"
+              }
+            ],
+            "request_failures": [],
+            "network_seconds": 175.122
+          },
+          {
+            "task": "exploration-3",
+            "status": "failed",
+            "model_calls": 3,
+            "attempts": 2,
+            "final_error": "ValueError: 逻辑任务的两次修复额度已耗尽",
+            "first_submission_success": false,
+            "submission_count": 3,
+            "rejection_categories": {
+              "business_rejection": 3
+            },
+            "rejections": [
+              {
+                "run_id": "run-b4e5ucy4",
+                "task_id": "exploration-3",
+                "attempt_id": "154be5df1ecd4e1996794c7a78207956",
+                "event": "tool_rejected",
+                "model_call": 1,
+                "tool": "submit_exploration",
+                "category": "business_rejection",
+                "message": "提交被拒绝: features.F: 包内对象 ID 重复; text='F'"
+              },
+              {
+                "run_id": "run-b4e5ucy4",
+                "task_id": "exploration-3",
+                "attempt_id": "154be5df1ecd4e1996794c7a78207956",
+                "event": "tool_rejected",
+                "model_call": 2,
+                "tool": "submit_exploration",
+                "category": "business_rejection",
+                "message": "提交被拒绝: features.F: 包内对象 ID 重复; text='F'"
+              },
+              {
+                "run_id": "run-b4e5ucy4",
+                "task_id": "exploration-3",
+                "attempt_id": "154be5df1ecd4e1996794c7a78207956",
+                "event": "tool_rejected",
+                "model_call": 3,
+                "tool": "submit_exploration",
+                "category": "business_rejection",
+                "message": "提交被拒绝: features.F: 包内对象 ID 重复; text='F'"
+              }
+            ],
+            "request_failures": [],
+            "network_seconds": 63.759
+          },
+          {
+            "task": "main",
+            "status": "succeeded",
+            "model_calls": 4,
+            "attempts": 1,
+            "final_error": null,
+            "first_submission_success": null,
+            "submission_count": 0,
+            "rejection_categories": {},
+            "rejections": [],
+            "request_failures": [],
+            "network_seconds": 25.253
+          },
+          {
+            "task": "planning",
+            "status": "succeeded",
+            "model_calls": 0,
+            "attempts": 1,
+            "final_error": null,
+            "first_submission_success": null,
+            "submission_count": 0,
+            "rejection_categories": {},
+            "rejections": [],
+            "request_failures": [],
+            "network_seconds": 0
+          }
+        ],
+        "usage": {
+          "input_tokens": 31554,
+          "output_tokens": 43945,
+          "total_tokens": 75499
+        },
+        "run_metadata": {
+          "stop_reason": "failed",
+          "selected_version": null,
+          "gaps": [
+            {
+              "refs": [],
+              "description": "主 Agent 结束时尚未形成合法五库基线"
+            }
+          ],
+          "open_questions": []
+        }
+      }
+    ]
+  }
+]

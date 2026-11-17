@@ -1,0 +1,21 @@
+{
+  "trials": 3,
+  "planned_workers": 9,
+  "dispatched_workers": 9,
+  "worker_statuses": {
+    "failed": 8,
+    "succeeded": 1
+  },
+  "first_submission_success": 0,
+  "worker_rejections": {
+    "business_rejection": 25
+  },
+  "logical_calls": 45,
+  "usage": {
+    "input_tokens": 104828,
+    "output_tokens": 84878,
+    "total_tokens": 189706
+  },
+  "elapsed_seconds": 647.38,
+  "observation_timeouts": 0
+}

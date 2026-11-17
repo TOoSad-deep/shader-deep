@@ -1,0 +1,34 @@
+{
+  "schema_version": "scene_observations_v1",
+  "reference": {
+    "path": "reference.png",
+    "sha256": "80c35a1f92b2e537114d4615a85a6865411aa2d7c193ee7fdddf3155c8a59fcc"
+  },
+  "status": "partial",
+  "context_notes": [],
+  "open_questions": [
+    {
+      "refs": [
+        "F4",
+        "F5",
+        "F6"
+      ],
+      "description": "各方块行带内方块的确切数量与最小方块的尺寸未逐一清点"
+    },
+    {
+      "refs": [
+        "F3"
+      ],
+      "description": "上缘与下缘波浪曲线的精确弧度与波峰位置未量化，仅能确认起伏方向"
+    }
+  ],
+  "gaps": [
+    {
+      "refs": [
+        "E1",
+        "E2"
+      ],
+      "description": "旗帜左缘与方块群衔接处是否存在规律性的空缺节奏，未逐一确认"
+    }
+  ]
+}

@@ -1,0 +1,313 @@
+{
+  "date": "2026-11-10",
+  "model": "z-ai/glm-5.3-flash",
+  "endpoint": "https://openrouter.ai/api/v1",
+  "authorization": "用户明确允许五图校准, 已关闭额外LangSmith追踪",
+  "prompt": "分析整张图, 按已确认的粒度输出上下文、多元素E、F与R, 只描述可见观察, 通过提交工具交付。",
+  "conditions": {
+    "max_model_calls": 8,
+    "max_request_retries": 0,
+    "request_timeout_seconds": 45,
+    "max_output_tokens": 163840
+  },
+  "comparison": "R0与R1仅更改一段提交前归属复查规则; R1同时新增程序指标, 不修改观察语义或文件结果",
+  "review_scope": "AI对照用户已确认的参考拆分, 不等于用户视觉验收; 已知样例回归不证明泛化",
+  "stage4_complete": false,
+  "runs": [
+    {
+      "round": "R0",
+      "case": "pink",
+      "run_dir": "runs/single-observer-calibration-20261110/pink-circle/run-1hlp6ggq",
+      "status": "completed",
+      "model_calls": 2,
+      "counts": {
+        "elements": 1,
+        "features": 5,
+        "relations": 2
+      },
+      "error": null,
+      "metrics": {
+        "model_id": null,
+        "rule_sha256": null,
+        "examples_sha256": null,
+        "elapsed_seconds": null,
+        "token_usage": null,
+        "validation_errors": null,
+        "tool_refusals": null
+      }
+    },
+    {
+      "round": "R0",
+      "case": "liquid",
+      "run_dir": "runs/single-observer-calibration-20261110/liquid/run-vpvr_y0_",
+      "status": "partial",
+      "model_calls": 1,
+      "counts": {
+        "elements": 3,
+        "features": 14,
+        "relations": 0
+      },
+      "error": null,
+      "metrics": {
+        "model_id": null,
+        "rule_sha256": null,
+        "examples_sha256": null,
+        "elapsed_seconds": null,
+        "token_usage": null,
+        "validation_errors": null,
+        "tool_refusals": null
+      }
+    },
+    {
+      "round": "R0",
+      "case": "windows",
+      "run_dir": "runs/single-observer-calibration-20261110/windows/run-vk7b8brw",
+      "status": "partial",
+      "model_calls": 1,
+      "counts": {
+        "elements": 2,
+        "features": 7,
+        "relations": 3
+      },
+      "error": null,
+      "metrics": {
+        "model_id": null,
+        "rule_sha256": null,
+        "examples_sha256": null,
+        "elapsed_seconds": null,
+        "token_usage": null,
+        "validation_errors": null,
+        "tool_refusals": null
+      }
+    },
+    {
+      "round": "R0",
+      "case": "frosted",
+      "run_dir": "runs/single-observer-calibration-20261110/frosted/run-v4dw85kc",
+      "status": "partial",
+      "model_calls": 1,
+      "counts": {
+        "elements": 2,
+        "features": 5,
+        "relations": 2
+      },
+      "error": null,
+      "metrics": {
+        "model_id": null,
+        "rule_sha256": null,
+        "examples_sha256": null,
+        "elapsed_seconds": null,
+        "token_usage": null,
+        "validation_errors": null,
+        "tool_refusals": null
+      }
+    },
+    {
+      "round": "R0",
+      "case": "balls",
+      "run_dir": "runs/single-observer-calibration-20261110/balls/run-7brc6th4",
+      "status": "partial",
+      "model_calls": 2,
+      "counts": {
+        "elements": 2,
+        "features": 5,
+        "relations": 3
+      },
+      "error": null,
+      "metrics": {
+        "model_id": null,
+        "rule_sha256": null,
+        "examples_sha256": null,
+        "elapsed_seconds": null,
+        "token_usage": null,
+        "validation_errors": null,
+        "tool_refusals": null
+      }
+    },
+    {
+      "round": "R1",
+      "case": "pink",
+      "run_dir": "runs/single-observer-calibration-20261110-r1/pink/run-bwqgway4",
+      "status": "completed",
+      "model_calls": 2,
+      "counts": {
+        "elements": 1,
+        "features": 5,
+        "relations": 1
+      },
+      "error": null,
+      "metrics": {
+        "model_id": "z-ai/glm-5.3-flash",
+        "rule_sha256": "9e9df9f77d51044a2a3a50e67642d14c313729de17e4f65d9b316de15978c699",
+        "examples_sha256": "5a7ad70090b757a97eb6e232649dd998d2bfeb8b0b7cd0b5df3fffe0597aec0f",
+        "elapsed_seconds": 27.15432983401115,
+        "token_usage": {
+          "input_tokens": 8709,
+          "output_tokens": 2508,
+          "total_tokens": 11217
+        },
+        "validation_errors": 1,
+        "tool_refusals": 0
+      },
+      "reference_review": {
+        "reference_alignment": "needs_review",
+        "notes": [
+          "轮廓与窄边沿、色场、两段亮带、柔影均已描述",
+          "随轮廓关系participants仍未包含F1"
+        ]
+      }
+    },
+    {
+      "round": "R1",
+      "case": "liquid",
+      "run_dir": "runs/single-observer-calibration-20261110-r1/liquid/run-lcvtg0ce",
+      "status": "failed",
+      "model_calls": 1,
+      "counts": null,
+      "error": "OpenAIConnectionError: Connection error.",
+      "metrics": {
+        "model_id": "z-ai/glm-5.3-flash",
+        "rule_sha256": "9e9df9f77d51044a2a3a50e67642d14c313729de17e4f65d9b316de15978c699",
+        "examples_sha256": "5a7ad70090b757a97eb6e232649dd998d2bfeb8b0b7cd0b5df3fffe0597aec0f",
+        "elapsed_seconds": 15.239938707993133,
+        "token_usage": null,
+        "validation_errors": 0,
+        "tool_refusals": 0
+      }
+    },
+    {
+      "round": "R1",
+      "case": "windows",
+      "run_dir": "runs/single-observer-calibration-20261110-r1/windows/run-4sksun10",
+      "status": "completed",
+      "model_calls": 3,
+      "counts": {
+        "elements": 1,
+        "features": 4,
+        "relations": 2
+      },
+      "error": null,
+      "metrics": {
+        "model_id": "z-ai/glm-5.3-flash",
+        "rule_sha256": "9e9df9f77d51044a2a3a50e67642d14c313729de17e4f65d9b316de15978c699",
+        "examples_sha256": "5a7ad70090b757a97eb6e232649dd998d2bfeb8b0b7cd0b5df3fffe0597aec0f",
+        "elapsed_seconds": 75.55547629199282,
+        "token_usage": {
+          "input_tokens": 28977,
+          "output_tokens": 12366,
+          "total_tokens": 41343
+        },
+        "validation_errors": 1,
+        "tool_refusals": 0
+      },
+      "reference_review": {
+        "reference_alignment": "matches_reference_split",
+        "notes": [
+          "完整标志一个E, 黑红蓝碎片保持一个F",
+          "窗格随形及碎片色带延续分别为R"
+        ]
+      }
+    },
+    {
+      "round": "R1",
+      "case": "frosted",
+      "run_dir": "runs/single-observer-calibration-20261110-r1/frosted/run-u3z1e07p",
+      "status": "completed",
+      "model_calls": 1,
+      "counts": {
+        "elements": 2,
+        "features": 6,
+        "relations": 3
+      },
+      "error": null,
+      "metrics": {
+        "model_id": "z-ai/glm-5.3-flash",
+        "rule_sha256": "9e9df9f77d51044a2a3a50e67642d14c313729de17e4f65d9b316de15978c699",
+        "examples_sha256": "5a7ad70090b757a97eb6e232649dd998d2bfeb8b0b7cd0b5df3fffe0597aec0f",
+        "elapsed_seconds": 21.616281833004905,
+        "token_usage": {
+          "input_tokens": 9436,
+          "output_tokens": 989,
+          "total_tokens": 10425
+        },
+        "validation_errors": 0,
+        "tool_refusals": 0
+      },
+      "reference_review": {
+        "reference_alignment": "needs_review",
+        "notes": [
+          "两圆覆盖与交叠变化已分别描述",
+          "覆盖外观仍在F3/F6与R2/R3重复, 关系颗粒度需继续校准"
+        ]
+      }
+    },
+    {
+      "round": "R1",
+      "case": "balls",
+      "run_dir": "runs/single-observer-calibration-20261110-r1/balls/run-9ktvao_2",
+      "status": "partial",
+      "model_calls": 3,
+      "counts": {
+        "elements": 2,
+        "features": 6,
+        "relations": 1
+      },
+      "error": null,
+      "metrics": {
+        "model_id": "z-ai/glm-5.3-flash",
+        "rule_sha256": "9e9df9f77d51044a2a3a50e67642d14c313729de17e4f65d9b316de15978c699",
+        "examples_sha256": "5a7ad70090b757a97eb6e232649dd998d2bfeb8b0b7cd0b5df3fffe0597aec0f",
+        "elapsed_seconds": 40.127111833004165,
+        "token_usage": {
+          "input_tokens": 21632,
+          "output_tokens": 3239,
+          "total_tokens": 24871
+        },
+        "validation_errors": 2,
+        "tool_refusals": 0
+      },
+      "reference_review": {
+        "reference_alignment": "needs_review",
+        "notes": [
+          "小件位置/数量描述有误读, 颜色与分布拆为重复目标",
+          "面板与群体的布局配合未正确归为跨E的R",
+          "仍以逐枚遮挡顺序作为必要缺口, 不能宣称粒度通过"
+        ]
+      }
+    },
+    {
+      "round": "R1",
+      "case": "liquid-retry",
+      "run_dir": "runs/single-observer-calibration-20261110-r1/liquid-retry/run-2a0yv96c",
+      "status": "completed",
+      "model_calls": 3,
+      "counts": {
+        "elements": 3,
+        "features": 5,
+        "relations": 2
+      },
+      "error": null,
+      "metrics": {
+        "model_id": "z-ai/glm-5.3-flash",
+        "rule_sha256": "9e9df9f77d51044a2a3a50e67642d14c313729de17e4f65d9b316de15978c699",
+        "examples_sha256": "5a7ad70090b757a97eb6e232649dd998d2bfeb8b0b7cd0b5df3fffe0597aec0f",
+        "elapsed_seconds": 35.9849944160087,
+        "token_usage": {
+          "input_tokens": 17297,
+          "output_tokens": 3598,
+          "total_tokens": 20895
+        },
+        "validation_errors": 1,
+        "tool_refusals": 0
+      },
+      "reference_review": {
+        "reference_alignment": "matches_reference_split",
+        "notes": [
+          "网格单独为E, 亮暗边缘成组",
+          "格线透显与雾感合入R, 大小位置另为R",
+          "一次连接失败另行保留, 本次为同规则独立重试"
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,72 @@
+{
+  "case": "supah-frosted-glass",
+  "source_observation": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/draft-edit-implementation-20261111/frosted/run-tot0qg3a/report",
+  "trace_id": "01a1c92a-1996-7140-9b79-a8fe2e5e0c84",
+  "planning": {
+    "status": "completed",
+    "error": null,
+    "run_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-planning-implementation-20261111/supah-frosted-glass/planning/run-xvxngequ",
+    "report_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-planning-implementation-20261111/supah-frosted-glass/planning/run-xvxngequ/report",
+    "execution": {
+      "planning_protocol": "scene_planning_v1",
+      "execution": "deep_agents_single_planner",
+      "state": "accepted",
+      "reason": null,
+      "model_calls": 6,
+      "max_model_calls": 20,
+      "validation_errors": 0,
+      "tool_refusals": 0,
+      "observation_sha256": "2b410fc3e82325c595e195b8ad819026d4d0bd2e60d2a23030210793c7a89dab",
+      "reference_sha256": "4b98572449bf26744a76d3f9271bc10397e3b1c05512b2fcab5624442f7a6252",
+      "draft_path": "draft/planning.json",
+      "draft_revision": "1e75080cd2da061913c254f8202197a89242979642a28e5d4b4be3cb7e5bba62",
+      "seen_revision": "1e75080cd2da061913c254f8202197a89242979642a28e5d4b4be3cb7e5bba62",
+      "accepted_revision": "1e75080cd2da061913c254f8202197a89242979642a28e5d4b4be3cb7e5bba62",
+      "accepted_snapshot": "results/planning.json",
+      "resource_read_results": [],
+      "model_id": "z-ai/glm-5.3-flash",
+      "reasoning_effort": null,
+      "rule_sha256": "3b8554e6006176713e1e6977df8e1097a719bcdd7d6d8bc8a68bf60d44ec10ea",
+      "resource_sha256": {
+        "SKILL.md": "3b8554e6006176713e1e6977df8e1097a719bcdd7d6d8bc8a68bf60d44ec10ea",
+        "references/mechanisms.md": "c6ccf4db4c1d96be0663395e323e014ac3d0b6f9b50a3da7a4d281eee49c0416",
+        "references/alternatives.md": "c0e7ff089ebee25f5e3ff41f773cbbee209ea9243dcedb0259aa83a6d89195a0",
+        "references/conditions-and-gaps.md": "2d1ca84910cbd9a4ae4493c573a7164e90773c8bd064e043af15fb2ab8d273e6"
+      },
+      "skill_bundle_sha256": "d379740d9a1cc16aeaea1bb3cc3433edd85ad3ec42c8d7aaabed8fa8c886d500",
+      "elapsed_seconds": 647.1704670000181,
+      "elapsed_scope": "planning_before_publication",
+      "token_usage": {
+        "input_tokens": 364051,
+        "output_tokens": 77926,
+        "total_tokens": 441977
+      },
+      "usage_scope": "sdk_reported_responses_only",
+      "http_request_count": null
+    }
+  },
+  "selected_sketch": "S1",
+  "selection_rule": "first complete sketch, otherwise first declared sketch",
+  "counts": {
+    "mechanisms": 6,
+    "sketches": 1,
+    "targets": 8
+  },
+  "planning_sha256": "6b57fbf5d179627e9d83051f65d47358dab914eba98b251a1870f80556f33a9f",
+  "observation_sha256": "2b410fc3e82325c595e195b8ad819026d4d0bd2e60d2a23030210793c7a89dab",
+  "generation": {
+    "stop_reason": "completed",
+    "run_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-planning-implementation-20261111/supah-frosted-glass/generation/run-o7a9z_64",
+    "attempts": 2,
+    "model_calls": 3,
+    "candidate_id": "run-o7a9z_64-c002",
+    "code_path": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-planning-implementation-20261111/supah-frosted-glass/generation/run-o7a9z_64/candidate-002.glsl",
+    "preview_path": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-planning-implementation-20261111/supah-frosted-glass/generation/run-o7a9z_64/candidate-002.png",
+    "assessment": [
+      "按固定方案 S1 完整实现 E1/E2/E3 与 F1–F6、R1/R2。相比 c001 修正: E3 右移放大 (c3=(752,392), r3=158) 使灰白柔焦圆在右上方清晰可辨; 紫色晕染收窄 (半轴 88×92) 使浓度峰紧贴重叠区并向右渐淡融入灰白。预览与参考对照: 浅灰底均匀; E2 左缘青绿鲜明、向右下渐变为饱和深蓝, 下缘锐利; E3 灰白柔焦圆盘边界柔和羽化、仅比背景略亮; 被覆盖的 E2 右上弧段边缘隐没、蓝紫叠合自然过渡, 未覆盖部分保持锐边 (R2)。仍存在的差异: 参考图中重叠区中心紫色略更浓且饱和度稍高, E3 灰白与背景对比可再略强, 属次要数值级差异, 整体方案与关键关系已落实。"
+    ]
+  },
+  "elapsed_seconds": 903.9377424169797,
+  "code_changed_during_run": false,
+  "trace_url": "https://smith.langchain.com/o/fcb09333-f0ce-45e7-9ea2-c4750cdfbd16/projects/p/2e0945b1-fc78-4930-96bb-3085745b703a/r/01a1c92a-1996-7140-9b79-a8fe2e5e0c84?poll=true"
+}

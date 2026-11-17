@@ -1,0 +1,51 @@
+{
+  "planning_protocol": "scene_planning_v1",
+  "status": "completed",
+  "error": null,
+  "report_path": "report",
+  "options": {
+    "max_model_calls": 20,
+    "max_request_retries": 2,
+    "request_timeout_seconds": 240,
+    "stream_model_responses": true,
+    "max_output_tokens": 163840,
+    "output_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-planning-implementation-20261111/2d-physics-balls/planning"
+  },
+  "execution": {
+    "planning_protocol": "scene_planning_v1",
+    "execution": "deep_agents_single_planner",
+    "state": "accepted",
+    "reason": null,
+    "model_calls": 5,
+    "max_model_calls": 20,
+    "validation_errors": 0,
+    "tool_refusals": 0,
+    "observation_sha256": "cfa9a5c840dbee39d783446ddba08e1f3b6bad8deea681fb13312b53ecf24bb1",
+    "reference_sha256": "7beeab6b0c683e16ed213393b2a8850b28c1c2e3a89963c671f8902d6d194523",
+    "draft_path": "draft/planning.json",
+    "draft_revision": "9578430b561f7cf4de0f531ee45ee787d061c6b40cd247775b6bee6370bb2bb8",
+    "seen_revision": "9578430b561f7cf4de0f531ee45ee787d061c6b40cd247775b6bee6370bb2bb8",
+    "accepted_revision": "9578430b561f7cf4de0f531ee45ee787d061c6b40cd247775b6bee6370bb2bb8",
+    "accepted_snapshot": "results/planning.json",
+    "resource_read_results": [],
+    "model_id": "z-ai/glm-5.3-flash",
+    "reasoning_effort": null,
+    "rule_sha256": "3b8554e6006176713e1e6977df8e1097a719bcdd7d6d8bc8a68bf60d44ec10ea",
+    "resource_sha256": {
+      "SKILL.md": "3b8554e6006176713e1e6977df8e1097a719bcdd7d6d8bc8a68bf60d44ec10ea",
+      "references/mechanisms.md": "c6ccf4db4c1d96be0663395e323e014ac3d0b6f9b50a3da7a4d281eee49c0416",
+      "references/alternatives.md": "c0e7ff089ebee25f5e3ff41f773cbbee209ea9243dcedb0259aa83a6d89195a0",
+      "references/conditions-and-gaps.md": "2d1ca84910cbd9a4ae4493c573a7164e90773c8bd064e043af15fb2ab8d273e6"
+    },
+    "skill_bundle_sha256": "d379740d9a1cc16aeaea1bb3cc3433edd85ad3ec42c8d7aaabed8fa8c886d500",
+    "elapsed_seconds": 855.6156978330109,
+    "elapsed_scope": "planning_before_publication",
+    "token_usage": {
+      "input_tokens": 350699,
+      "output_tokens": 85818,
+      "total_tokens": 436517
+    },
+    "usage_scope": "sdk_reported_responses_only",
+    "http_request_count": null
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "analysis_protocol": "scene_observations_v1",
+  "stop_reason": "completed",
+  "error": null,
+  "report_path": "report",
+  "options": {
+    "max_model_calls": 8,
+    "max_output_tokens": 163840,
+    "max_request_retries": 0,
+    "request_timeout_seconds": 45,
+    "stream_model_responses": true,
+    "output_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/single-observer-new-cases-20261110-uyrhcnj9/auroras"
+  },
+  "deprecated_option_diagnostics": [],
+  "execution": {
+    "analysis_protocol": "scene_observations_v1",
+    "execution": "deep_agents_single_observer",
+    "state": "accepted",
+    "reason": null,
+    "model_calls": 2,
+    "validation_errors": 0,
+    "tool_refusals": 0,
+    "max_model_calls": 8,
+    "reference_sha256": "cbc9a23997fd40f772044174fa87c8776e7b18b559ecc268476ba79bee15279c",
+    "accepted_snapshot": "results/observations.json",
+    "model_id": "z-ai/glm-5.3-flash",
+    "rule_sha256": "9e9df9f77d51044a2a3a50e67642d14c313729de17e4f65d9b316de15978c699",
+    "examples_sha256": "5a7ad70090b757a97eb6e232649dd998d2bfeb8b0b7cd0b5df3fffe0597aec0f",
+    "elapsed_seconds": 147.64257466600975,
+    "elapsed_scope": "analysis_before_publication",
+    "token_usage": {
+      "input_tokens": 17311,
+      "output_tokens": 10526,
+      "total_tokens": 27837
+    },
+    "usage_scope": "sdk_reported_responses_only",
+    "http_request_count": null
+  }
+}

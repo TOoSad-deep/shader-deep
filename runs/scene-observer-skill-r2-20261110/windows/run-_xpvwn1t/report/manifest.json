@@ -1,0 +1,14 @@
+{
+  "schema_version": "scene_observations_v1",
+  "reference": {
+    "path": "reference.png",
+    "sha256": "80c35a1f92b2e537114d4615a85a6865411aa2d7c193ee7fdddf3155c8a59fcc"
+  },
+  "status": "completed",
+  "context_notes": [
+    "纯色深青绿背景铺满全图, 无其他环境元素",
+    "画面中部偏左上为一个 Windows 95 风格飘动旗帜标志, 右侧为实心波浪旗面, 向左上逐渐消散为像素小方块"
+  ],
+  "open_questions": [],
+  "gaps": []
+}

@@ -1,0 +1,23 @@
+{
+  "sample": "complex",
+  "image": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/apps/shader_deep/test_pic/supah-frosted-glass.png",
+  "sha256": "4b98572449bf26744a76d3f9271bc10397e3b1c05512b2fcab5624442f7a6252",
+  "prompt": "请分析参考图中的一个指定元素: 画面右上方的前景磨砂玻璃圆片, 包含它与后方蓝色圆片重叠的区域。以过程式 Shader 复现为目标, 独立分析可见特征、关系、候选实现机制和草图方案, 明确不确定项与缺口。本轮只分析该目标。",
+  "started_utc": "2026-10-25T16:14:56.301826+00:00",
+  "observation_timeout_seconds": 900,
+  "command": [
+    "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/apps/shader_deep/.venv/bin/python3",
+    "-m",
+    "shader_deep.cli.analysis",
+    "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/apps/shader_deep/test_pic/supah-frosted-glass.png",
+    "请分析参考图中的一个指定元素: 画面右上方的前景磨砂玻璃圆片, 包含它与后方蓝色圆片重叠的区域。以过程式 Shader 复现为目标, 独立分析可见特征、关系、候选实现机制和草图方案, 明确不确定项与缺口。本轮只分析该目标。",
+    "--output-dir",
+    "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/analysis-schema-fix-20261026/complex",
+    "--log-level",
+    "WARNING"
+  ],
+  "exit_code": 1,
+  "observation_timed_out": false,
+  "elapsed_seconds": 260.48,
+  "ended_utc": "2026-10-25T16:19:16.780613+00:00"
+}

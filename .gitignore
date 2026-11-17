@@ -267,3 +267,6 @@ node_modules/
 
 # Generated at build time by libs/code/hatch_build.py (stamps the release commit)
 libs/code/deepagents_code/_build_info.py
+
+# Local account session export containing authentication tokens
+/apps/shader_deep/1.txt

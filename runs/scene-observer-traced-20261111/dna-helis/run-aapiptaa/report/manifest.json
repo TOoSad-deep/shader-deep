@@ -1,0 +1,14 @@
+{
+  "schema_version": "scene_observations_v1",
+  "reference": {
+    "path": "reference.png",
+    "sha256": "4ba233c4280ddbf1add81261151878c24c006b33defab9752c80d36e03b4fa38"
+  },
+  "status": "completed",
+  "context_notes": [
+    "整图为纯黑底上的灰白双螺旋示意结构, 除背景与螺旋外无其他场景物",
+    "链条向左下角与右上角延伸并在图边处被裁切"
+  ],
+  "open_questions": [],
+  "gaps": []
+}

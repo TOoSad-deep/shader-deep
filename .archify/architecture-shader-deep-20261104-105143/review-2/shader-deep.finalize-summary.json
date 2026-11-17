@@ -1,0 +1,119 @@
+{
+  "schemaVersion": 1,
+  "ok": true,
+  "command": "finalize",
+  "status": "pass",
+  "type": "architecture",
+  "quality": "showcase",
+  "specification": {
+    "path": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/.archify/architecture-shader-deep-20261104-105143/candidate.json",
+    "sha256": "8ad500ee5cdd6680d27ae71491030a3d09cb672ad4641d18cb066d8bad7624c8",
+    "bytes": 12551
+  },
+  "artifact": {
+    "path": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/.archify/architecture-shader-deep-20261104-105143/shader-deep.html",
+    "sha256": "ca15a48758d08670ddf891a1de26534ced3797b9f309a79d0f4b337136c7ab17",
+    "bytes": 844666
+  },
+  "gates": {
+    "validate": "pass",
+    "deliver": "pass",
+    "check": "pass",
+    "browser-check": "pass"
+  },
+  "diagnostics": [],
+  "diagnosticSummary": {
+    "total": 0,
+    "shown": 0,
+    "truncated": false
+  },
+  "evidence": {
+    "receipt": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/.archify/architecture-shader-deep-20261104-105143/review-2/shader-deep.finalize.json",
+    "summaryReceipt": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/.archify/architecture-shader-deep-20261104-105143/review-2/shader-deep.finalize-summary.json",
+    "browserCheckReceipt": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/.archify/architecture-shader-deep-20261104-105143/review-2/shader-deep.browser-check.json"
+  },
+  "update": {
+    "status": "current",
+    "installedVersion": "3.2.0",
+    "availableVersion": "3.2.0",
+    "releaseNotes": null,
+    "checkedAt": "2026-11-04T02:53:31.891Z",
+    "source": "network",
+    "noticeRequired": false,
+    "noticeText": null
+  },
+  "visualReview": "not-requested",
+  "durationMs": 2398,
+  "browserCheck": {
+    "requested": true,
+    "ran": true
+  },
+  "visualReviewRecommendation": {
+    "action": "inspect-route-readability",
+    "signals": {
+      "resolvedCrossovers": 1,
+      "routesOverSuggestedBends": 2
+    },
+    "reason": "Automated gates passed, but crossings or detours still need perceptual review before claiming visual quality.",
+    "affectedRoutes": {
+      "crossings": [
+        {
+          "left": {
+            "id": "entry-generation",
+            "from": "entry",
+            "to": "generation",
+            "label": "PNG / 显式生成",
+            "collectionIndex": 2,
+            "artifactIndex": 3
+          },
+          "right": {
+            "id": "report-choice",
+            "from": "report",
+            "to": "generation",
+            "label": "用户显式选报告与草图",
+            "collectionIndex": 7,
+            "artifactIndex": 8
+          },
+          "point": [
+            361.5,
+            589
+          ],
+          "sharedNode": "generation"
+        }
+      ],
+      "detours": [
+        {
+          "relationship": {
+            "id": "entry-generation",
+            "from": "entry",
+            "to": "generation",
+            "label": "PNG / 显式生成",
+            "collectionIndex": 2,
+            "artifactIndex": 3
+          },
+          "bends": 3,
+          "stretch": 1
+        },
+        {
+          "relationship": {
+            "id": "report-choice",
+            "from": "report",
+            "to": "generation",
+            "label": "用户显式选报告与草图",
+            "collectionIndex": 7,
+            "artifactIndex": 8
+          },
+          "bends": 3,
+          "stretch": 1
+        }
+      ],
+      "truncated": false
+    },
+    "hints": [
+      "entry → generation and report → generation cross next to generation: move node entry or report so the two reach generation from different sides (for example one level with it, one directly above or below it).",
+      "entry → generation needs 3 bends: move node entry or generation so they share a row or column with matching centers, or sit diagonally with a clear corner.",
+      "report → generation needs 3 bends: move node report or generation so they share a row or column with matching centers, or sit diagonally with a clear corner."
+    ],
+    "repair": "Trace these relationships at the desktop viewport. For Architecture, use references/architecture-layout-repair.md: reflow a blocked main path or tangled connected scene, and repair an isolated defect locally only when the surrounding composition is accepted. Preserve all semantic content and user-fixed geometry. Rerun finalize once after the edit."
+  }
+}

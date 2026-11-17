@@ -1,0 +1,16 @@
+{
+  "schema_version": "scene_observations_v1",
+  "reference": {
+    "path": "reference.png",
+    "sha256": "4b98572449bf26744a76d3f9271bc10397e3b1c05512b2fcab5624442f7a6252"
+  },
+  "status": "partial",
+  "context_notes": [],
+  "open_questions": [],
+  "gaps": [
+    {
+      "refs": [],
+      "description": "重叠区紫色渐变的确切范围与色阶仅按可见近似描述, 未做精确数值确认"
+    }
+  ]
+}

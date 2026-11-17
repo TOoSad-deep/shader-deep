@@ -1,0 +1,27 @@
+{
+  "condition": "deep_agent",
+  "number": 4,
+  "model": "z-ai/glm-5.3-flash",
+  "sample_sha256": "677ad234571bc8e5ab204a6d8b2bfec4aa8e920ee3711282433f525f9691ab8d",
+  "status": "failed",
+  "error": "APIError: Upstream error from Reka: The model is at capacity. Retry after the Retry-After delay.",
+  "elapsed_seconds": 114.73204641699886,
+  "calls": 1,
+  "network_attempts": 1,
+  "repairs": 0,
+  "requests": [
+    {
+      "payload_sha256": "d55cfd5ac8960d29237086d447999eb281ba90a4671c87bde363ccd400671f61",
+      "messages_sha256": "cbf8fbbb00689a0aecb45fc3e4356c9b4e671288bca1ddf7a1b1d850dfdac041",
+      "tools_sha256": "a7e10d7ca51d15947125db521644cd5ce2aed9a9935b4d8d08ec4d6a84c9d010",
+      "payload_bytes": 13382,
+      "tool_names": [
+        "submit_exploration"
+      ],
+      "image_blocks": 1
+    }
+  ],
+  "usage": [],
+  "tool_outcomes": [],
+  "counts": null
+}

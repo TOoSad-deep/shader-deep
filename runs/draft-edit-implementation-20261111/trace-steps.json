@@ -1,0 +1,98 @@
+[
+  {
+    "case": "pink",
+    "status": "failed",
+    "steps": [
+      {
+        "name": "save_observation_draft",
+        "error": false,
+        "status": "success",
+        "created": true,
+        "saved": true,
+        "revision": "413488058536a31ac9a700c70f81c9ebc2e0c797b43996d91604446e75384a6d"
+      }
+    ]
+  },
+  {
+    "case": "pink-retry",
+    "status": "completed",
+    "steps": [
+      {
+        "name": "save_observation_draft",
+        "error": false,
+        "status": "success",
+        "created": true,
+        "saved": true,
+        "revision": "d238a4736b5bdc426ccc4c7eafda259ecbea3b12f6f786949acf457628924b18"
+      },
+      {
+        "name": "read_file",
+        "error": false,
+        "status": "success"
+      },
+      {
+        "name": "edit_file",
+        "error": false,
+        "status": "success"
+      },
+      {
+        "name": "edit_file",
+        "error": false,
+        "status": "success"
+      },
+      {
+        "name": "edit_file",
+        "error": false,
+        "status": "success"
+      },
+      {
+        "name": "read_file",
+        "error": false,
+        "status": "success"
+      },
+      {
+        "name": "finish_analysis",
+        "error": false,
+        "status": "success",
+        "accepted": true,
+        "accepted_revision": "6e83f23c9e027b0af0da8699518d97c85ffd9a8727374bc38045dfe81e094feb"
+      }
+    ]
+  },
+  {
+    "case": "frosted",
+    "status": "completed",
+    "steps": [
+      {
+        "name": "save_observation_draft",
+        "error": false,
+        "status": "success",
+        "created": true,
+        "saved": true,
+        "revision": "5b6af4295e97360c75fe85c989e1b187a367da4e6b75ed5346c86277f44e3e2e"
+      },
+      {
+        "name": "read_file",
+        "error": false,
+        "status": "success"
+      },
+      {
+        "name": "edit_file",
+        "error": false,
+        "status": "success"
+      },
+      {
+        "name": "read_file",
+        "error": false,
+        "status": "success"
+      },
+      {
+        "name": "finish_analysis",
+        "error": false,
+        "status": "success",
+        "accepted": true,
+        "accepted_revision": "564136b93172826eaa388f8640928f327612976f9d72ca4bedc4cad7023d7608"
+      }
+    ]
+  }
+]

@@ -1,0 +1,72 @@
+{
+  "kind": "controlled_protocol_probe",
+  "included_in_ab": false,
+  "autonomous_memory_use": false,
+  "call_id": "controlled-read-1",
+  "requested_region": {
+    "x": 32,
+    "y": 32,
+    "width": 64,
+    "height": 64
+  },
+  "overrides": {
+    "max_tokens": 512,
+    "timeout_seconds": 90,
+    "max_retries": 0
+  },
+  "http_requests": [
+    {
+      "tool_image_blocks": [
+        {
+          "tool_call_id": "controlled-read-1",
+          "material_id": "m0002",
+          "sha256": "30d3b57a6bbe0ab823b0f580971a33fad2c118fd98fe69f1b510631de6890fc5",
+          "size": [
+            64,
+            64
+          ],
+          "matches_material_file": true
+        }
+      ],
+      "total_image_blocks": 2,
+      "max_completion_tokens": 512,
+      "max_tokens": null,
+      "tool_image_block_count": 1
+    }
+  ],
+  "reference_material_id": "m0001",
+  "returned_material_id": "m0002",
+  "material_file": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/apps/shader_deep/runs/vista-smoke-20261111-bpuq3psd/probe/memory/derived/m0002.png",
+  "expected_sha256": "30d3b57a6bbe0ab823b0f580971a33fad2c118fd98fe69f1b510631de6890fc5",
+  "derived_from": {
+    "material_id": "m0001",
+    "operation": "crop",
+    "region": {
+      "x": 32,
+      "y": 32,
+      "width": 64,
+      "height": 64
+    }
+  },
+  "model": "z-ai/glm-5.3-flash",
+  "service_status": "success",
+  "response": "工具返回的局部图像显示：一块明亮的天蓝色圆形区域占据了画面绝大部分，其边缘向四角呈圆弧状收拢并露出近黑的深色背景，整体呈深色底上的蓝色圆形图案。",
+  "usage": {
+    "input_tokens": 871,
+    "output_tokens": 329,
+    "total_tokens": 1200,
+    "input_token_details": {
+      "audio": 0,
+      "cache_read": 0,
+      "cache_creation": 0
+    },
+    "output_token_details": {
+      "audio": 0,
+      "reasoning": 282
+    }
+  },
+  "finish_reason": "stop",
+  "response_tool_calls": 0,
+  "elapsed_seconds": 3.74,
+  "actual_http_request_count": 1
+}

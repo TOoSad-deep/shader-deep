@@ -1,0 +1,344 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "分析 Agent · 观察、规划与生成交接",
+    "locale": "zh-CN",
+    "output": ".archify/architecture-analysis-agent-20261112-164431/analysis-architecture.html",
+    "quality_profile": "showcase",
+    "repository": {
+      "url": "https://github.com/TOoSad-deep/shader-deep.git",
+      "revision": "784e6de3b246d967c9782072f268526fce2cb60a",
+      "link_mode": "local-only"
+    }
+  },
+  "components": [
+    {
+      "id": "observation_entry",
+      "type": "backend",
+      "label": "观察入口",
+      "sublabel": "PNG · 用户要求 · 独立运行",
+      "pos": [
+        40,
+        40
+      ],
+      "size": [
+        220,
+        82
+      ],
+      "sources": [
+        {
+          "path": "apps/shader_deep/src/shader_deep/workflows/analysis/entry.py",
+          "line": 139,
+          "end_line": 178
+        },
+        {
+          "path": "apps/shader_deep/src/shader_deep/workflows/analysis/pipeline.py",
+          "line": 86,
+          "end_line": 107
+        }
+      ]
+    },
+    {
+      "id": "observer",
+      "type": "backend",
+      "label": "观察 Agent",
+      "sublabel": "scene-observer · 全图 E/F/R",
+      "pos": [
+        420,
+        40
+      ],
+      "size": [
+        230,
+        82
+      ],
+      "sources": [
+        {
+          "path": "apps/shader_deep/src/shader_deep/agents/analysis/native.py",
+          "line": 57,
+          "end_line": 78
+        },
+        {
+          "path": "apps/shader_deep/src/shader_deep/agents/analysis/native.py",
+          "line": 130,
+          "end_line": 172
+        }
+      ],
+      "tag": "一个原生角色"
+    },
+    {
+      "id": "observations",
+      "type": "database",
+      "label": "E/F/R 观察包",
+      "sublabel": "scene_observations_v1",
+      "pos": [
+        840,
+        40
+      ],
+      "size": [
+        250,
+        82
+      ],
+      "sources": [
+        {
+          "path": "apps/shader_deep/src/shader_deep/workflows/analysis/entry.py",
+          "line": 55,
+          "end_line": 77
+        },
+        {
+          "path": "apps/shader_deep/src/shader_deep/infrastructure/storage/observation_package.py",
+          "line": 95,
+          "end_line": 134
+        },
+        {
+          "path": "apps/shader_deep/src/shader_deep/domain/scene_observations.py",
+          "line": 35,
+          "end_line": 76
+        }
+      ]
+    },
+    {
+      "id": "planning_entry",
+      "type": "backend",
+      "label": "规划入口与输入捕获",
+      "sublabel": "固定观察 · 新要求 · 生成约束",
+      "pos": [
+        840,
+        285
+      ],
+      "size": [
+        250,
+        82
+      ],
+      "sources": [
+        {
+          "path": "apps/shader_deep/src/shader_deep/workflows/planning/entry.py",
+          "line": 124,
+          "end_line": 151
+        },
+        {
+          "path": "apps/shader_deep/src/shader_deep/infrastructure/storage/planning_inputs.py",
+          "line": 208,
+          "end_line": 252
+        }
+      ],
+      "tag": "调用方单独发起"
+    },
+    {
+      "id": "planner",
+      "type": "backend",
+      "label": "规划 Agent",
+      "sublabel": "scene-planner · 整图 M/S",
+      "pos": [
+        420,
+        285
+      ],
+      "size": [
+        230,
+        82
+      ],
+      "sources": [
+        {
+          "path": "apps/shader_deep/src/shader_deep/agents/planning/native.py",
+          "line": 48,
+          "end_line": 78
+        },
+        {
+          "path": "apps/shader_deep/src/shader_deep/agents/planning/native.py",
+          "line": 130,
+          "end_line": 170
+        },
+        {
+          "path": "apps/shader_deep/src/shader_deep/workflows/planning/session.py",
+          "line": 60,
+          "end_line": 75
+        }
+      ],
+      "tag": "一个原生角色"
+    },
+    {
+      "id": "planning_package",
+      "type": "database",
+      "label": "M/S 规划包",
+      "sublabel": "scene_planning_v1",
+      "pos": [
+        40,
+        285
+      ],
+      "size": [
+        250,
+        82
+      ],
+      "sources": [
+        {
+          "path": "apps/shader_deep/src/shader_deep/workflows/planning/entry.py",
+          "line": 57,
+          "end_line": 65
+        },
+        {
+          "path": "apps/shader_deep/src/shader_deep/infrastructure/storage/planning_package.py",
+          "line": 98,
+          "end_line": 121
+        },
+        {
+          "path": "apps/shader_deep/src/shader_deep/infrastructure/storage/planning_package.py",
+          "line": 131,
+          "end_line": 161
+        }
+      ]
+    },
+    {
+      "id": "selection",
+      "type": "backend",
+      "label": "方案选择与材料捕获",
+      "sublabel": "显式选择 S · 可选一项备选",
+      "pos": [
+        40,
+        530
+      ],
+      "size": [
+        250,
+        82
+      ],
+      "sources": [
+        {
+          "path": "apps/shader_deep/src/shader_deep/workflows/generation_from_planning.py",
+          "line": 31,
+          "end_line": 53
+        },
+        {
+          "path": "apps/shader_deep/src/shader_deep/workflows/generation_from_planning.py",
+          "line": 59,
+          "end_line": 85
+        }
+      ]
+    },
+    {
+      "id": "generation",
+      "type": "backend",
+      "label": "生成、渲染与候选选择",
+      "sublabel": "GLSL → WebGL2 → PNG",
+      "pos": [
+        570,
+        530
+      ],
+      "size": [
+        360,
+        82
+      ],
+      "sources": [
+        {
+          "path": "apps/shader_deep/src/shader_deep/agents/generation/agent.py",
+          "line": 62,
+          "end_line": 90
+        },
+        {
+          "path": "apps/shader_deep/src/shader_deep/agents/generation/tools/render.py",
+          "line": 21,
+          "end_line": 67
+        },
+        {
+          "path": "apps/shader_deep/src/shader_deep/agents/generation/tools/finish.py",
+          "line": 31,
+          "end_line": 55
+        }
+      ],
+      "tag": "预览入模后选择"
+    }
+  ],
+  "connections": [
+    {
+      "id": "start_observation",
+      "from": "observation_entry",
+      "to": "observer",
+      "label": "固定整图",
+      "variant": "emphasis"
+    },
+    {
+      "id": "publish_observation",
+      "from": "observer",
+      "to": "observations",
+      "label": "接受后发布",
+      "variant": "emphasis"
+    },
+    {
+      "id": "load_observation",
+      "from": "observations",
+      "to": "planning_entry",
+      "label": "读取并固定",
+      "variant": "emphasis"
+    },
+    {
+      "id": "start_planning",
+      "from": "planning_entry",
+      "to": "planner",
+      "label": "原图与 E/F/R",
+      "variant": "emphasis"
+    },
+    {
+      "id": "publish_planning",
+      "from": "planner",
+      "to": "planning_package",
+      "label": "接受后发布",
+      "variant": "emphasis"
+    },
+    {
+      "id": "choose_scheme",
+      "from": "planning_package",
+      "to": "selection",
+      "label": "读取正式包",
+      "variant": "emphasis"
+    },
+    {
+      "id": "generate_scheme",
+      "from": "selection",
+      "to": "generation",
+      "label": "生效方案与两类缺口",
+      "variant": "emphasis"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "三个公开入口",
+      "items": [
+        "run_analysis → run_planning → run_generation_from_planning",
+        "调用方分别发起每一阶段。观察与规划各自拥有独立会话、草稿、调用预算和正式包。"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "观察负责什么",
+      "items": [
+        "E 包含可见背景、对象或同类对象群。F 首次嵌套在 E 下提交，程序派生 feature_ids。",
+        "R 表达同元素或跨元素的关键配合。context_notes、open_questions 与 gaps 单独保存。",
+        "输出包包含 elements.json、features.json、relations.json、manifest.json、reference.png 和 README.md。"
+      ]
+    },
+    {
+      "dot": "violet",
+      "title": "规划负责什么",
+      "items": [
+        "M 描述可复用构造方法与成立条件。S 维护 F/R 到方法组的选择，并通过 composition 组织完整场景。",
+        "备选可替换局部选择，一次显式选用一项。候选索引由程序派生。",
+        "正式包包含观察副本、要求、生成约束、M/S、组合候选和内容哈希。"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "完成与实际效果",
+      "items": [
+        "观察有必要 gaps 时交付 partial。规划至少有一套 S 与上游观察均无必要缺口时交付 completed。",
+        "程序完成状态体现合同校验和已知缺口。图像质量继续通过实际生成、预览对照和人工确认。"
+      ]
+    },
+    {
+      "dot": "slate",
+      "title": "源码依据",
+      "items": [
+        "依据 2026-11-12 当前未提交工作树绘制。引用固定到独立本地证据快照，来源摘录与 SHA-256 保存在 source-evidence.json。",
+        "观察与规划共用草稿运行辅助，具体权限、上下文和存储归属见配套 harness 图。"
+      ]
+    }
+  ]
+}

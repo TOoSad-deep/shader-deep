@@ -1,0 +1,48 @@
+{
+  "case": "dna-helis-retry",
+  "source_observation": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/draft-budget20-five-cases-20261111/dna-helis/run-5sdvy11h/report",
+  "trace_id": "01a1c958-0959-76f1-81aa-511c64776cbd",
+  "planning": {
+    "status": "failed",
+    "error": "ValueError: Analysis response reached output limit; no tools executed",
+    "run_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-planning-implementation-20261111/dna-helis-retry/planning/run-bcsqrtz2",
+    "report_dir": null,
+    "execution": {
+      "planning_protocol": "scene_planning_v1",
+      "execution": "deep_agents_single_planner",
+      "state": "stopped",
+      "reason": "ValueError: Analysis response reached output limit; no tools executed",
+      "model_calls": 1,
+      "max_model_calls": 20,
+      "validation_errors": 0,
+      "tool_refusals": 0,
+      "observation_sha256": "8dd68cb856a450ca50ff9ce09fbedf2daf1efba07f4075fe33dd08d0ad56a158",
+      "reference_sha256": "4ba233c4280ddbf1add81261151878c24c006b33defab9752c80d36e03b4fa38",
+      "draft_path": null,
+      "draft_revision": null,
+      "seen_revision": null,
+      "accepted_revision": null,
+      "accepted_snapshot": null,
+      "resource_read_results": [],
+      "model_id": "z-ai/glm-5.3-flash",
+      "reasoning_effort": null,
+      "rule_sha256": "83d291f3db988cf6f786f54cb8aba0105f98b1f34363a5771672af1fd5d7f88f",
+      "resource_sha256": {
+        "SKILL.md": "83d291f3db988cf6f786f54cb8aba0105f98b1f34363a5771672af1fd5d7f88f",
+        "references/mechanisms.md": "c6ccf4db4c1d96be0663395e323e014ac3d0b6f9b50a3da7a4d281eee49c0416",
+        "references/alternatives.md": "29ef92abdb48279a92ae9e97f21fa733c364d126e17b9b727343a64e1a4f412e",
+        "references/conditions-and-gaps.md": "2d1ca84910cbd9a4ae4493c573a7164e90773c8bd064e043af15fb2ab8d273e6"
+      },
+      "skill_bundle_sha256": "02a44a5a21561f928bfe4086a3483c372e6800ecda6c17d2d43df20b7f1d98e2",
+      "elapsed_seconds": 244.7124654169893,
+      "elapsed_scope": "planning_before_publication",
+      "token_usage": {
+        "input_tokens": 4855,
+        "output_tokens": 32768,
+        "total_tokens": 37623
+      },
+      "usage_scope": "sdk_reported_responses_only",
+      "http_request_count": null
+    }
+  }
+}

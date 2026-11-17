@@ -1,0 +1,485 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Shader Deep 当前整体架构",
+    "locale": "zh-CN",
+    "output": ".archify/architecture-shader-deep-20261104-105143/shader-deep.html",
+    "quality_profile": "showcase",
+    "repository": {
+      "url": "https://github.com/TOoSad-deep/shader-deep.git",
+      "revision": "670db266a2b52cfcdcb6dae8955c124e637b8cd0",
+      "link_mode": "web"
+    }
+  },
+  "components": [
+    {
+      "id": "web",
+      "type": "frontend",
+      "label": "本地网页",
+      "sublabel": "回环 HTTP · 同时一个任务",
+      "pos": [
+        40,
+        40
+      ],
+      "size": [
+        230,
+        80
+      ],
+      "sources": [
+        {
+          "path": "apps/shader_deep/src/shader_deep/web/jobs.py",
+          "line": 168,
+          "end_line": 227
+        },
+        {
+          "path": "apps/shader_deep/src/shader_deep/web/server.py",
+          "line": 20,
+          "end_line": 28
+        }
+      ]
+    },
+    {
+      "id": "entry",
+      "type": "frontend",
+      "label": "CLI / Python API",
+      "sublabel": "PNG + 要求 / 显式方案",
+      "pos": [
+        410,
+        40
+      ],
+      "size": [
+        270,
+        80
+      ],
+      "sources": [
+        {
+          "path": "apps/shader_deep/src/shader_deep/api.py",
+          "line": 3,
+          "end_line": 38
+        },
+        {
+          "path": "apps/shader_deep/src/shader_deep/cli/analysis.py",
+          "line": 50,
+          "end_line": 62
+        },
+        {
+          "path": "apps/shader_deep/src/shader_deep/cli/generation.py",
+          "line": 50,
+          "end_line": 75
+        }
+      ]
+    },
+    {
+      "id": "analysis",
+      "type": "backend",
+      "label": "分析工作流与业务会话",
+      "sublabel": "固定输入 · 槽位准入 · 领域校验",
+      "pos": [
+        410,
+        260
+      ],
+      "size": [
+        270,
+        90
+      ],
+      "sources": [
+        {
+          "path": "apps/shader_deep/src/shader_deep/workflows/analysis/pipeline.py",
+          "line": 45,
+          "end_line": 64
+        },
+        {
+          "path": "apps/shader_deep/src/shader_deep/workflows/analysis/session.py",
+          "line": 132,
+          "end_line": 149
+        },
+        {
+          "path": "apps/shader_deep/src/shader_deep/workflows/analysis/session.py",
+          "line": 350,
+          "end_line": 372
+        }
+      ],
+      "tag": "AnalysisSession"
+    },
+    {
+      "id": "analysis-agents",
+      "type": "backend",
+      "label": "原生分析角色",
+      "sublabel": "主图 → 独立探索 → 整合",
+      "pos": [
+        910,
+        260
+      ],
+      "size": [
+        270,
+        90
+      ],
+      "sources": [
+        {
+          "path": "apps/shader_deep/src/shader_deep/agents/analysis/native.py",
+          "line": 300,
+          "end_line": 365
+        },
+        {
+          "path": "apps/shader_deep/src/shader_deep/agents/analysis/native.py",
+          "line": 369,
+          "end_line": 402
+        },
+        {
+          "path": "apps/shader_deep/src/shader_deep/agents/analysis/native.py",
+          "line": 247,
+          "end_line": 280
+        }
+      ],
+      "tag": "SDK task · 父子上下文隔离"
+    },
+    {
+      "id": "report",
+      "type": "database",
+      "label": "五库报告包",
+      "sublabel": "E / F / R / M / S + 原图与证据",
+      "pos": [
+        410,
+        480
+      ],
+      "size": [
+        270,
+        85
+      ],
+      "sources": [
+        {
+          "path": "apps/shader_deep/src/shader_deep/workflows/analysis/entry.py",
+          "line": 62,
+          "end_line": 85
+        },
+        {
+          "path": "apps/shader_deep/src/shader_deep/infrastructure/storage/report_package.py",
+          "line": 25,
+          "end_line": 52
+        },
+        {
+          "path": "apps/shader_deep/src/shader_deep/workflows/analysis/session.py",
+          "line": 258,
+          "end_line": 315
+        }
+      ],
+      "tag": "有合法版本才发布"
+    },
+    {
+      "id": "observations",
+      "type": "backend",
+      "label": "图像取证",
+      "sublabel": "原图聚焦 · 裁剪 · 区域统计",
+      "pos": [
+        910,
+        480
+      ],
+      "size": [
+        270,
+        85
+      ],
+      "sources": [
+        {
+          "path": "apps/shader_deep/src/shader_deep/agents/analysis/native.py",
+          "line": 310,
+          "end_line": 325
+        },
+        {
+          "path": "apps/shader_deep/src/shader_deep/agents/analysis/observations.py",
+          "line": 165,
+          "end_line": 187
+        }
+      ],
+      "tag": "测量工具须显式启用"
+    },
+    {
+      "id": "generation",
+      "type": "backend",
+      "label": "生成工作流",
+      "sublabel": "固定材料 · 创建本轮任务",
+      "pos": [
+        40,
+        720
+      ],
+      "size": [
+        230,
+        90
+      ],
+      "sources": [
+        {
+          "path": "apps/shader_deep/src/shader_deep/workflows/generation.py",
+          "line": 144,
+          "end_line": 165
+        },
+        {
+          "path": "apps/shader_deep/src/shader_deep/workflows/generation_from_report.py",
+          "line": 94,
+          "end_line": 131
+        },
+        {
+          "path": "apps/shader_deep/src/shader_deep/workflows/scene_generation.py",
+          "line": 83,
+          "end_line": 94
+        }
+      ],
+      "tag": "PNG / 报告 / 两元素来源"
+    },
+    {
+      "id": "generation-agent",
+      "type": "backend",
+      "label": "生成 Agent 与请求上下文",
+      "sublabel": "Deep Agents · 模型适配 · 预览回读",
+      "pos": [
+        410,
+        720
+      ],
+      "size": [
+        270,
+        90
+      ],
+      "sources": [
+        {
+          "path": "apps/shader_deep/src/shader_deep/agents/generation/agent.py",
+          "line": 44,
+          "end_line": 70
+        },
+        {
+          "path": "apps/shader_deep/src/shader_deep/agents/generation/middleware.py",
+          "line": 55,
+          "end_line": 59
+        },
+        {
+          "path": "apps/shader_deep/src/shader_deep/infrastructure/llm/client.py",
+          "line": 59,
+          "end_line": 79
+        }
+      ],
+      "tag": "一次生成任务的修正闭环"
+    },
+    {
+      "id": "render-session",
+      "type": "backend",
+      "label": "受限工具与生成会话",
+      "sublabel": "渲染 / 选择 / 受阻停止",
+      "pos": [
+        910,
+        720
+      ],
+      "size": [
+        270,
+        100
+      ],
+      "sources": [
+        {
+          "path": "apps/shader_deep/src/shader_deep/agents/generation/tools/session.py",
+          "line": 79,
+          "end_line": 134
+        },
+        {
+          "path": "apps/shader_deep/src/shader_deep/agents/generation/tools/render.py",
+          "line": 21,
+          "end_line": 65
+        },
+        {
+          "path": "apps/shader_deep/src/shader_deep/agents/generation/tools/finish.py",
+          "line": 26,
+          "end_line": 53
+        }
+      ],
+      "tag": "成功渲染 + 已呈现才可选"
+    },
+    {
+      "id": "artifacts",
+      "type": "database",
+      "label": "生成运行制品",
+      "sublabel": "GLSL · PNG · run.json",
+      "pos": [
+        410,
+        970
+      ],
+      "size": [
+        270,
+        85
+      ],
+      "sources": [
+        {
+          "path": "apps/shader_deep/src/shader_deep/agents/generation/tools/render.py",
+          "line": 39,
+          "end_line": 65
+        },
+        {
+          "path": "apps/shader_deep/src/shader_deep/agents/generation/tools/session.py",
+          "line": 102,
+          "end_line": 121
+        },
+        {
+          "path": "apps/shader_deep/src/shader_deep/workflows/generation_comparison.py",
+          "line": 154,
+          "end_line": 173
+        }
+      ],
+      "tag": "保留失败代码与停止原因"
+    },
+    {
+      "id": "renderer",
+      "type": "backend",
+      "label": "独立 WebGL2 渲染器",
+      "sublabel": "Playwright → Chromium → 画布 PNG",
+      "pos": [
+        910,
+        970
+      ],
+      "size": [
+        270,
+        85
+      ],
+      "sources": [
+        {
+          "path": "apps/shader_deep/src/shader_deep/rendering/renderer.py",
+          "line": 91,
+          "end_line": 119
+        },
+        {
+          "path": "apps/shader_deep/src/shader_deep/rendering/renderer.py",
+          "line": 122,
+          "end_line": 158
+        }
+      ],
+      "tag": "单 Pass GLSL ES 3.00"
+    }
+  ],
+  "connections": [
+    {
+      "id": "web-cli",
+      "from": "web",
+      "to": "entry",
+      "label": "CLI 子进程"
+    },
+    {
+      "id": "entry-analysis",
+      "from": "entry",
+      "to": "analysis",
+      "label": "分析入口",
+      "variant": "emphasis"
+    },
+    {
+      "id": "entry-generation",
+      "from": "entry",
+      "to": "generation",
+      "label": "PNG / 显式生成",
+      "fromSide": "left",
+      "toSide": "top"
+    },
+    {
+      "id": "invoke-analysis",
+      "from": "analysis",
+      "to": "analysis-agents",
+      "label": "单次启动主图",
+      "variant": "emphasis"
+    },
+    {
+      "id": "analysis-submit",
+      "from": "analysis-agents",
+      "to": "analysis",
+      "label": "业务工具提交"
+    },
+    {
+      "id": "analysis-report",
+      "from": "analysis",
+      "to": "report",
+      "label": "合法 V1 优先 / 否则 V0",
+      "variant": "emphasis"
+    },
+    {
+      "id": "inspect",
+      "from": "analysis-agents",
+      "to": "observations",
+      "label": "按需取证"
+    },
+    {
+      "id": "report-choice",
+      "from": "report",
+      "to": "generation",
+      "label": "用户显式选报告与草图",
+      "fromSide": "bottom",
+      "toSide": "right"
+    },
+    {
+      "id": "start-generation",
+      "from": "generation",
+      "to": "generation-agent",
+      "label": "固定任务",
+      "variant": "emphasis"
+    },
+    {
+      "id": "tools",
+      "from": "generation-agent",
+      "to": "render-session",
+      "label": "仅三个业务工具",
+      "variant": "emphasis"
+    },
+    {
+      "id": "preview-loop",
+      "from": "render-session",
+      "to": "generation-agent",
+      "label": "后续请求回读"
+    },
+    {
+      "id": "render",
+      "from": "render-session",
+      "to": "renderer",
+      "label": "固定尺寸与时间",
+      "variant": "emphasis"
+    },
+    {
+      "id": "save",
+      "from": "render-session",
+      "to": "artifacts",
+      "label": "存储层写入"
+    },
+    {
+      "id": "read-preview",
+      "from": "artifacts",
+      "to": "generation-agent",
+      "label": "加载代码与预览"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "两条流程，显式交接",
+      "items": [
+        "分析当前处理单批固定目标的两个或三个方向；SDK 管理模型消息、todos、scratch 与摘要。",
+        "分析到生成由用户选择报告、草图和可选备选后创建新任务；没有自动分析到生成的调度边。"
+      ]
+    },
+    {
+      "dot": "violet",
+      "title": "业务状态与领域规则",
+      "items": [
+        "AnalysisSession 持有计划、槽位、接受报告与 V0/V1；五库领域层校验引用及保义合并，不执行 IO。",
+        "探索全部终结后才准入整合；整合仅合并既有 F/R/M。无合法基线时失败，不发布空报告包。",
+        "RenderSession 持有候选、预算、呈现记录与终态；渲染和模型调用分别计数，工具在单工作线程执行。"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "共用基础设施与生成扩展",
+      "items": [
+        "模型适配使用 Chat Completions；按 OPENROUTER、DS_MICU、MICU 整组选用环境配置，分析另做传输校验。",
+        "文件存储负责报告校验、输入捕获与独立 run-* 制品；图像操作和 WebGL2 不负责判断视觉方案正确。",
+        "方案比较顺序执行两个独立方案，由用户选择；整图组合捕获两个已选来源，复用同一生成闭环。"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "当前实现边界",
+      "items": [
+        "这是应用运行架构总览；辅助函数、上游 SDK 内部结构及可选 LangSmith 追踪未展开。",
+        "独立视觉评审、持续决策与自动分析到生成尚未接入；本轮快照不承诺跨进程模型会话恢复。",
+        "completed、引用合法或渲染成功均不等于用户视觉验收。源码快照：670db26，核对日期：2026-11-04。"
+      ]
+    }
+  ]
+}

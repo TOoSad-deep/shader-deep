@@ -1,0 +1,15 @@
+{
+  "date": "2026-11-10",
+  "model": "z-ai/glm-5.3-flash",
+  "endpoint": "https://openrouter.ai/api/v1",
+  "prompt": "分析整张图, 按已确认的粒度输出上下文、多元素E、F与R, 只描述可见观察, 通过提交工具交付。",
+  "rule_sha256": "9e9df9f77d51044a2a3a50e67642d14c313729de17e4f65d9b316de15978c699",
+  "examples_sha256": "5a7ad70090b757a97eb6e232649dd998d2bfeb8b0b7cd0b5df3fffe0597aec0f",
+  "codex_reference_sha256": "a403f0833578add92f4946e1933cd5688d19947ad6b1bab22e1d7363fbb40010",
+  "reference_visibility": "Codex修订稿仅作离线对照, 未加入运行规则或模型请求",
+  "max_model_calls": 8,
+  "max_output_tokens": 163840,
+  "max_request_retries": 0,
+  "request_timeout_seconds": 45,
+  "extra_tracing": false
+}

@@ -1,0 +1,21 @@
+{
+  "schema_version": "scene_observations_v1",
+  "reference": {
+    "path": "reference.png",
+    "sha256": "4ba233c4280ddbf1add81261151878c24c006b33defab9752c80d36e03b4fa38"
+  },
+  "status": "completed",
+  "context_notes": [
+    "纯黑背景铺满全图 (1280×720), 无渐变、纹理或其他装饰元素; 全部图形均为灰度 (纯白/浅灰/中灰/深灰), 无彩色。",
+    "主体为 DNA 双螺旋样式的抽象图形, 沿对角线自画面左下向右上贯穿; 螺旋带整体向右上倾斜, 左端圆带中心约在 y≈550, 右端约在 y≈240。"
+  ],
+  "open_questions": [
+    {
+      "refs": [
+        "E2"
+      ],
+      "description": "部分连线细而暗, 其两端连接的具体圆珠配对与每条线的倾角难以逐一分辨, 仅能确认整体近似平行、成排等距。"
+    }
+  ],
+  "gaps": []
+}

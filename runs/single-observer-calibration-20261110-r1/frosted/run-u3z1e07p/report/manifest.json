@@ -1,0 +1,14 @@
+{
+  "schema_version": "scene_observations_v1",
+  "reference": {
+    "path": "reference.png",
+    "sha256": "4b98572449bf26744a76d3f9271bc10397e3b1c05512b2fcab5624442f7a6252"
+  },
+  "status": "completed",
+  "context_notes": [
+    "浅灰色纯色底, 覆满全图, 无其他纹理或装饰, 两个圆形位于画面中部偏左下",
+    "整图仅由背景与两个交叠圆形构成, 光源方向无明确外部阴影"
+  ],
+  "open_questions": [],
+  "gaps": []
+}

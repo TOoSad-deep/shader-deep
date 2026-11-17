@@ -1,0 +1,75 @@
+{
+  "analysis_protocol": "scene_observations_v1",
+  "stop_reason": "partial",
+  "error": null,
+  "report_path": "report",
+  "options": {
+    "max_model_calls": 8,
+    "max_output_tokens": 163840,
+    "max_request_retries": 0,
+    "request_timeout_seconds": 45,
+    "stream_model_responses": true,
+    "output_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/single-observer-calibration-20261110/windows"
+  },
+  "deprecated_option_diagnostics": [],
+  "execution": {
+    "analysis_protocol": "scene_observations_v1",
+    "execution": "deep_agents_single_observer",
+    "state": "accepted",
+    "reason": null,
+    "model_calls": 1,
+    "max_model_calls": 8,
+    "reference_sha256": "80c35a1f92b2e537114d4615a85a6865411aa2d7c193ee7fdddf3155c8a59fcc",
+    "accepted_snapshot": "results/observations.json"
+  },
+  "blackboard": {
+    "targets": {
+      "T1": {
+        "version": "T1",
+        "request": "分析整张图, 按已确认的粒度输出上下文、多元素E、F与R, 只描述可见观察, 通过提交工具交付。",
+        "reference_path": "/Users/douwen/Documents/HUAWEl/Shader-Agent/vfx-shader-dataset-main/keyframes/windows-95.png",
+        "constraints": [],
+        "protected_features": []
+      }
+    },
+    "tasks": {
+      "A1": {
+        "id": "A1",
+        "role": "analysis",
+        "target_version": "T1",
+        "objective": "分析整张图, 按已确认的粒度输出上下文、多元素E、F与R, 只描述可见观察, 通过提交工具交付。",
+        "baseline_id": null,
+        "candidate_ids": [],
+        "related_result_ids": [],
+        "experiment_id": null,
+        "hypothesis": null,
+        "allowed_changes": [],
+        "stop_conditions": [],
+        "parent_task_id": null,
+        "lens_config": null,
+        "analysis_purpose": "initial",
+        "analysis_gap": null,
+        "expected_evidence": null,
+        "evidence_ids": [],
+        "analysis_outline": null,
+        "generation_binding": null
+      }
+    },
+    "candidates": {},
+    "results": {
+      "run-vk7b8brw-scene-observations": {
+        "id": "run-vk7b8brw-scene-observations",
+        "task_id": "A1",
+        "status": "partial",
+        "summary": "全图 E/F/R 观察包已交付: report/manifest.json; 观察完成不代表 M/S 规划或视觉验收完成",
+        "candidate_ids": [],
+        "observations": [],
+        "hypotheses": [],
+        "limitations": [],
+        "recommendation": null,
+        "analysis_detail": null,
+        "analysis_protocol": "scene_observations_v1"
+      }
+    }
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "schema_version": "scene_observations_v1",
+  "reference": {
+    "path": "reference.png",
+    "sha256": "7beeab6b0c683e16ed213393b2a8850b28c1c2e3a89963c671f8902d6d194523"
+  },
+  "status": "completed",
+  "context_notes": [
+    "背景为均匀浅灰色纯色, 铺满全图, 无纹理与渐变.",
+    "画面为纯图形构图: 除白色卡片与彩色齿轮簇外, 无文字、图标或其他装饰元素.",
+    "整体光照均匀, 所有色块均为平涂纯色, 无明显投影方向或明暗变化."
+  ],
+  "open_questions": [],
+  "gaps": []
+}

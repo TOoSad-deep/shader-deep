@@ -1,0 +1,76 @@
+{
+  "prompt": "分析整张图, 按已确认的粒度输出上下文、多元素E、F与R, 只描述可见观察, 通过提交工具交付。",
+  "model": "z-ai/glm-5.3-flash",
+  "endpoint": "https://openrouter.ai/api/v1",
+  "max_model_calls": 8,
+  "max_output_tokens": 163840,
+  "max_request_retries": 0,
+  "request_timeout_seconds": 45,
+  "concurrency": 3,
+  "extra_tracing": true,
+  "resource_sha256": {
+    "SKILL.md": "982b534420a7d2dbf5044339526677b7abbd3c8cea61ea8a3c8e98be6dfab55d",
+    "references/grouping.md": "ecb110a27e76a68ab0ef5ef6a42f9231927e58718cc830209407b46b4fbee75f",
+    "references/relations.md": "88c11dd1105f168ded3eb5e255e7481ae2b318f7f90b8b973f83700f23e0b543",
+    "references/uncertainty.md": "831c36d0c9d46d14b45b93615931f166b718e6b83b9b7644691a0c66afa59461"
+  },
+  "skill_bundle_sha256": "694f9915c74197e410de283ceb0a4c33c0383950a27b2dc2e47bb71489070ab6",
+  "cases": [
+    {
+      "case": "cool-s-distance",
+      "image": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/single-observer-new-cases-20261110-uyrhcnj9/cool-s-distance/run-bb_zhez8/report/reference.png",
+      "image_sha256": "dd712a5d2528d4db56bcbb6b10c66f946ca7c33579a0eb2ec23af90e4fbc7493",
+      "baseline": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/single-observer-new-cases-20261110-uyrhcnj9/cool-s-distance/run-bb_zhez8"
+    },
+    {
+      "case": "flat-water-effects2",
+      "image": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/single-observer-new-cases-20261110-uyrhcnj9/flat-water-effects2/run-y4xzrs0f/report/reference.png",
+      "image_sha256": "65753b7f316b7c140d10b185124e757f01101939597723197207969e27e3bdae",
+      "baseline": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/single-observer-new-cases-20261110-uyrhcnj9/flat-water-effects2/run-y4xzrs0f"
+    },
+    {
+      "case": "dna-helis",
+      "image": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/single-observer-new-cases-20261110-uyrhcnj9/dna-helis/run-sxzsa961/report/reference.png",
+      "image_sha256": "4ba233c4280ddbf1add81261151878c24c006b33defab9752c80d36e03b4fa38",
+      "baseline": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/single-observer-new-cases-20261110-uyrhcnj9/dna-helis/run-sxzsa961"
+    },
+    {
+      "case": "buffer-bloom",
+      "image": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/single-observer-new-cases-20261110-uyrhcnj9/buffer-bloom/run-dpi3qoq6/report/reference.png",
+      "image_sha256": "aeb6a0855a711be65b4167ae80becf283b35e499ee609748fe5bfe41e23675ff",
+      "baseline": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/single-observer-new-cases-20261110-uyrhcnj9/buffer-bloom/run-dpi3qoq6"
+    },
+    {
+      "case": "auroras",
+      "image": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/single-observer-new-cases-20261110-uyrhcnj9/auroras/run-0ojqu9sv/report/reference.png",
+      "image_sha256": "cbc9a23997fd40f772044174fa87c8776e7b18b559ecc268476ba79bee15279c",
+      "baseline": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/single-observer-new-cases-20261110-uyrhcnj9/auroras/run-0ojqu9sv"
+    }
+  ],
+  "evaluation": [
+    "必要外观是否覆盖",
+    "关键关系是否覆盖,参与项完整",
+    "同一现象是否仅有一个主要归属",
+    "拆合保留内部变化而无重复",
+    "方位轮廓裁切数量是否符合原图",
+    "必要缺口与可省精度是否区分",
+    "条件式参考是否实际读取",
+    "合同可交付及成本"
+  ],
+  "comparison": "Five image regression using current draft/edit/finish tools, no prompt changes during batch",
+  "intermediate_attempts": "runs/scene-observer-skill-r2-20261110/attempts.json",
+  "changes_from_r2": [
+    "specialized role activates core directly, no redundant SDK discovery",
+    "flat E inventory and context boundary",
+    "identify important relations before assigning own appearance"
+  ],
+  "native_sha256": "454e79555f13a959d4c012b15cbf33860a55b05d2c29e1128769ad21874946a5",
+  "langsmith_project": "shader-deep",
+  "batch_tag": "draft-edit-five-cases-20261111",
+  "runtime_source_sha256": {
+    "apps/shader_deep/src/shader_deep/agents/analysis/native.py": "417141ccbb25d727a5d04386f72a55df6b786f9db8b511b144f8a63c7f6dea84",
+    "apps/shader_deep/src/shader_deep/agents/analysis/draft_backend.py": "728bb7c970ab83c21e7ea7e6e46717f96da8b4509fe114bb3613b45c11a06dd8",
+    "apps/shader_deep/src/shader_deep/workflows/analysis/session.py": "c23f2d2c1b0cdf6b7160044adb90442422d814462721e09e3eff167e88749229",
+    "apps/shader_deep/src/shader_deep/infrastructure/storage/observation_draft.py": "bfe0da912e74fca2a15d8b46e956cfaa357f9ba0368244ac6323d29893558d15"
+  }
+}

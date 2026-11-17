@@ -1,0 +1,74 @@
+{
+  "status": "dispatch_prepared_not_started",
+  "boundary": "_explore -> _wait_workers (before ThreadPoolExecutor)",
+  "parallel_requested": 3,
+  "worker_started_count": 0,
+  "tasks": {
+    "exploration-1": {
+      "attempts": [],
+      "error": null,
+      "input_fingerprint": "43ae2acbbb5f7314c3af9c9b5137641d01039fc01d156e6ce743e6b8c33b670e",
+      "input_version": "cc9b83c7a808926085dfd453deb9d9eb3ddee2d5bff9799d8f64642d7c79ed18",
+      "model_calls": 0,
+      "payload": {
+        "direction": "单",
+        "reference_fingerprint": "f8705ab1907eedfad202afed99729d6d5b2b566226e52f567948348aeb152c09",
+        "reference_path": "reference.png",
+        "target": {
+          "feature_ids": [],
+          "id": "e",
+          "name": "b",
+          "region": "g"
+        },
+        "user_request": "为后续 Shader 复刻分析这张参考图: 先拆分可辨识的视觉元素, 给出各元素的名称和明确范围; 自主选择本轮一个目标元素, 为它制定默认三个相互独立的开放探索方向. 主阶段只做元素定位、范围划定和任务编排."
+      },
+      "repairs": 0,
+      "result_path": null,
+      "status": "pending"
+    },
+    "exploration-2": {
+      "attempts": [],
+      "error": null,
+      "input_fingerprint": "cf9658593aea6d1028253fb4a81d5c990aa39a2381c7e8b4a92105ef8de07a2a",
+      "input_version": "cc9b83c7a808926085dfd453deb9d9eb3ddee2d5bff9799d8f64642d7c79ed18",
+      "model_calls": 0,
+      "payload": {
+        "direction": "颗",
+        "reference_fingerprint": "f8705ab1907eedfad202afed99729d6d5b2b566226e52f567948348aeb152c09",
+        "reference_path": "reference.png",
+        "target": {
+          "feature_ids": [],
+          "id": "e",
+          "name": "b",
+          "region": "g"
+        },
+        "user_request": "为后续 Shader 复刻分析这张参考图: 先拆分可辨识的视觉元素, 给出各元素的名称和明确范围; 自主选择本轮一个目标元素, 为它制定默认三个相互独立的开放探索方向. 主阶段只做元素定位、范围划定和任务编排."
+      },
+      "repairs": 0,
+      "result_path": null,
+      "status": "pending"
+    },
+    "exploration-3": {
+      "attempts": [],
+      "error": null,
+      "input_fingerprint": "02c1cb22ac75f17836cd9f50d2b82e7e138d635588da6ab94e4359e28ff1a252",
+      "input_version": "cc9b83c7a808926085dfd453deb9d9eb3ddee2d5bff9799d8f64642d7c79ed18",
+      "model_calls": 0,
+      "payload": {
+        "direction": "水",
+        "reference_fingerprint": "f8705ab1907eedfad202afed99729d6d5b2b566226e52f567948348aeb152c09",
+        "reference_path": "reference.png",
+        "target": {
+          "feature_ids": [],
+          "id": "e",
+          "name": "b",
+          "region": "g"
+        },
+        "user_request": "为后续 Shader 复刻分析这张参考图: 先拆分可辨识的视觉元素, 给出各元素的名称和明确范围; 自主选择本轮一个目标元素, 为它制定默认三个相互独立的开放探索方向. 主阶段只做元素定位、范围划定和任务编排."
+      },
+      "repairs": 0,
+      "result_path": null,
+      "status": "pending"
+    }
+  }
+}

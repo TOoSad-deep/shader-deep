@@ -1,0 +1,21 @@
+{
+  "schema_version": "scene_observations_v1",
+  "reference": {
+    "path": "reference.png",
+    "sha256": "7beeab6b0c683e16ed213393b2a8850b28c1c2e3a89963c671f8902d6d194523"
+  },
+  "status": "completed",
+  "context_notes": [
+    "扁平矢量插画风格: 全图纯色平涂、无描边无纹理, 光影仅有卡片的柔和投影",
+    "全图除齿轮群外无文字或其他装饰元素"
+  ],
+  "open_questions": [
+    {
+      "refs": [
+        "F6"
+      ],
+      "description": "中段白色空隙的最窄处 (右簇左下红齿轮与左簇黄/绿齿轮之间) 观感为贯通的细缝, 近乎接触, 是否完全未闭合待更高分辨率确认"
+    }
+  ],
+  "gaps": []
+}

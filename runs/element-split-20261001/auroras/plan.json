@@ -1,0 +1,16 @@
+{
+  "elements": [
+    {
+      "id": "e",
+      "name": "x",
+      "region": "x",
+      "feature_ids": []
+    }
+  ],
+  "target_element_id": "e",
+  "directions": [
+    "极",
+    "色",
+    "分"
+  ]
+}

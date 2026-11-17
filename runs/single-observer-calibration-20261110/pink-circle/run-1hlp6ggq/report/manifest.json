@@ -1,0 +1,21 @@
+{
+  "schema_version": "scene_observations_v1",
+  "reference": {
+    "path": "reference.png",
+    "sha256": "e1923ac438f2de7645ee0c4ec2c4d0742720c83a2764561f6490dc4bcf427682"
+  },
+  "status": "completed",
+  "context_notes": [
+    "纯白色背景铺满整个画面, 无其他环境细节",
+    "画面中央放置一个近圆形的粉红色光泽球体, 直径约占画面宽度的 80%"
+  ],
+  "open_questions": [
+    {
+      "refs": [
+        "F2"
+      ],
+      "description": "球体顶部颜色最深、向下渐淡的完整竖直渐变, 其具体色标与过渡宽度未能逐点确认"
+    }
+  ],
+  "gaps": []
+}

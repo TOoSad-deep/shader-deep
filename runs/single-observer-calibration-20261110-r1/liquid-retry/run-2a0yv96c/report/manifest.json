@@ -1,0 +1,23 @@
+{
+  "schema_version": "scene_observations_v1",
+  "reference": {
+    "path": "reference.png",
+    "sha256": "2ea796bd2f17cb908e340317b4059df0632ce7630f8cd829f723b59e074cfb67"
+  },
+  "status": "completed",
+  "context_notes": [
+    "左上较浅、右下逐渐加深的灰蓝渐变底色，右上与右下角最暗",
+    "画面仅由渐变底色、规则格网与两处透明水滴形组成，无其他物体"
+  ],
+  "open_questions": [
+    {
+      "refs": [
+        "E1",
+        "E2",
+        "E3"
+      ],
+      "description": "两形状内部透出的格线似有轻微错位或断续，但是否存在明显位移（折射式偏移）从单图难以确认"
+    }
+  ],
+  "gaps": []
+}

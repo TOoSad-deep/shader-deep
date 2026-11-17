@@ -1,0 +1,50 @@
+{
+  "analysis_protocol": "scene_observations_v1",
+  "stop_reason": "completed",
+  "error": null,
+  "report_path": "report",
+  "options": {
+    "max_model_calls": 8,
+    "max_output_tokens": 163840,
+    "max_request_retries": 0,
+    "request_timeout_seconds": 45,
+    "stream_model_responses": true,
+    "output_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/draft-edit-five-cases-20261111/cool-s-distance"
+  },
+  "deprecated_option_diagnostics": [],
+  "execution": {
+    "analysis_protocol": "scene_observations_v1",
+    "execution": "deep_agents_single_observer",
+    "state": "accepted",
+    "reason": null,
+    "model_calls": 7,
+    "validation_errors": 0,
+    "tool_refusals": 0,
+    "max_model_calls": 8,
+    "reference_sha256": "dd712a5d2528d4db56bcbb6b10c66f946ca7c33579a0eb2ec23af90e4fbc7493",
+    "draft_path": "draft/observations.json",
+    "draft_revision": "6c7b51227d4d63ffe443ad86ac2faf8a613d950103853adf00941bc730abf8e8",
+    "seen_revision": "6c7b51227d4d63ffe443ad86ac2faf8a613d950103853adf00941bc730abf8e8",
+    "accepted_revision": "6c7b51227d4d63ffe443ad86ac2faf8a613d950103853adf00941bc730abf8e8",
+    "accepted_snapshot": "results/observations.json",
+    "resource_read_results": [],
+    "model_id": "z-ai/glm-5.3-flash",
+    "rule_sha256": "982b534420a7d2dbf5044339526677b7abbd3c8cea61ea8a3c8e98be6dfab55d",
+    "resource_sha256": {
+      "SKILL.md": "982b534420a7d2dbf5044339526677b7abbd3c8cea61ea8a3c8e98be6dfab55d",
+      "references/grouping.md": "ecb110a27e76a68ab0ef5ef6a42f9231927e58718cc830209407b46b4fbee75f",
+      "references/relations.md": "88c11dd1105f168ded3eb5e255e7481ae2b318f7f90b8b973f83700f23e0b543",
+      "references/uncertainty.md": "831c36d0c9d46d14b45b93615931f166b718e6b83b9b7644691a0c66afa59461"
+    },
+    "skill_bundle_sha256": "694f9915c74197e410de283ceb0a4c33c0383950a27b2dc2e47bb71489070ab6",
+    "elapsed_seconds": 508.6079626660212,
+    "elapsed_scope": "analysis_before_publication",
+    "token_usage": {
+      "input_tokens": 163567,
+      "output_tokens": 43112,
+      "total_tokens": 206679
+    },
+    "usage_scope": "sdk_reported_responses_only",
+    "http_request_count": null
+  }
+}

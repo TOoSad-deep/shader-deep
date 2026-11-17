@@ -1,0 +1,38 @@
+{
+  "image": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/apps/shader_deep/test_pic/auroras.png",
+  "image_sha256": "cbc9a23997fd40f772044174fa87c8776e7b18b559ecc268476ba79bee15279c",
+  "user_request": "为后续 Shader 复刻分析这张参考图: 先拆分可辨识的视觉元素, 给出各元素的名称和明确范围; 自主选择本轮一个目标元素, 为它制定默认三个相互独立的开放探索方向. 主阶段只做元素定位、范围划定和任务编排.",
+  "model": "z-ai/glm-5.3-flash",
+  "options": {
+    "max_tasks": 3,
+    "max_parallel": 3,
+    "max_worker_calls": 0,
+    "max_main_calls": 0,
+    "output_dir": null,
+    "max_measurements": 8,
+    "max_request_retries": 2,
+    "request_timeout_seconds": 240,
+    "stream_model_responses": true,
+    "max_output_tokens": 163840,
+    "outline_max_output_tokens": null,
+    "integration_max_output_tokens": null,
+    "worker_max_output_tokens": null,
+    "max_comparison_targets": 12,
+    "library_page_chars": 8000,
+    "_output_token_sources": [
+      [
+        "max_output_tokens",
+        "yaml",
+        163840
+      ]
+    ],
+    "max_repeated_no_progress": 0,
+    "max_context_tokens": 262144,
+    "request_image_tokens": 4096,
+    "request_token_margin": 2048,
+    "max_integration_calls": 12,
+    "max_integration_packages": 24,
+    "integration_no_progress": 3,
+    "integration_history_tokens": 16384
+  }
+}

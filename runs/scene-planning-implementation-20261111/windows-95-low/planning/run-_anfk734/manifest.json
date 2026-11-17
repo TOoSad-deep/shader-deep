@@ -1,0 +1,37 @@
+{
+  "planning_protocol": "scene_planning_v1",
+  "execution": "deep_agents_single_planner",
+  "state": "accepted",
+  "reason": null,
+  "model_calls": 15,
+  "max_model_calls": 20,
+  "validation_errors": 3,
+  "tool_refusals": 0,
+  "observation_sha256": "4f655f9501a68ecda0317d85d3b03735634d73fd6ed6168fb032496c94d4c018",
+  "reference_sha256": "80c35a1f92b2e537114d4615a85a6865411aa2d7c193ee7fdddf3155c8a59fcc",
+  "draft_path": "draft/planning.json",
+  "draft_revision": "425a2ad68935efae9381d8312ac6bae12ab10103daa3730d2fa08aa85457bcbd",
+  "seen_revision": "425a2ad68935efae9381d8312ac6bae12ab10103daa3730d2fa08aa85457bcbd",
+  "accepted_revision": "425a2ad68935efae9381d8312ac6bae12ab10103daa3730d2fa08aa85457bcbd",
+  "accepted_snapshot": "results/planning.json",
+  "resource_read_results": [],
+  "model_id": "z-ai/glm-5.3-flash",
+  "reasoning_effort": "low",
+  "rule_sha256": "83d291f3db988cf6f786f54cb8aba0105f98b1f34363a5771672af1fd5d7f88f",
+  "resource_sha256": {
+    "SKILL.md": "83d291f3db988cf6f786f54cb8aba0105f98b1f34363a5771672af1fd5d7f88f",
+    "references/mechanisms.md": "c6ccf4db4c1d96be0663395e323e014ac3d0b6f9b50a3da7a4d281eee49c0416",
+    "references/alternatives.md": "29ef92abdb48279a92ae9e97f21fa733c364d126e17b9b727343a64e1a4f412e",
+    "references/conditions-and-gaps.md": "2d1ca84910cbd9a4ae4493c573a7164e90773c8bd064e043af15fb2ab8d273e6"
+  },
+  "skill_bundle_sha256": "02a44a5a21561f928bfe4086a3483c372e6800ecda6c17d2d43df20b7f1d98e2",
+  "elapsed_seconds": 502.1910167919996,
+  "elapsed_scope": "planning_before_publication",
+  "token_usage": {
+    "input_tokens": 338891,
+    "output_tokens": 17584,
+    "total_tokens": 356475
+  },
+  "usage_scope": "sdk_reported_responses_only",
+  "http_request_count": null
+}

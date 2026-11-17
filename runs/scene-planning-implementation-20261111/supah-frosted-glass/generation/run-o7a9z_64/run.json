@@ -1,0 +1,161 @@
+{
+  "task_id": "G1",
+  "asset_root": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/apps/shader_deep",
+  "phase": "generation",
+  "inputs": {
+    "planning": {
+      "report_path": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-planning-implementation-20261111/supah-frosted-glass/generation/run-o7a9z_64/inputs/planning",
+      "content_sha256": "6b57fbf5d179627e9d83051f65d47358dab914eba98b251a1870f80556f33a9f",
+      "observation_sha256": "2b410fc3e82325c595e195b8ad819026d4d0bd2e60d2a23030210793c7a89dab",
+      "sketch_id": "S1",
+      "alternative_index": null,
+      "planned_constraints": {
+        "width": 1280,
+        "height": 720,
+        "time": 0.0,
+        "language": "GLSL ES 3.00",
+        "entry_point": "mainImage(out vec4, in vec2)",
+        "passes": 1,
+        "uniforms": [
+          "iResolution",
+          "iTime"
+        ],
+        "external_textures": false
+      },
+      "execution_render": {
+        "width": 1280,
+        "height": 720,
+        "time": 0.0
+      },
+      "render_overrides": {},
+      "observation_gaps": [],
+      "planning_gaps": [],
+      "complete": true
+    }
+  },
+  "render": {
+    "width": 1280,
+    "height": 720,
+    "time": 0.0
+  },
+  "max_attempts": 3,
+  "max_model_calls": 5,
+  "visual_memory": false,
+  "attempts": 2,
+  "model_calls": 3,
+  "stop_reason": "completed",
+  "error": null,
+  "selected_candidate_id": "run-o7a9z_64-c002",
+  "blackboard": {
+    "targets": {
+      "T1": {
+        "version": "T1",
+        "request": "依据固定整图观察与原图提出可在当前单 Pass 环境实现的完整方案, 保留主要外观及关键关系, 给生成 Agent 清晰可执行的安排.",
+        "reference_path": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-planning-implementation-20261111/supah-frosted-glass/generation/run-o7a9z_64/inputs/planning/observation/reference.png",
+        "constraints": [
+          "单 Pass GLSL ES 3.00 mainImage"
+        ],
+        "protected_features": []
+      }
+    },
+    "tasks": {
+      "G1": {
+        "id": "G1",
+        "role": "generation",
+        "target_version": "T1",
+        "objective": "按固定整图方案 S1 实现完整 E/F/R",
+        "baseline_id": null,
+        "candidate_ids": [],
+        "related_result_ids": [],
+        "experiment_id": null,
+        "hypothesis": null,
+        "allowed_changes": [
+          "实现生效 choices 与 composition, 保持跨元素关系",
+          "依据原图调节方案内数值, 保留已知必要缺口"
+        ],
+        "stop_conditions": [
+          "选择已渲染并实际回读预览的候选, 如实记录差异及两类缺口"
+        ],
+        "parent_task_id": null,
+        "lens_config": null,
+        "analysis_purpose": "initial",
+        "analysis_gap": null,
+        "expected_evidence": null,
+        "evidence_ids": [],
+        "analysis_outline": null,
+        "generation_binding": {
+          "report_path": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-planning-implementation-20261111/supah-frosted-glass/generation/run-o7a9z_64/inputs/planning",
+          "content_sha256": "6b57fbf5d179627e9d83051f65d47358dab914eba98b251a1870f80556f33a9f",
+          "observation_sha256": "2b410fc3e82325c595e195b8ad819026d4d0bd2e60d2a23030210793c7a89dab",
+          "reference_sha256": "4b98572449bf26744a76d3f9271bc10397e3b1c05512b2fcab5624442f7a6252",
+          "sketch_id": "S1",
+          "alternative": null,
+          "schema_version": "scene_planning_v1"
+        }
+      }
+    },
+    "candidates": {
+      "run-o7a9z_64-c001": {
+        "id": "run-o7a9z_64-c001",
+        "task_id": "G1",
+        "code_path": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-planning-implementation-20261111/supah-frosted-glass/generation/run-o7a9z_64/candidate-001.glsl",
+        "preview_path": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-planning-implementation-20261111/supah-frosted-glass/generation/run-o7a9z_64/candidate-001.png",
+        "limitations": []
+      },
+      "run-o7a9z_64-c002": {
+        "id": "run-o7a9z_64-c002",
+        "task_id": "G1",
+        "code_path": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-planning-implementation-20261111/supah-frosted-glass/generation/run-o7a9z_64/candidate-002.glsl",
+        "preview_path": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-planning-implementation-20261111/supah-frosted-glass/generation/run-o7a9z_64/candidate-002.png",
+        "limitations": []
+      }
+    },
+    "results": {
+      "run-o7a9z_64-c001-render": {
+        "id": "run-o7a9z_64-c001-render",
+        "task_id": "G1",
+        "status": "partial",
+        "summary": "真实 WebGL2 渲染成功, 等待对照参考检查",
+        "candidate_ids": [
+          "run-o7a9z_64-c001"
+        ],
+        "observations": [],
+        "hypotheses": [],
+        "limitations": [],
+        "recommendation": null,
+        "analysis_detail": null,
+        "analysis_protocol": null
+      },
+      "run-o7a9z_64-c002-render": {
+        "id": "run-o7a9z_64-c002-render",
+        "task_id": "G1",
+        "status": "partial",
+        "summary": "真实 WebGL2 渲染成功, 等待对照参考检查",
+        "candidate_ids": [
+          "run-o7a9z_64-c002"
+        ],
+        "observations": [],
+        "hypotheses": [],
+        "limitations": [],
+        "recommendation": null,
+        "analysis_detail": null,
+        "analysis_protocol": null
+      },
+      "run-o7a9z_64-selection": {
+        "id": "run-o7a9z_64-selection",
+        "task_id": "G1",
+        "status": "completed",
+        "summary": "按固定方案 S1 完整实现 E1/E2/E3 与 F1–F6、R1/R2。相比 c001 修正: E3 右移放大 (c3=(752,392), r3=158) 使灰白柔焦圆在右上方清晰可辨; 紫色晕染收窄 (半轴 88×92) 使浓度峰紧贴重叠区并向右渐淡融入灰白。预览与参考对照: 浅灰底均匀; E2 左缘青绿鲜明、向右下渐变为饱和深蓝, 下缘锐利; E3 灰白柔焦圆盘边界柔和羽化、仅比背景略亮; 被覆盖的 E2 右上弧段边缘隐没、蓝紫叠合自然过渡, 未覆盖部分保持锐边 (R2)。仍存在的差异: 参考图中重叠区中心紫色略更浓且饱和度稍高, E3 灰白与背景对比可再略强, 属次要数值级差异, 整体方案与关键关系已落实。",
+        "candidate_ids": [
+          "run-o7a9z_64-c002"
+        ],
+        "observations": [],
+        "hypotheses": [],
+        "limitations": [],
+        "recommendation": "本轮生成自检完成, 待用户验收",
+        "analysis_detail": null,
+        "analysis_protocol": null
+      }
+    }
+  }
+}

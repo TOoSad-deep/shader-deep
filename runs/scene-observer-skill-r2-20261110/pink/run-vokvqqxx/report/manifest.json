@@ -1,0 +1,15 @@
+{
+  "schema_version": "scene_observations_v1",
+  "reference": {
+    "path": "reference.png",
+    "sha256": "e1923ac438f2de7645ee0c4ec2c4d0742720c83a2764561f6490dc4bcf427682"
+  },
+  "status": "completed",
+  "context_notes": [
+    "背景为均匀纯白色, 无其他环境物或纹理",
+    "粉红色球体位于画面中部, 水平方向大致居中且稍偏上, 四周留有白色边距, 底部留白略多; 轮廓未触及图边",
+    "球体正下方有极淡的浅粉色柔影/光晕, 向外渐隐入白色背景"
+  ],
+  "open_questions": [],
+  "gaps": []
+}

@@ -1,0 +1,39 @@
+[
+  {
+    "id": "E1",
+    "name": "深色背景",
+    "region": "全图",
+    "feature_ids": [
+      "F1"
+    ]
+  },
+  {
+    "id": "E2",
+    "name": "橙色五角星",
+    "region": "上方中部偏右",
+    "feature_ids": [
+      "F2",
+      "F3",
+      "F4"
+    ]
+  },
+  {
+    "id": "E3",
+    "name": "发光白球",
+    "region": "画面中央",
+    "feature_ids": [
+      "F5",
+      "F6"
+    ]
+  },
+  {
+    "id": "E4",
+    "name": "蓝色心形",
+    "region": "下方中部偏左",
+    "feature_ids": [
+      "F7",
+      "F8",
+      "F9"
+    ]
+  }
+]

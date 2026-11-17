@@ -1,0 +1,40 @@
+{
+  "analysis_protocol": "scene_observations_v1",
+  "execution": "deep_agents_single_observer",
+  "state": "stopped",
+  "reason": "RemoteProtocolError: peer closed connection without sending complete message body (incomplete chunked read)",
+  "model_calls": 3,
+  "validation_errors": 1,
+  "tool_refusals": 0,
+  "max_model_calls": 8,
+  "reference_sha256": "dd712a5d2528d4db56bcbb6b10c66f946ca7c33579a0eb2ec23af90e4fbc7493",
+  "accepted_snapshot": null,
+  "resource_read_results": [
+    {
+      "path": "/skills/scene-observer/references/grouping.md",
+      "status": "success"
+    },
+    {
+      "path": "/skills/scene-observer/references/relations.md",
+      "status": "success"
+    }
+  ],
+  "model_id": "z-ai/glm-5.3-flash",
+  "rule_sha256": "f8736d039d6cf300977a86df300a03b3e5de095902f44c3a8b233a7f45e5e574",
+  "resource_sha256": {
+    "SKILL.md": "f8736d039d6cf300977a86df300a03b3e5de095902f44c3a8b233a7f45e5e574",
+    "references/grouping.md": "b9a2f5953eb637366edc2e1778b01e80d17289a2c0b739e86c1eb03684143356",
+    "references/relations.md": "ccdd8666dfc809da1d81476ec584ed0138ed47597e022359c49424c743a4e983",
+    "references/uncertainty.md": "970c019332014e066ec6f43ff73938b042406040931fae023c68a0bab8a04b2c"
+  },
+  "skill_bundle_sha256": "ff3487c2945c0625656d152aaefc237538ad1b96b09024767c8197f1edbbc5de",
+  "elapsed_seconds": 247.7318806659896,
+  "elapsed_scope": "analysis_before_publication",
+  "token_usage": {
+    "input_tokens": 7603,
+    "output_tokens": 9003,
+    "total_tokens": 16606
+  },
+  "usage_scope": "sdk_reported_responses_only",
+  "http_request_count": null
+}

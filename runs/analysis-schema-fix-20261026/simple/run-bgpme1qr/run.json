@@ -1,0 +1,478 @@
+{
+  "analysis_protocol": "five_libraries_v1",
+  "stop_reason": "partial",
+  "report_path": "report",
+  "selected_version": "V1",
+  "target_element_id": "neon_frame_main",
+  "gaps": [
+    {
+      "refs": [
+        "F5"
+      ],
+      "description": "角部曲率类型未定: 纯圆弧 (圆角盒) 或连续曲率 (squircle) 在本分辨率下难以区分, 决定采用 [[M1]] 还是 [[M7]] 作为距离场来源。"
+    },
+    {
+      "refs": [
+        "F6",
+        "R2"
+      ],
+      "description": "色相渐变的数学形式未定: 对角线性场 ([[M4]]) 与弧长周向场 ([[M6]]) 均可近似观测结果; 需更高分辨率取样区分, 特别是左边中点与底边中点的色相读数。"
+    },
+    {
+      "refs": [
+        "F3",
+        "F4",
+        "R3"
+      ],
+      "description": "辉光衰减曲线的精确形状 (单指数/高斯/双指数) 与内外 σ 数值未标定; 当前'外晕范围≈内晕两倍'为目测估测。"
+    },
+    {
+      "refs": [
+        "F1",
+        "F2"
+      ],
+      "description": "核心线宽与近核彩带宽度的绝对像素值受图片缩放影响, 仅得相对比例; 需原始分辨率素材标定 [[M3]] 的 w 与 [[M2]] 的 σ_band。"
+    },
+    {
+      "refs": [
+        "F3"
+      ],
+      "description": "角部光晕是否系统性强于直边 (曲率能量聚集或人工补光) 未确认; 若确认, 需在 [[M2]] 中加入随局部曲率变化的增益项。"
+    },
+    {
+      "refs": [
+        "S2"
+      ],
+      "description": "草图 [[S2]] 采用采样式泛光, 其[[F2]]由小半径模糊近似而非 [[M2]] 的窄指数瓣, 观感等价性需对比验证; 若验证失败回退 [[S1]]。"
+    },
+    {
+      "refs": [
+        "F10",
+        "R8"
+      ],
+      "description": "渐变轴的精确走向未确定: 是沿画面对角方向的线性插值, 还是沿轮廓周向插值 (相邻边色相过渡方式不同)。这决定 [[M11]] 的取色实现, 需要更高分辨率或逐边采样色板核实。"
+    },
+    {
+      "refs": [
+        "F3",
+        "R9"
+      ],
+      "description": "光晕是否存在真实不对称 (整体偏向某一侧) 或角部加宽: 目测各边法向扩散近似一致, 但角部光晕似乎略宽, 无法在本分辨率下区分'真实加宽'与'圆角法向汇聚的视觉效应'; 若存在不对称, [[M2]] 需引入方向偏置项。"
+    },
+    {
+      "refs": [
+        "F1",
+        "F3",
+        "F4"
+      ],
+      "description": "精确数值参数缺失: 亮芯半宽、内外光晕特征衰减长度、圆角半径与边长比例, 均只有目测范围 (亮芯 ~2-3px、外晕 ~15-30px、内晕 ~8-12px、圆角半径 ~15-22% 短边), 需要像素级测量标定 [[M3]]/[[M2]] 的系数。"
+    },
+    {
+      "refs": [
+        "F5",
+        "F10"
+      ],
+      "description": "两端色的精确色值 (青绿端与亮蓝端的 RGB/HSV) 及渐变中是否含中间色相 (如顶部是否偏白青) 未知, 影响 [[M11]] 的端点颜色选取。"
+    },
+    {
+      "refs": [
+        "F3"
+      ],
+      "description": "光晕衰减曲线的函数族未确定: 指数 (exp)、高斯 (exp(-d²)) 还是多分量叠加, 仅从目测的'平滑趋零'无法区分, 需要沿法线采样亮度曲线拟合后选定 [[M2]] 的具体形式。"
+    },
+    {
+      "refs": [
+        "neon_frame_main"
+      ],
+      "description": "exploration-3 未完成: ValueError: 逻辑任务的两次修复额度已耗尽"
+    }
+  ],
+  "open_questions": [],
+  "options": {
+    "max_tasks": 3,
+    "max_parallel": 3,
+    "max_worker_calls": 0,
+    "max_main_calls": 0,
+    "output_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/analysis-schema-fix-20261026/simple",
+    "max_measurements": 8,
+    "max_request_retries": 2,
+    "request_timeout_seconds": 240,
+    "stream_model_responses": true,
+    "max_output_tokens": 163840,
+    "outline_max_output_tokens": null,
+    "integration_max_output_tokens": null,
+    "worker_max_output_tokens": null,
+    "max_comparison_targets": 12,
+    "library_page_chars": 8000,
+    "_output_token_sources": [
+      [
+        "max_output_tokens",
+        "yaml",
+        163840
+      ]
+    ],
+    "max_repeated_no_progress": 0,
+    "max_context_tokens": 262144,
+    "request_image_tokens": 4096,
+    "request_token_margin": 2048,
+    "max_integration_calls": 12,
+    "max_integration_packages": 24,
+    "integration_no_progress": 3,
+    "integration_history_tokens": 16384
+  },
+  "execution": {
+    "generation": 1,
+    "package_path": "report",
+    "receipts": {
+      "0b16e347736c4e8f816de50607ad3194-final": {
+        "fingerprint": "343b2052e1c14ec99bbda29c7498e10f5a1b1e8c5570e7606c5038e3050efbdc",
+        "result_path": "results/343b2052e1c14ec99bbda29c7498e10f5a1b1e8c5570e7606c5038e3050efbdc.json",
+        "submission_id": "0b16e347736c4e8f816de50607ad3194-final",
+        "task_id": "exploration-2"
+      },
+      "758ad838760e47a98a21b55812b53224-final": {
+        "fingerprint": "9e3620ff273f76a52c42d8b1d9de9531ddf09072f05b8f4f61ebaf3a1f3b4b15",
+        "result_path": "results/9e3620ff273f76a52c42d8b1d9de9531ddf09072f05b8f4f61ebaf3a1f3b4b15.json",
+        "submission_id": "758ad838760e47a98a21b55812b53224-final",
+        "task_id": "exploration-1"
+      },
+      "9c1cb2535eba47b7a725246dcc12c3ff-final": {
+        "fingerprint": "ed038c0806960220b3cb72506ea1eb00297da8f240640213a0f69551b5dc21ad",
+        "result_path": "results/ed038c0806960220b3cb72506ea1eb00297da8f240640213a0f69551b5dc21ad.json",
+        "submission_id": "9c1cb2535eba47b7a725246dcc12c3ff-final",
+        "task_id": "integration"
+      },
+      "elements-accepted": {
+        "fingerprint": "80327214f25bee5b0c87e91fce9fc81c3800c2a99aec5f71a212bc439264125f",
+        "result_path": "results/80327214f25bee5b0c87e91fce9fc81c3800c2a99aec5f71a212bc439264125f.json",
+        "submission_id": "elements-accepted",
+        "task_id": "elements"
+      },
+      "main-final": {
+        "fingerprint": "d4a1960bd305547378bf9c642b47b6eff4d0017961f4d45867e56740b4ea1134",
+        "result_path": "results/d4a1960bd305547378bf9c642b47b6eff4d0017961f4d45867e56740b4ea1134.json",
+        "submission_id": "main-final",
+        "task_id": "main"
+      },
+      "planning-accepted": {
+        "fingerprint": "fac1fe3e14603daf5d30a00110a06df68f33d8a5ba25bc46e9cfe2954912a1f1",
+        "result_path": "results/fac1fe3e14603daf5d30a00110a06df68f33d8a5ba25bc46e9cfe2954912a1f1.json",
+        "submission_id": "planning-accepted",
+        "task_id": "planning"
+      }
+    },
+    "revision": 47,
+    "schema_version": "task_store_v1",
+    "sealed": true,
+    "tasks": {
+      "elements": {
+        "attempts": [
+          {
+            "attempt_id": "0d1bf914ba9d4e0f8f6ba9047f946878",
+            "error": null,
+            "generation": 1,
+            "input_version": "a8ad19b9bada65c53ff9dc84bc45a4bf652bb90ab0637afe8cb58780d1755f49",
+            "status": "succeeded"
+          }
+        ],
+        "error": null,
+        "input_fingerprint": "80327214f25bee5b0c87e91fce9fc81c3800c2a99aec5f71a212bc439264125f",
+        "input_version": "a8ad19b9bada65c53ff9dc84bc45a4bf652bb90ab0637afe8cb58780d1755f49",
+        "model_calls": 0,
+        "payload": {
+          "elements": [
+            {
+              "feature_ids": [],
+              "id": "neon_frame_main",
+              "name": "霓虹圆角矩形边框及紧邻光晕",
+              "region": "图像中央偏左上区域, 约占画面 40%-90% 宽度和 5%-95% 高度; 由青蓝色渐变霓虹描边的圆角矩形轮廓(四角圆润, 左上-右下呈青绿到亮蓝的渐变)及其紧邻边框内外扩散的蓝色光晕组成, 背景为纯黑"
+            }
+          ]
+        },
+        "repairs": 0,
+        "result_path": "results/80327214f25bee5b0c87e91fce9fc81c3800c2a99aec5f71a212bc439264125f.json",
+        "status": "succeeded"
+      },
+      "exploration-1": {
+        "attempts": [
+          {
+            "attempt_id": "758ad838760e47a98a21b55812b53224",
+            "error": null,
+            "generation": 1,
+            "input_version": "a8ad19b9bada65c53ff9dc84bc45a4bf652bb90ab0637afe8cb58780d1755f49",
+            "status": "succeeded"
+          }
+        ],
+        "error": null,
+        "input_fingerprint": "49b035c605d04251debf87b2e28cd8a9b6d121d666583baec59e513da132989f",
+        "input_version": "a8ad19b9bada65c53ff9dc84bc45a4bf652bb90ab0637afe8cb58780d1755f49",
+        "model_calls": 2,
+        "payload": {
+          "direction": "可见特征观察: 逐项测量并记录圆角矩形边框的几何参数(线宽、圆角半径、四角形态、矩形长宽比例、在画面中的位置与裁切程度), 以及沿边框一圈的颜色渐变分布(各角/各边的取样色相、饱和度、明度), 区分哪些是确定观察、哪些是估测",
+          "reference_fingerprint": "a78c5ae570de3bcd76598a1d77f29527c277b6b526c93eb9513b209fd3e6345c",
+          "reference_path": "reference.png",
+          "target": {
+            "feature_ids": [],
+            "id": "neon_frame_main",
+            "name": "霓虹圆角矩形边框及紧邻光晕",
+            "region": "图像中央偏左上区域, 约占画面 40%-90% 宽度和 5%-95% 高度; 由青蓝色渐变霓虹描边的圆角矩形轮廓(四角圆润, 左上-右下呈青绿到亮蓝的渐变)及其紧邻边框内外扩散的蓝色光晕组成, 背景为纯黑"
+          },
+          "user_request": "请分析参考图中的一个指定元素: 图中央的完整霓虹圆角矩形边框, 包含紧邻边框的光晕。以过程式 Shader 复现为目标, 独立分析可见特征、关系、候选实现机制和草图方案, 明确不确定项与缺口。本轮只分析该目标。"
+        },
+        "repairs": 1,
+        "result_path": "results/9e3620ff273f76a52c42d8b1d9de9531ddf09072f05b8f4f61ebaf3a1f3b4b15.json",
+        "status": "succeeded"
+      },
+      "exploration-2": {
+        "attempts": [
+          {
+            "attempt_id": "0b16e347736c4e8f816de50607ad3194",
+            "error": null,
+            "generation": 1,
+            "input_version": "a8ad19b9bada65c53ff9dc84bc45a4bf652bb90ab0637afe8cb58780d1755f49",
+            "status": "succeeded"
+          }
+        ],
+        "error": null,
+        "input_fingerprint": "ee81d6e2ec49b90fcc382466e0946c167552c6286dbc499f08444232ff5016fb",
+        "input_version": "a8ad19b9bada65c53ff9dc84bc45a4bf652bb90ab0637afe8cb58780d1755f49",
+        "model_calls": 1,
+        "payload": {
+          "direction": "关系与光晕分析: 分析边框亮芯与其光晕的空间关系——光晕向内外扩散的范围、强度衰减、方向性(是否偏向某侧)、颜色与亮芯的关系, 以及亮芯-光晕边界的过渡特征; 并核实是否存在不对称、斑点或噪点等次要现象",
+          "reference_fingerprint": "a78c5ae570de3bcd76598a1d77f29527c277b6b526c93eb9513b209fd3e6345c",
+          "reference_path": "reference.png",
+          "target": {
+            "feature_ids": [],
+            "id": "neon_frame_main",
+            "name": "霓虹圆角矩形边框及紧邻光晕",
+            "region": "图像中央偏左上区域, 约占画面 40%-90% 宽度和 5%-95% 高度; 由青蓝色渐变霓虹描边的圆角矩形轮廓(四角圆润, 左上-右下呈青绿到亮蓝的渐变)及其紧邻边框内外扩散的蓝色光晕组成, 背景为纯黑"
+          },
+          "user_request": "请分析参考图中的一个指定元素: 图中央的完整霓虹圆角矩形边框, 包含紧邻边框的光晕。以过程式 Shader 复现为目标, 独立分析可见特征、关系、候选实现机制和草图方案, 明确不确定项与缺口。本轮只分析该目标。"
+        },
+        "repairs": 0,
+        "result_path": "results/343b2052e1c14ec99bbda29c7498e10f5a1b1e8c5570e7606c5038e3050efbdc.json",
+        "status": "succeeded"
+      },
+      "exploration-3": {
+        "attempts": [
+          {
+            "attempt_id": "82a7695818234a8192db28225be34cf6",
+            "error": "AnalysisNoProgressError: 连续三次模型响应没有有效新读取或接受的提交",
+            "generation": 1,
+            "input_version": "a8ad19b9bada65c53ff9dc84bc45a4bf652bb90ab0637afe8cb58780d1755f49",
+            "status": "failed"
+          },
+          {
+            "attempt_id": "1da217e6f91b454da8932db299185fae",
+            "error": "ValueError: 逻辑任务的两次修复额度已耗尽",
+            "generation": 1,
+            "input_version": "a8ad19b9bada65c53ff9dc84bc45a4bf652bb90ab0637afe8cb58780d1755f49",
+            "status": "failed"
+          }
+        ],
+        "error": "ValueError: 逻辑任务的两次修复额度已耗尽",
+        "input_fingerprint": "c99dd3ff931dc8135fed9d8702b4ae2ee5c55a505c9eac4a9c455c4606ba55d3",
+        "input_version": "a8ad19b9bada65c53ff9dc84bc45a4bf652bb90ab0637afe8cb58780d1755f49",
+        "model_calls": 3,
+        "payload": {
+          "direction": "候选实现机制与草图方案: 以过程式 Shader 复现为目标, 提出 2-3 个候选实现机制(如 SDF 圆角矩形描边+颜色映射+高斯光晕、多层描边叠加、径向发光函数等), 各给出伪代码/关键公式草图、优缺点, 并列出实现上的不确定项与缺口",
+          "reference_fingerprint": "a78c5ae570de3bcd76598a1d77f29527c277b6b526c93eb9513b209fd3e6345c",
+          "reference_path": "reference.png",
+          "target": {
+            "feature_ids": [],
+            "id": "neon_frame_main",
+            "name": "霓虹圆角矩形边框及紧邻光晕",
+            "region": "图像中央偏左上区域, 约占画面 40%-90% 宽度和 5%-95% 高度; 由青蓝色渐变霓虹描边的圆角矩形轮廓(四角圆润, 左上-右下呈青绿到亮蓝的渐变)及其紧邻边框内外扩散的蓝色光晕组成, 背景为纯黑"
+          },
+          "user_request": "请分析参考图中的一个指定元素: 图中央的完整霓虹圆角矩形边框, 包含紧邻边框的光晕。以过程式 Shader 复现为目标, 独立分析可见特征、关系、候选实现机制和草图方案, 明确不确定项与缺口。本轮只分析该目标。"
+        },
+        "repairs": 2,
+        "result_path": null,
+        "status": "failed"
+      },
+      "integration": {
+        "attempts": [
+          {
+            "attempt_id": "9c1cb2535eba47b7a725246dcc12c3ff",
+            "error": null,
+            "generation": 1,
+            "input_version": "V0",
+            "status": "succeeded"
+          }
+        ],
+        "error": null,
+        "input_fingerprint": "bd56ffd42f3e04cb1a0a7a907cbfa25d7dd9961002bb566bf9cb9f69ebea3262",
+        "input_version": "V0",
+        "model_calls": 2,
+        "payload": {
+          "baseline_path": "results/8bd85de18247a6406927845c22a02bf797d4af1106a2ea26cfd5a4b564db0678.json",
+          "scope": "图像中央偏左上区域, 约占画面 40%-90% 宽度和 5%-95% 高度; 由青蓝色渐变霓虹描边的圆角矩形轮廓(四角圆润, 左上-右下呈青绿到亮蓝的渐变)及其紧邻边框内外扩散的蓝色光晕组成, 背景为纯黑",
+          "source_mappings": {
+            "exploration-1": {
+              "F1": "F1",
+              "F2": "F2",
+              "F3": "F3",
+              "F4": "F4",
+              "F5": "F5",
+              "F6": "F6",
+              "F7": "F7",
+              "M1": "M1",
+              "M2": "M2",
+              "M3": "M3",
+              "M4": "M4",
+              "M5": "M5",
+              "M6": "M6",
+              "M7": "M7",
+              "R1": "R1",
+              "R2": "R2",
+              "R3": "R3",
+              "R4": "R4",
+              "R5": "R5",
+              "SK1": "S1",
+              "SK2": "S2",
+              "neon_frame_main": "neon_frame_main"
+            },
+            "exploration-2": {
+              "F1": "F8",
+              "F2": "F9",
+              "F3": "F10",
+              "F4": "F11",
+              "F5": "F12",
+              "F6": "F13",
+              "M1": "M8",
+              "M2": "M9",
+              "M3": "M10",
+              "M4": "M11",
+              "M5": "M12",
+              "M6": "M13",
+              "R1": "R6",
+              "R2": "R7",
+              "R3": "R8",
+              "R4": "R9",
+              "S1": "S3",
+              "neon_frame_main": "neon_frame_main"
+            }
+          },
+          "target_element_id": "neon_frame_main"
+        },
+        "repairs": 0,
+        "result_path": "results/ed038c0806960220b3cb72506ea1eb00297da8f240640213a0f69551b5dc21ad.json",
+        "status": "succeeded"
+      },
+      "main": {
+        "attempts": [
+          {
+            "attempt_id": "7d19f602e79c4e5e9c5c9754f8a75f45",
+            "error": null,
+            "generation": 1,
+            "input_version": "a8ad19b9bada65c53ff9dc84bc45a4bf652bb90ab0637afe8cb58780d1755f49",
+            "status": "succeeded"
+          }
+        ],
+        "error": null,
+        "input_fingerprint": "abf035da9304a63952a6f785ed8d80f7c9813f6f436987a581acbfec25014546",
+        "input_version": "a8ad19b9bada65c53ff9dc84bc45a4bf652bb90ab0637afe8cb58780d1755f49",
+        "model_calls": 7,
+        "payload": {
+          "reference_fingerprint": "a78c5ae570de3bcd76598a1d77f29527c277b6b526c93eb9513b209fd3e6345c",
+          "reference_path": "reference.png",
+          "user_request": "请分析参考图中的一个指定元素: 图中央的完整霓虹圆角矩形边框, 包含紧邻边框的光晕。以过程式 Shader 复现为目标, 独立分析可见特征、关系、候选实现机制和草图方案, 明确不确定项与缺口。本轮只分析该目标。"
+        },
+        "repairs": 0,
+        "result_path": "results/d4a1960bd305547378bf9c642b47b6eff4d0017961f4d45867e56740b4ea1134.json",
+        "status": "succeeded"
+      },
+      "planning": {
+        "attempts": [
+          {
+            "attempt_id": "80f9d18f8ec844a1a2007e7901c4b9c6",
+            "error": null,
+            "generation": 1,
+            "input_version": "a8ad19b9bada65c53ff9dc84bc45a4bf652bb90ab0637afe8cb58780d1755f49",
+            "status": "succeeded"
+          }
+        ],
+        "error": null,
+        "input_fingerprint": "abf035da9304a63952a6f785ed8d80f7c9813f6f436987a581acbfec25014546",
+        "input_version": "a8ad19b9bada65c53ff9dc84bc45a4bf652bb90ab0637afe8cb58780d1755f49",
+        "model_calls": 0,
+        "payload": {
+          "reference_fingerprint": "a78c5ae570de3bcd76598a1d77f29527c277b6b526c93eb9513b209fd3e6345c",
+          "reference_path": "reference.png",
+          "user_request": "请分析参考图中的一个指定元素: 图中央的完整霓虹圆角矩形边框, 包含紧邻边框的光晕。以过程式 Shader 复现为目标, 独立分析可见特征、关系、候选实现机制和草图方案, 明确不确定项与缺口。本轮只分析该目标。"
+        },
+        "repairs": 0,
+        "result_path": "results/fac1fe3e14603daf5d30a00110a06df68f33d8a5ba25bc46e9cfe2954912a1f1.json",
+        "status": "succeeded"
+      }
+    },
+    "versions": {
+      "V0": {
+        "fingerprint": "8bd85de18247a6406927845c22a02bf797d4af1106a2ea26cfd5a4b564db0678",
+        "path": "results/8bd85de18247a6406927845c22a02bf797d4af1106a2ea26cfd5a4b564db0678.json"
+      },
+      "V1": {
+        "fingerprint": "056d81df03c876f9599bce5e2f5a11c35ef0a028e08c4a4e600b29a53907c6a8",
+        "path": "results/056d81df03c876f9599bce5e2f5a11c35ef0a028e08c4a4e600b29a53907c6a8.json"
+      },
+      "final_projection": {
+        "fingerprint": "d4a1960bd305547378bf9c642b47b6eff4d0017961f4d45867e56740b4ea1134",
+        "path": "results/d4a1960bd305547378bf9c642b47b6eff4d0017961f4d45867e56740b4ea1134.json"
+      },
+      "integration_projection": {
+        "fingerprint": "d4a1960bd305547378bf9c642b47b6eff4d0017961f4d45867e56740b4ea1134",
+        "path": "results/d4a1960bd305547378bf9c642b47b6eff4d0017961f4d45867e56740b4ea1134.json"
+      }
+    }
+  },
+  "blackboard": {
+    "targets": {
+      "T1": {
+        "version": "T1",
+        "request": "请分析参考图中的一个指定元素: 图中央的完整霓虹圆角矩形边框, 包含紧邻边框的光晕。以过程式 Shader 复现为目标, 独立分析可见特征、关系、候选实现机制和草图方案, 明确不确定项与缺口。本轮只分析该目标。",
+        "reference_path": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/apps/shader_deep/test_pic/shiny-rectancle.png",
+        "constraints": [],
+        "protected_features": []
+      }
+    },
+    "tasks": {
+      "A1": {
+        "id": "A1",
+        "role": "analysis",
+        "target_version": "T1",
+        "objective": "请分析参考图中的一个指定元素: 图中央的完整霓虹圆角矩形边框, 包含紧邻边框的光晕。以过程式 Shader 复现为目标, 独立分析可见特征、关系、候选实现机制和草图方案, 明确不确定项与缺口。本轮只分析该目标。",
+        "baseline_id": null,
+        "candidate_ids": [],
+        "related_result_ids": [],
+        "experiment_id": null,
+        "hypothesis": null,
+        "allowed_changes": [],
+        "stop_conditions": [],
+        "parent_task_id": null,
+        "lens_config": null,
+        "analysis_purpose": "initial",
+        "analysis_gap": null,
+        "expected_evidence": null,
+        "evidence_ids": [],
+        "analysis_outline": null,
+        "generation_binding": null
+      }
+    },
+    "candidates": {},
+    "results": {
+      "run-bgpme1qr-five-libraries": {
+        "id": "run-bgpme1qr-five-libraries",
+        "task_id": "A1",
+        "status": "partial",
+        "summary": "五库文件包已交付: report/manifest.json; 按草图读取方案, 候选仍需编码与渲染验证",
+        "candidate_ids": [],
+        "observations": [],
+        "hypotheses": [],
+        "limitations": [],
+        "recommendation": null,
+        "analysis_detail": null,
+        "analysis_protocol": "five_libraries_v1"
+      }
+    }
+  }
+}

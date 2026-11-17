@@ -1,0 +1,10 @@
+{
+  "analysis_protocol": "scene_observations_v1",
+  "execution": "deep_agents_single_observer",
+  "state": "accepted",
+  "reason": null,
+  "model_calls": 2,
+  "max_model_calls": 8,
+  "reference_sha256": "7beeab6b0c683e16ed213393b2a8850b28c1c2e3a89963c671f8902d6d194523",
+  "accepted_snapshot": "results/observations.json"
+}

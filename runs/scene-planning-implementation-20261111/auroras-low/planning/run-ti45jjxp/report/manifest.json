@@ -1,0 +1,24 @@
+{
+  "schema_version": "scene_planning_v1",
+  "content_sha256": "1cac3c8aa290fa8fd38b598ed7df55f61bf742d5d8175ca380eb85fd38bc3ea2",
+  "observation_sha256": "cb85c43b44967816980ae7c377ef043ac3174a93cb242d432b8e8429ae1022f2",
+  "files": {
+    "observation/manifest.json": "a6361414f2154306056b9c1d9a34df707377a383ad40ea47de7aa820b9778fa4",
+    "observation/elements.json": "627a1474bede5a12b6e9016f6218e8f82c4ca30d7a3ee6b8d6eef2f12f13832e",
+    "observation/features.json": "a78cdcdf0a86d7b0c009e0d639b89a869bae685ecff2947254db6d303af969cf",
+    "observation/relations.json": "81e24d31e633f3ba40534b01366722c8b325b8e99f85a4d4b5fb42d4688dc152",
+    "observation/reference.png": "cbc9a23997fd40f772044174fa87c8776e7b18b559ecc268476ba79bee15279c",
+    "observation/README.md": "7d97249f0c22a9990648bb0dc95126cff77ae06e32e8884dcc8c52383fbc3dd5",
+    "request.txt": "68662a8fef98f01398330e120988966862b4d3c4e8896cf7fcd9d15743dd2eed",
+    "generation_constraints.json": "b6bf9180cbb8909604771c8600dc432ebbcfa7aff922c5711723b05cfd5470df",
+    "mechanisms.json": "95484309710fc57c8a6c37cdfdf60b25cdeb8253b6477d0f7254ced073330055",
+    "sketches.json": "bdce6c87081c22678cdd9e5f55493f9243949815346361880b87d4352421be97",
+    "extra_candidates.json": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+    "candidates.json": "3535fc02e21c8a9228591b3f0c3387989e568e7a2ccc8b37d95e9e87f10535ef",
+    "README.md": "eb17c624a3ffc3df8f4bcba4941ad0e34eb0c2a10fe07722a5b0d9bad03045e8"
+  },
+  "status": "partial",
+  "sketch_status": {
+    "S1": "partial"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "kind": "measurement_bug_fix",
+  "failure": "trial-1: payload capture iterated over content=None after first rejected submission; no second payload was completed",
+  "change": "Treat a null message content as an empty sequence when counting image blocks; model requests and budgets are unchanged.",
+  "initial_driver_sha256": "87bf98c1bc13ee6896dbcf8adfbcd64fa29acb4c184adaf6e1f256696cd5bb27",
+  "corrected_driver_sha256": "9c6dc63dbdb9c5419d098462b40670269b862df2d0e7df784f74c13f30a10350",
+  "scope": "No paid rerun. Trials 1 and 3 ran the initial recorder and failed at null assistant content before completing the second payload. Exclude both from end-to-end comparison; retain first request and usage. Trial 2 completed both recorded requests; trial 4 uses corrected recorder.",
+  "reusable_driver_sha256": "6c591a10479008f05b2f3befbfd0f956810f404d6ca1885f50c1628f07a8f7dc",
+  "offline_fix_check": "null assistant content and image block counting passed without network"
+}

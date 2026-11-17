@@ -1,0 +1,13 @@
+{
+  "schema_version": "scene_observations_v1",
+  "reference": {
+    "path": "reference.png",
+    "sha256": "aeb6a0855a711be65b4167ae80becf283b35e499ee609748fe5bfe41e23675ff"
+  },
+  "status": "completed",
+  "context_notes": [
+    "1280x720 横幅画面, 仅见发光体及其光晕, 无地面、天空等场景结构"
+  ],
+  "open_questions": [],
+  "gaps": []
+}

@@ -1,0 +1,258 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Agent 运行与多模态材料流转 · 讨论稿",
+    "locale": "zh-CN",
+    "output": ".archify/architecture-vista-material-cycle-20261111-202552/vista-material-cycle.html",
+    "quality_profile": "showcase"
+  },
+  "components": [
+    {
+      "id": "request",
+      "type": "backend",
+      "label": "准备模型请求",
+      "sublabel": "固定输入与本轮展开内容",
+      "pos": [
+        40,
+        40
+      ],
+      "size": [
+        240,
+        84
+      ]
+    },
+    {
+      "id": "reasoning",
+      "type": "backend",
+      "label": "模型响应与行动选择",
+      "sublabel": "继续执行、回看材料或结束",
+      "pos": [
+        450,
+        40
+      ],
+      "size": [
+        240,
+        84
+      ]
+    },
+    {
+      "id": "execution",
+      "type": "backend",
+      "label": "执行业务工具",
+      "sublabel": "生成图像、代码、文本或错误",
+      "pos": [
+        870,
+        40
+      ],
+      "size": [
+        240,
+        84
+      ]
+    },
+    {
+      "id": "registration",
+      "type": "backend",
+      "label": "保存与登记产物",
+      "sublabel": "确定内容、身份和产生来源",
+      "pos": [
+        870,
+        310
+      ],
+      "size": [
+        240,
+        84
+      ]
+    },
+    {
+      "id": "catalog",
+      "type": "backend",
+      "label": "发现与选择材料",
+      "sublabel": "目录或历史引用定位 ID",
+      "pos": [
+        450,
+        310
+      ],
+      "size": [
+        240,
+        84
+      ]
+    },
+    {
+      "id": "repository",
+      "type": "database",
+      "label": "材料存储与索引",
+      "sublabel": "原始文件、分类、来源关系",
+      "pos": [
+        870,
+        580
+      ],
+      "size": [
+        240,
+        84
+      ]
+    },
+    {
+      "id": "read",
+      "type": "backend",
+      "label": "读取与展开材料",
+      "sublabel": "按 ID 取正文、整图或局部",
+      "pos": [
+        450,
+        580
+      ],
+      "size": [
+        240,
+        84
+      ]
+    },
+    {
+      "id": "inputs",
+      "type": "database",
+      "label": "已登记的初始材料",
+      "sublabel": "参考图、资料与固定任务要求",
+      "pos": [
+        40,
+        580
+      ],
+      "size": [
+        240,
+        84
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "Agent 运行阶段",
+      "wraps": [
+        "request",
+        "reasoning",
+        "execution"
+      ],
+      "pad": 24
+    },
+    {
+      "kind": "region",
+      "label": "记忆与上下文能力 · 材料登记、组织和按需回读",
+      "wraps": [
+        "registration",
+        "catalog",
+        "repository",
+        "read"
+      ],
+      "pad": 24
+    }
+  ],
+  "connections": [
+    {
+      "id": "request-model",
+      "from": "request",
+      "to": "reasoning",
+      "label": "调用模型"
+    },
+    {
+      "id": "model-tool",
+      "from": "reasoning",
+      "to": "execution",
+      "label": "业务工具调用"
+    },
+    {
+      "id": "tool-material",
+      "from": "execution",
+      "to": "registration",
+      "label": "多模态产物"
+    },
+    {
+      "id": "register-store",
+      "from": "registration",
+      "to": "repository",
+      "label": "保存并建立索引"
+    },
+    {
+      "id": "model-recall",
+      "from": "reasoning",
+      "to": "catalog",
+      "label": "按需回看"
+    },
+    {
+      "id": "store-catalog",
+      "from": "repository",
+      "to": "catalog",
+      "label": "目录与来源",
+      "fromSide": "left",
+      "toSide": "right"
+    },
+    {
+      "id": "catalog-read",
+      "from": "catalog",
+      "to": "read",
+      "label": "ID 与可选区域"
+    },
+    {
+      "id": "store-read",
+      "from": "repository",
+      "to": "read",
+      "label": "校验并读取内容"
+    },
+    {
+      "id": "read-request",
+      "from": "read",
+      "to": "request",
+      "label": "本轮真实内容",
+      "fromSide": "left",
+      "toSide": "right"
+    },
+    {
+      "id": "input-request",
+      "from": "inputs",
+      "to": "request",
+      "label": "默认材料与要求",
+      "fromSide": "top",
+      "toSide": "bottom"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Agent 的运行阶段",
+      "items": [
+        "准备请求 → 等待模型响应 → 执行工具 → 处理反馈 → 准备下一次请求。",
+        "模型选择回看时，执行目录查询或材料读取，再进入下一次模型调用。",
+        "结束动作经业务规则确认后进入终态。读取与业务工具错误进入反馈处理。",
+        "图中按需回看箭头包含读取工具的实际派发过程。"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "内容怎样成为材料",
+      "items": [
+        "业务工具产出内容后，经保存与登记获得稳定材料 ID。",
+        "登记关联内容类型、标签、来源动作和已有材料引用。",
+        "原始内容与集中索引共同保存，裁剪材料关联来源和区域。",
+        "登记回执将材料引用带回工具反馈，供后续直接回读。",
+        "初始输入通过同一登记入口进入材料管理。"
+      ]
+    },
+    {
+      "dot": "violet",
+      "title": "Agent 怎样找到并调用材料",
+      "items": [
+        "通过简短目录发现材料，也可直接使用历史反馈中的材料 ID。",
+        "读取时选择整份正文、完整图像或局部区域，多份内容可一起对照。",
+        "真实内容与来源进入模型请求，成功返回后按保留策略更新上下文。",
+        "已登记、已读取、已进入请求及调用成功分别记录。"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "仍待讨论的规则",
+      "items": [
+        "材料分类维度、关联方式和目录组织。",
+        "哪些材料默认展开，临时回看内容保留多久。",
+        "写入触发点、读取接口及调用失败时的处理。",
+        "本图描述目标运行关系，当前实现主要接入生成模块。"
+      ]
+    }
+  ]
+}

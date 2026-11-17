@@ -1,0 +1,31 @@
+[
+  {
+    "case": "buffer-bloom",
+    "feedback": [
+      "{\"code\": \"draft_unseen\", \"path\": \"/draft/observations.json\", \"message\": \"draft_unseen: 请完整读取最新草稿并在后续请求复查后完成\"}",
+      "{\"error\": \"草稿写入、完成或停止必须单独调用; 本批全部工具均未执行\"}"
+    ],
+    "tool_errors": [
+      {
+        "name": "finish_analysis",
+        "error": "DraftError('draft_unseen: 请完整读取最新草稿并在后续请求复查后完成')Traceback (most recent call last):\n\n\n  File \"/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/apps/shader_deep/.venv/lib/python3.12/site-packages/langchain_core/tools/base.py\", line 1098, in run\n    response = context.run(self._run, *tool_args, **tool_kwargs)\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\n\n  File \"/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/apps/shader_deep/.venv/lib/python3.12/site-packages/langchain_core/tools/structured.py\", line 152, in _run\n    return self.func(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^\n\n\n  File \"/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/apps/shader_deep/src/shader_deep/agents/analysis/native.py\", line 75, in finish_analysis\n    return _encoded(session.finish_draft())\n                    ^^^^^^^^^^^^^^^^^^^^^^\n\n\n  File \"/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/apps/shader_deep/src/shader_deep/workflows/analysis/session.py\", line 206, in finish_draft\n    raise DraftError(code, msg)\n\n\nshader_deep.infrastructure.storage.observation_draft.DraftError: draft_unseen: 请完整读取最新草稿并在后续请求复查后完成"
+      }
+    ]
+  },
+  {
+    "case": "auroras",
+    "feedback": [
+      "{\"code\": \"draft_unseen\", \"path\": \"/draft/observations.json\", \"message\": \"draft_unseen: 请完整读取最新草稿并在后续请求复查后完成\"}"
+    ],
+    "tool_errors": [
+      {
+        "name": "finish_analysis",
+        "error": "DraftError('draft_unseen: 请完整读取最新草稿并在后续请求复查后完成')Traceback (most recent call last):\n\n\n  File \"/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/apps/shader_deep/.venv/lib/python3.12/site-packages/langchain_core/tools/base.py\", line 1098, in run\n    response = context.run(self._run, *tool_args, **tool_kwargs)\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\n\n  File \"/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/apps/shader_deep/.venv/lib/python3.12/site-packages/langchain_core/tools/structured.py\", line 152, in _run\n    return self.func(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^\n\n\n  File \"/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/apps/shader_deep/src/shader_deep/agents/analysis/native.py\", line 75, in finish_analysis\n    return _encoded(session.finish_draft())\n                    ^^^^^^^^^^^^^^^^^^^^^^\n\n\n  File \"/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/apps/shader_deep/src/shader_deep/workflows/analysis/session.py\", line 206, in finish_draft\n    raise DraftError(code, msg)\n\n\nshader_deep.infrastructure.storage.observation_draft.DraftError: draft_unseen: 请完整读取最新草稿并在后续请求复查后完成"
+      },
+      {
+        "name": "finish_analysis",
+        "error": "DraftError('draft_unseen: 请完整读取最新草稿并在后续请求复查后完成')Traceback (most recent call last):\n\n\n  File \"/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/apps/shader_deep/.venv/lib/python3.12/site-packages/langchain_core/tools/base.py\", line 1098, in run\n    response = context.run(self._run, *tool_args, **tool_kwargs)\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\n\n  File \"/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/apps/shader_deep/.venv/lib/python3.12/site-packages/langchain_core/tools/structured.py\", line 152, in _run\n    return self.func(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^\n\n\n  File \"/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/apps/shader_deep/src/shader_deep/agents/analysis/native.py\", line 75, in finish_analysis\n    return _encoded(session.finish_draft())\n                    ^^^^^^^^^^^^^^^^^^^^^^\n\n\n  File \"/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/apps/shader_deep/src/shader_deep/workflows/analysis/session.py\", line 206, in finish_draft\n    raise DraftError(code, msg)\n\n\nshader_deep.infrastructure.storage.observation_draft.DraftError: draft_unseen: 请完整读取最新草稿并在后续请求复查后完成"
+      }
+    ]
+  }
+]

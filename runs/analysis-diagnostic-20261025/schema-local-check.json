@@ -1,0 +1,25 @@
+{
+  "schema": {
+    "minLength": 1,
+    "pattern": "\\S",
+    "type": "string"
+  },
+  "cases": [
+    {
+      "value": "alpha123",
+      "accepted": true
+    },
+    {
+      "value": "霓虹圆角边框",
+      "accepted": true
+    },
+    {
+      "value": " ",
+      "accepted": false
+    },
+    {
+      "value": "",
+      "accepted": false
+    }
+  ]
+}

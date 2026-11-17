@@ -1,0 +1,261 @@
+{
+  "model": "z-ai/glm-5.3-flash",
+  "configuration": "staged + full image and target crop + observation tools + compact context",
+  "independent_workers": 4,
+  "accepted_reports": 1,
+  "draft_only": 3,
+  "source_changes_during_trials": [],
+  "same_model_and_options": true,
+  "totals": {
+    "calls_sent": 37,
+    "request_attempts": 37,
+    "input_tokens": 685159,
+    "output_tokens": 272355,
+    "total_tokens": 957514,
+    "reasoning_tokens": 247706,
+    "usage_records": 37
+  },
+  "trials": [
+    {
+      "trial": 1,
+      "status": "failed",
+      "report_status": null,
+      "output_kind": "unaccepted_draft",
+      "output_path": "worker-01/last-draft.json",
+      "calls_sent": 11,
+      "request_attempts": 11,
+      "repairs": 2,
+      "elapsed_seconds": 362.657,
+      "counts": {
+        "features": 4,
+        "relations": 3,
+        "mechanisms": 4,
+        "sketches": 0,
+        "open_questions": 3,
+        "gaps": 0
+      },
+      "input_tokens": 192979,
+      "output_tokens": 72423,
+      "total_tokens": 265402,
+      "reasoning_tokens": 65903,
+      "usage_records": 11,
+      "unique_measurements": 6,
+      "crop_calls": 5,
+      "region_stats_calls": 1,
+      "claimed_notch_count": 8,
+      "mechanisms": [
+        {
+          "id": "M1",
+          "name": "角度余弦径向调制齿轮轮廓"
+        },
+        {
+          "id": "M2",
+          "name": "基圆与圆瓣凸台平滑并集"
+        },
+        {
+          "id": "M3",
+          "name": "同心环负形挖孔"
+        },
+        {
+          "id": "M4",
+          "name": "常数色填充与 fwidth 解析抗锯齿"
+        }
+      ],
+      "sketches": [],
+      "rejections": [
+        {
+          "call": 8,
+          "tool": "save_mechanisms",
+          "reason": "参数校验失败, 请修正后完整提交: \nmechanisms.0.name: Field required\nmechanisms.1.name: Field required\nmechanisms.2.name: Field required\nmechanisms.3.name: Field required"
+        },
+        {
+          "call": 10,
+          "tool": "save_mechanisms",
+          "reason": "提交被拒绝: features.F1.mechanism_refs[0].reason: 疑似未标记对象引用 'F1'; 使用 [[ID]]; text='径向函数覆盖 r≤R(θ) 直接给出近正圆主体盘, 圆心与最大半径(外接盒≈122×123px, 含齿最大半径≈61px)与 F1 一致。'"
+        },
+        {
+          "call": 11,
+          "tool": "save_mechanisms",
+          "reason": "提交被拒绝: features.F1.mechanism_refs[2].reason: 疑似未标记对象引用 'M4'; 使用 [[ID]]; text='[[F1]] 的纯色绿色平面填充、无渐变/描边/投影, 由 M4 的单一常数色 uniform 实现。'"
+        }
+      ],
+      "terminal_error": "ValueError: 逻辑任务的两次修复额度已耗尽",
+      "timed_out": false,
+      "export_error": null
+    },
+    {
+      "trial": 2,
+      "status": "failed",
+      "report_status": null,
+      "output_kind": "unaccepted_draft",
+      "output_path": "worker-02/last-draft.json",
+      "calls_sent": 9,
+      "request_attempts": 9,
+      "repairs": 2,
+      "elapsed_seconds": 265.931,
+      "counts": {
+        "features": 4,
+        "relations": 3,
+        "mechanisms": 0,
+        "sketches": 0,
+        "open_questions": 5,
+        "gaps": 2
+      },
+      "input_tokens": 150574,
+      "output_tokens": 50190,
+      "total_tokens": 200764,
+      "reasoning_tokens": 43947,
+      "usage_records": 9,
+      "unique_measurements": 8,
+      "crop_calls": 4,
+      "region_stats_calls": 4,
+      "claimed_notch_count": 7,
+      "mechanisms": [],
+      "sketches": [],
+      "rejections": [
+        {
+          "call": 6,
+          "tool": "advance_exploration_stage",
+          "reason": "提交被拒绝: 先在下一轮核对最新草稿回执, 再推进阶段"
+        },
+        {
+          "call": 8,
+          "tool": "save_mechanisms",
+          "reason": "提交被拒绝: mechanisms.M3.method_or_conditions[0]: 疑似未标记对象引用 'M1'; 使用 [[ID]]; text='对每个像素求外轮廓符号距离 d_out(由 M1 或 M2 生成)与中心孔圆的符号距离 d_hole(孔半径≈20px, 与外轮廓同圆心), 组合成单一遮罩距离 d=max(d_out, −d_hole): d<0 为环带实体, 同时产生外边界与中心孔。孔径以外径比例参数化(孔半径≈0.33×瓣顶半径)。可调因素: 孔半径或比例、圆心位置。'"
+        },
+        {
+          "call": 9,
+          "tool": "save_mechanisms",
+          "reason": "提交被拒绝: issues.description: 疑似未标记对象引用 'M1'; 使用 [[ID]]; text='凹口根部与瓣顶的曲率半径在现有分辨率下无法逐像素测量, M1/M2 的剖面差异需渲染对比验证。'"
+        }
+      ],
+      "terminal_error": "ValueError: 逻辑任务的两次修复额度已耗尽",
+      "timed_out": false,
+      "export_error": null
+    },
+    {
+      "trial": 3,
+      "status": "failed",
+      "report_status": null,
+      "output_kind": "unaccepted_draft",
+      "output_path": "worker-03/last-draft.json",
+      "calls_sent": 8,
+      "request_attempts": 8,
+      "repairs": 2,
+      "elapsed_seconds": 398.112,
+      "counts": {
+        "features": 4,
+        "relations": 2,
+        "mechanisms": 0,
+        "sketches": 0,
+        "open_questions": 0,
+        "gaps": 0
+      },
+      "input_tokens": 178815,
+      "output_tokens": 88706,
+      "total_tokens": 267521,
+      "reasoning_tokens": 81732,
+      "usage_records": 8,
+      "unique_measurements": 8,
+      "crop_calls": 4,
+      "region_stats_calls": 4,
+      "claimed_notch_count": 4,
+      "mechanisms": [],
+      "sketches": [],
+      "rejections": [
+        {
+          "call": 4,
+          "tool": "inspect_reference",
+          "reason": "提交被拒绝: Unique measurement budget exhausted; reuse existing evidence or preserve the uncertainty"
+        },
+        {
+          "call": 7,
+          "tool": "save_mechanisms",
+          "reason": "参数校验失败, 请修正后完整提交: \nmechanisms.0.conditions: Input should be a valid tuple\nmechanisms.1.conditions: Input should be a valid tuple\nmechanisms.2.conditions: Input should be a valid tuple\nmechanisms.3.conditions: Input should be a valid tuple"
+        },
+        {
+          "call": 8,
+          "tool": "save_mechanisms",
+          "reason": "提交被拒绝: mechanisms.M2.method_or_conditions[1]: 疑似未标记对象引用 'F4'; 使用 [[ID]]; text='适用于齿顶呈圆帽状凸包、谷底为相邻帽圆相交弧的形态; 与 M1 的判别依据见 F4 待定问题。'"
+        }
+      ],
+      "terminal_error": "ValueError: 逻辑任务的两次修复额度已耗尽",
+      "timed_out": false,
+      "export_error": null
+    },
+    {
+      "trial": 4,
+      "status": "succeeded",
+      "report_status": "completed",
+      "output_kind": "accepted_report",
+      "output_path": "worker-04/accepted-report.json",
+      "calls_sent": 9,
+      "request_attempts": 9,
+      "repairs": 0,
+      "elapsed_seconds": 290.607,
+      "counts": {
+        "features": 4,
+        "relations": 2,
+        "mechanisms": 5,
+        "sketches": 1,
+        "open_questions": 4,
+        "gaps": 0
+      },
+      "input_tokens": 162791,
+      "output_tokens": 61036,
+      "total_tokens": 223827,
+      "reasoning_tokens": 56124,
+      "usage_records": 9,
+      "unique_measurements": 7,
+      "crop_calls": 3,
+      "region_stats_calls": 4,
+      "claimed_notch_count": 8,
+      "mechanisms": [
+        {
+          "id": "M1",
+          "name": "SDF布尔组合齿轮轮廓"
+        },
+        {
+          "id": "M2",
+          "name": "极角周期调制8齿轮廓"
+        },
+        {
+          "id": "M3",
+          "name": "平坦单色覆盖"
+        },
+        {
+          "id": "M4",
+          "name": "fwidth一致抗锯齿"
+        },
+        {
+          "id": "M5",
+          "name": "孔内呈现假设: 镂空透白"
+        }
+      ],
+      "sketches": [
+        {
+          "id": "S1",
+          "name": "SDF布尔cog单色片方案"
+        }
+      ],
+      "rejections": [],
+      "terminal_error": null,
+      "timed_out": false,
+      "export_error": null
+    }
+  ],
+  "posthoc_reference_check": "reference-pixel-check.json",
+  "assessment": {
+    "status": "substantive_visual_errors_remain",
+    "notes": [
+      "All four runs retained reliable measured green near RGB(68,188,99).",
+      "Notch counts diverged across 8/7/4/8; independent pixel contour check has five deep concavity candidates.",
+      "Workers 1,2,4 treated the supplied context ROI as the object bounding box; green mask bounds are roughly 107 by 105 pixels, not 122 by 123.",
+      "Accepted worker 4 retains formulas and fixed parameters in mechanisms, contrary to requested content contraction.",
+      "All three failed runs exhausted repair allowance after schema, reference or stage/tool-budget rejection."
+    ],
+    "human_visual_acceptance": "not performed",
+    "shader_generation_and_rendering": "not performed",
+    "causal_efficiency_comparison": "not established by four same-condition repetitions"
+  }
+}

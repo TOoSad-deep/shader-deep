@@ -1,0 +1,16 @@
+{
+  "elements": [
+    {
+      "id": "e",
+      "name": "b",
+      "region": "g",
+      "feature_ids": []
+    }
+  ],
+  "target_element_id": "e",
+  "directions": [
+    "单",
+    "颗",
+    "水"
+  ]
+}

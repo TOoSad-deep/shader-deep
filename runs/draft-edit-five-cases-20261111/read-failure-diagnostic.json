@@ -1,0 +1,82 @@
+[
+  {
+    "case": "buffer-bloom",
+    "reads": [
+      {
+        "args": {
+          "file_path": "/draft/observations.json"
+        },
+        "header": null,
+        "revision": null,
+        "preview": "@@ lines 1-100 of 101 | next offset 100 @@\n{\n  \"elements\": [\n    {\n      \"id\": \"E1\",\n      \"name\": \"黑色背景\",\n      \"region\": \"全图\",\n      \"features\": [\n        {\n          \"id\": \"F1\",",
+        "tail": "\n      \"participants\": [\n        \"E4\",\n        \"E3\",\n        \"E2\"\n      ],\n      \"description\": \"三个图形大致沿左下—右上对角线依次排列为心形、圆形、星形, 间距近似\"\n    }\n  ],\n  \"open_questions\": [],\n  \"gaps\": []"
+      },
+      {
+        "args": {
+          "file_path": "/draft/observations.json"
+        },
+        "header": null,
+        "revision": null,
+        "preview": "@@ lines 1-100 of 101 | next offset 100 @@\n{\n  \"elements\": [\n    {\n      \"id\": \"E1\",\n      \"name\": \"黑色背景\",\n      \"region\": \"全图\",\n      \"features\": [\n        {\n          \"id\": \"F1\",",
+        "tail": "\n      \"participants\": [\n        \"E4\",\n        \"E3\",\n        \"E2\"\n      ],\n      \"description\": \"三个图形大致沿左下—右上对角线依次排列为心形、圆形、星形, 间距近似\"\n    }\n  ],\n  \"open_questions\": [],\n  \"gaps\": []"
+      },
+      {
+        "args": {
+          "file_path": "/draft/observations.json",
+          "limit": 5,
+          "offset": 100
+        },
+        "header": "@@ lines 101-101 of 101 @@",
+        "revision": null,
+        "preview": "@@ lines 101-101 of 101 @@\n}",
+        "tail": "@@ lines 101-101 of 101 @@\n}"
+      }
+    ]
+  },
+  {
+    "case": "auroras",
+    "reads": [
+      {
+        "args": {
+          "file_path": "/draft/observations.json"
+        },
+        "header": null,
+        "revision": null,
+        "preview": "@@ lines 1-100 of 101 | next offset 100 @@\n{\n  \"elements\": [\n    {\n      \"id\": \"E1\",\n      \"name\": \"星空夜空背景\",\n      \"region\": \"全图上半部（至地平线上方）\",\n      \"features\": [\n        {\n        ",
+        "tail": "\n      \"id\": \"R3\",\n      \"participants\": [\n        \"E3\",\n        \"E4\"\n      ],\n      \"description\": \"山影下缘与水面相接，构成清晰的水平地平线，天空与水面在此分界\"\n    }\n  ],\n  \"open_questions\": [],\n  \"gaps\": []"
+      },
+      {
+        "args": {
+          "file_path": "/draft/observations.json",
+          "limit": 100,
+          "offset": 0
+        },
+        "header": null,
+        "revision": null,
+        "preview": "@@ lines 1-100 of 103 | next offset 100 @@\n{\n  \"elements\": [\n    {\n      \"id\": \"E1\",\n      \"name\": \"星空夜空背景\",\n      \"region\": \"全图上半部（至地平线上方）\",\n      \"features\": [\n        {\n        ",
+        "tail": "光光柱自山影后方升起，交界处山脊被照出绿色亮边\"\n    },\n    {\n      \"id\": \"R3\",\n      \"participants\": [\n        \"E3\",\n        \"E4\"\n      ],\n      \"description\": \"山影下缘与水面相接，构成清晰的水平地平线，天空与水面在此分界\"\n    }\n  ],"
+      },
+      {
+        "args": {
+          "file_path": "/draft/observations.json",
+          "limit": 50,
+          "offset": 100
+        },
+        "header": "@@ lines 101-103 of 103 @@",
+        "revision": null,
+        "preview": "@@ lines 101-103 of 103 @@\n  \"open_questions\": [],\n  \"gaps\": []\n}",
+        "tail": "@@ lines 101-103 of 103 @@\n  \"open_questions\": [],\n  \"gaps\": []\n}"
+      },
+      {
+        "args": {
+          "file_path": "/draft/observations.json",
+          "limit": 200
+        },
+        "header": "@@ lines 1-103 of 103 @@",
+        "revision": null,
+        "preview": "@@ lines 1-103 of 103 @@\n{\n  \"elements\": [\n    {\n      \"id\": \"E1\",\n      \"name\": \"星空夜空背景\",\n      \"region\": \"全图上半部（至地平线上方）\",\n      \"features\": [\n        {\n          \"id\": \"F1\",\n    ",
+        "tail": "     \"id\": \"R3\",\n      \"participants\": [\n        \"E3\",\n        \"E4\"\n      ],\n      \"description\": \"山影下缘与水面相接，构成清晰的水平地平线，天空与水面在此分界\"\n    }\n  ],\n  \"open_questions\": [],\n  \"gaps\": []\n}"
+      }
+    ]
+  }
+]

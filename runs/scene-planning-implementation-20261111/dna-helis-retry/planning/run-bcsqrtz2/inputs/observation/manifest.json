@@ -1,0 +1,13 @@
+{
+  "schema_version": "scene_observations_v1",
+  "reference": {
+    "path": "reference.png",
+    "sha256": "4ba233c4280ddbf1add81261151878c24c006b33defab9752c80d36e03b4fa38"
+  },
+  "status": "completed",
+  "context_notes": [
+    "整图为灰度示意风格, 呈类似双螺旋阶梯的结构, 无文字或其他装饰; 结构主体沿对角方向贯穿画面。"
+  ],
+  "open_questions": [],
+  "gaps": []
+}

@@ -1,0 +1,100 @@
+{
+  "analysis_protocol": "scene_observations_v1",
+  "stop_reason": "completed",
+  "error": null,
+  "report_path": "report",
+  "options": {
+    "max_model_calls": 20,
+    "max_output_tokens": 163840,
+    "max_request_retries": 0,
+    "request_timeout_seconds": 45,
+    "stream_model_responses": true,
+    "output_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/draft-budget20-five-cases-20261111/buffer-bloom"
+  },
+  "deprecated_option_diagnostics": [],
+  "execution": {
+    "analysis_protocol": "scene_observations_v1",
+    "execution": "deep_agents_single_observer",
+    "state": "accepted",
+    "reason": null,
+    "model_calls": 8,
+    "validation_errors": 3,
+    "tool_refusals": 0,
+    "max_model_calls": 20,
+    "reference_sha256": "aeb6a0855a711be65b4167ae80becf283b35e499ee609748fe5bfe41e23675ff",
+    "draft_path": "draft/observations.json",
+    "draft_revision": "037ab2770ba1b025a44900034d3f867aae39d194999c424af08484d6ce74eb9f",
+    "seen_revision": "037ab2770ba1b025a44900034d3f867aae39d194999c424af08484d6ce74eb9f",
+    "accepted_revision": "037ab2770ba1b025a44900034d3f867aae39d194999c424af08484d6ce74eb9f",
+    "accepted_snapshot": "results/observations.json",
+    "resource_read_results": [],
+    "model_id": "z-ai/glm-5.3-flash",
+    "rule_sha256": "b6a9f2155f37b8cb23771dade4079145d9c584b7fbde0584f05bb6877fd44571",
+    "resource_sha256": {
+      "SKILL.md": "b6a9f2155f37b8cb23771dade4079145d9c584b7fbde0584f05bb6877fd44571",
+      "references/grouping.md": "ecb110a27e76a68ab0ef5ef6a42f9231927e58718cc830209407b46b4fbee75f",
+      "references/relations.md": "88c11dd1105f168ded3eb5e255e7481ae2b318f7f90b8b973f83700f23e0b543",
+      "references/uncertainty.md": "831c36d0c9d46d14b45b93615931f166b718e6b83b9b7644691a0c66afa59461"
+    },
+    "skill_bundle_sha256": "a62b9c6ca088ff97bd17204a75e801364754efe1af5769c60080afa13fdc6df3",
+    "elapsed_seconds": 110.66635208300431,
+    "elapsed_scope": "analysis_before_publication",
+    "token_usage": {
+      "input_tokens": 94786,
+      "output_tokens": 11315,
+      "total_tokens": 106101
+    },
+    "usage_scope": "sdk_reported_responses_only",
+    "http_request_count": null
+  },
+  "blackboard": {
+    "targets": {
+      "T1": {
+        "version": "T1",
+        "request": "分析整张图, 按已确认的粒度输出上下文、多元素E、F与R, 只描述可见观察, 通过提交工具交付。",
+        "reference_path": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/single-observer-new-cases-20261110-uyrhcnj9/buffer-bloom/run-dpi3qoq6/report/reference.png",
+        "constraints": [],
+        "protected_features": []
+      }
+    },
+    "tasks": {
+      "A1": {
+        "id": "A1",
+        "role": "analysis",
+        "target_version": "T1",
+        "objective": "分析整张图, 按已确认的粒度输出上下文、多元素E、F与R, 只描述可见观察, 通过提交工具交付。",
+        "baseline_id": null,
+        "candidate_ids": [],
+        "related_result_ids": [],
+        "experiment_id": null,
+        "hypothesis": null,
+        "allowed_changes": [],
+        "stop_conditions": [],
+        "parent_task_id": null,
+        "lens_config": null,
+        "analysis_purpose": "initial",
+        "analysis_gap": null,
+        "expected_evidence": null,
+        "evidence_ids": [],
+        "analysis_outline": null,
+        "generation_binding": null
+      }
+    },
+    "candidates": {},
+    "results": {
+      "run-dr3mzom2-scene-observations": {
+        "id": "run-dr3mzom2-scene-observations",
+        "task_id": "A1",
+        "status": "completed",
+        "summary": "全图 E/F/R 观察包已交付: report/manifest.json; 观察完成不代表 M/S 规划或视觉验收完成",
+        "candidate_ids": [],
+        "observations": [],
+        "hypotheses": [],
+        "limitations": [],
+        "recommendation": null,
+        "analysis_detail": null,
+        "analysis_protocol": "scene_observations_v1"
+      }
+    }
+  }
+}

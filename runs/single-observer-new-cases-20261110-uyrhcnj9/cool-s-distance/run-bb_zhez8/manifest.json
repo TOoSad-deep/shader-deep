@@ -1,0 +1,24 @@
+{
+  "analysis_protocol": "scene_observations_v1",
+  "execution": "deep_agents_single_observer",
+  "state": "accepted",
+  "reason": null,
+  "model_calls": 3,
+  "validation_errors": 1,
+  "tool_refusals": 0,
+  "max_model_calls": 8,
+  "reference_sha256": "dd712a5d2528d4db56bcbb6b10c66f946ca7c33579a0eb2ec23af90e4fbc7493",
+  "accepted_snapshot": "results/observations.json",
+  "model_id": "z-ai/glm-5.3-flash",
+  "rule_sha256": "9e9df9f77d51044a2a3a50e67642d14c313729de17e4f65d9b316de15978c699",
+  "examples_sha256": "5a7ad70090b757a97eb6e232649dd998d2bfeb8b0b7cd0b5df3fffe0597aec0f",
+  "elapsed_seconds": 228.64476250000007,
+  "elapsed_scope": "analysis_before_publication",
+  "token_usage": {
+    "input_tokens": 38151,
+    "output_tokens": 25169,
+    "total_tokens": 63320
+  },
+  "usage_scope": "sdk_reported_responses_only",
+  "http_request_count": null
+}

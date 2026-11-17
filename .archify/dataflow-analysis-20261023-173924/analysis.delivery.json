@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "55414953-521b-4e0e-b564-1d38b417b1cb",
+  "status": "current",
+  "command": "deliver",
+  "type": "dataflow",
+  "input": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/.archify/dataflow-analysis-20261023-173924/candidate.json",
+  "output": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/.archify/dataflow-analysis-20261023-173924/analysis.html",
+  "specification": {
+    "sha256": "3cdb2f2f8f3e690d14b24127374d425c13964f5745c954c4e6e076524807958a",
+    "bytes": 11955
+  },
+  "artifact": {
+    "sha256": "52a13526e943193938caef93ea64f29f748fb485e296d6d36f73011794f50522",
+    "bytes": 833758
+  }
+}

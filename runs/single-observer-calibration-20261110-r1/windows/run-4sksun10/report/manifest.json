@@ -1,0 +1,14 @@
+{
+  "schema_version": "scene_observations_v1",
+  "reference": {
+    "path": "reference.png",
+    "sha256": "80c35a1f92b2e537114d4615a85a6865411aa2d7c193ee7fdddf3155c8a59fcc"
+  },
+  "status": "completed",
+  "context_notes": [
+    "青绿色(深水鸭色)纯色背景铺满全图, 无渐变、阴影或其他环境物体, 四角均为大片纯色留白",
+    "画面唯一主体为复古 Windows 四色波浪旗标志: 右侧旗体完整, 左侧碎裂成方块群, 呈向左散开的静态外观"
+  ],
+  "open_questions": [],
+  "gaps": []
+}

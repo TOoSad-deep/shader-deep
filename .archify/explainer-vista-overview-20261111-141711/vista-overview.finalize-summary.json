@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "ok": true,
+  "command": "finalize",
+  "status": "pass",
+  "type": "explainer",
+  "quality": "showcase",
+  "specification": {
+    "path": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/.archify/explainer-vista-overview-20261111-141711/candidate.archify.md",
+    "sha256": "623a36008a8bbfbef853adfde2b624b0112c7062c3fabdc1e673668606477cd9",
+    "bytes": 11664
+  },
+  "artifact": {
+    "path": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/.archify/explainer-vista-overview-20261111-141711/vista-overview.html",
+    "sha256": "178af86effc4510e562e897f5777918282b4c4be438a7249c56794d0950a002f",
+    "bytes": 1804010
+  },
+  "gates": {
+    "validate": "pass",
+    "deliver": "pass",
+    "check": "pass",
+    "browser-check": "not-run"
+  },
+  "diagnostics": [],
+  "diagnosticSummary": {
+    "total": 0,
+    "shown": 0,
+    "truncated": false
+  },
+  "evidence": {
+    "receipt": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/.archify/explainer-vista-overview-20261111-141711/vista-overview.finalize.json",
+    "summaryReceipt": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/.archify/explainer-vista-overview-20261111-141711/vista-overview.finalize-summary.json"
+  },
+  "visualReview": "not-requested",
+  "durationMs": 1423,
+  "browserCheck": {
+    "requested": false,
+    "ran": false
+  }
+}

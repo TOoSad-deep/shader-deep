@@ -1,0 +1,30 @@
+{
+  "scope": "2026-11-11 local working tree; uncommitted VISTA implementation, not a pinned HEAD source claim",
+  "head": "c911d3ca7d0eaf1fc7e5bcb5b843d331c7db1a98",
+  "sources": [
+    {
+      "path": "apps/shader_deep/src/shader_deep/agents/generation/memory.py",
+      "sha256": "4f2bf9ca5b3254e228ecfe0f47aa3429e47b36422dc380b6c997a70c86ac1e50"
+    },
+    {
+      "path": "apps/shader_deep/src/shader_deep/agents/generation/history.py",
+      "sha256": "e9dafbfe5b635707af53276716f455e54fcd06bfaf70f8b25832f9dba15a6f9d"
+    },
+    {
+      "path": "apps/shader_deep/src/shader_deep/agents/generation/middleware.py",
+      "sha256": "ac162c267bef51e12c8cfe781625fcb37d74307617d87fbf08e582ff22010d2e"
+    },
+    {
+      "path": "apps/shader_deep/src/shader_deep/infrastructure/storage/visual_memory.py",
+      "sha256": "68cf80a40fed8da23f8d8042c536a05ac7b1c0d79909a2026e626c379efc0067"
+    },
+    {
+      "path": "apps/shader_deep/src/shader_deep/agents/generation/options.py",
+      "sha256": "d6e239c0e31e874b466ecab694048cad76020e1b66fe76a923f7f5f0f9daf37e"
+    },
+    {
+      "path": "apps/shader_deep/docs/work-items/vista-minimal-harness-implementation-20261111.md",
+      "sha256": "f1a702764a8133dbbf382500c70b18e0cb380a01e3c267c1d45b6bc70ef3d186"
+    }
+  ]
+}

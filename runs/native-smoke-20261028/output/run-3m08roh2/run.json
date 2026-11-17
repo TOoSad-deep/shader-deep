@@ -1,0 +1,102 @@
+{
+  "analysis_protocol": "five_libraries_v1",
+  "stop_reason": "failed",
+  "report_path": null,
+  "selected_version": null,
+  "target_element_id": null,
+  "gaps": [
+    {
+      "refs": [],
+      "description": "OpenAIConnectionError: Connection error."
+    }
+  ],
+  "open_questions": [],
+  "options": {
+    "max_tasks": 2,
+    "max_parallel": 3,
+    "max_worker_calls": 4,
+    "max_main_calls": 0,
+    "max_orchestrator_calls": 8,
+    "max_integrator_calls": 2,
+    "output_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/native-smoke-20261028/output",
+    "worker_observation_tools": false,
+    "max_measurements": 8,
+    "max_request_retries": 0,
+    "request_timeout_seconds": 50,
+    "stream_model_responses": true,
+    "max_output_tokens": 8192,
+    "outline_max_output_tokens": null,
+    "integration_max_output_tokens": null,
+    "worker_max_output_tokens": 16384,
+    "max_comparison_targets": 12,
+    "library_page_chars": 8000,
+    "_output_token_sources": [
+      [
+        "max_output_tokens",
+        "cli",
+        8192
+      ],
+      [
+        "worker_max_output_tokens",
+        "cli",
+        16384
+      ]
+    ],
+    "max_repeated_no_progress": 0,
+    "max_context_tokens": 262144,
+    "request_image_tokens": 4096,
+    "request_token_margin": 2048,
+    "max_integration_calls": 12,
+    "max_integration_packages": 24,
+    "integration_no_progress": 3,
+    "integration_history_tokens": 16384
+  },
+  "execution": {
+    "analysis_protocol": "five_libraries_v1",
+    "execution": "deep_agents_native",
+    "user_request": "只分析中央发光边框本体。使用两个探索方向，每个方向只记录少量最必要的特征，给出一个简单草图；整合只做有把握的去重。",
+    "reference_sha256": "677ad234571bc8e5ab204a6d8b2bfec4aa8e920ee3711282433f525f9691ab8d",
+    "elements": [],
+    "plan": null,
+    "tasks": {},
+    "versions": [],
+    "closed": true,
+    "baseline_error": null
+  },
+  "blackboard": {
+    "targets": {
+      "T1": {
+        "version": "T1",
+        "request": "只分析中央发光边框本体。使用两个探索方向，每个方向只记录少量最必要的特征，给出一个简单草图；整合只做有把握的去重。",
+        "reference_path": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/framework-evaluation-20261028/fixtures/glow_border.png",
+        "constraints": [],
+        "protected_features": []
+      }
+    },
+    "tasks": {
+      "A1": {
+        "id": "A1",
+        "role": "analysis",
+        "target_version": "T1",
+        "objective": "只分析中央发光边框本体。使用两个探索方向，每个方向只记录少量最必要的特征，给出一个简单草图；整合只做有把握的去重。",
+        "baseline_id": null,
+        "candidate_ids": [],
+        "related_result_ids": [],
+        "experiment_id": null,
+        "hypothesis": null,
+        "allowed_changes": [],
+        "stop_conditions": [],
+        "parent_task_id": null,
+        "lens_config": null,
+        "analysis_purpose": "initial",
+        "analysis_gap": null,
+        "expected_evidence": null,
+        "evidence_ids": [],
+        "analysis_outline": null,
+        "generation_binding": null
+      }
+    },
+    "candidates": {},
+    "results": {}
+  }
+}

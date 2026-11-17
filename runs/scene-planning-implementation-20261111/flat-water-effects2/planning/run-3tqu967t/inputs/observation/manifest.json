@@ -1,0 +1,13 @@
+{
+  "schema_version": "scene_observations_v1",
+  "reference": {
+    "path": "reference.png",
+    "sha256": "65753b7f316b7c140d10b185124e757f01101939597723197207969e27e3bdae"
+  },
+  "status": "completed",
+  "context_notes": [
+    "单幅静态图, 1280x720, 红色日落海景, 无人物或人工物体可见"
+  ],
+  "open_questions": [],
+  "gaps": []
+}

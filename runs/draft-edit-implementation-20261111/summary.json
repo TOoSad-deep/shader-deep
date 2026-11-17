@@ -1,0 +1,90 @@
+{
+  "cases": 3,
+  "statuses": {
+    "failed": 1,
+    "completed": 2
+  },
+  "trace_verified": 3,
+  "project": "shader-deep",
+  "tag": "draft-edit-implementation-20261111",
+  "skill_bundle_sha256": "694f9915c74197e410de283ceb0a4c33c0383950a27b2dc2e47bb71489070ab6",
+  "rows": [
+    {
+      "case": "pink",
+      "status": "failed",
+      "run_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/draft-edit-implementation-20261111/pink/run-ij10z6o_",
+      "report_dir": null,
+      "trace": {
+        "trace_id": "01a1c870-1a7e-7ef2-ab46-c81cb1a524a4",
+        "url": "https://smith.langchain.com/o/fcb09333-f0ce-45e7-9ea2-c4750cdfbd16/projects/p/2e0945b1-fc78-4930-96bb-3085745b703a/r/01a1c870-1a7e-7ef2-ab46-c81cb1a524a4?poll=true",
+        "root_finished": true,
+        "runs": 25,
+        "llm_runs": 2,
+        "tool_runs": 1,
+        "image_in_llm_input": true,
+        "llm_outputs_present": true,
+        "error_runs": 9
+      },
+      "model": "z-ai/glm-5.3-flash",
+      "elapsed_seconds": 31.557522083021468,
+      "model_calls": 2,
+      "trace_verified": true
+    },
+    {
+      "case": "frosted",
+      "status": "completed",
+      "run_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/draft-edit-implementation-20261111/frosted/run-tot0qg3a",
+      "report_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/draft-edit-implementation-20261111/frosted/run-tot0qg3a/report",
+      "trace": {
+        "trace_id": "01a1c871-53c6-79c2-9054-469b923e0fdf",
+        "url": "https://smith.langchain.com/o/fcb09333-f0ce-45e7-9ea2-c4750cdfbd16/projects/p/2e0945b1-fc78-4930-96bb-3085745b703a/r/01a1c871-53c6-79c2-9054-469b923e0fdf?poll=true",
+        "root_finished": true,
+        "runs": 69,
+        "llm_runs": 5,
+        "tool_runs": 5,
+        "image_in_llm_input": true,
+        "llm_outputs_present": true,
+        "error_runs": 0
+      },
+      "model": "z-ai/glm-5.3-flash",
+      "elapsed_seconds": 197.42734466699767,
+      "model_calls": 5,
+      "trace_verified": true,
+      "counts": {
+        "E": 3,
+        "F": 6,
+        "R": 2
+      },
+      "gaps": [],
+      "formal_reader": "passed"
+    },
+    {
+      "case": "pink-retry",
+      "status": "completed",
+      "run_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/draft-edit-implementation-20261111/pink-retry/run-9tw9u9j4",
+      "report_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/draft-edit-implementation-20261111/pink-retry/run-9tw9u9j4/report",
+      "trace": {
+        "trace_id": "01a1c871-682b-7383-a438-adf0bdb9c745",
+        "url": "https://smith.langchain.com/o/fcb09333-f0ce-45e7-9ea2-c4750cdfbd16/projects/p/2e0945b1-fc78-4930-96bb-3085745b703a/r/01a1c871-682b-7383-a438-adf0bdb9c745?poll=true",
+        "root_finished": true,
+        "runs": 95,
+        "llm_runs": 7,
+        "tool_runs": 7,
+        "image_in_llm_input": true,
+        "llm_outputs_present": true,
+        "error_runs": 0
+      },
+      "model": "z-ai/glm-5.3-flash",
+      "elapsed_seconds": 146.26579666600446,
+      "model_calls": 7,
+      "trace_verified": true,
+      "counts": {
+        "E": 2,
+        "F": 8,
+        "R": 3
+      },
+      "gaps": [],
+      "formal_reader": "passed"
+    }
+  ]
+}

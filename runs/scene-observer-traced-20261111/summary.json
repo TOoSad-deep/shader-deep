@@ -1,0 +1,313 @@
+{
+  "cases": 10,
+  "statuses": {
+    "partial": 4,
+    "completed": 6
+  },
+  "trace_verified": 10,
+  "project": "shader-deep",
+  "tag": "scene-observer-traced-20261111",
+  "skill_bundle_sha256": "e886d1ceb850dec6f14a4e66b15bbfdcb3abf9229cad60bf3b478912af64f095",
+  "rows": [
+    {
+      "case": "pink",
+      "status": "partial",
+      "run_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-observer-traced-20261111/pink/run-m497mfih",
+      "report_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-observer-traced-20261111/pink/run-m497mfih/report",
+      "trace": {
+        "trace_id": "01a1c82a-ed92-7482-9f32-fbddceccf455",
+        "url": "https://smith.langchain.com/o/fcb09333-f0ce-45e7-9ea2-c4750cdfbd16/projects/p/2e0945b1-fc78-4930-96bb-3085745b703a/r/01a1c82a-ed92-7482-9f32-fbddceccf455?poll=true",
+        "root_finished": true,
+        "runs": 30,
+        "llm_runs": 2,
+        "tool_runs": 2,
+        "image_in_llm_input": true,
+        "llm_outputs_present": true,
+        "error_runs": 0
+      },
+      "model": "z-ai/glm-5.3-flash",
+      "elapsed_seconds": 21.827470500022173,
+      "model_calls": 2,
+      "trace_verified": true,
+      "counts": {
+        "E": 2,
+        "F": 7,
+        "R": 0
+      },
+      "gaps": [
+        {
+          "refs": [],
+          "description": "球体下方极浅投影的具体范围与浓度接近白底分辨极限, 仅能确认存在与柔和性状, 无法可靠描述其边界形状"
+        }
+      ],
+      "formal_reader": "passed"
+    },
+    {
+      "case": "windows",
+      "status": "completed",
+      "run_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-observer-traced-20261111/windows/run-uucuyg5t",
+      "report_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-observer-traced-20261111/windows/run-uucuyg5t/report",
+      "trace": {
+        "trace_id": "01a1c82c-ef58-7e80-9795-969218218580",
+        "url": "https://smith.langchain.com/o/fcb09333-f0ce-45e7-9ea2-c4750cdfbd16/projects/p/2e0945b1-fc78-4930-96bb-3085745b703a/r/01a1c82c-ef58-7e80-9795-969218218580?poll=true",
+        "root_finished": true,
+        "runs": 30,
+        "llm_runs": 2,
+        "tool_runs": 2,
+        "image_in_llm_input": true,
+        "llm_outputs_present": true,
+        "error_runs": 0
+      },
+      "model": "z-ai/glm-5.3-flash",
+      "elapsed_seconds": 48.290438333002385,
+      "model_calls": 2,
+      "trace_verified": true,
+      "counts": {
+        "E": 3,
+        "F": 7,
+        "R": 3
+      },
+      "gaps": [],
+      "formal_reader": "passed"
+    },
+    {
+      "case": "frosted",
+      "status": "partial",
+      "run_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-observer-traced-20261111/frosted/run-8lajl1oh",
+      "report_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-observer-traced-20261111/frosted/run-8lajl1oh/report",
+      "trace": {
+        "trace_id": "01a1c82c-ee31-7552-b465-926deb51209f",
+        "url": "https://smith.langchain.com/o/fcb09333-f0ce-45e7-9ea2-c4750cdfbd16/projects/p/2e0945b1-fc78-4930-96bb-3085745b703a/r/01a1c82c-ee31-7552-b465-926deb51209f?poll=true",
+        "root_finished": true,
+        "runs": 17,
+        "llm_runs": 1,
+        "tool_runs": 1,
+        "image_in_llm_input": true,
+        "llm_outputs_present": true,
+        "error_runs": 0
+      },
+      "model": "z-ai/glm-5.3-flash",
+      "elapsed_seconds": 17.873387375002494,
+      "model_calls": 1,
+      "trace_verified": true,
+      "counts": {
+        "E": 3,
+        "F": 5,
+        "R": 0
+      },
+      "gaps": [
+        {
+          "refs": [],
+          "description": "重叠区紫色渐变的确切范围与色阶仅按可见近似描述, 未做精确数值确认"
+        }
+      ],
+      "formal_reader": "passed"
+    },
+    {
+      "case": "balls",
+      "status": "completed",
+      "run_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-observer-traced-20261111/balls/run-4n0e8rhy",
+      "report_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-observer-traced-20261111/balls/run-4n0e8rhy/report",
+      "trace": {
+        "trace_id": "01a1c82c-e9dc-7352-9531-484f72ee4918",
+        "url": "https://smith.langchain.com/o/fcb09333-f0ce-45e7-9ea2-c4750cdfbd16/projects/p/2e0945b1-fc78-4930-96bb-3085745b703a/r/01a1c82c-e9dc-7352-9531-484f72ee4918?poll=true",
+        "root_finished": true,
+        "runs": 47,
+        "llm_runs": 3,
+        "tool_runs": 4,
+        "image_in_llm_input": true,
+        "llm_outputs_present": true,
+        "error_runs": 1
+      },
+      "model": "z-ai/glm-5.3-flash",
+      "elapsed_seconds": 136.6139743339736,
+      "model_calls": 3,
+      "trace_verified": true,
+      "counts": {
+        "E": 3,
+        "F": 6,
+        "R": 2
+      },
+      "gaps": [],
+      "formal_reader": "passed"
+    },
+    {
+      "case": "liquid-retry",
+      "status": "completed",
+      "run_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-observer-traced-20261111/liquid-retry/run-rux_yuj3",
+      "report_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-observer-traced-20261111/liquid-retry/run-rux_yuj3/report",
+      "trace": {
+        "trace_id": "01a1c82d-6be1-7353-9765-4a3aad333679",
+        "url": "https://smith.langchain.com/o/fcb09333-f0ce-45e7-9ea2-c4750cdfbd16/projects/p/2e0945b1-fc78-4930-96bb-3085745b703a/r/01a1c82d-6be1-7353-9765-4a3aad333679?poll=true",
+        "root_finished": true,
+        "runs": 30,
+        "llm_runs": 2,
+        "tool_runs": 2,
+        "image_in_llm_input": true,
+        "llm_outputs_present": true,
+        "error_runs": 1
+      },
+      "model": "z-ai/glm-5.3-flash",
+      "elapsed_seconds": 24.698166042013327,
+      "model_calls": 2,
+      "trace_verified": true,
+      "counts": {
+        "E": 3,
+        "F": 8,
+        "R": 3
+      },
+      "gaps": [],
+      "formal_reader": "passed"
+    },
+    {
+      "case": "cool-s-distance",
+      "status": "partial",
+      "run_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-observer-traced-20261111/cool-s-distance/run-haft5kn4",
+      "report_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-observer-traced-20261111/cool-s-distance/run-haft5kn4/report",
+      "trace": {
+        "trace_id": "01a1c82d-e792-7fa3-a1da-c36c8b4b5f10",
+        "url": "https://smith.langchain.com/o/fcb09333-f0ce-45e7-9ea2-c4750cdfbd16/projects/p/2e0945b1-fc78-4930-96bb-3085745b703a/r/01a1c82d-e792-7fa3-a1da-c36c8b4b5f10?poll=true",
+        "root_finished": true,
+        "runs": 17,
+        "llm_runs": 1,
+        "tool_runs": 1,
+        "image_in_llm_input": true,
+        "llm_outputs_present": true,
+        "error_runs": 0
+      },
+      "model": "z-ai/glm-5.3-flash",
+      "elapsed_seconds": 32.212128374987515,
+      "model_calls": 1,
+      "trace_verified": true,
+      "counts": {
+        "E": 2,
+        "F": 4,
+        "R": 0
+      },
+      "gaps": [
+        {
+          "refs": [],
+          "description": "S字母内部与背景波纹的具体刻线细节因分辨率限制较细, 无法逐条确认; 仅影响细微纹理, 不影响主要外观识别"
+        }
+      ],
+      "formal_reader": "passed"
+    },
+    {
+      "case": "flat-water-effects2",
+      "status": "completed",
+      "run_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-observer-traced-20261111/flat-water-effects2/run-puqxsb8c",
+      "report_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-observer-traced-20261111/flat-water-effects2/run-puqxsb8c/report",
+      "trace": {
+        "trace_id": "01a1c82e-0734-75a2-8130-a048d141cfa1",
+        "url": "https://smith.langchain.com/o/fcb09333-f0ce-45e7-9ea2-c4750cdfbd16/projects/p/2e0945b1-fc78-4930-96bb-3085745b703a/r/01a1c82e-0734-75a2-8130-a048d141cfa1?poll=true",
+        "root_finished": true,
+        "runs": 17,
+        "llm_runs": 1,
+        "tool_runs": 1,
+        "image_in_llm_input": true,
+        "llm_outputs_present": true,
+        "error_runs": 0
+      },
+      "model": "z-ai/glm-5.3-flash",
+      "elapsed_seconds": 23.6981901669933,
+      "model_calls": 1,
+      "trace_verified": true,
+      "counts": {
+        "E": 4,
+        "F": 5,
+        "R": 2
+      },
+      "gaps": [],
+      "formal_reader": "passed"
+    },
+    {
+      "case": "dna-helis",
+      "status": "completed",
+      "run_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-observer-traced-20261111/dna-helis/run-aapiptaa",
+      "report_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-observer-traced-20261111/dna-helis/run-aapiptaa/report",
+      "trace": {
+        "trace_id": "01a1c82e-9c57-7090-8988-f5ccc05a145f",
+        "url": "https://smith.langchain.com/o/fcb09333-f0ce-45e7-9ea2-c4750cdfbd16/projects/p/2e0945b1-fc78-4930-96bb-3085745b703a/r/01a1c82e-9c57-7090-8988-f5ccc05a145f?poll=true",
+        "root_finished": true,
+        "runs": 17,
+        "llm_runs": 1,
+        "tool_runs": 1,
+        "image_in_llm_input": true,
+        "llm_outputs_present": true,
+        "error_runs": 0
+      },
+      "model": "z-ai/glm-5.3-flash",
+      "elapsed_seconds": 25.594394125015242,
+      "model_calls": 1,
+      "trace_verified": true,
+      "counts": {
+        "E": 3,
+        "F": 5,
+        "R": 3
+      },
+      "gaps": [],
+      "formal_reader": "passed"
+    },
+    {
+      "case": "buffer-bloom",
+      "status": "completed",
+      "run_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-observer-traced-20261111/buffer-bloom/run-8l_hb63n",
+      "report_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-observer-traced-20261111/buffer-bloom/run-8l_hb63n/report",
+      "trace": {
+        "trace_id": "01a1c82e-b197-7d40-b43d-531374c923f9",
+        "url": "https://smith.langchain.com/o/fcb09333-f0ce-45e7-9ea2-c4750cdfbd16/projects/p/2e0945b1-fc78-4930-96bb-3085745b703a/r/01a1c82e-b197-7d40-b43d-531374c923f9?poll=true",
+        "root_finished": true,
+        "runs": 30,
+        "llm_runs": 2,
+        "tool_runs": 2,
+        "image_in_llm_input": true,
+        "llm_outputs_present": true,
+        "error_runs": 0
+      },
+      "model": "z-ai/glm-5.3-flash",
+      "elapsed_seconds": 21.106038375000935,
+      "model_calls": 2,
+      "trace_verified": true,
+      "counts": {
+        "E": 4,
+        "F": 8,
+        "R": 2
+      },
+      "gaps": [],
+      "formal_reader": "passed"
+    },
+    {
+      "case": "auroras",
+      "status": "partial",
+      "run_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-observer-traced-20261111/auroras/run-3yb31r7y",
+      "report_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-observer-traced-20261111/auroras/run-3yb31r7y/report",
+      "trace": {
+        "trace_id": "01a1c82f-370c-7021-ab68-7bbe4ea63342",
+        "url": "https://smith.langchain.com/o/fcb09333-f0ce-45e7-9ea2-c4750cdfbd16/projects/p/2e0945b1-fc78-4930-96bb-3085745b703a/r/01a1c82f-370c-7021-ab68-7bbe4ea63342?poll=true",
+        "root_finished": true,
+        "runs": 17,
+        "llm_runs": 1,
+        "tool_runs": 1,
+        "image_in_llm_input": true,
+        "llm_outputs_present": true,
+        "error_runs": 0
+      },
+      "model": "z-ai/glm-5.3-flash",
+      "elapsed_seconds": 32.320964666985674,
+      "model_calls": 1,
+      "trace_verified": true,
+      "counts": {
+        "E": 4,
+        "F": 6,
+        "R": 0
+      },
+      "gaps": [
+        {
+          "refs": [],
+          "description": "水面波纹与倒影的逐项细节受分辨率限制, 仅能描述整体分布与柔化程度"
+        }
+      ],
+      "formal_reader": "passed"
+    }
+  ]
+}

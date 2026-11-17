@@ -1,0 +1,23 @@
+{
+  "sample": "medium",
+  "image": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/apps/shader_deep/test_pic/2d-physics-balls.png",
+  "sha256": "7beeab6b0c683e16ed213393b2a8850b28c1c2e3a89963c671f8902d6d194523",
+  "prompt": "请分析参考图中的一个指定元素: 彩色圆片堆中最左上方的绿色齿轮状圆片, 包含中心孔和外轮廓。以过程式 Shader 复现为目标, 独立分析可见特征、关系、候选实现机制和草图方案, 明确不确定项与缺口。本轮只分析该目标。",
+  "started_utc": "2026-10-25T15:45:43.469643+00:00",
+  "observation_timeout_seconds": 900,
+  "command": [
+    "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/apps/shader_deep/.venv/bin/python3",
+    "-m",
+    "shader_deep.cli.analysis",
+    "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/apps/shader_deep/test_pic/2d-physics-balls.png",
+    "请分析参考图中的一个指定元素: 彩色圆片堆中最左上方的绿色齿轮状圆片, 包含中心孔和外轮廓。以过程式 Shader 复现为目标, 独立分析可见特征、关系、候选实现机制和草图方案, 明确不确定项与缺口。本轮只分析该目标。",
+    "--output-dir",
+    "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/analysis-diagnostic-20261025/medium",
+    "--log-level",
+    "WARNING"
+  ],
+  "exit_code": 1,
+  "observation_timed_out": false,
+  "elapsed_seconds": 202.93,
+  "ended_utc": "2026-10-25T15:49:06.399829+00:00"
+}

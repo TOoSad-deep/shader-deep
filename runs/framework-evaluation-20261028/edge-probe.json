@@ -1,0 +1,24 @@
+[
+  {
+    "condition": "deep_agent",
+    "receipt": [
+      {
+        "characters": 1607,
+        "contains_tail": false,
+        "is_preview": true
+      }
+    ],
+    "status": "succeeded"
+  },
+  {
+    "condition": "create_agent",
+    "receipt": [
+      {
+        "characters": 90024,
+        "contains_tail": true,
+        "is_preview": false
+      }
+    ],
+    "status": "succeeded"
+  }
+]

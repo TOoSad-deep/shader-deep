@@ -1,0 +1,14 @@
+{
+  "schema_version": "scene_observations_v1",
+  "reference": {
+    "path": "reference.png",
+    "sha256": "dd712a5d2528d4db56bcbb6b10c66f946ca7c33579a0eb2ec23af90e4fbc7493"
+  },
+  "status": "completed",
+  "context_notes": [
+    "1280×720 横幅, 欧普风格双色纹样构图, 画面仅有环纹底层与居中字形主体两层, 无文字及其他物体",
+    "主体位于画面正中 (中轴约 x≈640, 腰部约 y≈360), 背景环纹上下镜像且左右对称, 整体略带柔焦感"
+  ],
+  "open_questions": [],
+  "gaps": []
+}

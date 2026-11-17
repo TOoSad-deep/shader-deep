@@ -1,0 +1,11 @@
+{
+  "destination": "openrouter.ai",
+  "model": "z-ai/glm-5.3-flash",
+  "samples": [
+    "shiny-rectancle.png",
+    "2d-physics-balls.png",
+    "supah-frosted-glass.png"
+  ],
+  "langsmith_tracing": false,
+  "user_authorized": "允许发送到 OpenRouter，关闭 LangSmith"
+}

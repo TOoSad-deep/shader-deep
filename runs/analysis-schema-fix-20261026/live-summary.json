@@ -1,0 +1,885 @@
+[
+  {
+    "sample": "simple",
+    "metadata": {
+      "sample": "simple",
+      "image": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/apps/shader_deep/test_pic/shiny-rectancle.png",
+      "sha256": "4ee0da315723a6692a21fd12252978da4d6a6246dec7e9e508591e053bd88927",
+      "prompt": "请分析参考图中的一个指定元素: 图中央的完整霓虹圆角矩形边框, 包含紧邻边框的光晕。以过程式 Shader 复现为目标, 独立分析可见特征、关系、候选实现机制和草图方案, 明确不确定项与缺口。本轮只分析该目标。",
+      "started_utc": "2026-10-25T16:03:39.113224+00:00",
+      "observation_timeout_seconds": 900,
+      "command": [
+        "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/apps/shader_deep/.venv/bin/python3",
+        "-m",
+        "shader_deep.cli.analysis",
+        "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/apps/shader_deep/test_pic/shiny-rectancle.png",
+        "请分析参考图中的一个指定元素: 图中央的完整霓虹圆角矩形边框, 包含紧邻边框的光晕。以过程式 Shader 复现为目标, 独立分析可见特征、关系、候选实现机制和草图方案, 明确不确定项与缺口。本轮只分析该目标。",
+        "--output-dir",
+        "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/analysis-schema-fix-20261026/simple",
+        "--log-level",
+        "WARNING"
+      ],
+      "exit_code": 1,
+      "observation_timed_out": false,
+      "elapsed_seconds": 438.96,
+      "ended_utc": "2026-10-25T16:10:58.071266+00:00"
+    },
+    "runs": [
+      {
+        "directory": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/analysis-schema-fix-20261026/simple/run-bgpme1qr",
+        "sealed": true,
+        "tasks": [
+          {
+            "task": "elements",
+            "status": "succeeded",
+            "model_calls": 0,
+            "attempts": 1,
+            "final_error": null,
+            "first_submission_success": null,
+            "submission_count": 0,
+            "rejection_categories": {},
+            "rejections": [],
+            "request_failures": [],
+            "network_seconds": 0
+          },
+          {
+            "task": "exploration-1",
+            "status": "succeeded",
+            "model_calls": 2,
+            "attempts": 1,
+            "final_error": null,
+            "first_submission_success": false,
+            "submission_count": 2,
+            "rejection_categories": {
+              "business_rejection": 1
+            },
+            "rejections": [
+              {
+                "run_id": "run-bgpme1qr",
+                "task_id": "exploration-1",
+                "attempt_id": "758ad838760e47a98a21b55812b53224",
+                "event": "tool_rejected",
+                "model_call": 1,
+                "tool": "submit_exploration",
+                "category": "business_rejection",
+                "message": "提交被拒绝: sketches.SK2.default: 选择超出 F2 的候选机制; text=\"('M1', 'M3', 'M5')\""
+              }
+            ],
+            "request_failures": [],
+            "network_seconds": 269.501,
+            "accepted_on_call": 2,
+            "report_counts": {
+              "features": 7,
+              "relations": 5,
+              "mechanisms": 7,
+              "sketches": 2,
+              "open_questions": 0,
+              "gaps": 6
+            }
+          },
+          {
+            "task": "exploration-2",
+            "status": "succeeded",
+            "model_calls": 1,
+            "attempts": 1,
+            "final_error": null,
+            "first_submission_success": true,
+            "submission_count": 1,
+            "rejection_categories": {},
+            "rejections": [],
+            "request_failures": [],
+            "network_seconds": 84.92,
+            "accepted_on_call": 1,
+            "report_counts": {
+              "features": 6,
+              "relations": 4,
+              "mechanisms": 6,
+              "sketches": 1,
+              "open_questions": 0,
+              "gaps": 5
+            }
+          },
+          {
+            "task": "exploration-3",
+            "status": "failed",
+            "model_calls": 3,
+            "attempts": 2,
+            "final_error": "ValueError: 逻辑任务的两次修复额度已耗尽",
+            "first_submission_success": false,
+            "submission_count": 3,
+            "rejection_categories": {
+              "business_rejection": 3
+            },
+            "rejections": [
+              {
+                "run_id": "run-bgpme1qr",
+                "task_id": "exploration-3",
+                "attempt_id": "82a7695818234a8192db28225be34cf6",
+                "event": "tool_rejected",
+                "model_call": 1,
+                "tool": "submit_exploration",
+                "category": "business_rejection",
+                "message": "提交被拒绝: mechanisms.M2.method_or_conditions[0]: 疑似未标记对象引用 'M3'; 使用 [[ID]]; text=\"以描边 SDF 的带符号距离 d 为自变量: float glowOuter = exp(-max(d,0.0)/sigmaOut); float glowInner = exp(-max(-d,0.0)/sigmaIn); float glow = mix(glowInner, glowOuter, step(0.0,d)) * intensity; 亦可合并为 exp(-abs(d)/sigma)。sigmaIn < sigmaOut 复现内窄外宽的不对称; intensity 沿渐变轴加权(见 M3)复现右/上侧更强。优点: 单次距离计算即可得到紧邻光晕, 参数少、物理感自然。缺点: 单一高斯无法同时拟合'紧贴线芯极亮+中部柔和大范围'的复合轮廓, 必要时需叠加两个不同 σ 的衰减(见 M4)。\""
+              },
+              {
+                "run_id": "run-bgpme1qr",
+                "task_id": "exploration-3",
+                "attempt_id": "82a7695818234a8192db28225be34cf6",
+                "event": "tool_rejected",
+                "model_call": 2,
+                "tool": "submit_exploration",
+                "category": "business_rejection",
+                "message": "提交被拒绝: sketches.S2.composition: 疑似未标记对象引用 'S1'; 使用 [[ID]]; text='三个 pass 的组织: pass1 用 [[M1]] 的同一 SDF 以大 σ 绘制宽外晕(颜色取 [[M3]] 渐变色的低强度版); pass2 以小 σ 绘制贴芯亮环; pass3 以窄描边绘制线芯并叠加近白高光(用 [[M4]] 的多层带宽构造实现 [[R2]]); 各 pass 加法混合, 黑底上累积成最终霓虹效果。该方案把 [[F1]]/[[F3]] 的表达拆到不同 pass, 对光晕剖面的拟合最直接, 但参数与绘制成本高于 S1。'"
+              },
+              {
+                "run_id": "run-bgpme1qr",
+                "task_id": "exploration-3",
+                "attempt_id": "82a7695818234a8192db28225be34cf6",
+                "event": "tool_rejected",
+                "model_call": 3,
+                "tool": "submit_exploration",
+                "category": "business_rejection",
+                "message": "提交被拒绝: sketches.S1.alternatives[0].choices: 选择超出 R1 的候选机制; text=\"('M4',)\""
+              }
+            ],
+            "request_failures": [],
+            "network_seconds": 177.351
+          },
+          {
+            "task": "integration",
+            "status": "succeeded",
+            "model_calls": 2,
+            "attempts": 1,
+            "final_error": null,
+            "first_submission_success": null,
+            "submission_count": 0,
+            "rejection_categories": {},
+            "rejections": [],
+            "request_failures": [],
+            "network_seconds": 79.724
+          },
+          {
+            "task": "main",
+            "status": "succeeded",
+            "model_calls": 7,
+            "attempts": 1,
+            "final_error": null,
+            "first_submission_success": null,
+            "submission_count": 0,
+            "rejection_categories": {},
+            "rejections": [],
+            "request_failures": [],
+            "network_seconds": 88.156
+          },
+          {
+            "task": "planning",
+            "status": "succeeded",
+            "model_calls": 0,
+            "attempts": 1,
+            "final_error": null,
+            "first_submission_success": null,
+            "submission_count": 0,
+            "rejection_categories": {},
+            "rejections": [],
+            "request_failures": [],
+            "network_seconds": 0
+          }
+        ],
+        "usage": {
+          "input_tokens": 92547,
+          "output_tokens": 51496,
+          "total_tokens": 144043
+        },
+        "run_metadata": {
+          "stop_reason": "partial",
+          "selected_version": "V1",
+          "gaps": [
+            {
+              "refs": [
+                "F5"
+              ],
+              "description": "角部曲率类型未定: 纯圆弧 (圆角盒) 或连续曲率 (squircle) 在本分辨率下难以区分, 决定采用 [[M1]] 还是 [[M7]] 作为距离场来源。"
+            },
+            {
+              "refs": [
+                "F6",
+                "R2"
+              ],
+              "description": "色相渐变的数学形式未定: 对角线性场 ([[M4]]) 与弧长周向场 ([[M6]]) 均可近似观测结果; 需更高分辨率取样区分, 特别是左边中点与底边中点的色相读数。"
+            },
+            {
+              "refs": [
+                "F3",
+                "F4",
+                "R3"
+              ],
+              "description": "辉光衰减曲线的精确形状 (单指数/高斯/双指数) 与内外 σ 数值未标定; 当前'外晕范围≈内晕两倍'为目测估测。"
+            },
+            {
+              "refs": [
+                "F1",
+                "F2"
+              ],
+              "description": "核心线宽与近核彩带宽度的绝对像素值受图片缩放影响, 仅得相对比例; 需原始分辨率素材标定 [[M3]] 的 w 与 [[M2]] 的 σ_band。"
+            },
+            {
+              "refs": [
+                "F3"
+              ],
+              "description": "角部光晕是否系统性强于直边 (曲率能量聚集或人工补光) 未确认; 若确认, 需在 [[M2]] 中加入随局部曲率变化的增益项。"
+            },
+            {
+              "refs": [
+                "S2"
+              ],
+              "description": "草图 [[S2]] 采用采样式泛光, 其[[F2]]由小半径模糊近似而非 [[M2]] 的窄指数瓣, 观感等价性需对比验证; 若验证失败回退 [[S1]]。"
+            },
+            {
+              "refs": [
+                "F10",
+                "R8"
+              ],
+              "description": "渐变轴的精确走向未确定: 是沿画面对角方向的线性插值, 还是沿轮廓周向插值 (相邻边色相过渡方式不同)。这决定 [[M11]] 的取色实现, 需要更高分辨率或逐边采样色板核实。"
+            },
+            {
+              "refs": [
+                "F3",
+                "R9"
+              ],
+              "description": "光晕是否存在真实不对称 (整体偏向某一侧) 或角部加宽: 目测各边法向扩散近似一致, 但角部光晕似乎略宽, 无法在本分辨率下区分'真实加宽'与'圆角法向汇聚的视觉效应'; 若存在不对称, [[M2]] 需引入方向偏置项。"
+            },
+            {
+              "refs": [
+                "F1",
+                "F3",
+                "F4"
+              ],
+              "description": "精确数值参数缺失: 亮芯半宽、内外光晕特征衰减长度、圆角半径与边长比例, 均只有目测范围 (亮芯 ~2-3px、外晕 ~15-30px、内晕 ~8-12px、圆角半径 ~15-22% 短边), 需要像素级测量标定 [[M3]]/[[M2]] 的系数。"
+            },
+            {
+              "refs": [
+                "F5",
+                "F10"
+              ],
+              "description": "两端色的精确色值 (青绿端与亮蓝端的 RGB/HSV) 及渐变中是否含中间色相 (如顶部是否偏白青) 未知, 影响 [[M11]] 的端点颜色选取。"
+            },
+            {
+              "refs": [
+                "F3"
+              ],
+              "description": "光晕衰减曲线的函数族未确定: 指数 (exp)、高斯 (exp(-d²)) 还是多分量叠加, 仅从目测的'平滑趋零'无法区分, 需要沿法线采样亮度曲线拟合后选定 [[M2]] 的具体形式。"
+            },
+            {
+              "refs": [
+                "neon_frame_main"
+              ],
+              "description": "exploration-3 未完成: ValueError: 逻辑任务的两次修复额度已耗尽"
+            }
+          ],
+          "open_questions": []
+        }
+      }
+    ]
+  },
+  {
+    "sample": "medium",
+    "metadata": {
+      "sample": "medium",
+      "image": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/apps/shader_deep/test_pic/2d-physics-balls.png",
+      "sha256": "7beeab6b0c683e16ed213393b2a8850b28c1c2e3a89963c671f8902d6d194523",
+      "prompt": "请分析参考图中的一个指定元素: 彩色圆片堆中最左上方的绿色齿轮状圆片, 包含中心孔和外轮廓。以过程式 Shader 复现为目标, 独立分析可见特征、关系、候选实现机制和草图方案, 明确不确定项与缺口。本轮只分析该目标。",
+      "started_utc": "2026-10-25T16:10:58.073135+00:00",
+      "observation_timeout_seconds": 900,
+      "command": [
+        "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/apps/shader_deep/.venv/bin/python3",
+        "-m",
+        "shader_deep.cli.analysis",
+        "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/apps/shader_deep/test_pic/2d-physics-balls.png",
+        "请分析参考图中的一个指定元素: 彩色圆片堆中最左上方的绿色齿轮状圆片, 包含中心孔和外轮廓。以过程式 Shader 复现为目标, 独立分析可见特征、关系、候选实现机制和草图方案, 明确不确定项与缺口。本轮只分析该目标。",
+        "--output-dir",
+        "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/analysis-schema-fix-20261026/medium",
+        "--log-level",
+        "WARNING"
+      ],
+      "exit_code": 1,
+      "observation_timed_out": false,
+      "elapsed_seconds": 238.23,
+      "ended_utc": "2026-10-25T16:14:56.299652+00:00"
+    },
+    "runs": [
+      {
+        "directory": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/analysis-schema-fix-20261026/medium/run-wrnzquuw",
+        "sealed": true,
+        "tasks": [
+          {
+            "task": "elements",
+            "status": "succeeded",
+            "model_calls": 0,
+            "attempts": 1,
+            "final_error": null,
+            "first_submission_success": null,
+            "submission_count": 0,
+            "rejection_categories": {},
+            "rejections": [],
+            "request_failures": [],
+            "network_seconds": 0
+          },
+          {
+            "task": "exploration-1",
+            "status": "failed",
+            "model_calls": 3,
+            "attempts": 2,
+            "final_error": "ValueError: 逻辑任务的两次修复额度已耗尽",
+            "first_submission_success": false,
+            "submission_count": 3,
+            "rejection_categories": {
+              "business_rejection": 3
+            },
+            "rejections": [
+              {
+                "run_id": "run-wrnzquuw",
+                "task_id": "exploration-1",
+                "attempt_id": "cf14fd1a51f2401c82f91a1397d3d421",
+                "event": "tool_rejected",
+                "model_call": 1,
+                "tool": "submit_exploration",
+                "category": "business_rejection",
+                "message": "提交被拒绝: mechanisms.M1.method_or_conditions[0]: 疑似未标记对象引用 'R0'; 使用 [[ID]]; text='以圆心为原点取极角 θ, 半径函数 r(θ) = R0 + A·s(nθ), 其中 s 为光滑周期函数(如 cos 的 smoothstep 或 pow(cos) 整形), n 为齿数; 对像素到中心距离 d 与 r(θ) 比较得到符号距离; 参数: R0(齿根半径), A(齿高), n(齿数), 相位 φ0。适合浅齿高、圆头、光滑过渡的花齿轮轮廓'"
+              },
+              {
+                "run_id": "run-wrnzquuw",
+                "task_id": "exploration-1",
+                "attempt_id": "cf14fd1a51f2401c82f91a1397d3d421",
+                "event": "tool_rejected",
+                "model_call": 2,
+                "tool": "submit_exploration",
+                "category": "business_rejection",
+                "message": "提交被拒绝: mechanisms.M2.method_or_conditions[0]: 疑似未标记对象引用 'M1'; 使用 [[ID]]; text='先放置基础圆(即齿根圆)的 SDF, 再沿一条分布圆以等角间距摆放 n 个小圆的 SDF, 对全部 SDF 做平滑最小值(smin, k 控制齿根过渡圆滑度)得到齿轮外轮廓 SDF; 齿顶圆弧半径即小圆半径, 圆头属性天然成立; 齿顶半径约等于分布圆半径与小圆半径之和, 参数可与 M1 互相换算'"
+              },
+              {
+                "run_id": "run-wrnzquuw",
+                "task_id": "exploration-1",
+                "attempt_id": "cf14fd1a51f2401c82f91a1397d3d421",
+                "event": "tool_rejected",
+                "model_call": 3,
+                "tool": "submit_exploration",
+                "category": "business_rejection",
+                "message": "提交被拒绝: sketches.S1.default: 选择超出 F5 的候选机制; text=\"('M4', 'M2')\""
+              }
+            ],
+            "request_failures": [],
+            "network_seconds": 163.108
+          },
+          {
+            "task": "exploration-2",
+            "status": "succeeded",
+            "model_calls": 2,
+            "attempts": 1,
+            "final_error": null,
+            "first_submission_success": false,
+            "submission_count": 2,
+            "rejection_categories": {
+              "business_rejection": 1
+            },
+            "rejections": [
+              {
+                "run_id": "run-wrnzquuw",
+                "task_id": "exploration-2",
+                "attempt_id": "5cf85837320d40afb93e816825e15dca",
+                "event": "tool_rejected",
+                "model_call": 1,
+                "tool": "submit_exploration",
+                "category": "business_rejection",
+                "message": "提交被拒绝: mechanisms.M1.method_or_conditions[0]: 疑似未标记对象引用 'R0'; 使用 [[ID]]; text='以极坐标距离场构造外形: r(θ)=R0+A·cos(kθ) 平滑调制, 或外圆与 k 个凸圆齿的并集; 再对结果取 SDF 供填充与镂空使用。k 为齿数参数, A 为齿深。'"
+              }
+            ],
+            "request_failures": [],
+            "network_seconds": 76.311,
+            "accepted_on_call": 2,
+            "report_counts": {
+              "features": 6,
+              "relations": 6,
+              "mechanisms": 8,
+              "sketches": 1,
+              "open_questions": 0,
+              "gaps": 4
+            }
+          },
+          {
+            "task": "exploration-3",
+            "status": "failed",
+            "model_calls": 3,
+            "attempts": 2,
+            "final_error": "ValueError: 逻辑任务的两次修复额度已耗尽",
+            "first_submission_success": false,
+            "submission_count": 3,
+            "rejection_categories": {
+              "business_rejection": 3
+            },
+            "rejections": [
+              {
+                "run_id": "run-wrnzquuw",
+                "task_id": "exploration-3",
+                "attempt_id": "06ec6587ef7b479ab80fe1282a9b2213",
+                "event": "tool_rejected",
+                "model_call": 1,
+                "tool": "submit_exploration",
+                "category": "business_rejection",
+                "message": "提交被拒绝: mechanisms.M1.method_or_conditions[0]: 疑似未标记对象引用 'R0'; 使用 [[ID]]; text=\"以圆片中心建立极坐标; 外轮廓半径 r(θ)=R0 + A·cos(Nθ + φ); 覆盖率 = smoothstep(r(θ), r(θ)-w, |p|); 再乘以内孔镂空因子 smoothstep(holeR+w, holeR-w, |p|) 取反, 得到带孔花齿轮的 alpha; 参数为 R0(基圆半径)、A(齿深)、N(齿数)、φ(相位)、holeR(孔径)、w(抗锯齿宽度). 优点: 单表达式、参数少; 缺点: 齿顶由余弦自然圆钝但齿谷与齿顶形状不对称, 难以精确控制'齿顶圆钝度'与'齿谷宽度'.\""
+              },
+              {
+                "run_id": "run-wrnzquuw",
+                "task_id": "exploration-3",
+                "attempt_id": "06ec6587ef7b479ab80fe1282a9b2213",
+                "event": "tool_rejected",
+                "model_call": 2,
+                "tool": "submit_exploration",
+                "category": "business_rejection",
+                "message": "提交被拒绝: mechanisms.M3.method_or_conditions[0]: 疑似未标记对象引用 'M1'; 使用 [[ID]]; text='用圆角正 tooth_n 边形 SDF (基于到正多边形的符号距离加角部圆角) 生成略带直线段感的多面花齿轮廓, 旋转 phase 控制相位; 内孔同 M1/M2 的减法方式. 若参考图中齿间轮廓近似直边(多面体感), 该方案比余弦/齿圆更贴合; 若齿间为内凹弧线则不适用.'"
+              },
+              {
+                "run_id": "run-wrnzquuw",
+                "task_id": "exploration-3",
+                "attempt_id": "06ec6587ef7b479ab80fe1282a9b2213",
+                "event": "tool_rejected",
+                "model_call": 3,
+                "tool": "submit_exploration",
+                "category": "business_rejection",
+                "message": "提交被拒绝: sketches.S1.default: 选择超出 F1 的候选机制; text=\"('M1', 'M4')\""
+              }
+            ],
+            "request_failures": [],
+            "network_seconds": 160.312
+          },
+          {
+            "task": "integration",
+            "status": "succeeded",
+            "model_calls": 3,
+            "attempts": 1,
+            "final_error": null,
+            "first_submission_success": null,
+            "submission_count": 0,
+            "rejection_categories": {},
+            "rejections": [],
+            "request_failures": [],
+            "network_seconds": 17.122
+          },
+          {
+            "task": "main",
+            "status": "succeeded",
+            "model_calls": 7,
+            "attempts": 1,
+            "final_error": null,
+            "first_submission_success": null,
+            "submission_count": 0,
+            "rejection_categories": {},
+            "rejections": [],
+            "request_failures": [],
+            "network_seconds": 56.073
+          },
+          {
+            "task": "planning",
+            "status": "succeeded",
+            "model_calls": 0,
+            "attempts": 1,
+            "final_error": null,
+            "first_submission_success": null,
+            "submission_count": 0,
+            "rejection_categories": {},
+            "rejections": [],
+            "request_failures": [],
+            "network_seconds": 0
+          }
+        ],
+        "usage": {
+          "input_tokens": 78538,
+          "output_tokens": 36057,
+          "total_tokens": 114595
+        },
+        "run_metadata": {
+          "stop_reason": "partial",
+          "selected_version": "V1",
+          "gaps": [
+            {
+              "refs": [
+                "F5",
+                "M1"
+              ],
+              "description": "齿数与齿深/齿顶圆角比例在当前分辨率下无法精确读出, 需放大原图逐齿计数确认。"
+            },
+            {
+              "refs": [
+                "R6",
+                "M6"
+              ],
+              "description": "目标与右侧/下方黄色圆片之间是细白间隙还是轻微叠压、以及遮挡先后次序, 在缩略分辨率下不可完全判定。"
+            },
+            {
+              "refs": [
+                "F1"
+              ],
+              "description": "绿色的精确色值只能目测近似(疑似扁平品牌绿一族), 无取色工具精度; 相邻黄/红常量同理。"
+            },
+            {
+              "refs": [
+                "F2"
+              ],
+              "description": "不能排除极轻微渐变或噪点在当前缩略分辨率下不可见, 需放大确认以最终排除 [[M7]]。"
+            },
+            {
+              "refs": [
+                "green_gear_top_left"
+              ],
+              "description": "exploration-1 未完成: ValueError: 逻辑任务的两次修复额度已耗尽"
+            },
+            {
+              "refs": [
+                "green_gear_top_left"
+              ],
+              "description": "exploration-3 未完成: ValueError: 逻辑任务的两次修复额度已耗尽"
+            }
+          ],
+          "open_questions": []
+        }
+      }
+    ]
+  },
+  {
+    "sample": "complex",
+    "metadata": {
+      "sample": "complex",
+      "image": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/apps/shader_deep/test_pic/supah-frosted-glass.png",
+      "sha256": "4b98572449bf26744a76d3f9271bc10397e3b1c05512b2fcab5624442f7a6252",
+      "prompt": "请分析参考图中的一个指定元素: 画面右上方的前景磨砂玻璃圆片, 包含它与后方蓝色圆片重叠的区域。以过程式 Shader 复现为目标, 独立分析可见特征、关系、候选实现机制和草图方案, 明确不确定项与缺口。本轮只分析该目标。",
+      "started_utc": "2026-10-25T16:14:56.301826+00:00",
+      "observation_timeout_seconds": 900,
+      "command": [
+        "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/apps/shader_deep/.venv/bin/python3",
+        "-m",
+        "shader_deep.cli.analysis",
+        "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/apps/shader_deep/test_pic/supah-frosted-glass.png",
+        "请分析参考图中的一个指定元素: 画面右上方的前景磨砂玻璃圆片, 包含它与后方蓝色圆片重叠的区域。以过程式 Shader 复现为目标, 独立分析可见特征、关系、候选实现机制和草图方案, 明确不确定项与缺口。本轮只分析该目标。",
+        "--output-dir",
+        "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/analysis-schema-fix-20261026/complex",
+        "--log-level",
+        "WARNING"
+      ],
+      "exit_code": 1,
+      "observation_timed_out": false,
+      "elapsed_seconds": 260.48,
+      "ended_utc": "2026-10-25T16:19:16.780613+00:00"
+    },
+    "runs": [
+      {
+        "directory": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/analysis-schema-fix-20261026/complex/run-hk813yl0",
+        "sealed": true,
+        "tasks": [
+          {
+            "task": "elements",
+            "status": "succeeded",
+            "model_calls": 0,
+            "attempts": 1,
+            "final_error": null,
+            "first_submission_success": null,
+            "submission_count": 0,
+            "rejection_categories": {},
+            "rejections": [],
+            "request_failures": [],
+            "network_seconds": 0
+          },
+          {
+            "task": "exploration-1",
+            "status": "failed",
+            "model_calls": 3,
+            "attempts": 2,
+            "final_error": "ValueError: 逻辑任务的两次修复额度已耗尽",
+            "first_submission_success": false,
+            "submission_count": 3,
+            "rejection_categories": {
+              "business_rejection": 3
+            },
+            "rejections": [
+              {
+                "run_id": "run-hk813yl0",
+                "task_id": "exploration-1",
+                "attempt_id": "a5503249380e4fddbad2464c918effc8",
+                "event": "tool_rejected",
+                "model_call": 1,
+                "tool": "submit_exploration",
+                "category": "business_rejection",
+                "message": "提交被拒绝: sketches.S1.alternatives[0].choices: 共同采用的机制不能为空; text='F4'"
+              },
+              {
+                "run_id": "run-hk813yl0",
+                "task_id": "exploration-1",
+                "attempt_id": "a5503249380e4fddbad2464c918effc8",
+                "event": "tool_rejected",
+                "model_call": 2,
+                "tool": "submit_exploration",
+                "category": "business_rejection",
+                "message": "提交被拒绝: sketches.S1.alternatives[1].composition: 组织说明引用了未采用机制; 请提供有效 composition; text='移除 [[M5]] 提亮项; 其余与默认一致, [[F2]] 仅由 [[M2]] 表达。'"
+              },
+              {
+                "run_id": "run-hk813yl0",
+                "task_id": "exploration-1",
+                "attempt_id": "a5503249380e4fddbad2464c918effc8",
+                "event": "tool_rejected",
+                "model_call": 3,
+                "tool": "submit_exploration",
+                "category": "business_rejection",
+                "message": "提交被拒绝: sketches.S1.alternatives[2].choices: 选择超出 F3 的候选机制; text=\"('M4', 'M1')\""
+              }
+            ],
+            "request_failures": [],
+            "network_seconds": 167.043
+          },
+          {
+            "task": "exploration-2",
+            "status": "succeeded",
+            "model_calls": 3,
+            "attempts": 1,
+            "final_error": null,
+            "first_submission_success": false,
+            "submission_count": 3,
+            "rejection_categories": {
+              "business_rejection": 2
+            },
+            "rejections": [
+              {
+                "run_id": "run-hk813yl0",
+                "task_id": "exploration-2",
+                "attempt_id": "fcc5c304734a4d1d85f0fef51f811be7",
+                "event": "tool_rejected",
+                "model_call": 1,
+                "tool": "submit_exploration",
+                "category": "business_rejection",
+                "message": "提交被拒绝: mechanisms.M7.method_or_conditions[0]: 可复用机制不能绑定本图消费者; text='在无法读取背景纹理时, 在重叠带内放置沿蓝边走向的椭圆径向渐变(品红→紫→靛蓝), 宽度与 [[F3]] 模糊带匹配, 以加法或普通混合注入; 不采样真实背景.'"
+              },
+              {
+                "run_id": "run-hk813yl0",
+                "task_id": "exploration-2",
+                "attempt_id": "fcc5c304734a4d1d85f0fef51f811be7",
+                "event": "tool_rejected",
+                "model_call": 2,
+                "tool": "submit_exploration",
+                "category": "business_rejection",
+                "message": "提交被拒绝: sketches.S1.alternatives[0].composition: 组织说明引用了未采用机制; 请提供有效 composition; text='渲染顺序: 灰背景→蓝色圆片→磨砂圆片. 圆片着色器分四步: (1) 以 [[M1]] 构建极角羽化遮罩(上锐下软), 所有内部项被该遮罩裁剪; (2) 遮罩内以 [[M2]] 对场景做高斯采样得模糊场, 产生 [[F3]] 的边缘弥散并保证不外泄; (3) 以 [[M3]] 覆盖近白低alpha形成 [[F2]] 底色; (4) 以 [[M4]] 将模糊场混合量映射为品红→紫→靛蓝色带注入重叠区, 得到 [[F4]]. [[F7]] 由 [[M2]]+[[M3]] 共同产生, [[F6]] 的底部双重柔化由 [[M1]]+[[M2]] 叠加产生.'"
+              }
+            ],
+            "request_failures": [],
+            "network_seconds": 173.746,
+            "accepted_on_call": 3,
+            "report_counts": {
+              "features": 7,
+              "relations": 3,
+              "mechanisms": 7,
+              "sketches": 1,
+              "open_questions": 0,
+              "gaps": 9
+            }
+          },
+          {
+            "task": "exploration-3",
+            "status": "succeeded",
+            "model_calls": 2,
+            "attempts": 1,
+            "final_error": null,
+            "first_submission_success": false,
+            "submission_count": 2,
+            "rejection_categories": {
+              "business_rejection": 1
+            },
+            "rejections": [
+              {
+                "run_id": "run-hk813yl0",
+                "task_id": "exploration-3",
+                "attempt_id": "dede62945c724010b4dc921e80ee886d",
+                "event": "tool_rejected",
+                "model_call": 1,
+                "tool": "submit_exploration",
+                "category": "business_rejection",
+                "message": "提交被拒绝: sketches.S2.default: 草图未覆盖本来源观察目标; 必须记录对应 gaps; text=\"['F6']\""
+              }
+            ],
+            "request_failures": [],
+            "network_seconds": 158.327,
+            "accepted_on_call": 2,
+            "report_counts": {
+              "features": 6,
+              "relations": 4,
+              "mechanisms": 6,
+              "sketches": 3,
+              "open_questions": 0,
+              "gaps": 5
+            }
+          },
+          {
+            "task": "integration",
+            "status": "succeeded",
+            "model_calls": 3,
+            "attempts": 1,
+            "final_error": null,
+            "first_submission_success": null,
+            "submission_count": 0,
+            "rejection_categories": {
+              "business_rejection": 1
+            },
+            "rejections": [
+              {
+                "run_id": "run-hk813yl0",
+                "task_id": "integration",
+                "attempt_id": "f7207934a3a942f58574e1859b8f33bc",
+                "event": "tool_rejected",
+                "model_call": 1,
+                "tool": "read_library_objects",
+                "category": "business_rejection",
+                "message": "提交被拒绝: 提供一到十二个固定 V0 中存在的对象 ID"
+              }
+            ],
+            "request_failures": [],
+            "network_seconds": 29.489
+          },
+          {
+            "task": "main",
+            "status": "succeeded",
+            "model_calls": 8,
+            "attempts": 1,
+            "final_error": null,
+            "first_submission_success": null,
+            "submission_count": 0,
+            "rejection_categories": {},
+            "rejections": [],
+            "request_failures": [],
+            "network_seconds": 55.322
+          },
+          {
+            "task": "planning",
+            "status": "succeeded",
+            "model_calls": 0,
+            "attempts": 1,
+            "final_error": null,
+            "first_submission_success": null,
+            "submission_count": 0,
+            "rejection_categories": {},
+            "rejections": [],
+            "request_failures": [],
+            "network_seconds": 0
+          }
+        ],
+        "usage": {
+          "input_tokens": 114778,
+          "output_tokens": 47240,
+          "total_tokens": 162018
+        },
+        "run_metadata": {
+          "stop_reason": "partial",
+          "selected_version": "V1",
+          "gaps": [
+            {
+              "refs": [
+                "F5",
+                "F4",
+                "R1"
+              ],
+              "description": "品红色相的确切来源未定(色带映射 vs 色相旋转 vs 带色光晕), 需放大原图取色或获取设计源文件确认."
+            },
+            {
+              "refs": [
+                "F1"
+              ],
+              "description": "核心圆直径实测约40%画高, 与给定区域描述(55-60%)不符, 需确认统计口径(是否含羽化光晕)或重新量测圆心与半径."
+            },
+            {
+              "refs": [
+                "F1",
+                "F6"
+              ],
+              "description": "羽化宽度随极角的分布曲线未知, 目前仅能确认'上锐下软、右下居中'的大致趋势."
+            },
+            {
+              "refs": [
+                "F3"
+              ],
+              "description": "模糊核类型(高斯/盒式/mip链)与半径像素值未知, 仅能给出相对直径的比例估计."
+            },
+            {
+              "refs": [
+                "F2",
+                "F7"
+              ],
+              "description": "提亮成分(纯alpha vs screen/overlay)及其幅度未定量, 两者在当前分辨率下难以区分."
+            },
+            {
+              "refs": [
+                "F2"
+              ],
+              "description": "磨砂颗粒/噪声纹理是否存在未确认: 当前分辨率下未见, 但可能被图像压缩抹平."
+            },
+            {
+              "refs": [
+                "F1",
+                "F2",
+                "F3"
+              ],
+              "description": "圆片本体颜色是均匀单色还是含轻微内部明暗渐变未确认, 上部疑似略暖但证据不足."
+            },
+            {
+              "refs": [],
+              "description": "本轮未见兄弟报告, 蓝色圆片一侧的渐变参数与遮罩精度无法交叉验证, 重叠区颜色场标定依赖其准确复现."
+            },
+            {
+              "refs": [
+                "F5",
+                "F4"
+              ],
+              "description": "复现意图基准未定: 应以'装饰性渐变'还是'物理磨砂散射'为目标, 影响机制选型与参数化方式."
+            },
+            {
+              "refs": [
+                "F8",
+                "F12",
+                "R6"
+              ],
+              "description": "两圆的精确圆心、半径与圆心距比例未能从参考图标定; 目标描述给出磨砂圆心约横向 65-70%、纵向 40%, 但蓝圆圆心与两半径比例只有目测推断(约 0.9-1.1), 需要像素级测量或原图参数确认."
+            },
+            {
+              "refs": [
+                "F9",
+                "R5",
+                "F10"
+              ],
+              "description": "磨砂层的雾色(是否纯白/微冷白/极浅紫灰)与雾强度(不透明度)未知; 重叠弧上蓝紫色调究竟是 '白雾混色的副产品' 还是磨砂材质本身带紫 tint([[M13]] 是否必要)无法从现有观察唯一确定."
+            },
+            {
+              "refs": [
+                "F11",
+                "R7"
+              ],
+              "description": "重叠弧边缘的羽化宽度与性质不确定: 是单纯的长渐变(alpha 渐变), 还是伴随底色被模糊晕开的磨砂拖影(决定是否需要 [[M10]] 的透射模糊分支); 两圆各自的软边宽度也需按最终输出分辨率标定."
+            },
+            {
+              "refs": [
+                "F12"
+              ],
+              "description": "蓝圆渐变的两端点色值与渐变轴方向(深蓝端/青绿端的确切方位角)未标定; 也未确认渐变是线性方向渐变还是径向渐变, 以及蓝圆外缘柔化的具体宽度."
+            },
+            {
+              "refs": [
+                "F9",
+                "F10"
+              ],
+              "description": "未确认磨砂圆内部是否存在自身的径向明暗变化(中心略浓/边缘略薄)或细微噪点颗粒; 现有观察只能确认整体为平滑雾面, 若存在颗粒则 [[M10]] 需补充噪声项, 这一点在当前分辨率下无法判定."
+            },
+            {
+              "refs": [
+                "frosted_disc"
+              ],
+              "description": "exploration-1 未完成: ValueError: 逻辑任务的两次修复额度已耗尽"
+            }
+          ],
+          "open_questions": []
+        }
+      }
+    ]
+  }
+]

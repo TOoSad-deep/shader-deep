@@ -1,0 +1,85 @@
+{
+  "status": "completed_with_failures",
+  "count": 4,
+  "parallel_processes": 2,
+  "mode": "staged",
+  "observation_tools": true,
+  "compact_context": true,
+  "limit_seconds_per_worker": 600,
+  "automatic_redispatch": false,
+  "scope": "four fresh independent workers, no main agent or integration",
+  "model": "z-ai/glm-5.3-flash",
+  "provider_group": "OPENROUTER",
+  "endpoint_host": "openrouter.ai",
+  "extra_body": {
+    "provider": {
+      "require_parameters": true
+    }
+  },
+  "options": {
+    "max_tasks": 3,
+    "max_parallel": 3,
+    "max_worker_calls": 24,
+    "max_main_calls": 0,
+    "output_dir": null,
+    "worker_observation_tools": false,
+    "max_measurements": 8,
+    "max_request_retries": 2,
+    "request_timeout_seconds": 240,
+    "stream_model_responses": true,
+    "max_output_tokens": 163840,
+    "outline_max_output_tokens": null,
+    "integration_max_output_tokens": null,
+    "worker_max_output_tokens": null,
+    "max_comparison_targets": 12,
+    "library_page_chars": 8000,
+    "_output_token_sources": [
+      [
+        "max_output_tokens",
+        "yaml",
+        163840
+      ]
+    ],
+    "max_repeated_no_progress": 0,
+    "max_context_tokens": 262144,
+    "request_image_tokens": 4096,
+    "request_token_margin": 2048,
+    "max_integration_calls": 12,
+    "max_integration_packages": 24,
+    "integration_no_progress": 3,
+    "integration_history_tokens": 16384
+  },
+  "tracing": false,
+  "sample": {
+    "name": "top_left_green_gear",
+    "category": "notched_outline",
+    "image": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/analysis-optimized-real-4-20261027/reference.png",
+    "sha256": "7beeab6b0c683e16ed213393b2a8850b28c1c2e3a89963c671f8902d6d194523",
+    "target": {
+      "id": "E1",
+      "name": "最左上方绿色齿轮状圆片",
+      "region": "原图左侧彩色堆叠区域中最左上方的绿色圆片, 包含中心孔和外轮廓",
+      "feature_ids": []
+    },
+    "target_box": {
+      "left": 200,
+      "top": 346,
+      "right": 322,
+      "bottom": 469
+    },
+    "user_request": "请分析参考图中的一个指定元素: 彩色圆片堆中最左上方的绿色齿轮状圆片, 包含中心孔和外轮廓。以过程式 Shader 复现为目标, 独立分析可见特征、关系、候选实现机制和草图方案, 明确不确定项与缺口。本轮只分析该目标。",
+    "direction": "围绕目标的可见特征和相互关系, 提出可用于过程式 Shader 的实现机制和草图。",
+    "human_checks": [
+      "目标是左上绿色圆片, 不扩大到整幅布局",
+      "区分绿色实体、中心孔和外轮廓缺口",
+      "精确数量或颜色须有依据, 未确认内容保留未知",
+      "M表达实现原理和可调方向, 草图选择与正文一致"
+    ],
+    "unknown_truth": [
+      "单图不能唯一确定原始Shader实现机制"
+    ],
+    "engineering_only": false
+  },
+  "skill_sha256": "4db10217d48b4d98594389c6abf55712ddbed244594a24cb76cf3e3033d946e1",
+  "finished_workers": 4
+}

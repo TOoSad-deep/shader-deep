@@ -1,0 +1,1 @@
+{"trial": 1, "mode": "baseline", "status": "failed", "model_calls": 3, "repairs": 2, "elapsed_seconds": 164.164, "counts": null, "error": "AnalysisNoProgressError: 连续三次模型响应没有有效新读取或接受的提交"}

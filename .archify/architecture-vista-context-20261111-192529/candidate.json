@@ -1,0 +1,195 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "VISTA 记忆与上下文架构 · 待确认设计",
+    "locale": "zh-CN",
+    "output": ".archify/architecture-vista-context-20261111-192529/vista-context.html",
+    "quality_profile": "showcase"
+  },
+  "components": [
+    {
+      "id": "business",
+      "type": "backend",
+      "label": "业务模块",
+      "sublabel": "分析 / 规划 / 生成 / 调参",
+      "pos": [
+        40,
+        40
+      ],
+      "size": [
+        240,
+        84
+      ]
+    },
+    {
+      "id": "execution",
+      "type": "backend",
+      "label": "Agent 执行循环",
+      "sublabel": "模型调用、工具执行、终态",
+      "pos": [
+        430,
+        40
+      ],
+      "size": [
+        240,
+        84
+      ]
+    },
+    {
+      "id": "model",
+      "type": "external",
+      "label": "多模态模型",
+      "sublabel": "推理与按需观察决策",
+      "pos": [
+        850,
+        40
+      ],
+      "size": [
+        240,
+        84
+      ]
+    },
+    {
+      "id": "context",
+      "type": "backend",
+      "label": "上下文管理",
+      "sublabel": "组装、去重、引用、生命周期",
+      "pos": [
+        430,
+        300
+      ],
+      "size": [
+        240,
+        84
+      ]
+    },
+    {
+      "id": "observation",
+      "type": "backend",
+      "label": "材料与观察接口",
+      "sublabel": "登记、目录、回读、裁剪",
+      "pos": [
+        850,
+        300
+      ],
+      "size": [
+        240,
+        84
+      ]
+    },
+    {
+      "id": "memory",
+      "type": "database",
+      "label": "材料记忆",
+      "sublabel": "原始内容、索引、来源、哈希",
+      "pos": [
+        850,
+        535
+      ],
+      "size": [
+        240,
+        84
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "共享记忆与上下文组件 · 逻辑职责边界",
+      "wraps": [
+        "context",
+        "observation",
+        "memory"
+      ],
+      "pad": 28
+    }
+  ],
+  "connections": [
+    {
+      "id": "business-execution",
+      "from": "business",
+      "to": "execution",
+      "label": "任务与业务工具"
+    },
+    {
+      "id": "execution-model",
+      "from": "execution",
+      "to": "model",
+      "label": "请求与响应"
+    },
+    {
+      "id": "business-context",
+      "from": "business",
+      "to": "context",
+      "label": "默认材料与策略",
+      "fromSide": "bottom",
+      "toSide": "left"
+    },
+    {
+      "id": "execution-context",
+      "from": "execution",
+      "to": "context",
+      "label": "组装与结果通知"
+    },
+    {
+      "id": "execution-observation",
+      "from": "execution",
+      "to": "observation",
+      "label": "登记产物或执行回看",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "observation-context",
+      "from": "observation",
+      "to": "context",
+      "label": "内容与来源"
+    },
+    {
+      "id": "observation-memory",
+      "from": "observation",
+      "to": "memory",
+      "label": "登记与校验读取"
+    },
+    {
+      "id": "context-memory",
+      "from": "context",
+      "to": "memory",
+      "label": "加载默认材料",
+      "fromSide": "bottom",
+      "toSide": "left"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "业务规则与默认选材",
+      "items": [
+        "业务模块声明固定输入和默认工作材料，并在业务工具产出后登记材料。",
+        "生成可指定最新成功候选，调参可指定基准、当前候选和关注区域。",
+        "候选是否允许提交、任务是否完成，由业务规则判断。"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "按需观察与上下文生命周期",
+      "items": [
+        "模型通过工具选择回看的材料及区域，支持一次比较多份内容。",
+        "材料记忆可独立用于保存、索引、读取和裁剪。",
+        "上下文管理将真实内容装入请求，并按策略保留正文或材料引用。",
+        "执行循环通知调用结果，以更新临时内容及呈现记录。"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "讨论中的设计约定",
+      "items": [
+        "图中关系表示调用协作，执行循环负责模型请求和工具派发。",
+        "登记、读取成功、进入请求、模型成功返回分别记录。",
+        "组件内部划分、接口形式和保留策略仍待逐项确认。",
+        "这是目标职责设计，当前实现的接入主要位于生成模块。"
+      ]
+    }
+  ]
+}

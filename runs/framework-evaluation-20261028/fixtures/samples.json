@@ -1,0 +1,89 @@
+[
+  {
+    "name": "notched_outline",
+    "category": "notched_outline",
+    "image": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/framework-evaluation-20261028/fixtures/notched_outline.png",
+    "sha256": "9a5f02ec406375942181011f45fa9ddcb9bc984f43ec8cb8dcb66b3955019283",
+    "target": {
+      "id": "E1",
+      "name": "notched_outline",
+      "region": "中央目标及外侧上下文",
+      "feature_ids": []
+    },
+    "target_box": {
+      "left": 14,
+      "top": 14,
+      "right": 114,
+      "bottom": 114
+    },
+    "user_request": "分析中央目标, 保持可见轮廓、层次及与背景的关系",
+    "direction": "独立分析形状与视觉交互",
+    "human_checks": [
+      "轮廓具有周期缺口",
+      "中心孔与轮廓同心",
+      "精确数量未测量时保留未知"
+    ],
+    "unknown_truth": [
+      "生成机制不能由单张图唯一确定"
+    ],
+    "engineering_only": true
+  },
+  {
+    "name": "glow_border",
+    "category": "glow_border",
+    "image": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/framework-evaluation-20261028/fixtures/glow_border.png",
+    "sha256": "677ad234571bc8e5ab204a6d8b2bfec4aa8e920ee3711282433f525f9691ab8d",
+    "target": {
+      "id": "E1",
+      "name": "glow_border",
+      "region": "中央目标及外侧上下文",
+      "feature_ids": []
+    },
+    "target_box": {
+      "left": 14,
+      "top": 14,
+      "right": 114,
+      "bottom": 114
+    },
+    "user_request": "分析中央目标, 保持可见轮廓、层次及与背景的关系",
+    "direction": "独立分析形状与视觉交互",
+    "human_checks": [
+      "线芯与外侧光晕分别可见",
+      "裁剪保留外侧光晕",
+      "亮度均值不等同线芯颜色"
+    ],
+    "unknown_truth": [
+      "生成机制不能由单张图唯一确定"
+    ],
+    "engineering_only": true
+  },
+  {
+    "name": "translucent_surface",
+    "category": "translucent_surface",
+    "image": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/framework-evaluation-20261028/fixtures/translucent_surface.png",
+    "sha256": "403614787dbdacedc8c18bf63e086cff68b89e278af6b99a6c2d130ccebf8f7d",
+    "target": {
+      "id": "E1",
+      "name": "translucent_surface",
+      "region": "中央目标及外侧上下文",
+      "feature_ids": []
+    },
+    "target_box": {
+      "left": 14,
+      "top": 14,
+      "right": 114,
+      "bottom": 114
+    },
+    "user_request": "分析中央目标, 保持可见轮廓、层次及与背景的关系",
+    "direction": "独立分析形状与视觉交互",
+    "human_checks": [
+      "背景条纹在表面区域仍可见",
+      "边缘与内部有区别",
+      "单图不能证实物理材质或模糊机制"
+    ],
+    "unknown_truth": [
+      "生成机制不能由单张图唯一确定"
+    ],
+    "engineering_only": true
+  }
+]

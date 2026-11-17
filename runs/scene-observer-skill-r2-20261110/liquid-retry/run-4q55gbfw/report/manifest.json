@@ -1,0 +1,15 @@
+{
+  "schema_version": "scene_observations_v1",
+  "reference": {
+    "path": "reference.png",
+    "sha256": "2ea796bd2f17cb908e340317b4059df0632ce7630f8cd829f723b59e074cfb67"
+  },
+  "status": "completed",
+  "context_notes": [
+    "1280×720 横幅画面, 视角正对台面, 网格线保持水平与垂直, 无透视收缩; 网格与台面边缘被图边裁切。",
+    "除台面与两滴水滴外无其他物体、文字或装饰; 整体为冷灰色调。",
+    "阴影均为柔和弥散的暗影, 无清晰投影轮廓。"
+  ],
+  "open_questions": [],
+  "gaps": []
+}

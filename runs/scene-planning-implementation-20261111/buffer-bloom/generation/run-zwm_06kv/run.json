@@ -1,0 +1,183 @@
+{
+  "task_id": "G1",
+  "asset_root": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/apps/shader_deep",
+  "phase": "generation",
+  "inputs": {
+    "planning": {
+      "report_path": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-planning-implementation-20261111/buffer-bloom/generation/run-zwm_06kv/inputs/planning",
+      "content_sha256": "04d8f823cfdd67b86a872e928f549a5fa7604a991d2409ee3f8d66a32d98b0b4",
+      "observation_sha256": "6e45a449c30a98d913697e7addfc90143f95abb96cb2e77bda513d59cf1b6abf",
+      "sketch_id": "S1",
+      "alternative_index": null,
+      "planned_constraints": {
+        "width": 1280,
+        "height": 720,
+        "time": 0.0,
+        "language": "GLSL ES 3.00",
+        "entry_point": "mainImage(out vec4, in vec2)",
+        "passes": 1,
+        "uniforms": [
+          "iResolution",
+          "iTime"
+        ],
+        "external_textures": false
+      },
+      "execution_render": {
+        "width": 1280,
+        "height": 720,
+        "time": 0.0
+      },
+      "render_overrides": {},
+      "observation_gaps": [],
+      "planning_gaps": [],
+      "complete": true
+    }
+  },
+  "render": {
+    "width": 1280,
+    "height": 720,
+    "time": 0.0
+  },
+  "max_attempts": 3,
+  "max_model_calls": 5,
+  "visual_memory": false,
+  "attempts": 3,
+  "model_calls": 4,
+  "stop_reason": "completed",
+  "error": null,
+  "selected_candidate_id": "run-zwm_06kv-c003",
+  "blackboard": {
+    "targets": {
+      "T1": {
+        "version": "T1",
+        "request": "依据固定整图观察与原图提出可在当前单 Pass 环境实现的完整方案, 保留主要外观及关键关系, 给生成 Agent 清晰可执行的安排.",
+        "reference_path": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-planning-implementation-20261111/buffer-bloom/generation/run-zwm_06kv/inputs/planning/observation/reference.png",
+        "constraints": [
+          "单 Pass GLSL ES 3.00 mainImage"
+        ],
+        "protected_features": []
+      }
+    },
+    "tasks": {
+      "G1": {
+        "id": "G1",
+        "role": "generation",
+        "target_version": "T1",
+        "objective": "按固定整图方案 S1 实现完整 E/F/R",
+        "baseline_id": null,
+        "candidate_ids": [],
+        "related_result_ids": [],
+        "experiment_id": null,
+        "hypothesis": null,
+        "allowed_changes": [
+          "实现生效 choices 与 composition, 保持跨元素关系",
+          "依据原图调节方案内数值, 保留已知必要缺口"
+        ],
+        "stop_conditions": [
+          "选择已渲染并实际回读预览的候选, 如实记录差异及两类缺口"
+        ],
+        "parent_task_id": null,
+        "lens_config": null,
+        "analysis_purpose": "initial",
+        "analysis_gap": null,
+        "expected_evidence": null,
+        "evidence_ids": [],
+        "analysis_outline": null,
+        "generation_binding": {
+          "report_path": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-planning-implementation-20261111/buffer-bloom/generation/run-zwm_06kv/inputs/planning",
+          "content_sha256": "04d8f823cfdd67b86a872e928f549a5fa7604a991d2409ee3f8d66a32d98b0b4",
+          "observation_sha256": "6e45a449c30a98d913697e7addfc90143f95abb96cb2e77bda513d59cf1b6abf",
+          "reference_sha256": "aeb6a0855a711be65b4167ae80becf283b35e499ee609748fe5bfe41e23675ff",
+          "sketch_id": "S1",
+          "alternative": null,
+          "schema_version": "scene_planning_v1"
+        }
+      }
+    },
+    "candidates": {
+      "run-zwm_06kv-c001": {
+        "id": "run-zwm_06kv-c001",
+        "task_id": "G1",
+        "code_path": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-planning-implementation-20261111/buffer-bloom/generation/run-zwm_06kv/candidate-001.glsl",
+        "preview_path": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-planning-implementation-20261111/buffer-bloom/generation/run-zwm_06kv/candidate-001.png",
+        "limitations": []
+      },
+      "run-zwm_06kv-c002": {
+        "id": "run-zwm_06kv-c002",
+        "task_id": "G1",
+        "code_path": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-planning-implementation-20261111/buffer-bloom/generation/run-zwm_06kv/candidate-002.glsl",
+        "preview_path": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-planning-implementation-20261111/buffer-bloom/generation/run-zwm_06kv/candidate-002.png",
+        "limitations": []
+      },
+      "run-zwm_06kv-c003": {
+        "id": "run-zwm_06kv-c003",
+        "task_id": "G1",
+        "code_path": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-planning-implementation-20261111/buffer-bloom/generation/run-zwm_06kv/candidate-003.glsl",
+        "preview_path": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-planning-implementation-20261111/buffer-bloom/generation/run-zwm_06kv/candidate-003.png",
+        "limitations": []
+      }
+    },
+    "results": {
+      "run-zwm_06kv-c001-render": {
+        "id": "run-zwm_06kv-c001-render",
+        "task_id": "G1",
+        "status": "partial",
+        "summary": "真实 WebGL2 渲染成功, 等待对照参考检查",
+        "candidate_ids": [
+          "run-zwm_06kv-c001"
+        ],
+        "observations": [],
+        "hypotheses": [],
+        "limitations": [],
+        "recommendation": null,
+        "analysis_detail": null,
+        "analysis_protocol": null
+      },
+      "run-zwm_06kv-c002-render": {
+        "id": "run-zwm_06kv-c002-render",
+        "task_id": "G1",
+        "status": "partial",
+        "summary": "真实 WebGL2 渲染成功, 等待对照参考检查",
+        "candidate_ids": [
+          "run-zwm_06kv-c002"
+        ],
+        "observations": [],
+        "hypotheses": [],
+        "limitations": [],
+        "recommendation": null,
+        "analysis_detail": null,
+        "analysis_protocol": null
+      },
+      "run-zwm_06kv-c003-render": {
+        "id": "run-zwm_06kv-c003-render",
+        "task_id": "G1",
+        "status": "partial",
+        "summary": "真实 WebGL2 渲染成功, 等待对照参考检查",
+        "candidate_ids": [
+          "run-zwm_06kv-c003"
+        ],
+        "observations": [],
+        "hypotheses": [],
+        "limitations": [],
+        "recommendation": null,
+        "analysis_detail": null,
+        "analysis_protocol": null
+      },
+      "run-zwm_06kv-selection": {
+        "id": "run-zwm_06kv-selection",
+        "task_id": "G1",
+        "status": "completed",
+        "summary": "选择 c003 (基于 S1 方案第三次参数/合成方式修正后的渲染结果)。改善: 将 M6 实心核心由加法叠加改为混合覆盖, 三体轮廓较 c001/c002 明显清晰; 光晕强度与衰减系数收敛 (约0.6/3.0-3.2), 背景恢复近黑, 保留中部偏紫粉、左下偏蓝、右上暖棕的残留晕染 (F2); 三体沿右上-左下对角线均匀排列, 星暖黄橙晕、圆粉紫红晕、心蓝晕向下偏置扩散, 交叠形成暖黄→紫粉→蓝过渡 (R1/R2/R3/F8)。方案遵循: M1-M7 全部按 selected 机制实现, 心形以 180° 旋转实现倒置姿态 (F7), 星形旋转约 -8°、圆角 0.015。仍存在的差异: (1) 星形五角尖点在参考图中清晰外伸, 本候选中核心轮廓仍偏圆钝、近似圆角多边形, 尖角辨识度不足, 是主要缺口; (2) 心形底部双瓣间浅凹口在本候选中不明显, 呈近似水滴轮廓; (3) 圆形核心的边缘淡粉色带比参考略窄, 晕的粉紫成分略偏红; (4) 整体光晕范围仍比参考略收敛。这些属于方案内数值可调范围 (星形圆角量、内半径比与晕/核心对比), 未改变固定方案结构。",
+        "candidate_ids": [
+          "run-zwm_06kv-c003"
+        ],
+        "observations": [],
+        "hypotheses": [],
+        "limitations": [],
+        "recommendation": "本轮生成自检完成, 待用户验收",
+        "analysis_detail": null,
+        "analysis_protocol": null
+      }
+    }
+  }
+}

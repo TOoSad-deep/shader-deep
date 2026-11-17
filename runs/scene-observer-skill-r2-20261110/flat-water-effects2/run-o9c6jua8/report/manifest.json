@@ -1,0 +1,15 @@
+{
+  "schema_version": "scene_observations_v1",
+  "reference": {
+    "path": "reference.png",
+    "sha256": "65753b7f316b7c140d10b185124e757f01101939597723197207969e27e3bdae"
+  },
+  "status": "completed",
+  "context_notes": [
+    "整图为平静海面的日出/日落场景, 海平线约在画面高度 45% 处, 上部为天空与太阳, 下部为海面, 构图左右近似对称",
+    "全图色调统一为红橙暖色, 各区域之间过渡平滑柔和, 画面中无人物、船只、岛屿等独立物体",
+    "仅凭画面无法判断是日出还是日落"
+  ],
+  "open_questions": [],
+  "gaps": []
+}

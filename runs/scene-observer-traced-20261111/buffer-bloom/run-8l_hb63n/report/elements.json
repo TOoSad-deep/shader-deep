@@ -1,0 +1,38 @@
+[
+  {
+    "id": "E1",
+    "name": "深色背景",
+    "region": "全图",
+    "feature_ids": [
+      "F1",
+      "F2"
+    ]
+  },
+  {
+    "id": "E2",
+    "name": "黄色星形",
+    "region": "图上方偏右",
+    "feature_ids": [
+      "F3",
+      "F4"
+    ]
+  },
+  {
+    "id": "E3",
+    "name": "粉紫色圆形",
+    "region": "图中部",
+    "feature_ids": [
+      "F5",
+      "F6"
+    ]
+  },
+  {
+    "id": "E4",
+    "name": "蓝色心形",
+    "region": "图下方偏左",
+    "feature_ids": [
+      "F7",
+      "F8"
+    ]
+  }
+]

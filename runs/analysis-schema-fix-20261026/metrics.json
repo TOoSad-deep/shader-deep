@@ -1,0 +1,50 @@
+{
+  "trials": 3,
+  "dispatched_workers": 9,
+  "worker_statuses": {
+    "succeeded": 5,
+    "failed": 4
+  },
+  "first_submission_success": 1,
+  "worker_rejections": {
+    "business_rejection": 17
+  },
+  "logical_calls": 52,
+  "usage": {
+    "input_tokens": 285863,
+    "output_tokens": 134793,
+    "total_tokens": 420656
+  },
+  "elapsed_seconds": 937.67,
+  "observation_timeouts": 0,
+  "network_failures": 0,
+  "comparison": [
+    {
+      "sample": "simple",
+      "before_success": 0,
+      "after_success": 2,
+      "after_status": "partial",
+      "after_sketches": 3,
+      "elapsed_seconds": 438.96,
+      "total_tokens": 144043
+    },
+    {
+      "sample": "medium",
+      "before_success": 1,
+      "after_success": 1,
+      "after_status": "partial",
+      "after_sketches": 1,
+      "elapsed_seconds": 238.23,
+      "total_tokens": 114595
+    },
+    {
+      "sample": "complex",
+      "before_success": 0,
+      "after_success": 2,
+      "after_status": "partial",
+      "after_sketches": 4,
+      "elapsed_seconds": 260.48,
+      "total_tokens": 162018
+    }
+  ]
+}

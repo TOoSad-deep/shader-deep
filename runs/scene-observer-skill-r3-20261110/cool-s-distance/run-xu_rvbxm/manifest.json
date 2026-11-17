@@ -1,0 +1,27 @@
+{
+  "analysis_protocol": "scene_observations_v1",
+  "execution": "deep_agents_single_observer",
+  "state": "stopped",
+  "reason": "OpenAIConnectionError: Connection error.",
+  "model_calls": 1,
+  "validation_errors": 0,
+  "tool_refusals": 0,
+  "max_model_calls": 8,
+  "reference_sha256": "dd712a5d2528d4db56bcbb6b10c66f946ca7c33579a0eb2ec23af90e4fbc7493",
+  "accepted_snapshot": null,
+  "resource_read_results": [],
+  "model_id": "z-ai/glm-5.3-flash",
+  "rule_sha256": "a0498160deb62e81660204efca64a0bc8ee3d307a10778b3f64eb4f4afea866d",
+  "resource_sha256": {
+    "SKILL.md": "a0498160deb62e81660204efca64a0bc8ee3d307a10778b3f64eb4f4afea866d",
+    "references/grouping.md": "b9a2f5953eb637366edc2e1778b01e80d17289a2c0b739e86c1eb03684143356",
+    "references/relations.md": "ccdd8666dfc809da1d81476ec584ed0138ed47597e022359c49424c743a4e983",
+    "references/uncertainty.md": "970c019332014e066ec6f43ff73938b042406040931fae023c68a0bab8a04b2c"
+  },
+  "skill_bundle_sha256": "20e27ab234e3e121c4d7614a1d11971c3511c958171b376f738ababb8511064e",
+  "elapsed_seconds": 20.391253417008556,
+  "elapsed_scope": "analysis_before_publication",
+  "token_usage": null,
+  "usage_scope": "sdk_reported_responses_only",
+  "http_request_count": null
+}

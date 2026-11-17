@@ -1,0 +1,13 @@
+{
+  "schema_version": "scene_observations_v1",
+  "reference": {
+    "path": "reference.png",
+    "sha256": "aeb6a0855a711be65b4167ae80becf283b35e499ee609748fe5bfe41e23675ff"
+  },
+  "status": "completed",
+  "context_notes": [
+    "1280x720 的深色静态场景, 主体是三个发光图形, 无文字或其余可见物件"
+  ],
+  "open_questions": [],
+  "gaps": []
+}

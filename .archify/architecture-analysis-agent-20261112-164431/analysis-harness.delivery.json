@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "ba90b31e-0629-483d-932f-71c4b272d9cb",
+  "status": "current",
+  "command": "deliver",
+  "type": "architecture",
+  "input": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/.archify/architecture-analysis-agent-20261112-164431/harness.candidate.json",
+  "output": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/.archify/architecture-analysis-agent-20261112-164431/analysis-harness.html",
+  "specification": {
+    "sha256": "5a68b0c96dadffd5fd2c28320870abc3bb30b7729636a545bee6f4722e31ee5e",
+    "bytes": 10372
+  },
+  "artifact": {
+    "sha256": "aa81c4645ebe928dc0c650a9e2f21a5d066ed9a41b02d2e77b94cea6459a9365",
+    "bytes": 829596
+  }
+}

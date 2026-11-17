@@ -1,0 +1,58 @@
+{
+  "analysis_protocol": "five_libraries_v1",
+  "execution": "deep_agents_native",
+  "user_request": "只分析中央发光边框本体。使用两个探索方向，每个方向只记录少量最必要的特征，给出一个简单草图；整合只做有把握的去重。",
+  "reference_sha256": "677ad234571bc8e5ab204a6d8b2bfec4aa8e920ee3711282433f525f9691ab8d",
+  "elements": [
+    {
+      "id": "elem_center_border",
+      "name": "中央发光边框",
+      "region": "图像中央的青色发光圆角矩形边框本体（含其辉光），四周为深色背景",
+      "feature_ids": []
+    }
+  ],
+  "plan": {
+    "elements": [
+      {
+        "id": "elem_center_border",
+        "name": "中央发光边框",
+        "region": "图像中央的青色发光圆角矩形边框本体（含其辉光），四周为深色背景",
+        "feature_ids": []
+      }
+    ],
+    "target_element_id": "elem_center_border",
+    "target_box": {
+      "left": 14,
+      "top": 18,
+      "right": 110,
+      "bottom": 110
+    },
+    "directions": [
+      "几何结构方向: 观察边框本体的轮廓形状、圆角大小、描边粗细与边缘清晰度; 只记录少量最必要特征, 给出一个简单草图",
+      "发光与色彩方向: 观察边框本体的青色色调、辉光强弱与衰减、内侧/外侧发光层次; 只记录少量最必要特征, 给出一个简单草图"
+    ]
+  },
+  "tasks": {
+    "explorer-1": {
+      "task_id": "explorer-1",
+      "status": "failed",
+      "error": "ValueError: Analysis response reached output limit; no tools executed",
+      "result_id": null
+    },
+    "explorer-2": {
+      "task_id": "explorer-2",
+      "status": "failed",
+      "error": "子 agent 结束时未提交合法业务结果",
+      "result_id": null
+    },
+    "integrator": {
+      "task_id": "integrator",
+      "status": "failed",
+      "error": "主图结束, 槽位未完成合法提交",
+      "result_id": null
+    }
+  },
+  "versions": [],
+  "closed": true,
+  "baseline_error": null
+}

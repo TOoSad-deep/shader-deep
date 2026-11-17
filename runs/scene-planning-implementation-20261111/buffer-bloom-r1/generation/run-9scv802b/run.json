@@ -1,0 +1,197 @@
+{
+  "task_id": "G1",
+  "asset_root": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/apps/shader_deep",
+  "phase": "generation",
+  "inputs": {
+    "planning": {
+      "report_path": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-planning-implementation-20261111/buffer-bloom-r1/generation/run-9scv802b/inputs/planning",
+      "content_sha256": "4dcebf8dc838be716241aa03c55e1b7b3319aaded3cad0bfe68d3a184d45971f",
+      "observation_sha256": "6e45a449c30a98d913697e7addfc90143f95abb96cb2e77bda513d59cf1b6abf",
+      "sketch_id": "S1",
+      "alternative_index": null,
+      "planned_constraints": {
+        "width": 1280,
+        "height": 720,
+        "time": 0.0,
+        "language": "GLSL ES 3.00",
+        "entry_point": "mainImage(out vec4, in vec2)",
+        "passes": 1,
+        "uniforms": [
+          "iResolution",
+          "iTime"
+        ],
+        "external_textures": false
+      },
+      "execution_render": {
+        "width": 1280,
+        "height": 720,
+        "time": 0.0
+      },
+      "render_overrides": {},
+      "observation_gaps": [],
+      "planning_gaps": [],
+      "complete": true
+    }
+  },
+  "render": {
+    "width": 1280,
+    "height": 720,
+    "time": 0.0
+  },
+  "max_attempts": 3,
+  "max_model_calls": 5,
+  "visual_memory": false,
+  "attempts": 3,
+  "model_calls": 4,
+  "stop_reason": "blocked",
+  "error": null,
+  "selected_candidate_id": null,
+  "blackboard": {
+    "targets": {
+      "T1": {
+        "version": "T1",
+        "request": "依据固定整图观察与原图提出可在当前单 Pass 环境实现的完整方案, 保留主要外观及关键关系, 给生成 Agent 清晰可执行的安排.",
+        "reference_path": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-planning-implementation-20261111/buffer-bloom-r1/generation/run-9scv802b/inputs/planning/observation/reference.png",
+        "constraints": [
+          "单 Pass GLSL ES 3.00 mainImage"
+        ],
+        "protected_features": []
+      }
+    },
+    "tasks": {
+      "G1": {
+        "id": "G1",
+        "role": "generation",
+        "target_version": "T1",
+        "objective": "按固定整图方案 S1 实现完整 E/F/R",
+        "baseline_id": null,
+        "candidate_ids": [],
+        "related_result_ids": [],
+        "experiment_id": null,
+        "hypothesis": null,
+        "allowed_changes": [
+          "实现生效 choices 与 composition, 保持跨元素关系",
+          "依据原图调节方案内数值, 保留已知必要缺口"
+        ],
+        "stop_conditions": [
+          "选择已渲染并实际回读预览的候选, 如实记录差异及两类缺口"
+        ],
+        "parent_task_id": null,
+        "lens_config": null,
+        "analysis_purpose": "initial",
+        "analysis_gap": null,
+        "expected_evidence": null,
+        "evidence_ids": [],
+        "analysis_outline": null,
+        "generation_binding": {
+          "report_path": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-planning-implementation-20261111/buffer-bloom-r1/generation/run-9scv802b/inputs/planning",
+          "content_sha256": "4dcebf8dc838be716241aa03c55e1b7b3319aaded3cad0bfe68d3a184d45971f",
+          "observation_sha256": "6e45a449c30a98d913697e7addfc90143f95abb96cb2e77bda513d59cf1b6abf",
+          "reference_sha256": "aeb6a0855a711be65b4167ae80becf283b35e499ee609748fe5bfe41e23675ff",
+          "sketch_id": "S1",
+          "alternative": null,
+          "schema_version": "scene_planning_v1"
+        }
+      }
+    },
+    "candidates": {
+      "run-9scv802b-c001": {
+        "id": "run-9scv802b-c001",
+        "task_id": "G1",
+        "code_path": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-planning-implementation-20261111/buffer-bloom-r1/generation/run-9scv802b/candidate-001.glsl",
+        "preview_path": null,
+        "limitations": [
+          "fragment_compile: ERROR: 0:27: 'starSDF' : Function does not return a value\nERROR: 0:39: 'Rsel__' : identifiers containing two consecutive underscores (__) are reserved as possible future keywords\nERROR: 0:45: 'StarBase' : Function does not return a value\nERROR: 0:52: 'mainImage' : no matching overloaded function found\n\u0000"
+        ]
+      },
+      "run-9scv802b-c002": {
+        "id": "run-9scv802b-c002",
+        "task_id": "G1",
+        "code_path": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-planning-implementation-20261111/buffer-bloom-r1/generation/run-9scv802b/candidate-002.glsl",
+        "preview_path": null,
+        "limitations": [
+          "fragment_compile: ERROR: 0:37: 'thetaG' : undeclared identifier\nERROR: 0:37: 'thetaG' : undeclared identifier\nERROR: 0:37: 'thetaG' : undeclared identifier\nERROR: 0:37: 'thetaG' : undeclared identifier\nERROR: 0:35: 'sdStarRounded' : Function does not return a value\nERROR: 0:55: 'dstarVal' : undeclared identifier\nERROR: 0:55: 'gRad' : undeclared identifier\nERROR: 0:55: 'sdStar5' : no matching overloaded function found\nERROR: 0:55: 'assign' : l-value required (can't modify a const)\nERROR: 0:56: 'dstarVal' : undeclared identifier\nERROR: 0:56: 'rInLimit' : undeclared identifier\nERROR: 0:56: '' : break statement only allowed in loops and switch statements\n\u0000"
+        ]
+      },
+      "run-9scv802b-c003": {
+        "id": "run-9scv802b-c003",
+        "task_id": "G1",
+        "code_path": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/scene-planning-implementation-20261111/buffer-bloom-r1/generation/run-9scv802b/candidate-003.glsl",
+        "preview_path": null,
+        "limitations": [
+          "fragment_compile: ERROR: 0:62: 'kdir1c_y' : no matching overloaded function found\nERROR: 0:62: 'kdir1x_y' : no matching overloaded function found\nERROR: 0:64: 'lengthSDFPlaceholder' : no matching overloaded function found\n\u0000"
+        ]
+      }
+    },
+    "results": {
+      "run-9scv802b-c001-render": {
+        "id": "run-9scv802b-c001-render",
+        "task_id": "G1",
+        "status": "partial",
+        "summary": "候选编译或渲染失败",
+        "candidate_ids": [
+          "run-9scv802b-c001"
+        ],
+        "observations": [],
+        "hypotheses": [],
+        "limitations": [
+          "fragment_compile: ERROR: 0:27: 'starSDF' : Function does not return a value\nERROR: 0:39: 'Rsel__' : identifiers containing two consecutive underscores (__) are reserved as possible future keywords\nERROR: 0:45: 'StarBase' : Function does not return a value\nERROR: 0:52: 'mainImage' : no matching overloaded function found\n\u0000"
+        ],
+        "recommendation": null,
+        "analysis_detail": null,
+        "analysis_protocol": null
+      },
+      "run-9scv802b-c002-render": {
+        "id": "run-9scv802b-c002-render",
+        "task_id": "G1",
+        "status": "partial",
+        "summary": "候选编译或渲染失败",
+        "candidate_ids": [
+          "run-9scv802b-c002"
+        ],
+        "observations": [],
+        "hypotheses": [],
+        "limitations": [
+          "fragment_compile: ERROR: 0:37: 'thetaG' : undeclared identifier\nERROR: 0:37: 'thetaG' : undeclared identifier\nERROR: 0:37: 'thetaG' : undeclared identifier\nERROR: 0:37: 'thetaG' : undeclared identifier\nERROR: 0:35: 'sdStarRounded' : Function does not return a value\nERROR: 0:55: 'dstarVal' : undeclared identifier\nERROR: 0:55: 'gRad' : undeclared identifier\nERROR: 0:55: 'sdStar5' : no matching overloaded function found\nERROR: 0:55: 'assign' : l-value required (can't modify a const)\nERROR: 0:56: 'dstarVal' : undeclared identifier\nERROR: 0:56: 'rInLimit' : undeclared identifier\nERROR: 0:56: '' : break statement only allowed in loops and switch statements\n\u0000"
+        ],
+        "recommendation": null,
+        "analysis_detail": null,
+        "analysis_protocol": null
+      },
+      "run-9scv802b-c003-render": {
+        "id": "run-9scv802b-c003-render",
+        "task_id": "G1",
+        "status": "partial",
+        "summary": "候选编译或渲染失败",
+        "candidate_ids": [
+          "run-9scv802b-c003"
+        ],
+        "observations": [],
+        "hypotheses": [],
+        "limitations": [
+          "fragment_compile: ERROR: 0:62: 'kdir1c_y' : no matching overloaded function found\nERROR: 0:62: 'kdir1x_y' : no matching overloaded function found\nERROR: 0:64: 'lengthSDFPlaceholder' : no matching overloaded function found\n\u0000"
+        ],
+        "recommendation": null,
+        "analysis_detail": null,
+        "analysis_protocol": null
+      },
+      "run-9scv802b-blocked": {
+        "id": "run-9scv802b-blocked",
+        "task_id": "G1",
+        "status": "blocked",
+        "summary": "三次提交均未通过编译（占位函数、未定义标识符、未定义 mainImage），已耗尽全部渲染尝试次数，未能获得任何预览，无法进入自检与选择环节。",
+        "candidate_ids": [
+          "run-9scv802b-c001",
+          "run-9scv802b-c002",
+          "run-9scv802b-c003"
+        ],
+        "observations": [],
+        "hypotheses": [],
+        "limitations": [],
+        "recommendation": "try_another_scheme",
+        "analysis_detail": null,
+        "analysis_protocol": null
+      }
+    }
+  }
+}

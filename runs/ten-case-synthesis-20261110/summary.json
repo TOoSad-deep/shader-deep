@@ -1,0 +1,257 @@
+{
+  "date": "2026-11-10",
+  "selection": "same-rule latest valid report per distinct image; failed liquid attempt retained separately in source inventory",
+  "sources": [
+    "runs/single-observer-calibration-20261110-r1/calibration-summary.json",
+    "runs/single-observer-new-cases-20261110-uyrhcnj9/summary.json"
+  ],
+  "unique_cases": 10,
+  "inventory_attempts": 16,
+  "inventory_valid_packages": 15,
+  "selected_completed": 7,
+  "selected_partial": 3,
+  "logical_calls": 21,
+  "validation_rejections": 6,
+  "cases_with_rejection": 5,
+  "median_analysis_seconds": 38.056053124506434,
+  "reported_tokens_selected": 286297,
+  "new_cases_two_slowest_reported_token_fraction": 0.7561364378808872,
+  "same_rule_sha256": [
+    "9e9df9f77d51044a2a3a50e67642d14c313729de17e4f65d9b316de15978c699"
+  ],
+  "rows": [
+    {
+      "group": "calibration",
+      "case": "pink",
+      "run_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/single-observer-calibration-20261110-r1/pink/run-bwqgway4",
+      "status": "completed",
+      "counts": {
+        "elements": 1,
+        "features": 5,
+        "relations": 1
+      },
+      "model_calls": 2,
+      "validation_errors": 1,
+      "elapsed_seconds": 27.15432983401115,
+      "token_usage": {
+        "input_tokens": 8709,
+        "output_tokens": 2508,
+        "total_tokens": 11217
+      },
+      "rule_sha256": "9e9df9f77d51044a2a3a50e67642d14c313729de17e4f65d9b316de15978c699",
+      "gaps": []
+    },
+    {
+      "group": "calibration",
+      "case": "windows",
+      "run_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/single-observer-calibration-20261110-r1/windows/run-4sksun10",
+      "status": "completed",
+      "counts": {
+        "elements": 1,
+        "features": 4,
+        "relations": 2
+      },
+      "model_calls": 3,
+      "validation_errors": 1,
+      "elapsed_seconds": 75.55547629199282,
+      "token_usage": {
+        "input_tokens": 28977,
+        "output_tokens": 12366,
+        "total_tokens": 41343
+      },
+      "rule_sha256": "9e9df9f77d51044a2a3a50e67642d14c313729de17e4f65d9b316de15978c699",
+      "gaps": []
+    },
+    {
+      "group": "calibration",
+      "case": "frosted",
+      "run_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/single-observer-calibration-20261110-r1/frosted/run-u3z1e07p",
+      "status": "completed",
+      "counts": {
+        "elements": 2,
+        "features": 6,
+        "relations": 3
+      },
+      "model_calls": 1,
+      "validation_errors": 0,
+      "elapsed_seconds": 21.616281833004905,
+      "token_usage": {
+        "input_tokens": 9436,
+        "output_tokens": 989,
+        "total_tokens": 10425
+      },
+      "rule_sha256": "9e9df9f77d51044a2a3a50e67642d14c313729de17e4f65d9b316de15978c699",
+      "gaps": []
+    },
+    {
+      "group": "calibration",
+      "case": "balls",
+      "run_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/single-observer-calibration-20261110-r1/balls/run-9ktvao_2",
+      "status": "partial",
+      "counts": {
+        "elements": 2,
+        "features": 6,
+        "relations": 1
+      },
+      "model_calls": 3,
+      "validation_errors": 2,
+      "elapsed_seconds": 40.127111833004165,
+      "token_usage": {
+        "input_tokens": 21632,
+        "output_tokens": 3239,
+        "total_tokens": 24871
+      },
+      "rule_sha256": "9e9df9f77d51044a2a3a50e67642d14c313729de17e4f65d9b316de15978c699",
+      "gaps": [
+        {
+          "refs": [
+            "F5"
+          ],
+          "description": "左右密集簇内齿轮交叠处的前后遮盖顺序在部分位置难以逐枚确认。"
+        }
+      ]
+    },
+    {
+      "group": "calibration",
+      "case": "liquid-retry",
+      "run_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/single-observer-calibration-20261110-r1/liquid-retry/run-2a0yv96c",
+      "status": "completed",
+      "counts": {
+        "elements": 3,
+        "features": 5,
+        "relations": 2
+      },
+      "model_calls": 3,
+      "validation_errors": 1,
+      "elapsed_seconds": 35.9849944160087,
+      "token_usage": {
+        "input_tokens": 17297,
+        "output_tokens": 3598,
+        "total_tokens": 20895
+      },
+      "rule_sha256": "9e9df9f77d51044a2a3a50e67642d14c313729de17e4f65d9b316de15978c699",
+      "gaps": []
+    },
+    {
+      "group": "new_cases",
+      "case": "cool-s-distance",
+      "run_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/single-observer-new-cases-20261110-uyrhcnj9/cool-s-distance/run-bb_zhez8",
+      "status": "completed",
+      "counts": {
+        "elements": 2,
+        "features": 8,
+        "relations": 2
+      },
+      "model_calls": 3,
+      "validation_errors": 1,
+      "elapsed_seconds": 228.64476250000007,
+      "token_usage": {
+        "input_tokens": 38151,
+        "output_tokens": 25169,
+        "total_tokens": 63320
+      },
+      "rule_sha256": "9e9df9f77d51044a2a3a50e67642d14c313729de17e4f65d9b316de15978c699",
+      "gaps": []
+    },
+    {
+      "group": "new_cases",
+      "case": "flat-water-effects2",
+      "run_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/single-observer-new-cases-20261110-uyrhcnj9/flat-water-effects2/run-y4xzrs0f",
+      "status": "partial",
+      "counts": {
+        "elements": 3,
+        "features": 10,
+        "relations": 0
+      },
+      "model_calls": 1,
+      "validation_errors": 0,
+      "elapsed_seconds": 18.583352749992628,
+      "token_usage": {
+        "input_tokens": 9436,
+        "output_tokens": 1488,
+        "total_tokens": 10924
+      },
+      "rule_sha256": "9e9df9f77d51044a2a3a50e67642d14c313729de17e4f65d9b316de15978c699",
+      "gaps": [
+        {
+          "refs": [
+            "E2"
+          ],
+          "description": "太阳圆盘与光晕之间无清晰边界，核心的实际直径无法从图上确定。"
+        }
+      ]
+    },
+    {
+      "group": "new_cases",
+      "case": "dna-helis",
+      "run_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/single-observer-new-cases-20261110-uyrhcnj9/dna-helis/run-sxzsa961",
+      "status": "completed",
+      "counts": {
+        "elements": 2,
+        "features": 4,
+        "relations": 2
+      },
+      "model_calls": 2,
+      "validation_errors": 0,
+      "elapsed_seconds": 344.06813050000346,
+      "token_usage": {
+        "input_tokens": 34142,
+        "output_tokens": 36787,
+        "total_tokens": 70929
+      },
+      "rule_sha256": "9e9df9f77d51044a2a3a50e67642d14c313729de17e4f65d9b316de15978c699",
+      "gaps": []
+    },
+    {
+      "group": "new_cases",
+      "case": "buffer-bloom",
+      "run_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/single-observer-new-cases-20261110-uyrhcnj9/buffer-bloom/run-dpi3qoq6",
+      "status": "partial",
+      "counts": {
+        "elements": 4,
+        "features": 7,
+        "relations": 0
+      },
+      "model_calls": 1,
+      "validation_errors": 0,
+      "elapsed_seconds": 18.110603624998475,
+      "token_usage": {
+        "input_tokens": 3154,
+        "output_tokens": 1382,
+        "total_tokens": 4536
+      },
+      "rule_sha256": "9e9df9f77d51044a2a3a50e67642d14c313729de17e4f65d9b316de15978c699",
+      "gaps": [
+        {
+          "refs": [
+            "F1",
+            "F3",
+            "F5"
+          ],
+          "description": "三个形状轮廓边缘的精确像素级颜色与软硬程度无法从单图精确确认，但已能描述主要外观"
+        }
+      ]
+    },
+    {
+      "group": "new_cases",
+      "case": "auroras",
+      "run_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/single-observer-new-cases-20261110-uyrhcnj9/auroras/run-0ojqu9sv",
+      "status": "completed",
+      "counts": {
+        "elements": 4,
+        "features": 10,
+        "relations": 4
+      },
+      "model_calls": 2,
+      "validation_errors": 0,
+      "elapsed_seconds": 147.64257466600975,
+      "token_usage": {
+        "input_tokens": 17311,
+        "output_tokens": 10526,
+        "total_tokens": 27837
+      },
+      "rule_sha256": "9e9df9f77d51044a2a3a50e67642d14c313729de17e4f65d9b316de15978c699",
+      "gaps": []
+    }
+  ]
+}

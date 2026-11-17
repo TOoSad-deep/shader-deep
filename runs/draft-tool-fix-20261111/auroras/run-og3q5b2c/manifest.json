@@ -1,0 +1,35 @@
+{
+  "analysis_protocol": "scene_observations_v1",
+  "execution": "deep_agents_single_observer",
+  "state": "accepted",
+  "reason": null,
+  "model_calls": 5,
+  "validation_errors": 0,
+  "tool_refusals": 0,
+  "max_model_calls": 8,
+  "reference_sha256": "cbc9a23997fd40f772044174fa87c8776e7b18b559ecc268476ba79bee15279c",
+  "draft_path": "draft/observations.json",
+  "draft_revision": "3a37e38ac787053902b0e7cf5d82d159e43873218a87870c5cb55ae73dfd7c94",
+  "seen_revision": "3a37e38ac787053902b0e7cf5d82d159e43873218a87870c5cb55ae73dfd7c94",
+  "accepted_revision": "3a37e38ac787053902b0e7cf5d82d159e43873218a87870c5cb55ae73dfd7c94",
+  "accepted_snapshot": "results/observations.json",
+  "resource_read_results": [],
+  "model_id": "z-ai/glm-5.3-flash",
+  "rule_sha256": "b6a9f2155f37b8cb23771dade4079145d9c584b7fbde0584f05bb6877fd44571",
+  "resource_sha256": {
+    "SKILL.md": "b6a9f2155f37b8cb23771dade4079145d9c584b7fbde0584f05bb6877fd44571",
+    "references/grouping.md": "ecb110a27e76a68ab0ef5ef6a42f9231927e58718cc830209407b46b4fbee75f",
+    "references/relations.md": "88c11dd1105f168ded3eb5e255e7481ae2b318f7f90b8b973f83700f23e0b543",
+    "references/uncertainty.md": "831c36d0c9d46d14b45b93615931f166b718e6b83b9b7644691a0c66afa59461"
+  },
+  "skill_bundle_sha256": "a62b9c6ca088ff97bd17204a75e801364754efe1af5769c60080afa13fdc6df3",
+  "elapsed_seconds": 122.97056012498797,
+  "elapsed_scope": "analysis_before_publication",
+  "token_usage": {
+    "input_tokens": 49460,
+    "output_tokens": 7709,
+    "total_tokens": 57169
+  },
+  "usage_scope": "sdk_reported_responses_only",
+  "http_request_count": null
+}

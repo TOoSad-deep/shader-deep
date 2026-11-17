@@ -1,0 +1,88 @@
+{
+  "reference_sha256": "7beeab6b0c683e16ed213393b2a8850b28c1c2e3a89963c671f8902d6d194523",
+  "scope": "independent assistant pixel check after model runs; not evidence produced by any worker",
+  "image_size": [
+    1280,
+    720
+  ],
+  "input_roi": [
+    200,
+    346,
+    322,
+    469
+  ],
+  "green_mask_rule": "G>140, G>1.7R, G>1.4B within ROI",
+  "green_pixel_bounds_exclusive": [
+    209,
+    355,
+    316,
+    460
+  ],
+  "white_hole_component_bounds_exclusive": [
+    246,
+    392,
+    278,
+    424
+  ],
+  "solid_green_pixel": {
+    "point": [
+      261,
+      375
+    ],
+    "rgb": [
+      68,
+      188,
+      99
+    ]
+  },
+  "hole_pixel": {
+    "point": [
+      262,
+      407
+    ],
+    "rgb": [
+      255,
+      255,
+      255
+    ]
+  },
+  "radial_sampling": {
+    "center": [
+      262,
+      407
+    ],
+    "angle_origin": "right, clockwise in image coordinates",
+    "step_deg": 1,
+    "radius_step_px": 0.25,
+    "smoothing_window_deg": 7,
+    "local_window_radius_deg": 20,
+    "minimum_local_depth_px": 4,
+    "concavity_candidates": [
+      {
+        "angle_deg": 46,
+        "radius_px": 44.39
+      },
+      {
+        "angle_deg": 121,
+        "radius_px": 44.75
+      },
+      {
+        "angle_deg": 190,
+        "radius_px": 45.11
+      },
+      {
+        "angle_deg": 266,
+        "radius_px": 45.57
+      },
+      {
+        "angle_deg": 336,
+        "radius_px": 44.43
+      }
+    ]
+  },
+  "limits": [
+    "mask bounds exclude very pale antialias pixels",
+    "radial minima are pixel-contour candidates, not proof of the original shader mechanism",
+    "this is a post-run check and was not fed into the four worker contexts"
+  ]
+}

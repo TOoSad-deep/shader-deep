@@ -1,0 +1,23 @@
+{
+  "sample": "simple",
+  "image": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/apps/shader_deep/test_pic/shiny-rectancle.png",
+  "sha256": "4ee0da315723a6692a21fd12252978da4d6a6246dec7e9e508591e053bd88927",
+  "prompt": "请分析参考图中的一个指定元素: 图中央的完整霓虹圆角矩形边框, 包含紧邻边框的光晕。以过程式 Shader 复现为目标, 独立分析可见特征、关系、候选实现机制和草图方案, 明确不确定项与缺口。本轮只分析该目标。",
+  "started_utc": "2026-10-25T15:39:42.772787+00:00",
+  "observation_timeout_seconds": 900,
+  "command": [
+    "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/apps/shader_deep/.venv/bin/python3",
+    "-m",
+    "shader_deep.cli.analysis",
+    "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/apps/shader_deep/test_pic/shiny-rectancle.png",
+    "请分析参考图中的一个指定元素: 图中央的完整霓虹圆角矩形边框, 包含紧邻边框的光晕。以过程式 Shader 复现为目标, 独立分析可见特征、关系、候选实现机制和草图方案, 明确不确定项与缺口。本轮只分析该目标。",
+    "--output-dir",
+    "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/analysis-diagnostic-20261025/simple",
+    "--log-level",
+    "WARNING"
+  ],
+  "exit_code": 1,
+  "observation_timed_out": false,
+  "elapsed_seconds": 22.88,
+  "ended_utc": "2026-10-25T15:40:05.657255+00:00"
+}

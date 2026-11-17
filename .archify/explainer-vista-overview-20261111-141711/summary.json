@@ -1,0 +1,90 @@
+{
+  "root": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/apps/shader_deep/runs/vista-smoke-20261111-bpuq3psd",
+  "reference": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/apps/shader_deep/runs/vista-smoke-20261111-bpuq3psd/reference.png",
+  "runs": [
+    {
+      "mode": "baseline",
+      "run_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/apps/shader_deep/runs/vista-smoke-20261111-bpuq3psd/baseline",
+      "stop_reason": "completed",
+      "attempts": 2,
+      "model_calls": 3,
+      "selected_candidate_id": "baseline-c002",
+      "preview": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/apps/shader_deep/runs/vista-smoke-20261111-bpuq3psd/baseline/candidate-002.png",
+      "code": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/apps/shader_deep/runs/vista-smoke-20261111-bpuq3psd/baseline/candidate-002.glsl",
+      "tool_calls": {
+        "render_shader": 2,
+        "finish_shader": 1
+      },
+      "llm_trace_count": 3,
+      "usage": {
+        "prompt_tokens": 7886,
+        "completion_tokens": 2026,
+        "total_tokens": 9912
+      },
+      "elapsed_seconds": 22.283
+    },
+    {
+      "mode": "memory",
+      "run_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/apps/shader_deep/runs/vista-smoke-20261111-bpuq3psd/memory",
+      "error": {
+        "type": "OpenAIConnectionError",
+        "status_code": null,
+        "message": "Connection error."
+      },
+      "stop_reason": "error",
+      "attempts": 0,
+      "model_calls": 1,
+      "tool_calls": {},
+      "llm_trace_count": 1,
+      "usage": null,
+      "elapsed_seconds": 0.035
+    },
+    {
+      "mode": "memory",
+      "run_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/apps/shader_deep/runs/vista-smoke-20261111-bpuq3psd/memory-after-client-fix",
+      "stop_reason": "completed",
+      "attempts": 2,
+      "model_calls": 4,
+      "selected_candidate_id": "memory-after-client-fix-c002",
+      "preview": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/apps/shader_deep/runs/vista-smoke-20261111-bpuq3psd/memory-after-client-fix/candidate-002.png",
+      "code": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/apps/shader_deep/runs/vista-smoke-20261111-bpuq3psd/memory-after-client-fix/candidate-002.glsl",
+      "tool_calls": {
+        "render_shader": 2,
+        "read_materials": 1,
+        "finish_shader": 1
+      },
+      "llm_trace_count": 4,
+      "usage": {
+        "prompt_tokens": 11529,
+        "completion_tokens": 2578,
+        "total_tokens": 14107
+      },
+      "elapsed_seconds": 28.37
+    }
+  ],
+  "overrides": {
+    "max_attempts": 2,
+    "max_model_calls": 6,
+    "max_tokens": 4096,
+    "request_timeout_seconds": 90,
+    "client_max_retries": 0,
+    "width": 128,
+    "height": 128,
+    "time": 0.0
+  },
+  "note": "Synthetic smoke only; no universal benefit or user visual acceptance claim.",
+  "model": "z-ai/glm-5.3-flash",
+  "harness_correction": "Retained failed memory attempt; fresh-process memory-only run after confirming cached HTTP client was closed by smoke harness. No production code changed.",
+  "visual_inspection": {
+    "reference": "Centered cyan circle on dark gray background.",
+    "baseline": "Circle position and size are close; edge is softer and fill appears darker than reference.",
+    "memory": "Circle appears larger than reference; fill is darker and edge is soft.",
+    "acceptance": "Assistant visual observations only, not user acceptance."
+  },
+  "coverage_notes": [
+    "Successful memory run called read_materials once without being explicitly instructed to do so.",
+    "This smoke recorded tool counts, not read item arguments or final serialized request blocks; it does not prove a multimodal ToolMessage image was actually sent.",
+    "Memory first render failed compilation and second succeeded; baseline used two successful renders. Single sample cannot isolate memory effect.",
+    "The initial memory connection failure was retained as a smoke harness error; an offline reproduction confirmed cached HTTP client closure, followed by one memory-only run in a fresh process."
+  ]
+}

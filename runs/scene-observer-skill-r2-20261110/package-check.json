@@ -1,0 +1,10 @@
+{
+  "wheel": "/private/tmp/scene-skill-r2-wheel/shader_deep_app-0.1.0-py3-none-any.whl",
+  "verified_resources": [
+    "shader_deep/resources/skills/scene-observer/SKILL.md",
+    "shader_deep/resources/skills/scene-observer/references/grouping.md",
+    "shader_deep/resources/skills/scene-observer/references/relations.md",
+    "shader_deep/resources/skills/scene-observer/references/uncertainty.md"
+  ],
+  "hash_match": true
+}

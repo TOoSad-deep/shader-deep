@@ -1,0 +1,327 @@
+{
+  "assets": [
+    {
+      "path": "evidence/41ce49cc72c4f7b5b0e8177185e3a74b333d7df41d3eb0d4364b1972022d3a44.png",
+      "sha256": "41ce49cc72c4f7b5b0e8177185e3a74b333d7df41d3eb0d4364b1972022d3a44"
+    },
+    {
+      "path": "evidence/3b51f9cf6dc1f8286a53511ba604e0f6cec90a7fb03010291af741122ca94d7e.png",
+      "sha256": "3b51f9cf6dc1f8286a53511ba604e0f6cec90a7fb03010291af741122ca94d7e"
+    },
+    {
+      "path": "evidence/a092da0eb6719e75c6fb043a984b28a84284094c9f8c093c3c4c09b0c935cac9.png",
+      "sha256": "a092da0eb6719e75c6fb043a984b28a84284094c9f8c093c3c4c09b0c935cac9"
+    }
+  ],
+  "links": {
+    "F1": [
+      "5179e8daf22a459eac200884ed1a0118-evidence-e003",
+      "5179e8daf22a459eac200884ed1a0118-evidence-e007"
+    ],
+    "F2": [
+      "5179e8daf22a459eac200884ed1a0118-evidence-e001",
+      "5179e8daf22a459eac200884ed1a0118-evidence-e004"
+    ],
+    "F3": [
+      "5179e8daf22a459eac200884ed1a0118-evidence-e002",
+      "5179e8daf22a459eac200884ed1a0118-evidence-e005",
+      "5179e8daf22a459eac200884ed1a0118-evidence-e006"
+    ],
+    "F4": [
+      "5179e8daf22a459eac200884ed1a0118-evidence-e001",
+      "5179e8daf22a459eac200884ed1a0118-evidence-e002"
+    ],
+    "R1": [
+      "5179e8daf22a459eac200884ed1a0118-evidence-e002",
+      "5179e8daf22a459eac200884ed1a0118-evidence-e005",
+      "5179e8daf22a459eac200884ed1a0118-evidence-e006"
+    ],
+    "R2": [
+      "5179e8daf22a459eac200884ed1a0118-evidence-e003",
+      "5179e8daf22a459eac200884ed1a0118-evidence-e007"
+    ]
+  },
+  "records": [
+    {
+      "aggregation": "none",
+      "alpha_policy": "composite_on_white_for_statistics",
+      "artifact_path": "evidence/41ce49cc72c4f7b5b0e8177185e3a74b333d7df41d3eb0d4364b1972022d3a44.png",
+      "id": "5179e8daf22a459eac200884ed1a0118-evidence-e001",
+      "image_sha256": "7beeab6b0c683e16ed213393b2a8850b28c1c2e3a89963c671f8902d6d194523",
+      "image_size": [
+        1280,
+        720
+      ],
+      "limitations": [
+        "Visual crop only; does not compute object counts, semantic segmentation or numeric color statistics."
+      ],
+      "mean_luma": null,
+      "mean_rgb": null,
+      "method_version": "reference-pixels-v1",
+      "metrics": [
+        "original_rgba_pixels"
+      ],
+      "parent_task_id": "worker",
+      "profile": [],
+      "profile_digest": null,
+      "question": "目标绿色齿轮圆片全貌: 外缘内凹口有几个、各自大致钟面方位如何分布? 相邻凹口之间的凸瓣是什么形状? 整体是否接近正圆?",
+      "samples_per_value": 1,
+      "spec": {
+        "axis": "x",
+        "kind": "crop",
+        "region": {
+          "bottom": 472,
+          "left": 196,
+          "right": 328,
+          "top": 340
+        }
+      },
+      "target_version": "7beeab6b0c683e16ed213393b2a8850b28c1c2e3a89963c671f8902d6d194523",
+      "units": "encoded_RGBA_0_255"
+    },
+    {
+      "aggregation": "none",
+      "alpha_policy": "composite_on_white_for_statistics",
+      "artifact_path": "evidence/3b51f9cf6dc1f8286a53511ba604e0f6cec90a7fb03010291af741122ca94d7e.png",
+      "id": "5179e8daf22a459eac200884ed1a0118-evidence-e002",
+      "image_sha256": "7beeab6b0c683e16ed213393b2a8850b28c1c2e3a89963c671f8902d6d194523",
+      "image_size": [
+        1280,
+        720
+      ],
+      "limitations": [
+        "Visual crop only; does not compute object counts, semantic segmentation or numeric color statistics."
+      ],
+      "mean_luma": null,
+      "mean_rgb": null,
+      "method_version": "reference-pixels-v1",
+      "metrics": [
+        "original_rgba_pixels"
+      ],
+      "parent_task_id": "worker",
+      "profile": [],
+      "profile_digest": null,
+      "question": "中心孔是否与外轮廓同心? 孔直径相对外径大约占多少比例? 孔缘与外缘的柔化程度是否一致?",
+      "samples_per_value": 1,
+      "spec": {
+        "axis": "x",
+        "kind": "crop",
+        "region": {
+          "bottom": 438,
+          "left": 230,
+          "right": 292,
+          "top": 376
+        }
+      },
+      "target_version": "7beeab6b0c683e16ed213393b2a8850b28c1c2e3a89963c671f8902d6d194523",
+      "units": "encoded_RGBA_0_255"
+    },
+    {
+      "aggregation": "mean_over_all_pixels_in_region",
+      "alpha_policy": "composite_on_white_for_statistics",
+      "artifact_path": null,
+      "id": "5179e8daf22a459eac200884ed1a0118-evidence-e003",
+      "image_sha256": "7beeab6b0c683e16ed213393b2a8850b28c1c2e3a89963c671f8902d6d194523",
+      "image_size": [
+        1280,
+        720
+      ],
+      "limitations": [
+        "Means describe the entire selected ROI, not an isolated object or hole unless the ROI contains only that target."
+      ],
+      "mean_luma": 156.045,
+      "mean_rgb": [
+        67.97619047619048,
+        187.97619047619048,
+        99.07142857142857
+      ],
+      "method_version": "reference-pixels-v1",
+      "metrics": [
+        "mean_rgb",
+        "mean_encoded_luma"
+      ],
+      "parent_task_id": "worker",
+      "profile": [],
+      "profile_digest": null,
+      "question": "该矩形应完全落在绿色实心填充区内(避开中心孔与外缘凹口), 其白底合成均值可否作为绿色填充色的 RGB 估计?",
+      "samples_per_value": 168,
+      "spec": {
+        "axis": "x",
+        "kind": "region_stats",
+        "region": {
+          "bottom": 416,
+          "left": 218,
+          "right": 232,
+          "top": 404
+        }
+      },
+      "target_version": "7beeab6b0c683e16ed213393b2a8850b28c1c2e3a89963c671f8902d6d194523",
+      "units": "encoded_RGB_0_255"
+    },
+    {
+      "aggregation": "none",
+      "alpha_policy": "composite_on_white_for_statistics",
+      "artifact_path": "evidence/a092da0eb6719e75c6fb043a984b28a84284094c9f8c093c3c4c09b0c935cac9.png",
+      "id": "5179e8daf22a459eac200884ed1a0118-evidence-e004",
+      "image_sha256": "7beeab6b0c683e16ed213393b2a8850b28c1c2e3a89963c671f8902d6d194523",
+      "image_size": [
+        1280,
+        720
+      ],
+      "limitations": [
+        "Visual crop only; does not compute object counts, semantic segmentation or numeric color statistics."
+      ],
+      "mean_luma": null,
+      "mean_rgb": null,
+      "method_version": "reference-pixels-v1",
+      "metrics": [
+        "original_rgba_pixels"
+      ],
+      "parent_task_id": "worker",
+      "profile": [],
+      "profile_digest": null,
+      "question": "目标右缘与相邻黄色圆片的衔接: 黄色是否覆盖在绿色之前? 绿色右缘哪一段钟面方位的凹口/凸瓣被遮挡或紧贴?",
+      "samples_per_value": 1,
+      "spec": {
+        "axis": "x",
+        "kind": "crop",
+        "region": {
+          "bottom": 470,
+          "left": 280,
+          "right": 346,
+          "top": 350
+        }
+      },
+      "target_version": "7beeab6b0c683e16ed213393b2a8850b28c1c2e3a89963c671f8902d6d194523",
+      "units": "encoded_RGBA_0_255"
+    },
+    {
+      "aggregation": "mean_over_all_pixels_in_region",
+      "alpha_policy": "composite_on_white_for_statistics",
+      "artifact_path": null,
+      "id": "5179e8daf22a459eac200884ed1a0118-evidence-e005",
+      "image_sha256": "7beeab6b0c683e16ed213393b2a8850b28c1c2e3a89963c671f8902d6d194523",
+      "image_size": [
+        1280,
+        720
+      ],
+      "limitations": [
+        "Means describe the entire selected ROI, not an isolated object or hole unless the ROI contains only that target."
+      ],
+      "mean_luma": 221.366,
+      "mean_rgb": [
+        191.50166666666667,
+        232.21,
+        201.89
+      ],
+      "method_version": "reference-pixels-v1",
+      "metrics": [
+        "mean_rgb",
+        "mean_encoded_luma"
+      ],
+      "parent_task_id": "worker",
+      "profile": [],
+      "profile_digest": null,
+      "question": "该水平细条横穿中心孔(两侧均为绿色实心区): 用均值中白色的占比反推孔的水平弦宽, 估计孔直径像素数?",
+      "samples_per_value": 600,
+      "spec": {
+        "axis": "x",
+        "kind": "region_stats",
+        "region": {
+          "bottom": 413,
+          "left": 236,
+          "right": 286,
+          "top": 401
+        }
+      },
+      "target_version": "7beeab6b0c683e16ed213393b2a8850b28c1c2e3a89963c671f8902d6d194523",
+      "units": "encoded_RGB_0_255"
+    },
+    {
+      "aggregation": "mean_over_all_pixels_in_region",
+      "alpha_policy": "composite_on_white_for_statistics",
+      "artifact_path": null,
+      "id": "5179e8daf22a459eac200884ed1a0118-evidence-e006",
+      "image_sha256": "7beeab6b0c683e16ed213393b2a8850b28c1c2e3a89963c671f8902d6d194523",
+      "image_size": [
+        1280,
+        720
+      ],
+      "limitations": [
+        "Means describe the entire selected ROI, not an isolated object or hole unless the ROI contains only that target."
+      ],
+      "mean_luma": 221.132,
+      "mean_rgb": [
+        191.47333333333333,
+        231.90166666666667,
+        201.78333333333333
+      ],
+      "method_version": "reference-pixels-v1",
+      "metrics": [
+        "mean_rgb",
+        "mean_encoded_luma"
+      ],
+      "parent_task_id": "worker",
+      "profile": [],
+      "profile_digest": null,
+      "question": "该垂直细条横穿中心孔(上下均为绿色实心区): 用均值中白色的占比反推孔的垂直弦宽, 并与水平弦宽交叉验证孔心位置与圆形度?",
+      "samples_per_value": 600,
+      "spec": {
+        "axis": "x",
+        "kind": "region_stats",
+        "region": {
+          "bottom": 432,
+          "left": 255,
+          "right": 267,
+          "top": 382
+        }
+      },
+      "target_version": "7beeab6b0c683e16ed213393b2a8850b28c1c2e3a89963c671f8902d6d194523",
+      "units": "encoded_RGB_0_255"
+    },
+    {
+      "aggregation": "mean_over_all_pixels_in_region",
+      "alpha_policy": "composite_on_white_for_statistics",
+      "artifact_path": null,
+      "id": "5179e8daf22a459eac200884ed1a0118-evidence-e007",
+      "image_sha256": "7beeab6b0c683e16ed213393b2a8850b28c1c2e3a89963c671f8902d6d194523",
+      "image_size": [
+        1280,
+        720
+      ],
+      "limitations": [
+        "Means describe the entire selected ROI, not an isolated object or hole unless the ROI contains only that target."
+      ],
+      "mean_luma": 155.938,
+      "mean_rgb": [
+        68.96527777777777,
+        187.52083333333334,
+        99.1875
+      ],
+      "method_version": "reference-pixels-v1",
+      "metrics": [
+        "mean_rgb",
+        "mean_encoded_luma"
+      ],
+      "parent_task_id": "worker",
+      "profile": [],
+      "profile_digest": null,
+      "question": "该矩形应完全位于绿色实心区(右上环带), 其均值与此前实测 (68,188,99) 是否一致, 以确认填充无渐变?",
+      "samples_per_value": 144,
+      "spec": {
+        "axis": "x",
+        "kind": "region_stats",
+        "region": {
+          "bottom": 402,
+          "left": 280,
+          "right": 292,
+          "top": 390
+        }
+      },
+      "target_version": "7beeab6b0c683e16ed213393b2a8850b28c1c2e3a89963c671f8902d6d194523",
+      "units": "encoded_RGB_0_255"
+    }
+  ],
+  "reference_sha256": "7beeab6b0c683e16ed213393b2a8850b28c1c2e3a89963c671f8902d6d194523",
+  "schema_version": "analysis_evidence_v1"
+}

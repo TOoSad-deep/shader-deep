@@ -1,0 +1,14 @@
+{
+  "schema_version": "scene_observations_v1",
+  "reference": {
+    "path": "reference.png",
+    "sha256": "7beeab6b0c683e16ed213393b2a8850b28c1c2e3a89963c671f8902d6d194523"
+  },
+  "status": "completed",
+  "context_notes": [
+    "画面为均匀浅灰背景, 中央是一张横向的白色大圆角卡片, 四周留有相近的窄灰边, 整体像一块空白画板或卡片界面。",
+    "光照均匀, 全部图形为平涂实色, 未见渐变、纹理、文字或其他装饰。"
+  ],
+  "open_questions": [],
+  "gaps": []
+}

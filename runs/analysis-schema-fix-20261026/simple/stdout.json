@@ -1,0 +1,18 @@
+{
+  "status": "partial",
+  "run_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/analysis-schema-fix-20261026/simple/run-bgpme1qr",
+  "report_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/analysis-schema-fix-20261026/simple/run-bgpme1qr/report",
+  "result": {
+    "id": "run-bgpme1qr-five-libraries",
+    "task_id": "A1",
+    "status": "partial",
+    "summary": "五库文件包已交付: report/manifest.json; 按草图读取方案, 候选仍需编码与渲染验证",
+    "candidate_ids": [],
+    "observations": [],
+    "hypotheses": [],
+    "limitations": [],
+    "recommendation": null,
+    "analysis_detail": null,
+    "analysis_protocol": "five_libraries_v1"
+  }
+}

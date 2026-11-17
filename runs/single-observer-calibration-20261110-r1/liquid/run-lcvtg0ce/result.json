@@ -1,0 +1,35 @@
+{
+  "analysis_protocol": "scene_observations_v1",
+  "stop_reason": "failed",
+  "error": "OpenAIConnectionError: Connection error.",
+  "report_path": null,
+  "options": {
+    "max_model_calls": 8,
+    "max_output_tokens": 163840,
+    "max_request_retries": 0,
+    "request_timeout_seconds": 45,
+    "stream_model_responses": true,
+    "output_dir": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/runs/single-observer-calibration-20261110-r1/liquid"
+  },
+  "deprecated_option_diagnostics": [],
+  "execution": {
+    "analysis_protocol": "scene_observations_v1",
+    "execution": "deep_agents_single_observer",
+    "state": "stopped",
+    "reason": "OpenAIConnectionError: Connection error.",
+    "model_calls": 1,
+    "validation_errors": 0,
+    "tool_refusals": 0,
+    "max_model_calls": 8,
+    "reference_sha256": "2ea796bd2f17cb908e340317b4059df0632ce7630f8cd829f723b59e074cfb67",
+    "accepted_snapshot": null,
+    "model_id": "z-ai/glm-5.3-flash",
+    "rule_sha256": "9e9df9f77d51044a2a3a50e67642d14c313729de17e4f65d9b316de15978c699",
+    "examples_sha256": "5a7ad70090b757a97eb6e232649dd998d2bfeb8b0b7cd0b5df3fffe0597aec0f",
+    "elapsed_seconds": 15.239938707993133,
+    "elapsed_scope": "analysis_before_publication",
+    "token_usage": null,
+    "usage_scope": "sdk_reported_responses_only",
+    "http_request_count": null
+  }
+}
