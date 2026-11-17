@@ -17,7 +17,7 @@
         <div class="section-title"><span class="step">01</span><h2>创建任务</h2></div>
         <form id="task-form">
           <label for="mode">工作方式</label>
-          <select id="mode"><option value="generate">图片 → 生成 Shader</option><option value="analyze">图片 → 多视角分析</option><option value="report">分析方案 → 生成 Shader</option></select>
+          <select id="mode"><option value="generate">图片 → 生成 Shader</option><option value="analyze">图片 → 全图观察</option><option value="report">分析方案 → 生成 Shader</option></select>
           <div id="upload-fields">
             <label class="upload" for="image"><span class="upload-icon">↥</span><strong id="upload-label">选择一张参考图</strong><span>PNG · 最大 12 MB · 边长 ≤ 4096</span><input id="image" type="file" accept="image/png"></label>
           </div>
@@ -30,7 +30,7 @@
           </div>
           <label for="prompt">这次想实现什么？</label><textarea id="prompt" rows="4" maxlength="8000" required placeholder="例如：复刻中央玻璃球，保留透明质感和粉色边缘光。"></textarea>
           <div id="generation-fields"><div class="field-row"><div><label for="width">宽度</label><input id="width" type="number" value="512" min="1" max="2048" required></div><span class="times">×</span><div><label for="height">高度</label><input id="height" type="number" value="512" min="1" max="2048" required></div></div><label for="attempts">最多渲染次数</label><input id="attempts" type="number" min="1" max="10" value="3" required><p class="hint">包括编译失败的尝试；固定渲染时间为 0 秒。</p></div>
-          <div id="analysis-fields" hidden><label for="perspectives">独立探索视角</label><select id="perspectives"><option value="3">3 个视角</option><option value="2">2 个视角</option></select><p class="hint">调用预算沿用分析配置，默认不限制总调用次数。可随时停止。</p></div>
+          <div id="analysis-fields" hidden><p class="hint">单个 Agent 分析整张图的上下文与 E/F/R。主模型默认最多 8 轮，预算以分析配置为准。观察完成后仍需机制与草图规划。</p></div>
           <button id="submit" class="primary" type="submit">开始生成 <span>↗</span></button>
           <p class="hint footer-hint">运行会使用 .env 配置的模型服务和追踪设置。</p>
           <p id="error" class="error" role="alert" hidden></p>

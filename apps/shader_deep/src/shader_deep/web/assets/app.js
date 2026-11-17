@@ -2,7 +2,7 @@
 const $ = (id) => document.getElementById(id);
 const token = document.querySelector('meta[name="shader-token"]').content;
 const labels = {running:"运行中",completed:"已完成",partial:"部分完成",failed:"分析失败",error:"运行失败",cancelled:"已停止",blocked:"需要补充输入 / 更换方案",attempt_limit:"渲染次数已用尽",model_limit:"模型调用次数已用尽"};
-const modes = {generate:"直接生成",analyze:"多视角分析",report:"方案生成"};
+const modes = {generate:"直接生成",analyze:"全图观察",report:"方案生成"};
 let jobs = [], selected = "", encoded = "", localImage = "", currentPreview = "", shown = "", submitting = false, draftReference = false;
 
 function error(message = "") { $("error").textContent = message; $("error").hidden = !message; }
@@ -102,7 +102,7 @@ $("task-form").addEventListener("submit", async (event) => {
   if (mode === "report" && !$("sketch").value) { error("请先运行分析，再选择报告和草图方案。"); return; }
   submitting = true; $("submit").disabled = true;
   try {
-    const result = await api("/api/jobs", {mode,prompt:$("prompt").value,image:mode === "report" ? "" : encoded,width:Number($("width").value),height:Number($("height").value),attempts:Number($("attempts").value),perspectives:Number($("perspectives").value),source:$("source").value,sketch:$("sketch").value,alternative:$("alternative").value === "" ? null : Number($("alternative").value),background:$("background").value});
+    const result = await api("/api/jobs", {mode,prompt:$("prompt").value,image:mode === "report" ? "" : encoded,width:Number($("width").value),height:Number($("height").value),attempts:Number($("attempts").value),source:$("source").value,sketch:$("sketch").value,alternative:$("alternative").value === "" ? null : Number($("alternative").value),background:$("background").value});
     selected = result.id; currentPreview = ""; draftReference = false;
     await refresh();
   } catch (failure) { error(failure.message); }

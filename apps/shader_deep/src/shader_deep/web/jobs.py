@@ -5,7 +5,6 @@ from __future__ import annotations
 import base64
 import binascii
 import io
-import json
 import os
 import signal
 import subprocess
@@ -19,13 +18,16 @@ from typing import Literal
 from urllib.parse import quote
 
 from PIL import Image
-from pydantic import BaseModel, ConfigDict, Field, JsonValue, TypeAdapter
+from pydantic import BaseModel, ConfigDict, Field, JsonValue, TypeAdapter, model_validator
 
-from shader_deep.infrastructure.storage.report_package import read_sketch
+from shader_deep.infrastructure.storage.observation_package import read_observation_package
+from shader_deep.infrastructure.storage.report_package import read_report_package, read_sketch
 
 MAX_IMAGE_BYTES = 12 * 1024 * 1024
 MAX_DIMENSION = 4096
 TEXT_LIMIT = 24_000
+LEGACY_PERSPECTIVES = 3
+ANALYSIS_PERSPECTIVES_MIGRATION = "分析已迁移为单 Agent 全图观察, 请移除 perspectives; 不再支持双视角."
 JSON_OBJECT = TypeAdapter(dict[str, JsonValue])
 SUFFIXES = {".png", ".glsl", ".json", ".md", ".log", ".txt", ".jsonl"}
 
@@ -45,6 +47,14 @@ class Submission(BaseModel):
     sketch: str = ""
     alternative: int | None = Field(default=None, ge=0)
     background: str = Field(default="透明", min_length=1, max_length=1000)
+
+    @model_validator(mode="after")
+    def _validate_analysis_mode(self) -> Submission:
+        """旧视角值只在分析模式执行迁移检查."""
+        if self.mode == "analyze" and self.perspectives != LEGACY_PERSPECTIVES:
+            msg = ANALYSIS_PERSPECTIVES_MIGRATION
+            raise ValueError(msg)
+        return self
 
 
 def _png(encoded: str) -> bytes:
@@ -147,7 +157,8 @@ class Job:
             "log": _tail(self.root / "stderr.log"),
             "details": self.details(),
             "report": (report / "README.md").read_text(encoding="utf-8") if report else "",
-            "sketches": json.loads((report / "sketches.json").read_text(encoding="utf-8")) if report else [],
+            "sketches": _report_sketches(report) if report else [],
+            "analysis_protocol": _object(report / "manifest.json").get("schema_version") if report else None,
         }
 
     def stop(self) -> None:
@@ -165,6 +176,19 @@ class Job:
             self.process.wait()
 
 
+def _report_sketches(report: Path) -> list[JsonValue]:
+    """按正式协议校验包, 观察阶段不读取不存在的草图文件."""
+    protocol = _object(report / "manifest.json").get("schema_version")
+    if protocol == "scene_observations_v1":
+        read_observation_package(report)
+        return []
+    if protocol == "five_libraries_v1":
+        _, libraries = read_report_package(report)
+        return [item.model_dump(mode="json", exclude_none=True) for item in libraries.sketches]
+    msg = f"无法读取未知分析报告协议: {protocol}"
+    raise ValueError(msg)
+
+
 def _command(request: Submission, root: Path, report: Path | None) -> list[str]:
     module = "analysis" if request.mode == "analyze" else "generation"
     command = [sys.executable, "-u", "-m", f"shader_deep.cli.{module}"]
@@ -176,7 +200,7 @@ def _command(request: Submission, root: Path, report: Path | None) -> list[str]:
         command += [str(root / "reference.png"), request.prompt]
     command += ["--output-dir", str(root / "output")]
     if request.mode == "analyze":
-        return [*command, "--max-tasks", str(request.perspectives)]
+        return command
     return [*command, "--width", str(request.width), "--height", str(request.height), "--max-attempts", str(request.attempts)]
 
 
@@ -233,6 +257,10 @@ class Jobs:
         report = job.report() if job is not None else None
         if report is None:
             msg = "请先完成分析, 再选择该分析报告中的草图"
+            raise ValueError(msg)
+        if _object(report / "manifest.json").get("schema_version") == "scene_observations_v1":
+            read_observation_package(report)
+            msg = "观察报告尚需 M/S 规划, 不能直接选择草图生成."
             raise ValueError(msg)
         read_sketch(report, request.sketch, alternative=request.alternative)
         return report

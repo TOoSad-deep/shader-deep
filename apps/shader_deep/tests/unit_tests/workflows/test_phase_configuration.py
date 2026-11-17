@@ -13,11 +13,9 @@ from unittest import TestCase
 from unittest.mock import patch
 
 from shader_deep.cli import analysis as analysis_cli
-from shader_deep.domain.blackboard import new_blackboard
 from shader_deep.infrastructure.llm.options import resolve_role_options
 from shader_deep.workflows.configuration import apply_analysis_overrides, load_analysis_options
 from shader_deep.workflows.options import AnalysisOptions
-from shader_deep.workflows.outcomes import AnalysisOutcome
 
 
 class PhaseOutputConfigurationTests(TestCase):
@@ -56,20 +54,19 @@ class PhaseOutputConfigurationTests(TestCase):
             with self.assertRaises(ValueError):
                 apply_analysis_overrides(AnalysisOptions(), {"_output_token_sources": ()})
 
-    def test_cli_generic_override_and_explicit_stage_override(self) -> None:
+    def test_cli_stage_budget_is_rejected_before_execution(self) -> None:
         with TemporaryDirectory() as directory:
-            root = Path(directory)
-            path = root / "config.yaml"
-            path.write_text("outline_max_output_tokens: 8000\nworker_max_output_tokens: 40000\n", encoding="utf-8")
-            args = ["analyze", "input.png", "inspect", "--config", str(path), "--max-output-tokens", "16000", "--worker-max-output-tokens", "32000"]
-            outcome = AnalysisOutcome(state=new_blackboard(), task_id="A1", summary_result=None, run_dir=root, stop_reason="partial")
+            path = Path(directory) / "config.yaml"
+            path.write_text("outline_max_output_tokens: 8000\n", encoding="utf-8")
+            args = ["analyze", "input.png", "inspect", "--config", str(path), "--max-output-tokens", "16000"]
+            errors = io.StringIO()
             with (
                 patch.object(sys, "argv", args),
-                patch("shader_deep.cli.analysis.run_analysis", return_value=outcome) as run,
+                patch("shader_deep.cli.analysis.run_analysis") as run,
                 contextlib.redirect_stdout(io.StringIO()),
-                contextlib.redirect_stderr(io.StringIO()),
+                contextlib.redirect_stderr(errors),
             ):
-                self.assertEqual(analysis_cli.main(), 1)
-            options = run.call_args.kwargs["options"]
-            self.assertEqual(resolve_role_options(options, "outline").max_output_tokens, 16000)
-            self.assertEqual(resolve_role_options(options, "worker").max_output_tokens, 32000)
+                self.assertEqual(analysis_cli.main(), 2)
+            run.assert_not_called()
+            self.assertIn("outline_max_output_tokens", errors.getvalue())
+            self.assertIn("max_output_tokens", errors.getvalue())

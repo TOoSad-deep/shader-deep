@@ -22,6 +22,9 @@ if any(name.startswith(('langchain', 'deepagents', 'shader_deep.infrastructure')
 from shader_deep import api
 from shader_deep.agents.analysis import run_analysis, run_analysis_task
 from shader_deep.agents.analysis.native import build_analysis_agent
+from shader_deep.workflows.planning import run_planning, PlanningOptions
+if run_planning is not api.run_planning or PlanningOptions is not api.PlanningOptions:
+    raise RuntimeError('Planning public entrypoints differ from the installed API')
 if run_analysis is not api.run_analysis or run_analysis_task is not api.run_analysis_task:
     raise RuntimeError('Analysis package changed the public entrypoint identity')
 if not callable(build_analysis_agent):
@@ -39,6 +42,7 @@ CLI_MODULES = (
     "shader_deep.cli",
     "shader_deep.cli.analysis",
     "shader_deep.cli.generation",
+    "shader_deep.cli.planning",
     "shader_deep.cli.web",
     "shader_deep.analysis_cli",
 )
@@ -63,6 +67,11 @@ def check_wheel(wheel: Path) -> None:
         with zipfile.ZipFile(wheel) as archive:
             required = {
                 "shader_deep/resources/analysis.yaml",
+                "shader_deep/resources/planning.yaml",
+                "shader_deep/resources/skills/scene-planner/SKILL.md",
+                "shader_deep/resources/skills/scene-planner/references/mechanisms.md",
+                "shader_deep/resources/skills/scene-planner/references/alternatives.md",
+                "shader_deep/resources/skills/scene-planner/references/conditions-and-gaps.md",
                 "shader_deep/resources/skills/native-orchestration/SKILL.md",
                 "shader_deep/resources/skills/native-exploration/SKILL.md",
                 "shader_deep/resources/skills/native-integration/SKILL.md",

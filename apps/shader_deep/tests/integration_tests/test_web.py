@@ -69,3 +69,16 @@ class WebHTTPTests(TestCase):
         self.assertEqual(self.request("GET", f"/files/{identity}/%2e%2e/%2e%2e/.env")[0], 404)
         for body in (b"not json", b"{}", b'{"mode":"generate","prompt":""}'):
             self.assertEqual(self.request("POST", "/api/jobs", body, self.headers())[0], 400)
+
+    def test_analysis_migration_error_is_specific_and_other_errors_stay_generic(self) -> None:
+        payload = {"mode": "analyze", "prompt": "观察全图", "perspectives": 2}
+        with patch("shader_deep.web.jobs.subprocess.Popen") as start:
+            status, data = self.request("POST", "/api/jobs", json.dumps(payload).encode(), self.headers())
+        self.assertEqual(status, 400)
+        self.assertIn("单 Agent", json.loads(data)["error"])
+        self.assertIn("perspectives", json.loads(data)["error"])
+        start.assert_not_called()
+        self.assertFalse(self.server.jobs.items)
+        status, data = self.request("POST", "/api/jobs", b'{"mode":"generate","prompt":""}', self.headers())
+        self.assertEqual(status, 400)
+        self.assertEqual(json.loads(data)["error"], "参数无效, 请检查图片、要求和数值范围")

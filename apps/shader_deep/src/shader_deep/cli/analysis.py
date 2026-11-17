@@ -1,4 +1,4 @@
-"""从多个独立视角分析 PNG, 并输出结构化 JSON 结果."""
+"""用单个 Agent 观察 PNG 全图 E/F/R, 并输出结构化报告索引."""
 
 from __future__ import annotations
 
@@ -12,7 +12,7 @@ from shader_deep.api import run_analysis
 from shader_deep.domain.library.models import PossibilityLibrary, compact_data
 from shader_deep.infrastructure.analysis_logging import analysis_console
 from shader_deep.workflows.configuration import apply_analysis_overrides, load_analysis_options
-from shader_deep.workflows.options import AnalysisOptions
+from shader_deep.workflows.options import AnalysisOptions, observation_option_diagnostics, validate_observation_options
 
 
 def main() -> int:
@@ -32,17 +32,18 @@ def main() -> int:
         default="INFO",
         help="Console diagnostics level (stderr); analysis.log keeps full diagnostics",
     )
-    parser.add_argument("--max-tasks", type=int, help="Perspectives in the single exploration batch: 2 or 3 (default: 3)")
-    parser.add_argument("--max-parallel", type=int, help="SDK task concurrency limit")
-    parser.add_argument("--max-worker-calls", type=int, help="Model calls per lens worker; 0 means unlimited")
-    parser.add_argument("--max-orchestrator-calls", type=int, help="Main graph model-node limit; 0 adds no limit")
-    parser.add_argument("--max-integrator-calls", type=int, help="Integration graph model-node limit; 0 adds no limit")
-    parser.add_argument("--max-measurements", type=int, help="Unique coordinator measurements; cached results are free")
+    parser.add_argument("--max-model-calls", type=int, help="Finite observer model-call budget (default: 20)")
+    parser.add_argument("--max-tasks", type=int, help="Deprecated compatibility placeholder; only 3 is accepted")
+    parser.add_argument("--max-parallel", type=int, help="Deprecated compatibility placeholder; only 3 is accepted")
+    parser.add_argument("--max-worker-calls", type=int, help="Deprecated placeholder; use --max-model-calls (only 0 accepted here)")
+    parser.add_argument("--max-orchestrator-calls", type=int, help="Deprecated compatibility placeholder; only 0 is accepted")
+    parser.add_argument("--max-integrator-calls", type=int, help="Deprecated compatibility placeholder; only 0 is accepted")
+    parser.add_argument("--max-measurements", type=int, help="Deprecated compatibility placeholder; only 8 is accepted")
     parser.add_argument("--max-request-retries", type=int, help="Extra transient transport attempts per model call")
     parser.add_argument("--request-timeout-seconds", type=int, help="Network timeout for each model request attempt")
     parser.add_argument("--max-output-tokens", type=int, help="Provider output token budget per request attempt")
     for stage in ("outline", "integration", "worker"):
-        parser.add_argument(f"--{stage}-max-output-tokens", type=int, help=f"Provider output token budget for {stage}; overrides generic CLI budget")
+        parser.add_argument(f"--{stage}-max-output-tokens", type=int, help=f"Deprecated {stage} budget; use --max-output-tokens")
     parser.add_argument(
         "--stream-model-responses",
         action=argparse.BooleanOptionalAction,
@@ -54,6 +55,9 @@ def main() -> int:
         options = load_analysis_options(getattr(args, "config", None))
         overrides = {field.name: getattr(args, field.name) for field in fields(AnalysisOptions) if hasattr(args, field.name)}
         options = apply_analysis_overrides(options, overrides)
+        validate_observation_options(options)
+        for diagnostic in observation_option_diagnostics(options):
+            sys.stderr.write(diagnostic + "\n")
         with analysis_console(sys.stderr, args.log_level):
             outcome = run_analysis(args.png, args.prompt, options=options)
     except (OSError, TypeError, ValueError) as exc:

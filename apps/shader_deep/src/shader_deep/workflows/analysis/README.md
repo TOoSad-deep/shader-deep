@@ -1,45 +1,44 @@
 # 分析工作流
 
-## 职责
+## 职责与入口
 
-固定本轮输入, 创建业务记录, 调用一次原生主图, 根据实际接受的产物核查状态并交付报告. 角色定义和模型工具循环在[分析角色](../../agents/analysis/README.md); 字段、引用与合并规则在[五库领域](../../domain/five_libraries/README.md).
+[entry.py](entry.py) 保持 run_analysis / run_analysis_task 公开入口, 固定输入并发布 scene_observations_v1 观察包. [pipeline.py](pipeline.py) 的 execute_scene_analysis 只调用一次原生观察图, 结束后根据合法快照核查交付. 不再建立方向、探索槽位、V0/V1 或整合角色.
 
-## 阅读入口
+[session.py](session.py) 的 AnalysisSession 仅保存固定要求、图像身份、有限调用预算、接受快照和终态. 返回合同为 [SceneAnalysisResult](contracts.py), 模型消息及 SDK 文件状态不复制到业务记录中.
 
-1. [entry.py](entry.py): `run_analysis` / `run_analysis_task` 固定原图、创建输出目录并返回公开 `AnalysisOutcome`.
-2. [pipeline.py](pipeline.py): `execute_five_analysis` 单次调用图, 正常返回、异常或中断后都核查业务产物.
-3. [session.py](session.py): `AnalysisSession` 的计划、槽位、提交、版本和最终核查; 返回合同见 [contracts.py](contracts.py).
+## 状态与交付
 
-## 输入、输出与状态
-
-公开入口接受 PNG 与要求, 或已登记的根分析任务和 `AnalysisOptions`. 输出包括本轮状态、结果索引和可选 `report_dir`; 无合法基线时不发布空报告包.
-
-| 责任方 | 持有内容 |
+| 状态 | 含义 |
 | --- | --- |
-| `AnalysisSession` | 固定输入、元素、冻结计划、槽位状态、接受的报告/材料、V0/V1 和缺口 |
-| SDK 图 | 消息历史、todos、scratch 和摘要; 工作流不保存第二份模型会话 |
-| 文件 | `manifest.json` 业务索引、`results/` 合法产物、`result.json` 终态、`run.json` 公开投影和 `report/` 交付包 |
+| running | 允许本图保存草稿、回读、局部编辑并完成 |
+| accepted | 当前完整草稿已进入主请求, 通过领域校验且冻结快照保存成功 |
+| stopped | 主动受阻、预算耗尽或没有合法提交而结束 |
 
-槽位按 `pending → running → succeeded/failed` 推进; 主图提前结束时尚未完成的槽位也会记失败. 成功提交后不会重开槽位, 普通模型文本不能把失败改成成功.
+模型普通文本不算报告. save 只创建磁盘草稿, edit 按请求版本局部原子修改, finish 冻结当前合法且已回读的版本. 草稿操作与接受由同一锁串行保护, 模型和网络 IO 在锁外. 终态后不能覆盖已接受观察, 图异常不会抹去已有合法快照.
 
-## 常见改动
+合法提交无 gaps 时为 completed, 有必要观察缺口时为 partial; 无合法提交或发布失败为 failed. completed 不证明视觉拆分正确. 原图与新报告保留, 但不承诺恢复跨进程模型会话.
 
-| 需求 | 修改入口 |
-| --- | --- |
-| 固定要求、原图或公开返回 | `entry.py` |
-| 方向数量、准入前置条件、终态 | `session.py` 的 `freeze_plan`、`admit_task`、`finalize` |
-| 合法来源汇集、证据随版本变化 | `_collect_baseline`、`_materials`、`submit_integration`; 具体引用规则仍由领域层负责 |
-| 运行参数及 YAML/CLI 优先级 | [options.py](../options.py)、[configuration.py](../configuration.py); 阶段值由[模型适配](../../infrastructure/llm/README.md)解析 |
-| 报告文件格式或读取 | 转到[文件存储](../../infrastructure/storage/README.md) |
+pipeline 在正常结束、异常和 KeyboardInterrupt 后统一 finalize. on_delivery 可返回发布后的最终 SceneAnalysisResult; 存在回调时由回调保存公开结果索引, pipeline 不覆盖它. 回调失败普通流程传播 IO, 中断流程先保留诊断再继续传播原中断.
 
-## 关键约定
+finalize 只核查内存事实. pipeline 独立尝试 manifest 与 result 诊断文件, 单文件失败仍继续发布回调; 全盘失败保留原始 IO 和中断优先语义.
 
-- 原图、目标和本批两个或三个方向固定后保持不变. RLock 将槽位检查与占用、提交与接受置于同一临界区, 模型调用不持有该锁.
-- 接受前校验, 接受时复制报告与嵌套材料. 当前子任务只能提交自己的产物, 不能借父图描述或兄弟报告扩展输入.
-- 全部探索成功或失败后才准入整合. V0 汇集合法来源并记录缺失方向; V1 只接受保义合并, 草图不会被重新设计.
-- 最终优先 V1, 否则交付可用 V0 并保留缺口. 没有合法基线为 failed; 图返回后不补问、不重派, 再次执行创建新运行.
-- 报告包发布成功才登记公开结果. 快照是文件记录, 不承诺多文件事务或跨进程模型会话恢复; 中断会在尝试交付已有合法产物后继续传播.
+## 文件和配置
 
-## 验证入口
+运行 manifest 保存实际单角色状态和逻辑调用计数, results/observations.json 保存接受提交与摊平观察; 最终 result.json / run.json 和 report/ 由入口交付形成. 同文件临时替换不等于多文件事务.
 
-[公开入口与失败交付](../../../../tests/unit_tests/workflows/test_five_public_api.py)、[配置加载](../../../../tests/unit_tests/workflows/test_analysis_config.py)、[阶段覆盖](../../../../tests/unit_tests/workflows/test_phase_configuration.py). 命令见[开发检查](../../../../docs/development.md), 维护见[同步约定](../../../../AGENTS.md#文档同步).
+运行指标由程序记录: 安全模型标识、主规则/全部资源哈希、受控资源读取结果、合同错误和工具拒绝次数, 以及进入 pipeline 到交付前的 elapsed_seconds. 资源字段见[角色说明](../../agents/analysis/README.md). 使用 SDK UsageMetadataCallbackHandler 汇集实际报告的 token usage; 无数据为 null, 不推断缺失响应或网络重试成本, http_request_count 也保持未知. 不额外保存模型历史.
+
+配置、弃用多角色字段和 CLI/YAML 迁移见[实施记录](../../../../docs/work-items/single-agent-observations-20261110.md). 观察角色仅使用通用模型传输值, 不借用旧 worker 阶段配置. 旧完整包读取继续由[文件存储](../../infrastructure/storage/README.md)维护.
+
+## 验证
+
+[原生角色行为](../../../../tests/unit_tests/agents/test_native_analysis.py)、[公开入口和失败交付](../../../../tests/unit_tests/workflows/test_five_public_api.py)、[配置加载](../../../../tests/unit_tests/workflows/test_analysis_config.py)共同验证输入、工具、终态和消费者合同. 真模型提交与五图粒度人工校准单独记录.
+
+
+## 草稿状态
+
+AnalysisSession 持有唯一 DraftStore, 正文在 draft/observations.json. draft_revision/request_revision/seen_revision 由程序管理, 终态后拒绝写入. 未 finish 时即使草稿字段合法, 仍按 failed 交付, execution 中保留 draft_path 与 revision 便于排查. 正式发布只采用 results/observations.json 对应的冻结对象. 详细合同见[草稿实施方案](../../../../docs/work-items/observation-draft-edit-plan-20261111.md).
+
+分页回执识别 SDK 的 next offset 页头, 在同一版本下累计实际送入模型的行范围. 同批工具由角色按声明顺序执行, 连续编辑使用前一步提交版本. 回读与完成出现在同一响应时, 完成会提示下一轮调用, 待正文实际进入模型请求后再接受.
+
+默认 max_model_calls 已按当前配置提高至20, CLI显式参数可覆盖该值. 历史8轮或12轮实验的预算保留在各自运行记录中.

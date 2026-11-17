@@ -25,9 +25,6 @@ from shader_deep.infrastructure.storage.analysis_materials import package_materi
 from shader_deep.infrastructure.storage.generation_inputs import _reuse_generation_inputs, capture_generation_inputs
 from shader_deep.infrastructure.storage.report_evidence import EvidenceAsset, evidence_bytes, evidence_path
 from shader_deep.infrastructure.storage.report_package import ReferenceAsset, ReportManifest, read_report_package, read_sketch, write_report_package
-from shader_deep.workflows.analysis.entry import _delivery
-from shader_deep.workflows.analysis.session import AnalysisSession
-from shader_deep.workflows.options import AnalysisOptions
 
 
 class ReferenceObservationTests(TestCase):
@@ -169,39 +166,27 @@ class ReferenceObservationTests(TestCase):
         with self.assertRaises(ValueError):
             evidence_path(self.root, "evidence/link.png")
 
-    def test_native_merge_deduplicates_evidence_and_keeps_delivery_bytes_private(self) -> None:
+    def test_legacy_evidence_delivery_survives_source_cleanup(self) -> None:
         evidence = self._evidence()
         record, _ = evidence.measurements.measure(
             MeasurementRequest(question="轮廓", measurement=MeasurementSpec(kind="crop", region=ImageRegion(left=2, top=3, right=10, bottom=12)))
         )
         evidence.mark_presented([evidence.context(_message({}, self.url))])
-        value = ExplorationSubmission(
-            features=(self.feature, self.feature.model_copy(update={"id": "F2"})),
-            relations=(),
-            mechanisms=(self.method,),
-            sketches=(),
-            context_notes=("背景仅作上下文",),
-            evidence_links={"F1": (record.id,), "F2": (record.id,)},
+        report = ExplorationSubmission(
+            features=(self.feature,), relations=(), mechanisms=(self.method,), sketches=(self.sketch,), evidence_links={"F1": (record.id,)}
         )
-        session = AnalysisSession("分析主体", self.url, self.root / "native", AnalysisOptions(max_tasks=2))
-        session.submit_elements((self.target,))
-        session.freeze_plan("E1", ("轮廓", "颜色"))
-        session.admit_task("explorer-1")
-        session.submit_exploration("explorer-1", value, materials=evidence.snapshot(value))
-        session.fail_task("explorer-2", "未完成")
-        session.admit_task("integrator")
-        session.submit_integration(MergeProposal(groups=(MergeGroup(kind="features", ids=("F1", "F2"), keep="F1"),)))
-        selected = session.versions["V1"]["materials"]
-        self.assertEqual(selected["links"], {"F1": [record.id]})
-        self.assertIn("asset_contents", selected)
-        self.assertNotIn("asset_contents", str(session.read_analysis_result("V1")))
+        materials = evidence.snapshot(report)
         shutil.rmtree(evidence.measurements.directory)
-        result = session.finalize()
-        self.assertEqual((result.status, result.selected_version), ("partial", "V1"))
-        _delivery(session.directory, self.reference, result, session)
-        manifest, library = read_report_package(session.directory / "report")
-        self.assertIsNotNone(manifest.evidence)
-        self.assertEqual(len(library.features), 1)
-        packed = json.loads((session.directory / "report" / "evidence.json").read_text())
-        self.assertEqual(packed["links"], {"F1": [record.id]})
-        self.assertEqual(len(packed["assets"]), 1)
+        digest = hashlib.sha256(self.reference).hexdigest()
+        packed, assets = package_materials(materials, digest)
+        manifest = ReportManifest(
+            reference=ReferenceAsset(sha256=digest),
+            target_element_id="E1",
+            status="completed",
+            evidence=EvidenceAsset(path="evidence.json", sha256=hashlib.sha256(evidence_bytes(packed)).hexdigest()),
+        )
+        package = write_report_package(
+            self.root / "legacy", exploration_library(report, self.target), manifest, self.reference, evidence=packed, evidence_assets=assets
+        )
+        self.assertIsNotNone(read_report_package(package)[0].evidence)
+        self.assertEqual(read_sketch(package, "S1")["evidence"]["links"], {"F1": [record.id]})

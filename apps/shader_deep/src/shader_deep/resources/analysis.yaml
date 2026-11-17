@@ -1,33 +1,9 @@
-# 分析模块专用运行配置; 默认按模块位置加载, 不依赖启动目录.
-# 可用 --config 指定其他文件.
-# 命令行显式参数优先, 省略字段使用 AnalysisOptions 的内置默认值.
-
-# 原生分析每轮一批, 默认三个独立视角; 可设 2 或 3.
-max_tasks: 3
-# SDK task 并发上限.
-max_parallel: 3
-# 每个探索图的模型节点调用上限; 0 不附加此限制.
-max_worker_calls: 0
-# 主图和整合图各自的模型节点调用上限, 不包括 SDK 摘要请求.
-max_orchestrator_calls: 0
-max_integrator_calls: 0
-# 唯一取证操作上限, 相同规格的缓存命中不重复扣除.
-max_measurements: 8
-
-# 单次逻辑模型调用额外允许的网络重试次数, 可为 0.
+# 单 Agent 全图观察配置; CLI 显式参数 > 本 YAML > 内置默认.
+# 主模型节点的有限调用预算, 不包括 SDK 摘要与网络重试.
+max_model_calls: 20
 max_request_retries: 2
-# 每次网络请求的超时秒数, 不是整个分析流程的总耗时上限.
 request_timeout_seconds: 240
-# 通用输出 token 预算; 阶段值未设置时回退此值, 通用 CLI 优先于阶段 YAML.
 max_output_tokens: 163840
-# 可选阶段覆盖; null 保持通用回退, 不自动启用文档中的实验值.
-outline_max_output_tokens: null
-integration_max_output_tokens: null
-worker_max_output_tokens: null
-# 是否使用 SSE 流式传输; 收齐并校验响应后才执行工具.
 stream_model_responses: true
-
-# 相对路径基于本 YAML 所在目录; null 表示当前工作目录下的 runs.
+# 相对路径基于本 YAML 所在目录.
 output_dir: null
-
-# 上下文、工具循环和摘要由 Deep Agents 管理. 旧恢复/共享额度参数不再用于本流程.

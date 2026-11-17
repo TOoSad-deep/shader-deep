@@ -21,10 +21,13 @@ if TYPE_CHECKING:
     from langchain.agents.middleware import ModelRequest
     from langchain.agents.middleware.types import ToolCallRequest
     from langchain.tools import BaseTool
+    from langchain_core.messages import AnyMessage
 
+    from shader_deep.agents.generation.memory import GenerationMemory
     from shader_deep.agents.generation.tools import RenderSession
     from shader_deep.domain.tasks import BlackboardState
     from shader_deep.infrastructure.storage.generation_inputs import CapturedGenerationInputs
+    from shader_deep.infrastructure.storage.generation_planning_inputs import CapturedPlanningInputs
     from shader_deep.infrastructure.storage.scene_inputs import CapturedSceneInputs
 
 
@@ -37,7 +40,8 @@ class GenerationContextMiddleware(AgentMiddleware[AgentState[object], None, obje
         task_id: str,
         *,
         asset_root: Path | None = None,
-        inputs: CapturedGenerationInputs | CapturedSceneInputs | None = None,
+        inputs: CapturedGenerationInputs | CapturedSceneInputs | CapturedPlanningInputs | None = None,
+        memory: GenerationMemory | None = None,
     ) -> None:
         """绑定任务和黑板读取入口.
 
@@ -46,13 +50,18 @@ class GenerationContextMiddleware(AgentMiddleware[AgentState[object], None, obje
             task_id: 本实例负责的生成任务.
             asset_root: 相对制品路径的根目录, 未提供时固定使用构造实例时的工作目录.
             inputs: 单方案或整图任务已捕获的固定材料; 未提供时沿用原文件加载方式.
+            memory: 可选的本轮视觉记忆, 负责按需选材与请求历史投影.
         """
         self.get_state = get_state
         self.task_id = task_id
         self.asset_root = (asset_root if asset_root is not None else Path.cwd()).resolve()
         self.inputs = inputs
+        self.memory = memory
 
     def _prepare(self, request: ModelRequest) -> ModelRequest:
+        if self.memory is not None:
+            # 投影仅复制 SDK 已支持的消息类型并补充 HumanMessage.
+            return request.override(messages=cast("list[AnyMessage]", self.memory.prepare(list(request.messages))))
         # 每次调用 getter 取最新黑板, 包含上一轮工具刚登记的候选与错误.
         context = _build_generation_context(self.get_state(), self.task_id, asset_root=self.asset_root, inputs=self.inputs)
         # override 仅修改本次请求, 材料消息不写入会话历史, 避免每轮重复累积.
@@ -103,14 +112,16 @@ class GenerationLoopMiddleware(AgentMiddleware[AgentState[object], None, object]
         session = self.session
         # 模型轮数与渲染次数分开限制: 模型可能只说话、提交无效工具参数或反复选择失败.
         # 多留两轮供纠错/选择, 但实际完成也可能在预算内提前发生.
-        if session.model_calls >= session.options.max_attempts + 2:
+        if session.model_calls >= session.options.resolved_max_model_calls:
             session.stop_reason = "attempt_limit" if session.attempts >= session.options.max_attempts else "model_limit"
             session.save()
             raise GenerationLimitError(session.stop_reason)
         # 前一个 Context middleware 已实际加载本轮成功候选的 PNG.
         # presented 记录预览进入本轮请求的资格, 不证明模型完成了有效视觉判断.
         # 同一批工具调用中的新渲染尚未经过下一次模型调用, 不能立即选择.
-        session.presented.update(session.successful)
+        if session.memory is None:
+            session.presented.update(session.successful)
+        finishable = session.presented | (session.successful & session.memory.full_candidates if session.memory is not None else set())
         # 计数在调用前递增; 不包含模型客户端内部的 HTTP 重试次数.
         session.model_calls += 1
         session.save()
@@ -119,8 +130,8 @@ class GenerationLoopMiddleware(AgentMiddleware[AgentState[object], None, object]
                 {
                     "render_conditions": {"width": session.options.width, "height": session.options.height, "time": session.options.time},
                     "attempts_remaining": session.options.max_attempts - session.attempts,
-                    "model_calls_remaining": session.options.max_attempts + 2 - session.model_calls,
-                    "finishable_candidates": sorted(session.presented),
+                    "model_calls_remaining": session.options.resolved_max_model_calls - session.model_calls,
+                    "finishable_candidates": sorted(finishable),
                 },
                 ensure_ascii=False,
             )
@@ -143,7 +154,12 @@ class GenerationLoopMiddleware(AgentMiddleware[AgentState[object], None, object]
             selected = self.session.selected
             content = Path(selected.code_path).read_text(encoding="utf-8") if selected is not None else self.session.stop_reason
             return ModelResponse(result=[AIMessage(content=content)])
-        return handler(self._prepare(request))
+        response = handler(self._prepare(request))
+        if self.session.memory is not None:
+            self.session.presented.update(self.session.successful & self.session.memory.full_candidates)
+            self.session.memory.consumed()
+            self.session.save()
+        return response
 
     def wrap_tool_call(self, request: ToolCallRequest, handler: Callable[[ToolCallRequest], object]) -> ToolMessage:
         """拒绝模型调用本轮未开放的内置工具.
@@ -158,7 +174,17 @@ class GenerationLoopMiddleware(AgentMiddleware[AgentState[object], None, object]
         if request.tool_call["name"] not in {tool.name for tool in self.allowed_tools}:
             # 即使模型猜到框架内置工具名, 也在执行前返回错误, 不调用对应 handler.
             return ToolMessage(
-                content="本轮只允许 render_shader、finish_shader 和 stop_generation", tool_call_id=request.tool_call["id"], status="error"
+                content="本轮只允许 " + "、".join(tool.name for tool in self.allowed_tools), tool_call_id=request.tool_call["id"], status="error"
             )
         # 这些工具只返回字符串, 因此本流程的 handler 返回 ToolMessage.
-        return cast("ToolMessage", handler(request))
+        result = cast("ToolMessage", handler(request))
+        call_id = request.tool_call["id"]
+        if (
+            self.session.memory is not None
+            and request.tool_call["name"] == "render_shader"
+            and result.status != "error"
+            and isinstance(call_id, str)
+            and isinstance(result.content, str)
+        ):
+            self.session.memory.bind_render(call_id, result.content)
+        return result

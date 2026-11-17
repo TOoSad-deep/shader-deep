@@ -14,12 +14,15 @@
 
 | 本次改动 | 优先读取 |
 | --- | --- |
-| 主/子角色、工具、skill、上下文或 task 委派 | [分析角色](src/shader_deep/agents/analysis/README.md) |
-| 固定输入、槽位状态、V0/V1、失败交付或运行参数 | [分析工作流](src/shader_deep/workflows/analysis/README.md) |
+| 单观察角色、工具、skill、上下文或权限 | [分析角色](src/shader_deep/agents/analysis/README.md) |
+| 固定输入、接受快照、终态、失败交付或运行参数 | [分析工作流](src/shader_deep/workflows/analysis/README.md) |
+| 全图 E/F/R 字段、归属和结构引用 | [观察合同](src/shader_deep/domain/scene_observations.py)、[实施记录](docs/work-items/single-agent-observations-20261110.md) |
+| 单规划角色、工具、规则、输入或终态 | [规划角色](src/shader_deep/agents/planning/README.md)、[规划工作流](src/shader_deep/workflows/planning/README.md) |
+| 新 M/S、备选、两类 gaps 或规划包 | [规划合同](src/shader_deep/domain/scene_planning.py)、[规划包](src/shader_deep/infrastructure/storage/planning_package.py)、[业务设计](docs/work-items/five-library-planning-contract-20261111.md) |
 | 五库字段、引用或合并含义 | [五库领域](src/shader_deep/domain/five_libraries/README.md); 详细业务定义查[数据设计](docs/analysis-five-libraries.md) |
 | 模型配置、输出预算、原始工具参数或网络传输 | [模型适配](src/shader_deep/infrastructure/llm/README.md) |
 | 报告包、证据文件、生成输入捕获或保存格式 | [文件存储](src/shader_deep/infrastructure/storage/README.md) |
-| 生成、渲染、两方案比较或两元素整图组合 | [生成架构](docs/generation-architecture.md); 从本次涉及的执行分支进入 |
+| 生成、渲染、视觉记忆、两方案比较或两元素整图组合 | [生成架构](docs/generation-architecture.md); 从本次涉及的执行分支进入 |
 
 模块 README 说明当前实现, ADR 记录仍有效的设计取舍, `docs/work-items/` 保存对应任务的计划、进度与验证证据. 查历史演变时再读[原生切换记录](docs/work-items/deep-agents-native-plan-20261028.md)、[旧执行清理](docs/work-items/analysis-legacy-cleanup-20261028.md)或相关生成记录; 已完成计划不覆盖当前源码与约定.
 
@@ -33,11 +36,12 @@
 
 ## 应用范围
 
-- 当前有两条独立流程：`shader-deep` 执行生成、渲染、查看预览与选择候选；`shader-deep-analyze` 执行多视角分析、按需测量与报告综合。
-- 独立视觉评审、持续决策、分析到生成的自动交接尚未接入。除非任务明确要求，不提前扩展这些流程，也不把设计方案写成已经实现的能力。
+- 当前提供三个独立入口。`shader-deep-analyze` 交付全图 E/F/R，`shader-deep-plan` 用一个原生角色组织整图 M/S，`shader-deep` 执行生成、渲染与候选选择。
+- 规划消费固定观察版本，调用方通过明确的 S 与可选一项备选接入整图生成。独立视觉评审和持续决策按具体任务设计。
 - 优先完成需求范围内的最小改动。应用问题先在本包解决；涉及 SDK 或其他包时，再读取对应目录的约定并说明跨包修改原因。
 - 优先使用 Deep Agents 现有能力. 新增模块或自定义框架机制前, 简要说明已有模块/框架无法满足的具体需求, 避免为假设中的瓶颈增加通用抽象.
 - 保留现有公开入口及兼容包装，包括 `main.py`、`generate_shader`、`generate_task`、`run_shader`、`run_generation`、`run_analysis` 和 `run_analysis_task`。签名变更遵循根目录的兼容要求。
+- 新规划公开入口为 `run_planning`、`read_planning_package`、`read_planning_sketch` 和 `run_generation_from_planning`。整图方案与旧单元素报告使用各自明确的绑定和捕获类型。
 
 ## 源码职责与查找范围
 
@@ -47,7 +51,7 @@
 | --- | --- |
 | `src/shader_deep/api.py`、`cli/` | 稳定调用入口、参数、输出与退出码 |
 | `src/shader_deep/workflows/` | 运行创建、固定业务事实、单次原生图调用与最终交付 |
-| `src/shader_deep/agents/` | 原生主/探索/整合与生成角色的提示词、上下文与受限工具 |
+| `src/shader_deep/agents/` | 单观察、单规划与生成角色的提示词、上下文及受限工具 |
 | `src/shader_deep/domain/` | 任务、黑板、证据和五库业务规则; 历史类型仅用于读取与校验; 不依赖模型框架或 IO |
 | `src/shader_deep/infrastructure/` | 模型客户端、网络恢复、配置读取、存储和追踪 |
 | `src/shader_deep/imaging/` | 固定参考图、裁剪、统计与剖面 |
@@ -76,16 +80,16 @@
 - 任务的 `target_version`、`baseline_id` 和显式输入引用在登记后保持固定。采用新目标或基线时创建新任务；新候选的产生和选择不自动改写旧任务。
 - `read_task` 只解析业务引用。记录存在于黑板中，不表示它已经被发送给模型；Context Builder 负责加载任务实际需要的代码、图像和证据。
 - 固定图像与业务材料通过请求级注入保持可用, 避免重复追加到持久消息. 原生分析的历史、todos、文件和摘要交给 SDK, 应用业务记录不保存第二份模型历史. 生成继续保持工具调用/响应配对.
-- 保留各角色已有的选材策略。探索子任务只接收冻结输入、自身方向与本角色证据；修改消息合并方式时验证实际多模态请求，不能只检查文件路径或文本占位符。
+- 观察角色持续接收固定整图与要求, 详细规则和样例按需读取. 修改消息装配时验证实际多模态请求, 不能只检查文件路径或文本占位符.
 - 制品按独立 `run-*` 目录保存，失败尝试也应可追溯。快照通过同目录临时文件替换写入；不要将其描述为多个文件的事务或可恢复完整模型会话的检查点。
 - 区分候选已登记、渲染成功、材料已进入模型请求、模型提交结果、用户视觉验收。`completed` 和 `presented` 等程序状态不证明视觉效果已被用户接受。
 
 ## 生成与渲染约定
 
-- 生成角色只允许 `render_shader`、`finish_shader` 和 `stop_generation`. 工具列表限制与实际执行白名单都必须保留, 不能只靠提示词约束权限.
+- 生成默认仅开放 `render_shader`、`finish_shader` 和 `stop_generation`; `visual_memory=True` 时增加 `list_materials`、`read_materials`. 可见工具与执行白名单同步限制, 记忆模式首版限 PNG/既有任务及旧五库报告单方案, planning/scene 输入拒绝开启. 材料与请求选材职责见[生成架构](docs/generation-architecture.md#按需视觉记忆).
 - `stop_generation` 记录非空受阻原因、允许引用的候选和补充输入/另试方案建议, 返回 `blocked`, 不自动派发任务或选择候选. 同批工具按顺序执行, 终态后的工具不能重开会话.
 - 渲染宽度、高度、时间和预算由程序固定。渲染失败也消耗尝试次数；模型调用次数单独计数，避免纯文本回复或无效调用形成无限循环。
-- 生成关闭自动模型摘要, 普通逻辑模型请求上限为 `max_attempts + 2`; SDK 有限网络重试不计入该字段. 报告模式未指定的宽高取自本轮固定原图, 旧 PNG 模式默认值保持不变.
+- 生成关闭自动模型摘要. `max_model_calls` 显式值优先, 省略时原模式为 `max_attempts + 2`, 记忆模式为 12; 图步数、剩余额度和运行记录使用同一解析值, SDK 有限网络重试不计入逻辑轮数. 报告模式未指定的宽高取自本轮固定原图, 旧 PNG 模式默认值保持不变.
 - `finish_shader` 只能选择本次会话成功渲染，且预览已进入后续模型请求的候选。同一批调用刚渲染出的候选不能跳过回读立即结束。
 - 最终交付读取已选候选的实际 GLSL 文件，保留自检说明及差异；不能用模型最后另写的一段未经渲染代码替代它。
 - `rendering/` 保持独立，不导入 Agent、黑板或 LangChain。Python 管理浏览器与参数，`webgl2.js` 负责真实编译、链接、绘制和 PNG 导出。
@@ -93,18 +97,23 @@
 - Playwright 同步对象在所属线程创建、使用和关闭。生成会话使用单工作线程串行执行渲染与选择；成功、失败和退出路径都必须释放浏览器、线程及 GPU 对象。
 - 保留失败阶段与驱动原始日志。直接导出画布 PNG，不能用页面截图、静默缩放或其他处理替代后继续声称渲染条件相同。
 
-## 多视角分析与证据约定
+## 单 Agent 观察、规划与历史报告约定
 
-- 默认分析采用原生 Deep Agents 与 SDK task. 固定原图、单批目标/方向及父子材料隔离由程序保证; 角色工具与请求边界以[分析角色说明](src/shader_deep/agents/analysis/README.md)为准.
-- 业务提交通过领域校验才接受, 普通文本、todos 或 scratch 文件不代表报告. 业务状态与 SDK 图状态各自归属; 终态与 V0/V1 规则见[分析工作流](src/shader_deep/workflows/analysis/README.md), 合并保义见[五库领域](src/shader_deep/domain/five_libraries/README.md).
-- 证据保留来源及实际字节, 引用合法不证明视觉结论正确. 取证呈现规则见角色说明, 文件校验与生成取材见[文件存储](src/shader_deep/infrastructure/storage/README.md).
-- 旧四库、固定五库执行与回放实验已删除. 已保存制品保留, 历史类型不构成旧执行支持; 新分析运行不承诺跨进程模型会话恢复.
+- 默认分析采用一个原生 Deep Agents 观察角色. 工具为 save_observation_draft、read_file、edit_file、finish_analysis 和 stop_analysis. 草稿仅位于 /draft/observations.json, 可见工具和实际执行白名单均需验证.
+- F 在 E 下提交, 程序派生 feature_ids. R 可以涉及同元素或跨元素的 E/F. 首次保存完整草稿, 后续通过唯一匹配编辑局部内容. 字段结构在写入前校验, 跨条目引用问题可暂存并反馈具体位置, finish 接受时执行完整校验.
+- 草稿以磁盘字节为唯一可编辑来源. 同批工具按声明顺序串行执行, 每次编辑基于前一步提交版本, 终态后拒绝后续操作. 完成前必须完整回读最新版本并实际送入后续模型请求. 接受后的结束钩子位于 SDK 摘要和计数之前. 运行状态见[分析工作流](src/shader_deep/workflows/analysis/README.md).
+- scene_observations_v1 观察包使用独立读取入口. five_libraries_v1 及其证据、草图读取继续保留, 历史类型不构成多角色执行支持. 观察完成不等于 M/S 规划或视觉验收完成.
+- scene_planning_v1 绑定完整观察内容身份、用户要求和实际生成约束。规划只维护 mechanisms、sketches 与可选 extra_candidates，候选索引由程序派生。
+- 规划工具为 save_planning_draft、read_file、edit_file、finish_planning 和 stop_planning，唯一可编辑路径为 /draft/planning.json。主 skill 提供共同流程，复杂方法、备选迁移和条件缺口按[规划角色导航](src/shader_deep/agents/planning/README.md)读取参考。
+- 生成材料保留所选方案条件、上游观察 gaps 与 S.gaps。覆盖与引用由程序检查，方法成立条件和组合语义通过模型复核及实际生成核对。
+- 新整图生成显式选择 S 和可选一项零基备选。默认继承规划尺寸与时间，显式覆盖固定为本轮执行条件并记录差异。
+- 参考图、快照与报告保留来源和实际字节; 文件或引用合法不证明视觉结论正确. 报告发布失败不能登记成功结果. 新运行不承诺跨进程模型会话恢复.
 
 ## 配置、输出与追踪
 
 - 模型配置由 `infrastructure/llm/client.py` 按 `OPENROUTER_*`、`DS_MICU_*`、`MICU_*` 顺序统一选择: 首个任一项非空的组须完整配置, 全空占位组跳过. 不得跨组补齐模型、地址或密钥. OpenRouter 分析的推理块回传与输出参数规则位于 `infrastructure/llm/openrouter.py` 和 `transport.py`.
 - 应用读取进程环境变量，`.env` 由启动命令加载。保留用户既有配置；凭据不写入源码、测试、快照或提交记录。模型 ID 更新时按根目录要求核验官方资料。
-- 生成 CLI 的标准输出只承载最终 GLSL；分析 CLI 的标准输出承载状态与文件包位置的结构化 JSON 索引, 五库正文由文件包承载。诊断和制品位置写入标准错误，保持现有退出码语义。
+- 生成 CLI 的标准输出承载最终 GLSL。观察与规划 CLI 的标准输出承载状态和文件包位置的 JSON 索引，正文由各自文件包承载。诊断和制品位置写入标准错误。
 - 保留运行、任务及父子任务的追踪关联。启用 LangSmith 会传输模型和工具输入中的图像、代码及报告；沿用用户的追踪配置，不在普通测试中启用真实外部追踪。
 
 ## 开发与验证

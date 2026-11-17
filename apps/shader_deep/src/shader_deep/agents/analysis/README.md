@@ -1,45 +1,55 @@
 # 分析角色
 
-## 职责
+## 职责与入口
 
-将主角色、独立探索和整合装配为 Deep Agents 图, 定义各角色的提示、工具及请求材料. SDK 执行工具循环、task 委派、摘要和 scratch 文件操作; 接受报告、任务终态和版本选择由[分析工作流](../../workflows/analysis/README.md)负责.
+[native.py](native.py) 的 build_analysis_agent 装配一个原生 Deep Agents 全图观察角色. SDK 管理工具循环、消息、摘要与隔离 StateBackend; 业务接受和终态由[观察工作流](../../workflows/analysis/README.md)管理. 角色可分析多个 E, 不再委派探索或整合角色.
 
-## 阅读入口
+[scene-observer/SKILL.md](../../resources/skills/scene-observer/SKILL.md) 是运行规则入口. 这是专用观察角色, 简短的共同流程直接进入 system prompt; 条件式参考文件预置到 StateBackend, 仅在 read_file 返回后进入消息. 已知使用此 skill, 因此不再启用 SDK 的技能发现提示或强制额外读取主文件; 通用 SDK 文件读取与工具循环继续使用.
 
-1. [native.py](native.py) 的 `build_analysis_agent`: 从主图装配了解角色、工具和中间件.
-2. 同文件的 `_child`: 固定输入投影 → `create_deep_agent` 子图 → 权威回执投影.
-3. [observations.py](observations.py) 的 `ReferenceObservations`: 原图聚焦、按需取证、呈现登记和证据字节冻结.
-
-角色方法分别在[编排 skill](../../resources/skills/native-orchestration/SKILL.md)、[探索 skill](../../resources/skills/native-exploration/SKILL.md)和[整合 skill](../../resources/skills/native-integration/SKILL.md). 修改方法时读对应一份即可.
-
-## 输入、输出与状态
-
-| 角色 | 固定输入 | 业务工具与输出 |
-| --- | --- | --- |
-| 主角色 | 原图、要求、槽位容量及本轮进度 | 登记元素、冻结方向、读取合法结果; 用 SDK `task` 委派 |
-| `explorer-1/2/3` | 冻结目标、原图、范围及自身方向 | `submit_exploration`; 显式启用时可 `inspect_reference` |
-| `integrator` | 已汇集的固定 V0 正文 | `submit_merges`, 仅提出既有 F/R/M 的合并 |
-
-消息、todos、摘要及文件由各角色 SDK 图管理. 取证实例持有本角色测量记录、呈现标记和冻结字节. 子图只返回程序生成的状态/结果引用, 不合并自己的消息或 scratch 到父图.
-
-## 常见改动
-
-| 需求 | 修改入口 |
+| 触发条件 | 按需参考 |
 | --- | --- |
-| 增加普通业务工具 | `_root_tools`、`_explorer_tools` 或 `_integrator_tools`; 业务校验放所属模块 |
-| 调整角色方法 | 对应 skill; 工具 docstring 和模型提示也是运行输入 |
-| 调整固定图像、上下文隔离 | `FixedInput`、`_child.project` 与 `ReferenceObservations.context` |
-| 修改任务启动/结束条件 | 转到工作流的 `AnalysisSession`; 此处只接入准入回执 |
-| 修改网络协议或输出参数 | 转到[模型适配](../../infrastructure/llm/README.md) |
+| 主流程仍无法确定对象/群体边界或 F 拆合 | [grouping.md](../../resources/skills/scene-observer/references/grouping.md) |
+| 主流程仍无法确定 F/R 归属、关系拆合或参与范围 | [relations.md](../../resources/skills/scene-observer/references/relations.md) |
+| 使用基本分类后仍无法判断歧义的必要性或缺口归属 | [uncertainty.md](../../resources/skills/scene-observer/references/uncertainty.md) |
 
-## 关键约定
+主文件直接包含背景登记、精简描述、F/R 基本归属及问题/缺口口径, 普通提交无需先读参考才能知道交付要求. 每个参考仅补充复杂判断方法与短边界例子. 未读取参考本身不再等同于违反主流程; 读取记录仍用于诊断, 不代表质量验收. 原[五图完整答案](../../../../docs/analysis-observation-examples.md)仅供离线校准, 不预置到运行时. 文档导航见[观察粒度解释](../../../../docs/analysis-observation-guidelines.md).
 
-- 父模型填写的 task description 不改变冻结输入. SDK isolated 仍可能传递非消息状态, 因此项目显式投影输入和输出.
-- 主图只准入本批槽位; 子图过滤并拒绝继续委派. `subagents=[]` 不等于禁用默认 general-purpose.
-- SDK scratch 文件不是权威报告. 只有提交工具通过[五库规则](../../domain/five_libraries/README.md)才接受产物.
-- 取证在后续请求准备时核对记录和真实图像并登记呈现; 这不证明服务端收到或模型理解. 测量锁保护同角色 ID、缓存和额度.
-- 调用限制作用于各图普通模型节点, 不等于子图与摘要请求合计预算. 原生模型重试只包围请求, 不重派业务任务.
+## 输入、工具与上下文
 
-## 验证入口
+| 内容 | 提供方式 |
+| --- | --- |
+| 用户要求、固定整图、尺寸和剩余预算 | FixedInput 在实际主模型请求中注入一次, 不反复追加持久历史 |
+| 主流程和条件式参考 | analysis_input 预置到本图文件状态, 只有 SKILL.md 正文直接进入固定指令 |
+| 草稿与产物 | save_observation_draft 首次保存; read_file/edit_file 修订; finish_analysis 冻结接受 |
+| 受阻结束 | stop_analysis 记录非空原因, 无伪造成功报告 |
+| 材料读取 | SDK read_file 只读本角色资源及本图 conversation_history / large_tool_results |
 
-[原生 task 与隔离](../../../../tests/unit_tests/agents/test_native_analysis.py)、[取证与交付](../../../../tests/unit_tests/agents/test_reference_observations.py). 按改动范围执行[开发检查](../../../../docs/development.md), 文档维护遵循[同步约定](../../../../AGENTS.md#文档同步).
+原始图像实际字节进入模型请求, 路径占位不代表已看图. 仅开放固定草稿文件的局部编辑, 其余资源只读. 原图和规则在当前图中固定; 不把历次报告或模型自由文字自动写为长期记忆.
+
+## 执行边界
+
+- ObservationGuard 的 before_model/abefore_model 先检查终态再计逻辑调用, 因此接受后不会再运行摘要或主模型请求.
+- FixedInput 限制可见工具, ObservationGuard 在执行端再次验证白名单, 不依赖 subagents=[] 关闭 SDK 默认角色.
+- 同步与异步路径均按 AIMessage.tool_calls 的声明顺序执行. 同批编辑采用前一步提交版本, 读取能看到前一步修改. 完成仍校验最新全文已进入模型请求, 终态后拒绝后续调用.
+- 字段结构错误拒绝保存; 领域引用问题允许保留草稿, finish 前完成修复. 最新完整草稿经回读并实际进入后续主请求后才可 finish. IO 与非预期异常进入运行失败, 不伪装成字段错误.
+- 原始短 ID 由模型按定位诊断局部修订, 程序不猜测重映射; F 主要归属由嵌套位置派生. 没有 M/S 规划或证据维护负担.
+- 主模型调用预算与 SDK 摘要、网络重试不同. 不将逻辑轮数描述为所有 HTTP 请求的总上限.
+- 模型只记录安全 model_name. rule_sha256 标识主文件, resource_sha256 标识各资源, skill_bundle_sha256 标识整组资源; 旧 examples_sha256 仅存在于历史运行.
+- resource_read_results 只记录受控资源路径及工具返回状态, 不存文件正文. 资源预置、工具成功返回和模型理解是不同事实; 该指标不证明阅读完整或语义遵循.
+
+旧 [observations.py](observations.py) 的证据工具仍供旧证据合同验证使用, 不挂载到新观察角色.
+
+## 验证
+
+[原生图行为](../../../../tests/unit_tests/agents/test_native_analysis.py)覆盖实际图像、修正、权限、资源回读、批次冲突、预算、终态早于摘要及异步执行. [旧证据验证](../../../../tests/unit_tests/agents/test_reference_observations.py)继续保护已保存完整包的证据取材, 不恢复已删除的多角色执行.
+
+
+## 草稿后端
+
+[draft_backend.py](draft_backend.py) 将共用 [DraftBackend](../draft_runtime.py) 固定到 observations.json, 作为 CompositeBackend 的 /draft/ 路由. 默认 StateBackend 继续管理规则与 SDK 外置材料. 草稿只存磁盘, 读取与编辑调用同一 [DraftStore](../../infrastructure/storage/observation_draft.py). 编辑结果反馈包含版本、差异和诊断.
+
+ObservationGuard 为共用 [DraftToolGuard](../draft_runtime.py) 配置观察工具与文件范围. 共用辅助负责同批顺序执行、执行端权限和终态检查. 观察角色继续管理自己的输入、领域校验、接受快照与交付.
+
+FixedInput 绑定请求草稿版本, AnalysisSession 通过共用 [DraftReadTracker](../draft_runtime.py) 累计实际进入主模型请求的同版本行范围. 回执保存正文哈希与行范围. 编辑后完整回读最新版本, 正文实际进入后续请求时才更新已见版本.
+
+观察与规划使用同一套草稿运行辅助. 规划工具、规则及 M/S 接受流程见[规划角色](../planning/README.md).

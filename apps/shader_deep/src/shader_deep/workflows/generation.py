@@ -22,6 +22,7 @@ if TYPE_CHECKING:
 
     from shader_deep.domain.tasks import BlackboardState
     from shader_deep.infrastructure.storage.generation_inputs import CapturedGenerationInputs
+    from shader_deep.infrastructure.storage.generation_planning_inputs import CapturedPlanningInputs
     from shader_deep.infrastructure.storage.scene_inputs import CapturedSceneInputs
 
 # 角色提示说明工作方式; 次数、工具白名单和选择资格另由运行时代码检查.
@@ -89,7 +90,7 @@ def _run_session(
     options: GenerationOptions,
     *,
     run_dir: Path | None = None,
-    inputs: CapturedGenerationInputs | CapturedSceneInputs | None = None,
+    inputs: CapturedGenerationInputs | CapturedSceneInputs | CapturedPlanningInputs | None = None,
     model: BaseChatModel | None = None,
 ) -> GenerationOutcome:
     # PNG 与报告入口共用循环、预算退出和异常保存; 报告沿用准备时的唯一目录.

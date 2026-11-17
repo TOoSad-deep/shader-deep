@@ -6,7 +6,7 @@ from dataclasses import fields, replace
 from pathlib import Path
 
 from shader_deep.infrastructure.configuration import read_yaml_mapping
-from shader_deep.workflows.options import AnalysisOptions
+from shader_deep.workflows.options import LEGACY_OBSERVATION_DEFAULTS, AnalysisOptions
 
 OUTPUT_FIELDS = ("max_output_tokens", "outline_max_output_tokens", "integration_max_output_tokens", "worker_max_output_tokens")
 
@@ -75,7 +75,8 @@ def _with_sources(options: AnalysisOptions, values: dict[str, object], source: s
                 # 显式清空阶段值时撤销旧来源, 避免旧 YAML 标记继续影响回退判断.
                 sources.pop(name, None)
     metadata = tuple((name, origin, value) for name, (origin, value) in sources.items())
-    return replace(options, **values, _output_token_sources=metadata)
+    deprecated = tuple(sorted(set(options._deprecated_option_sources) | (set(values) & LEGACY_OBSERVATION_DEFAULTS.keys())))
+    return replace(options, **values, _output_token_sources=metadata, _deprecated_option_sources=deprecated)
 
 
 def apply_analysis_overrides(options: AnalysisOptions, overrides: dict[str, object]) -> AnalysisOptions:

@@ -4,6 +4,8 @@
 
 状态: 分阶段实施的设计基线. 本文承接[宏观分析](generation-execution-design.md), 具体规定目录、模块职责、数据交接和四个实施分支. 01 至 04 已落地, 验证及交付状态见各阶段记录; [04 整图组合记录](work-items/generation-04-scene-composition.md#实施记录)是最新进展. 当前代码以[当前架构](architecture.md)为准, 真实模型效果不由离线测试代替.
 
+2026-11-11 增补显式视觉记忆接入, 见下方[按需视觉记忆](#按需视觉记忆); 各项验证与未覆盖范围记在[VISTA 实施记录](work-items/vista-minimal-harness-implementation-20261111.md).
+
 目标是用最小交接层, 把固定五库方案送入现有生成与渲染闭环. 首先完成单方案, 再做方案比较, 最后完成多元素整图组合. 设计与实现保持在 `apps/shader_deep/` 内, 复用现有 DeepAgents、黑板、WebGL2 和文件存储.
 
 ## 文档与实施入口
@@ -26,6 +28,23 @@
 恢复引擎、分布式锁、插件注册中心、数据库、通用执行图和所有参数的组合测试均不属于首版. 仅在后续出现实际需求时引入. 现有引用校验、工具白名单、预览回读和资源清理继续保留, 它们保护当前实际行为.
 
 新增测试围绕可观察行为: 方案是否正确进入模型、结果是否来自实际渲染、失败是否如实交付. 复用现有夹具和回归测试, 不以覆盖每个函数、内部调用顺序或新增文件数量作为目标.
+
+## 按需视觉记忆
+
+`GenerationOptions.visual_memory` 默认 false. 开启后, PNG/既有任务及旧完整五库报告的单方案生成在本轮运行内保存材料索引并允许主动回看; planning/scene 输入暂拒绝开启. 原有比较与组合入口保持原选材流程. `GenerationOptions` 和 `run_generation_from_report` 的 `visual_memory`、`max_model_calls` 均为有默认值的 keyword-only 扩展, 不改变原位置参数.
+
+| 职责 | 当前入口 |
+| --- | --- |
+| 材料登记、稳定身份、哈希校验、目录及裁剪 | [visual_memory.py](../src/shader_deep/infrastructure/storage/visual_memory.py); 文件合同见[存储说明](../src/shader_deep/infrastructure/storage/README.md#视觉材料存储) |
+| 固定输入捕获、候选/结果映射、默认选材和临时回看 | [generation/memory.py](../src/shader_deep/agents/generation/memory.py) |
+| 已执行调用的代码引用化、旧错误收回与当轮内容展开 | [history.py](../src/shader_deep/agents/generation/history.py), 仅构建发送请求的副本 |
+| 工具准入、模型预算、完整预览呈现及完成资格 | [middleware.py](../src/shader_deep/agents/generation/middleware.py)、[session.py](../src/shader_deep/agents/generation/tools/session.py) |
+
+记忆模式在原有三个生成工具上增加 `list_materials` 和 `read_materials`. 固定要求、参考图和有效 `generation_scheme` 持续提供, 默认展开最新成功候选, 失败反馈与主动回看只在紧接着的一轮展开. 旧图、代码和错误通过材料 ID 再读; 历史已登记的渲染参数始终为引用, 同一正文不因默认输入与回看重合而重复发送. SDK 原消息与已执行参数保留, 请求投影保持工具调用/响应配对.
+
+目录与局部图不授予完成资格. 本轮可选清单包含此前已呈现及本次实际携带整图的本会话成功候选; 新呈现资格在模型成功返回后、工具执行前提交. 未成功的请求不提交新资格, 同批新渲染仍需后续请求实际呈现整图. 资格与状态不证明视觉验收.
+
+渲染预算与模型预算分别控制. 显式 `max_model_calls` 优先; 省略时原模式保持 `max_attempts + 2`, 记忆模式为 12. 图步数、反馈、追踪及 `run.json` 使用同一解析值, 自动摘要保持关闭, SDK 网络重试不另外计入逻辑模型轮次.
 
 ## 整体流程与职责
 
@@ -133,7 +152,7 @@ Interface 包括输入输出、失败方式和需要保持的不变量. 各 Modu
 
 视图保留全部公共 gaps 和 open_questions, Context Builder 为选定方案补全必要正文. 缺少所选草图或有效引用时入口直接报错; 自然语言适用条件交给生成模型结合材料判断, 不另建规则引擎或前置审批 Agent. `partial` 不是一律拒绝条件, `completed` 也不是自动可执行证明.
 
-固定要求、原图、方案与必要正文在每次模型请求中重新注入, 使用请求级 override, 不累加到持久历史. 首版保留已有小额度下的全量候选选材, 暂不做历史压缩优化. 未来调整选材时, 再一起调整实际预览清单与 `presented` 资格.
+固定要求、原图、方案与必要正文在每次模型请求中重新注入, 使用请求级 override, 不累加到持久历史. 默认模式保留已有小额度下的全量候选选材; 显式记忆模式按[按需视觉记忆](#按需视觉记忆)组织当前候选、回看及实际预览资格.
 
 ## 执行协议与状态归属
 
@@ -166,6 +185,10 @@ run-*/
   candidate-001.glsl
   candidate-001.png          # 成功渲染才产生
   candidate-002.glsl         # 失败代码也保留
+  candidate-001-render.json # 记忆模式: 单次渲染结果的固定投影
+  memory/                  # 仅记忆模式
+    index.json             # 材料描述与稳定引用
+    derived/               # 派生裁剪
 ```
 
 临时固定材料由准备结果持有; 持久文件以输入副本和 `run.json` 为主. 输出仍读取已选候选的实际 GLSL 文件. 新报告输入模式的 stdout 继续只输出最终代码, 路径和失败说明进入 stderr; Python 调用者使用 outcome 检查完整状态.

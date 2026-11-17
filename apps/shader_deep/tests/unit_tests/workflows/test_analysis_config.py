@@ -14,7 +14,7 @@ from shader_deep.cli import analysis as analysis_cli
 from shader_deep.domain.blackboard import new_blackboard
 from shader_deep.workflows import configuration as analysis_config
 from shader_deep.workflows.configuration import load_analysis_options
-from shader_deep.workflows.options import AnalysisOptions
+from shader_deep.workflows.options import AnalysisOptions, observation_option_diagnostics, validate_observation_options
 from shader_deep.workflows.outcomes import AnalysisOutcome
 
 
@@ -57,8 +57,9 @@ class AnalysisConfigTests(TestCase):
         cases = (
             "[1, 2]",
             "max_output_token: 100",
-            "max_tasks: 1",
-            "max_tasks: 4",
+            "max_model_calls: 0",
+            "max_model_calls: true",
+            "max_model_calls: -1",
             "max_main_calls: 0",
             "max_context_tokens: 4096",
             "max_repeated_no_progress: 0",
@@ -143,3 +144,36 @@ class AnalysisConfigTests(TestCase):
         run.assert_not_called()
         self.assertEqual(stdout.getvalue(), "")
         self.assertIn("max_worker_calls", stderr.getvalue())
+
+    def test_legacy_semantics_are_checked_after_cli_overrides(self) -> None:
+        self.config.write_text("max_tasks: 2\nmax_worker_calls: 5\n", encoding="utf-8")
+        loaded = load_analysis_options(self.config)
+        with self.assertRaisesRegex(ValueError, "max_tasks.*max_worker_calls"):
+            validate_observation_options(loaded)
+        merged = analysis_config.apply_analysis_overrides(loaded, {"max_tasks": 3, "max_worker_calls": 0, "max_model_calls": 6})
+        validate_observation_options(merged)
+        self.assertEqual(merged.max_model_calls, 6)
+        self.assertIn("max_tasks", " ".join(observation_option_diagnostics(merged)))
+
+    def test_nondefault_legacy_options_are_not_silently_ignored(self) -> None:
+        cases = {"max_tasks": 1, "max_parallel": 1, "worker_observation_tools": True, "worker_max_output_tokens": 8000}
+        for name, value in cases.items():
+            with self.subTest(name=name), self.assertRaisesRegex(ValueError, name):
+                validate_observation_options(AnalysisOptions(**{name: value}))
+        validate_observation_options(AnalysisOptions())
+
+    def test_cli_model_budget_and_migration_diagnostics_keep_stdout_json(self) -> None:
+        self.config.write_text("max_tasks: 3\nmax_model_calls: 7\n", encoding="utf-8")
+        outcome = AnalysisOutcome(state=new_blackboard(), task_id="A1", summary_result=None, run_dir=self.root, stop_reason="completed")
+        output, errors = io.StringIO(), io.StringIO()
+        with (
+            patch.object(sys, "argv", ["analyze", "reference.png", "observe", "--max-model-calls", "5"]),
+            patch("shader_deep.cli.analysis.run_analysis", return_value=outcome) as run,
+            contextlib.redirect_stdout(output),
+            contextlib.redirect_stderr(errors),
+        ):
+            self.assertEqual(analysis_cli.main(), 0)
+        self.assertEqual(run.call_args.kwargs["options"].max_model_calls, 5)
+        self.assertIn('"status": "completed"', output.getvalue())
+        self.assertNotIn("弃用", output.getvalue())
+        self.assertIn("弃用", errors.getvalue())

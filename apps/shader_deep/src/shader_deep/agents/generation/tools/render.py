@@ -42,6 +42,8 @@ def render_candidate(session: RenderSession, glsl_code: str) -> str:
     candidate_id = f"{session.run_dir.name}-c{session.attempts:03d}"
     code_path = session.run_dir / f"candidate-{session.attempts:03d}.glsl"
     code_path.write_text(glsl_code, encoding="utf-8")
+    if session.memory is not None:
+        session.memory.register_code(candidate_id, code_path)
     # 先保存失败也能回看的源码; with_suffix 仅构造图片路径, 此时图片还不存在.
     preview = code_path.with_suffix(".png")
     try:
@@ -90,6 +92,7 @@ def _record(session: RenderSession, candidate_id: str, code: Path, preview: Path
         ),
     )
     session.save()
+    materials = session.memory.record_render(candidate_id, code, preview, error) if session.memory is not None else {}
     # 工具反馈是简短 JSON 字符串; 图片本体由下一轮 Context 读取, 不在这里内联.
     # 此处 status 描述渲染动作, 与 ResultRecord.status 的任务提交状态含义不同.
     return json.dumps(
@@ -99,6 +102,7 @@ def _record(session: RenderSession, candidate_id: str, code: Path, preview: Path
             "preview_path": candidate.preview_path,
             "error": error,
             "attempts_remaining": session.options.max_attempts - session.attempts,
+            **materials,
         },
         ensure_ascii=False,
     )

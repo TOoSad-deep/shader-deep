@@ -11,9 +11,11 @@ from pathlib import Path
 from typing import TYPE_CHECKING, cast
 
 from PIL import Image
+from pydantic import JsonValue, TypeAdapter
 
 from shader_deep.domain.five_libraries import object_index, parse_references
 from shader_deep.domain.generation import GenerationBinding
+from shader_deep.infrastructure.storage.observation_package import read_observation_package
 from shader_deep.infrastructure.storage.report_evidence import read_evidence
 from shader_deep.infrastructure.storage.report_package import (
     LIBRARIES,
@@ -24,8 +26,6 @@ from shader_deep.infrastructure.storage.report_package import (
 )
 
 if TYPE_CHECKING:
-    from pydantic import JsonValue
-
     from shader_deep.domain.five_libraries import Alternative, FiveLibraries
     from shader_deep.domain.tasks import CandidateRecord
     from shader_deep.infrastructure.storage.report_package import ReportManifest
@@ -62,6 +62,7 @@ class CapturedGenerationInputs:
 
 def _copy_report(source: Path, destination: Path) -> dict[str, bytes]:
     # 限定协议已知文件, 不复制目录内额外日志、配置或其他运行制品.
+    _require_planned_report(source)
     manifest, libraries = read_report_package(source)
     evidence = read_evidence(source, manifest.evidence, libraries, manifest.reference.sha256)
     extra = ("evidence.json", *(asset.path for asset in evidence.assets)) if evidence is not None else ()
@@ -71,6 +72,19 @@ def _copy_report(source: Path, destination: Path) -> dict[str, bytes]:
         (destination / name).parent.mkdir(parents=True, exist_ok=True)
         (destination / name).write_bytes(content)
     return contents
+
+
+def _require_planned_report(directory: Path) -> None:
+    """按声明协议拒绝未规划观察包, 不通过缺失文件猜测阶段."""
+    declaration = TypeAdapter(dict[str, JsonValue]).validate_json((directory / "manifest.json").read_bytes())
+    protocol = declaration.get("schema_version")
+    if protocol == "scene_observations_v1":
+        read_observation_package(directory)
+        msg = "观察报告尚需 M/S 规划, 无法按草图生成"
+        raise ValueError(msg)
+    if protocol != "five_libraries_v1":
+        msg = f"不支持的报告协议: {protocol!r}"
+        raise ValueError(msg)
 
 
 def _content_sha256(contents: dict[str, bytes]) -> str:

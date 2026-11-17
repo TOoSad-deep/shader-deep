@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 from typing import TYPE_CHECKING
 
 from deepagents import create_deep_agent
@@ -9,7 +10,8 @@ from langchain.agents.middleware import SummarizationMiddleware
 from langchain.messages import HumanMessage
 
 from shader_deep.agents.generation.middleware import GenerationContextMiddleware, GenerationLoopMiddleware
-from shader_deep.agents.generation.prompts import SYSTEM_PROMPT
+from shader_deep.agents.generation.prompts import MEMORY_PROMPT, SYSTEM_PROMPT
+from shader_deep.domain.generation import ScenePlanningBinding
 from shader_deep.infrastructure.llm.client import build_model
 
 if TYPE_CHECKING:
@@ -22,10 +24,23 @@ if TYPE_CHECKING:
 def _run_config(session: RenderSession) -> RunnableConfig:
     # 用同一 session_id 关联多次 agent.invoke 的追踪记录与本地制品.
     # recursion_limit 是框架图步数上限, 不等于模型轮数或渲染次数预算.
+    binding = session.state["tasks"][session.task_id].generation_binding
+    source = (
+        {
+            "planning_sha256": binding.content_sha256,
+            "observation_sha256": binding.observation_sha256,
+            "sketch_id": binding.sketch_id,
+            "alternative_index": binding.alternative,
+            "planning_protocol": binding.schema_version,
+        }
+        if isinstance(binding, ScenePlanningBinding)
+        else {}
+    )
     return {
         "run_name": "shader-deep.generation",
         "tags": ["shader-deep", "generation"],
         "metadata": {
+            **source,
             "session_id": session.run_dir.name,
             "task_id": session.task_id,
             "target_version": session.state["tasks"][session.task_id].target_version,
@@ -34,8 +49,11 @@ def _run_config(session: RenderSession) -> RunnableConfig:
             "height": session.options.height,
             "time": session.options.time,
             "max_attempts": session.options.max_attempts,
+            "max_model_calls": session.options.resolved_max_model_calls,
+            "visual_memory": session.options.visual_memory,
+            "generation_prompt_sha256": hashlib.sha256((MEMORY_PROMPT if session.memory is not None else SYSTEM_PROMPT).encode("utf-8")).hexdigest(),
         },
-        "recursion_limit": 4 * (session.options.max_attempts + 2) + 10,
+        "recursion_limit": 4 * session.options.resolved_max_model_calls + 10,
         # 同批工具按响应顺序进入会话线程, 停止后的调用不能抢先渲染.
         "max_concurrency": 1,
     }
@@ -49,13 +67,15 @@ def _execute(session: RenderSession, *, model: BaseChatModel | None = None) -> N
     agent = create_deep_agent(
         model=model,
         tools=tools,
-        system_prompt=SYSTEM_PROMPT,
+        system_prompt=MEMORY_PROMPT if session.memory is not None else SYSTEM_PROMPT,
         middleware=[
             # 有限短历史不触发额外摘要请求; 普通模型请求统一受本轮预算控制.
             SummarizationMiddleware(model=model, trigger=None),
             # 先加载最新材料, 再登记哪些成功预览将随本轮请求提供给模型.
             # lambda 每次取 session.state, 避免捕获后续已经过时的黑板快照.
-            GenerationContextMiddleware(lambda: session.state, session.task_id, asset_root=session.asset_root, inputs=session.inputs),
+            GenerationContextMiddleware(
+                lambda: session.state, session.task_id, asset_root=session.asset_root, inputs=session.inputs, memory=session.memory
+            ),
             GenerationLoopMiddleware(session, tools),
         ],
     )

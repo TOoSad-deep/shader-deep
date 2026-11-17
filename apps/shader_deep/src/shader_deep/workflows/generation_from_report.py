@@ -146,6 +146,8 @@ def run_generation_from_report(
     time: float = 0.0,
     max_attempts: int = 3,
     output_dir: Path | None = None,
+    visual_memory: bool = False,
+    max_model_calls: int | None = None,
 ) -> GenerationOutcome:
     """固定明确选择的五库方案, 执行生成、渲染和预览自检.
 
@@ -166,6 +168,8 @@ def run_generation_from_report(
         time: 本轮固定的 iTime.
         max_attempts: 含失败尝试的渲染次数上限.
         output_dir: 独立运行目录的父目录.
+        visual_memory: 显式启用本轮视觉材料索引与按需回看.
+        max_model_calls: 独立模型轮次上限, 未指定时按记忆开关解析.
 
     Returns:
         含实际候选、唯一运行目录和结束原因的结果; 受阻或预算耗尽时没有选定候选.
@@ -181,6 +185,8 @@ def run_generation_from_report(
         time=time,
         max_attempts=max_attempts,
         output_dir=output_dir,
+        visual_memory=visual_memory,
+        max_model_calls=max_model_calls,
     )
     prepared = _prepare_generation(
         report_dir,

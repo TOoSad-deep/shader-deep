@@ -151,3 +151,38 @@ class WebJobsTests(TestCase):
         for flag, value in (("--sketch", "S2"), ("--alternative", "0"), ("--background", "深灰"), ("--width", "768"), ("--height", "384")):
             self.assertEqual(command[command.index(flag) + 1], value)
         self.assertNotIn(str(self.root / "reference.png"), command)
+
+    def test_analysis_command_does_not_request_subagents(self) -> None:
+        request = Submission(mode="analyze", prompt="观察全图")
+        command = _command(request, self.root, None)
+        self.assertIn("shader_deep.cli.analysis", command)
+        self.assertNotIn("--max-tasks", command)
+        with self.assertRaisesRegex(ValidationError, "单 Agent"):
+            Submission(mode="analyze", prompt="观察全图", perspectives=2)
+        self.assertEqual(Submission(mode="generate", prompt="生成", perspectives=2).perspectives, 2)
+
+    def test_observation_report_is_visible_without_sketches(self) -> None:
+        job = self.job("analyze")
+        report = job.root / "output" / "run-observation" / "report"
+        report.mkdir(parents=True)
+        (report / "manifest.json").write_text(
+            json.dumps(
+                {
+                    "schema_version": "scene_observations_v1",
+                    "status": "completed",
+                    "reference": {"path": "reference.png", "sha256": hashlib.sha256(png_bytes()).hexdigest()},
+                    "context_notes": ["紫色背景"],
+                }
+            )
+        )
+        for name in ("elements", "features", "relations"):
+            (report / f"{name}.json").write_text("[]")
+        (report / "reference.png").write_bytes(png_bytes())
+        (report / "README.md").write_text("# 全图观察\n紫色背景")
+        (job.root / "stdout.txt").write_text(json.dumps({"status": "completed", "report_dir": str(report)}))
+        snapshot = job.snapshot()
+        self.assertEqual(snapshot["sketches"], [])
+        self.assertEqual(snapshot["analysis_protocol"], "scene_observations_v1")
+        self.assertIn("紫色背景", str(snapshot["report"]))
+        with self.assertRaisesRegex(ValueError, "M/S"):
+            self.jobs.start(Submission(mode="report", prompt="生成", source=job.identity, sketch="S1"))

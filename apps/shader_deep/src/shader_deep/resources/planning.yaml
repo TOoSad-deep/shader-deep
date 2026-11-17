@@ -1,0 +1,7 @@
+# 单个全图 M/S 规划角色, 显式 CLI 参数优先于本配置.
+max_model_calls: 20
+max_request_retries: 2
+request_timeout_seconds: 240
+max_output_tokens: 32768
+stream_model_responses: true
+output_dir: null

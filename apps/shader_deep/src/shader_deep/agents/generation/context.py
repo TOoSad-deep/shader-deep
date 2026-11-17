@@ -14,6 +14,7 @@ from langchain.messages import HumanMessage
 
 from shader_deep.domain.blackboard import read_task
 from shader_deep.infrastructure.llm.messages import png_data_url
+from shader_deep.infrastructure.storage.generation_planning_inputs import CapturedPlanningInputs
 from shader_deep.infrastructure.storage.scene_inputs import CapturedSceneInputs
 
 if TYPE_CHECKING:
@@ -85,11 +86,11 @@ def _metadata(
     records: TaskRecords,
     candidates: tuple[CandidateRecord, ...],
     root: Path,
-    inputs: CapturedGenerationInputs | CapturedSceneInputs | None,
+    inputs: CapturedGenerationInputs | CapturedSceneInputs | CapturedPlanningInputs | None,
 ) -> str:
     # 文字材料用 JSON 保持字段关系; asdict 展开记录, json.dumps 将元组编码为数组.
     # 用户目标、候选源码和结果都在这段文本中, 图片本体则由 _message 单独加入.
-    baseline = inputs.baseline if inputs is not None and not isinstance(inputs, CapturedSceneInputs) else None
+    baseline = inputs.baseline if inputs is not None and not isinstance(inputs, (CapturedSceneInputs, CapturedPlanningInputs)) else None
     payload: dict[str, object] = {
         "kind": "generation_task_context",
         "task": asdict(records.task),
@@ -104,7 +105,10 @@ def _metadata(
             "preview_path 为空表示没有提供预览; 此上下文不证明代码可编译或预览捕获有效.",
         ],
     }
-    if isinstance(inputs, CapturedSceneInputs):
+    if isinstance(inputs, CapturedPlanningInputs):
+        payload["planning_scheme"] = json.loads(inputs.scheme_json)
+        payload["scheme_instruction"] = "按整图 selected 方案实现完整 E/F/R, 核对方法条件与两类 gaps, 在固定执行条件下渲染自检."
+    elif isinstance(inputs, CapturedSceneInputs):
         payload["scene_plan"] = asdict(inputs.plan)
         payload["scene_elements"] = [_scene_element_data(slot, element) for slot, element in enumerate(inputs.elements, start=1)]
     elif inputs is not None:
@@ -153,13 +157,21 @@ def _message(metadata: str, images: tuple[tuple[str, Path], ...], task_id: str, 
     return HumanMessage(content=content, id=f"generation-context:{task_id}")
 
 
-def _validate_inputs(records: TaskRecords, inputs: CapturedGenerationInputs | CapturedSceneInputs | None) -> None:
+def _validate_inputs(records: TaskRecords, inputs: CapturedGenerationInputs | CapturedSceneInputs | CapturedPlanningInputs | None) -> None:
     task = records.task
     if task.role != "generation":
         msg = f"Expected a generation task: {task.id}"
         raise ValueError(msg)
     if isinstance(inputs, CapturedSceneInputs):
         _validate_scene_inputs(records, inputs)
+        return
+    if isinstance(inputs, CapturedPlanningInputs):
+        if inputs.binding != task.generation_binding or task.baseline_id is not None or task.candidate_ids:
+            msg = "Prepared planning inputs do not match the whole-scene task binding"
+            raise ValueError(msg)
+        if records.target.reference_path != inputs.reference_path or records.target.request != inputs.request:
+            msg = "Prepared planning inputs do not match the task target"
+            raise ValueError(msg)
         return
     if inputs is None:
         if task.generation_binding is not None:
@@ -222,10 +234,22 @@ def _scene_images(
 
 
 def _image_materials(
-    records: TaskRecords, candidates: tuple[CandidateRecord, ...], root: Path, inputs: CapturedGenerationInputs | CapturedSceneInputs | None
+    records: TaskRecords,
+    candidates: tuple[CandidateRecord, ...],
+    root: Path,
+    inputs: CapturedGenerationInputs | CapturedSceneInputs | CapturedPlanningInputs | None,
 ) -> tuple[tuple[tuple[str, Path], ...], dict[Path, str]]:
     if isinstance(inputs, CapturedSceneInputs):
         return _scene_images(records, candidates, root, inputs)
+    if isinstance(inputs, CapturedPlanningInputs):
+        reference = Path(inputs.reference_path)
+        images = [(f"完整参考图: 目标 {records.target.version}", reference)]
+        images.extend(
+            (f"整图候选预览: {candidate.id}", (root / candidate.preview_path).resolve())
+            for candidate in candidates
+            if candidate.preview_path is not None
+        )
+        return tuple(images), {reference: inputs.reference_url}
     if inputs is not None:
         return _captured_images(records, candidates, root, inputs)
     return _images(records, candidates, root), {}
@@ -236,7 +260,7 @@ def _build_generation_context(
     task_id: str,
     *,
     asset_root: Path | None = None,
-    inputs: CapturedGenerationInputs | CapturedSceneInputs | None = None,
+    inputs: CapturedGenerationInputs | CapturedSceneInputs | CapturedPlanningInputs | None = None,
 ) -> GenerationContext:
     records = read_task(state, task_id)
     _validate_inputs(records, inputs)
@@ -244,7 +268,7 @@ def _build_generation_context(
     candidates = _candidates(records)
     images, cached = _image_materials(records, candidates, root, inputs)
     metadata = _metadata(state, records, candidates, root, inputs)
-    baseline = inputs.baseline if inputs is not None and not isinstance(inputs, CapturedSceneInputs) else None
+    baseline = inputs.baseline if inputs is not None and not isinstance(inputs, (CapturedSceneInputs, CapturedPlanningInputs)) else None
     files = [*(inputs.files if inputs is not None else ()), *(str(path) for _, path in images)]
     files.extend(
         baseline.code_path if baseline is not None and candidate.id == baseline.candidate_id else str((root / candidate.code_path).resolve())

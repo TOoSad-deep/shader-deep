@@ -35,15 +35,18 @@ def select_candidate(session: RenderSession, candidate_id: str, assessment: str)
     if not assessment.strip():
         # 要求模型留下非空自检结论; 当前不对文字结论做真实性或相似度自动判定.
         return json.dumps({"status": "invalid_selection", "message": "请说明与参考图的差异"})
+    if session.memory is not None:
+        session.memory.verified_code(candidate_id)
     # 选择只改变运行状态, 不改任务原始 baseline_id; 后续任务需显式绑定新基线.
     session.state = add_result(
         session.state,
         ResultRecord(
             id=f"{session.run_dir.name}-selection",
             task_id=session.task_id,
-            status="completed",
+            status="partial" if session.inherited_limitations else "completed",
             summary=assessment,
             candidate_ids=(candidate_id,),
+            limitations=session.inherited_limitations,
             recommendation="本轮生成自检完成, 待用户验收",
         ),
     )

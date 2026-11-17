@@ -1,4 +1,4 @@
-"""分析工作流交付契约."""
+"""单角色观察工作流的交付合同."""
 
 from __future__ import annotations
 
@@ -8,21 +8,15 @@ from typing import TYPE_CHECKING, Literal
 if TYPE_CHECKING:
     from pydantic import JsonValue
 
-    from shader_deep.domain.five_libraries import (
-        FiveLibraries,
-        Issue,
-    )
+    from shader_deep.domain.scene_observations import SceneObservations, SceneObservationSubmission
 
 
 @dataclass(frozen=True, kw_only=True)
-class FiveAnalysisResult:
-    """交付读取同一选定版本, 失败没有伪造空五库包."""
+class SceneAnalysisResult:
+    """同一接受快照的观察与运行状态, 无提交时没有伪造正文."""
 
-    target_element_id: str | None
-    libraries: FiveLibraries | None
-    open_questions: tuple[Issue, ...] = ()
-    gaps: tuple[Issue, ...] = ()
     status: Literal["completed", "partial", "failed"]
-    # 版本选择只指向已接受的 V0/V1; 没有合法基线时与 libraries 一同保持为空.
-    selected_version: str | None
+    submission: SceneObservationSubmission | None = None
+    observations: SceneObservations | None = None
+    error: str | None = None
     task_state: dict[str, JsonValue] | None = None

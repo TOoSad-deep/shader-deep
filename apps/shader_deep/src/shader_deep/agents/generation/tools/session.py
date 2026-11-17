@@ -5,16 +5,20 @@
 
 from __future__ import annotations
 
+import json
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import asdict
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING, Annotated, Literal
 
 from langchain.tools import BaseTool, tool
+from langchain_core.tools import InjectedToolCallId
 
 from shader_deep.agents.generation.contracts import GenerationOutcome
+from shader_deep.agents.generation.memory import GenerationMemory, ReadMaterialRequest
 from shader_deep.agents.generation.tools.finish import select_candidate, stop_generation
 from shader_deep.agents.generation.tools.render import render_candidate
 from shader_deep.infrastructure.storage.artifacts import create_run_directory, save_run
+from shader_deep.infrastructure.storage.generation_planning_inputs import CapturedPlanningInputs
 from shader_deep.infrastructure.storage.scene_inputs import CapturedSceneInputs, scene_input_records
 
 if TYPE_CHECKING:
@@ -40,7 +44,7 @@ class RenderSession:
         asset_root: Path,
         *,
         run_dir: Path | None = None,
-        inputs: CapturedGenerationInputs | CapturedSceneInputs | None = None,
+        inputs: CapturedGenerationInputs | CapturedSceneInputs | CapturedPlanningInputs | None = None,
     ) -> None:
         """绑定黑板和执行条件.
 
@@ -58,6 +62,7 @@ class RenderSession:
         self.asset_root = asset_root
         self.run_dir = run_dir if run_dir is not None else create_run_directory(options.output_dir)
         self.inputs = inputs
+        self.inherited_limitations = inputs.limitations if isinstance(inputs, CapturedPlanningInputs) else ()
         # 尝试次数限制渲染成本, 模型轮数限制持续对话; 两者独立累计.
         self.attempts = 0
         self.model_calls = 0
@@ -70,6 +75,7 @@ class RenderSession:
         self.successful: set[str] = set()
         self._worker: ThreadPoolExecutor | None = None
         self.renderer: WebGL2Renderer | None = None
+        self.memory: GenerationMemory | None = None
 
     @property
     def is_finished(self) -> bool:
@@ -83,12 +89,20 @@ class RenderSession:
             已就绪的工具会话.
         """
         self.save()
+        # 初始化处于工作流的异常保存范围内, 失败也记录运行目录和诊断.
+        if self.options.visual_memory:
+            if isinstance(self.inputs, (CapturedSceneInputs, CapturedPlanningInputs)):
+                msg = "Visual memory currently supports PNG tasks and five_libraries_v1 reports only"
+                raise ValueError(msg)
+            self.memory = GenerationMemory(self.state, self.task_id, self.run_dir, self.asset_root, self.inputs)
         # Playwright 同步对象需要在所属线程使用和关闭.
         # max_workers=1 同时保证多次工具调用串行, 不并发修改本会话的尝试计数.
         self._worker = ThreadPoolExecutor(max_workers=1, thread_name_prefix="shader-render")
         return self
 
     def _input_details(self) -> dict[str, object]:
+        if isinstance(self.inputs, CapturedPlanningInputs):
+            return {"inputs": {"planning": self.inputs.metadata()}}
         if isinstance(self.inputs, CapturedSceneInputs):
             return {"scene_plan": asdict(self.inputs.plan), "inputs": {"scene_elements": scene_input_records(self.inputs)}}
         baseline = self.inputs.baseline if self.inputs is not None else None
@@ -112,7 +126,8 @@ class RenderSession:
                 **self._input_details(),
                 "render": {"width": self.options.width, "height": self.options.height, "time": self.options.time},
                 "max_attempts": self.options.max_attempts,
-                "max_model_calls": self.options.max_attempts + 2,
+                "max_model_calls": self.options.resolved_max_model_calls,
+                "visual_memory": self.options.visual_memory,
                 "attempts": self.attempts,
                 "model_calls": self.model_calls,
                 "stop_reason": self.stop_reason,
@@ -131,7 +146,46 @@ class RenderSession:
         # name 来自显式名称, description 来自方法 docstring, 参数 schema 来自类型注解.
         # self 已绑定当前会话, 不会成为模型需要填写的参数.
         # 未启用 parse_docstring, Args 说明保留在整体描述中, 不拆成逐字段 description.
-        return [tool("render_shader")(self.render_shader), tool("finish_shader")(self.finish_shader), tool("stop_generation")(self.stop_generation)]
+        tools = [tool("render_shader")(self.render_shader), tool("finish_shader")(self.finish_shader), tool("stop_generation")(self.stop_generation)]
+        if self.memory is not None:
+            tools.extend([tool("list_materials")(self.list_materials), tool("read_materials")(self.read_materials)])
+        return tools
+
+    def list_materials(self, kind: Literal["image", "code", "text", "json"] | None = None, limit: int = 20, cursor: str | None = None) -> str:
+        """列出当前任务材料的简短目录, 已知 ID 可直接读取.
+
+        Args:
+            kind: 可选内容类别, 省略时列出所有类别.
+            limit: 每页条数, 范围 1 到 50.
+            cursor: 上次返回的下一页游标.
+        """
+        if self.is_finished:
+            return json.dumps({"status": "already_finished"})
+        if self._worker is None or self.memory is None:
+            msg = "Visual memory session is not open"
+            raise RuntimeError(msg)
+        try:
+            result = self._worker.submit(self.memory.store.list_materials, kind=kind, limit=limit, cursor=cursor).result()
+        except ValueError as exc:
+            return json.dumps({"status": "error", "message": str(exc)}, ensure_ascii=False)
+        return json.dumps(result, ensure_ascii=False)
+
+    def read_materials(self, items: list[ReadMaterialRequest], tool_call_id: Annotated[str, InjectedToolCallId]) -> str:
+        """按 ID 回看实际材料, 图片可指定像素区域, 多项按顺序对照.
+
+        Args:
+            items: 材料 ID 与可选 region(x,y,width,height), 坐标相对于来源图左上角.
+            tool_call_id: 框架注入的调用身份, 模型不填写.
+
+        Returns:
+            逐项读取状态, 实际图像或正文随下一次模型请求展示一轮.
+        """
+        if self.is_finished:
+            return json.dumps({"status": "already_finished"})
+        if self._worker is None or self.memory is None:
+            msg = "Visual memory session is not open"
+            raise RuntimeError(msg)
+        return self._worker.submit(self.memory.read_materials, items, tool_call_id).result()
 
     def render_shader(self, glsl_code: str) -> str:
         """编译并渲染完整 mainImage 代码, 下一轮将提供真实预览或编译错误.

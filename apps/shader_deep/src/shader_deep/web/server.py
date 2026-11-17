@@ -11,10 +11,18 @@ from urllib.parse import unquote, urlsplit
 
 from pydantic import ValidationError
 
-from shader_deep.web.jobs import Jobs, Submission
+from shader_deep.web.jobs import ANALYSIS_PERSPECTIVES_MIGRATION, Jobs, Submission
 
 ASSETS = Path(__file__).parent / "assets"
 MAX_BODY = 17 * 1024 * 1024
+
+
+def _validation_message(error: ValidationError) -> str:
+    """只展开已知迁移错误, 不向页面暴露任意校验输入或异常."""
+    for issue in error.errors(include_url=False):
+        if issue["loc"] == () and issue["type"] == "value_error" and str(issue.get("ctx", {}).get("error", "")) == ANALYSIS_PERSPECTIVES_MIGRATION:
+            return ANALYSIS_PERSPECTIVES_MIGRATION
+    return "参数无效, 请检查图片、要求和数值范围"
 
 
 class LocalServer(ThreadingHTTPServer):
@@ -97,8 +105,8 @@ class Handler(BaseHTTPRequestHandler):
             return
         try:
             self._post()
-        except ValidationError:
-            self._json(400, {"error": "参数无效, 请检查图片、要求和数值范围"})
+        except ValidationError as error:
+            self._json(400, {"error": _validation_message(error)})
         except (ValueError, KeyError) as exc:
             self._json(400, {"error": str(exc)})
         except OSError:

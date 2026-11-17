@@ -53,6 +53,7 @@ def _read_source(source: SceneElementSource) -> tuple[SceneElementSource, Candid
             and snapshot["task_id"] == data["task_id"] == task["id"]
             and task["role"] == "generation"
             and task["generation_binding"] is not None
+            and task["generation_binding"].get("schema_version") != "scene_planning_v1"
         )
         if matches:
             candidate = CandidateRecord(id=data["id"], task_id=data["task_id"], code_path=data["code_path"], preview_path=data.get("preview_path"))

@@ -81,6 +81,26 @@ class ReportGenerationTests(GenerationFixture):
         self.assertIn("Generation incomplete: blocked", stderr)
         self.assertIn(str(outcome.run_dir), stderr)
 
+    def test_report_memory_and_model_budget_reach_prepared_session(self) -> None:
+        def inspect_session(session: RenderSession) -> None:
+            self.assertTrue(session.options.visual_memory)
+            self.assertEqual(session.options.resolved_max_model_calls, 7)
+            self.assertEqual((session.options.width, session.options.height), (32, 24))
+            session.stop_reason = "blocked"
+
+        with patch("shader_deep.workflows.generation._execute", side_effect=inspect_session):
+            outcome = run_generation_from_report(
+                self.report, "S1", "复现圆形", background="透明", visual_memory=True, max_model_calls=7, output_dir=self.options.output_dir
+            )
+        self.assertEqual(outcome.stop_reason, "blocked")
+        self.assertEqual(outcome.model_calls, 0)
+        self.assertEqual(self.requests, [])
+
+    def test_invalid_report_model_budget_fails_before_preparing_run(self) -> None:
+        with self.assertRaisesRegex(ValueError, "max_model_calls"):
+            run_generation_from_report(self.report, "S1", "复现圆形", background="透明", max_model_calls=0, output_dir=self.options.output_dir)
+        self.assertFalse(self.options.output_dir.exists())
+
     def test_runtime_failure_preserves_error_diagnostic_and_existing_candidate(self) -> None:
         def fail_after_render(session: RenderSession) -> None:
             session.render_shader(BASE_CODE)
