@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "b613891a-a59a-4c04-b51d-973d3dfad699",
+  "status": "current",
+  "command": "deliver",
+  "type": "workflow",
+  "input": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/.archify/workflow-review-decisions-20261120-104848/candidate.json",
+  "output": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/.archify/workflow-review-decisions-20261120-104848/review-decisions.html",
+  "specification": {
+    "sha256": "bd24448a33dbc9b56e194288d621e8c84b1d5ef43f9bc400d64d966a2f25a0e7",
+    "bytes": 13008
+  },
+  "artifact": {
+    "sha256": "fe0a667af3d55a73a7d32aed4b18024c3eb0d1d021d54cfd0ce33bdee67f3760",
+    "bytes": 837122
+  }
+}

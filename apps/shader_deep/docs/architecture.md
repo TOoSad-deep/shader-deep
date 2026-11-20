@@ -1,6 +1,6 @@
 # Shader Deep 当前架构
 
-本应用提供观察、规划和生成三个独立入口。一个观察 Agent 交付整图 E/F/R，一个规划 Agent 基于固定观察组织 M/S，调用方显式选择 S 后进入生成、渲染与候选选择。旧完整五库报告沿用既有生成入口。本页保存跨模块关系和阅读导航，模块实现细节放在源码旁的 README。
+本应用提供观察、规划、生成和独立视觉评审入口。观察 Agent 交付整图 E/F/R，规划 Agent 基于固定观察组织 M/S，调用方选择 S 后进入生成与渲染。评审 Agent 按固定任务标准比较指定参考与渲染 PNG，发布可回读报告。旧完整五库报告沿用既有生成入口。本页保存跨模块关系和阅读导航，模块实现细节放在源码旁的 README。
 
 运行方式见[应用 README](../README.md), 改动流程与检查见[开发指南](development.md), 取舍见 [ADR 0001](decisions/0001-agent-oriented-layout.md).
 
@@ -12,6 +12,7 @@
 | 输入固定、接受快照、终态与交付 | [分析工作流](../src/shader_deep/workflows/analysis/README.md) | 连接角色、领域校验与文件存储 |
 | E/F/R 观察、主归属与关系引用 | [观察合同](../src/shader_deep/domain/scene_observations.py) | 纯领域规则, 不依赖框架或 IO |
 | 单规划 Agent、草稿工具与渐进式 skill | [规划角色](../src/shader_deep/agents/planning/README.md) | 共用 SDK 草稿运行辅助，固定原图与完整观察每轮入模 |
+| 独立评审、层级模板与标准绑定 | [评审角色](../src/shader_deep/agents/review/README.md)、[工作流](../src/shader_deep/workflows/review/README.md) | 消费固定双图与标准, 发布 visual_review_v1 |
 | 规划输入、预算、接受与发布 | [规划工作流](../src/shader_deep/workflows/planning/README.md) | 绑定观察版本、要求与实际生成约束 |
 | 新 M/S、有效备选与组合候选 | [规划合同](../src/shader_deep/domain/scene_planning.py)、[规划包](../src/shader_deep/infrastructure/storage/planning_package.py) | 领域派生与文件发布分工，正式包为 scene_planning_v1 |
 | 五库对象、引用和合并保义 | [五库领域](../src/shader_deep/domain/five_libraries/README.md) | 纯业务规则, 不依赖模型框架或 IO |
@@ -71,12 +72,16 @@ PNG 或显式选定的报告/规划方案
 
 本地网页通过子进程运行已有 CLI, 不另建业务执行器. HTTP 服务仅监听回环地址, 限制同源操作、上传和会话制品访问; 运行方式见应用 README, 原实施与验证可按需查[网页记录](work-items/local-web-ui.md).
 
+独立评审通过 `run_review` / `shader-deep-review` 显式接收参考 PNG、渲染 PNG 和任务. 工作流选择 feature/element/scene 模板, 固定标准与图像, 单角色提交六维状态和差异证据, 领域规则校验并派生视觉结论, 存储发布后正式回读. 评审报告关联本次输入身份, 调用方依据报告组织后续任务. 当前验证状态见[实施记录](work-items/independent-visual-review-implementation-20261117.md).
+
 ## 状态与依赖
 
 | 事实或状态 | 归属 |
 | --- | --- |
 | 分析固定输入、调用计数、草稿回读状态与接受终态 | 分析工作流的 `AnalysisSession` |
 | 规划固定观察、生成约束、计数与接受终态 | 规划工作流的 `PlanningSession` |
+| 评审固定标准、双图、调用计数与接受终态 | 评审工作流的 `ReviewSession` |
+| 评审六维状态一致性与总体结论 | `visual_review` 领域规则 |
 | 可编辑草稿字节、版本与修改前快照 | 文件存储的 JsonDraftStore，由观察和规划适配绑定领域诊断 |
 | 模型消息、skill 文件与摘要 | 各观察或规划角色的 SDK 图 |
 | 观察字段与归属/引用合法性 | scene_observations 领域规则 |
@@ -89,6 +94,7 @@ PNG 或显式选定的报告/规划方案
 
 ## 当前说明与历史记录
 
+- [独立视觉评审设计](work-items/independent-visual-review-design-20261117.md)定义统一合同、三种层级模板与任务标准绑定, [评审指标准则](visual-review-rubric.md)定义视觉判断, [实施方案](work-items/independent-visual-review-implementation-20261117.md)维护开发与验证证据.
 - 模块 README 说明当前职责和修改入口。新五库语义见[轻量五库业务设计](work-items/five-library-planning-contract-20261111.md)，历史完整包见[旧数据设计](analysis-five-libraries.md)。实现状态通过源码与对应验证记录核对。
 - 核心公开分析/生成入口及合法五库读取保持. 旧四库执行、固定五库执行器和回放已删除; 保存着历史文件不代表支持续跑或自动转换.
 - 查为何采用原生链或删除旧执行时, 再读[原生切换](work-items/deep-agents-native-plan-20261028.md)与[清理记录](work-items/analysis-legacy-cleanup-20261028.md). 当前改动的验证结果写入对应任务记录, 不在本页累计测试数字.

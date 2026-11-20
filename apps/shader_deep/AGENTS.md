@@ -18,6 +18,7 @@
 | 固定输入、接受快照、终态、失败交付或运行参数 | [分析工作流](src/shader_deep/workflows/analysis/README.md) |
 | 全图 E/F/R 字段、归属和结构引用 | [观察合同](src/shader_deep/domain/scene_observations.py)、[实施记录](docs/work-items/single-agent-observations-20261110.md) |
 | 单规划角色、工具、规则、输入或终态 | [规划角色](src/shader_deep/agents/planning/README.md)、[规划工作流](src/shader_deep/workflows/planning/README.md) |
+| 独立评审、范围模板、标准绑定、视觉结论或报告包 | [评审角色](src/shader_deep/agents/review/README.md)、[评审工作流](src/shader_deep/workflows/review/README.md)、[指标准则](docs/visual-review-rubric.md) |
 | 新 M/S、备选、两类 gaps 或规划包 | [规划合同](src/shader_deep/domain/scene_planning.py)、[规划包](src/shader_deep/infrastructure/storage/planning_package.py)、[业务设计](docs/work-items/five-library-planning-contract-20261111.md) |
 | 五库字段、引用或合并含义 | [五库领域](src/shader_deep/domain/five_libraries/README.md); 详细业务定义查[数据设计](docs/analysis-five-libraries.md) |
 | 模型配置、输出预算、原始工具参数或网络传输 | [模型适配](src/shader_deep/infrastructure/llm/README.md) |
@@ -36,12 +37,13 @@
 
 ## 应用范围
 
-- 当前提供三个独立入口。`shader-deep-analyze` 交付全图 E/F/R，`shader-deep-plan` 用一个原生角色组织整图 M/S，`shader-deep` 执行生成、渲染与候选选择。
+- 当前提供四个独立入口。`shader-deep-analyze` 交付全图 E/F/R，`shader-deep-plan` 组织整图 M/S，`shader-deep` 执行生成与渲染，`shader-deep-review` 按固定标准评审指定参考和渲染 PNG。
 - 规划消费固定观察版本，调用方通过明确的 S 与可选一项备选接入整图生成。独立视觉评审和持续决策按具体任务设计。
 - 优先完成需求范围内的最小改动。应用问题先在本包解决；涉及 SDK 或其他包时，再读取对应目录的约定并说明跨包修改原因。
 - 优先使用 Deep Agents 现有能力. 新增模块或自定义框架机制前, 简要说明已有模块/框架无法满足的具体需求, 避免为假设中的瓶颈增加通用抽象.
 - 保留现有公开入口及兼容包装，包括 `main.py`、`generate_shader`、`generate_task`、`run_shader`、`run_generation`、`run_analysis` 和 `run_analysis_task`。签名变更遵循根目录的兼容要求。
 - 新规划公开入口为 `run_planning`、`read_planning_package`、`read_planning_sketch` 和 `run_generation_from_planning`。整图方案与旧单元素报告使用各自明确的绑定和捕获类型。
+- 评审入口为 `run_review` 和 `read_review_package`. `local` 绑定 feature/element 模板, `scene` 绑定整图模板. 标准在候选评价前冻结, 领域规则派生结论, 运行完成与视觉结论分别保存. 新评审不改写生成会话状态.
 
 ## 源码职责与查找范围
 
@@ -51,7 +53,7 @@
 | --- | --- |
 | `src/shader_deep/api.py`、`cli/` | 稳定调用入口、参数、输出与退出码 |
 | `src/shader_deep/workflows/` | 运行创建、固定业务事实、单次原生图调用与最终交付 |
-| `src/shader_deep/agents/` | 单观察、单规划与生成角色的提示词、上下文及受限工具 |
+| `src/shader_deep/agents/` | 观察、规划、生成与评审角色的提示词、上下文及受限工具 |
 | `src/shader_deep/domain/` | 任务、黑板、证据和五库业务规则; 历史类型仅用于读取与校验; 不依赖模型框架或 IO |
 | `src/shader_deep/infrastructure/` | 模型客户端、网络恢复、配置读取、存储和追踪 |
 | `src/shader_deep/imaging/` | 固定参考图、裁剪、统计与剖面 |

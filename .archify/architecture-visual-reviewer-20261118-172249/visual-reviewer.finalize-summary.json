@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "ok": false,
+  "command": "finalize",
+  "status": "fail",
+  "type": "architecture",
+  "quality": "showcase",
+  "specification": {
+    "path": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/.archify/architecture-visual-reviewer-20261118-172249/candidate.json",
+    "sha256": "929e854253bda8512b84df9450aca5f818e305183ec53e09645be17a0579ee85",
+    "bytes": 9325
+  },
+  "artifact": {
+    "path": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/.archify/architecture-visual-reviewer-20261118-172249/visual-reviewer.html",
+    "sha256": "fe8b2dbd190e55efadf67977301260b240b4a7a667213aaab21fcf2982befaa9",
+    "bytes": 828136
+  },
+  "gates": {
+    "validate": "pass",
+    "deliver": "pass",
+    "check": "pass",
+    "browser-check": "fail"
+  },
+  "failedStage": "browser-check",
+  "diagnostics": [
+    {
+      "code": "viewer/browser-check-runtime",
+      "severity": "error",
+      "message": "browser-check could not complete its Chrome inspection.",
+      "subject": {
+        "artifact": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/.archify/architecture-visual-reviewer-20261118-172249/visual-reviewer.html"
+      },
+      "evidence": {
+        "reason": "Chrome DevTools read pipe failed: stream ended\nChrome process: still running.\nChrome transport: Node v26.0.0, libuv 1.52.1, darwin; pid=6945, exitCode=null, signalCode=null.\nChrome read pipe: readable=false, ended=true, destroyed=false, receivedBytes=0, messages=0, bufferedBytes=0.\nChrome write pipe: writable=true, ended=false, destroyed=false, completedWrites=1, writtenBytes=50, bufferedBytes=0."
+      },
+      "supportedFixes": [
+        "resolve the reported Chrome inspection error, then rerun browser-check"
+      ]
+    }
+  ],
+  "diagnosticSummary": {
+    "total": 1,
+    "shown": 1,
+    "truncated": false
+  },
+  "evidence": {
+    "receipt": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/.archify/architecture-visual-reviewer-20261118-172249/visual-reviewer.finalize.json",
+    "summaryReceipt": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/.archify/architecture-visual-reviewer-20261118-172249/visual-reviewer.finalize-summary.json",
+    "browserCheckReceipt": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/.archify/architecture-visual-reviewer-20261118-172249/visual-reviewer.browser-check.json"
+  },
+  "update": {
+    "status": "current",
+    "installedVersion": "3.2.0",
+    "availableVersion": "3.2.0",
+    "releaseNotes": null,
+    "checkedAt": "2026-11-18T02:25:27.299Z",
+    "source": "cache",
+    "noticeRequired": false,
+    "noticeText": null
+  },
+  "visualReview": "not-requested",
+  "durationMs": 679,
+  "browserCheck": {
+    "requested": true,
+    "ran": false
+  }
+}

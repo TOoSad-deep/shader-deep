@@ -1,0 +1,394 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "独立视觉评审 Agent · 内部架构",
+    "locale": "zh-CN",
+    "output": ".archify/architecture-visual-reviewer-20261118-172249/visual-reviewer.html",
+    "quality_profile": "showcase",
+    "repository": {
+      "url": "https://github.com/TOoSad-deep/shader-deep.git",
+      "revision": "32d981314c3e7ae2196070dd29b920849658874e",
+      "link_mode": "local-only"
+    },
+    "legend": {
+      "entries": {
+        "external": {
+          "label": "调用方"
+        },
+        "backend": {
+          "label": "程序逻辑"
+        },
+        "cloud": {
+          "label": "模型推理"
+        },
+        "database": {
+          "label": "持久化制品"
+        }
+      }
+    }
+  },
+  "components": [
+    {
+      "id": "request",
+      "type": "external",
+      "label": "评审请求",
+      "sublabel": "双图与 ReviewRequest",
+      "pos": [
+        38,
+        48
+      ],
+      "size": [
+        182,
+        68
+      ],
+      "sources": [
+        {
+          "path": "apps/shader_deep/src/shader_deep/workflows/review/entry.py",
+          "line": 126,
+          "end_line": 136
+        },
+        {
+          "path": "apps/shader_deep/src/shader_deep/workflows/review/entry.py",
+          "line": 145,
+          "end_line": 152
+        }
+      ]
+    },
+    {
+      "id": "binding",
+      "type": "backend",
+      "label": "图像与标准绑定",
+      "sublabel": "特征、元素或整图",
+      "pos": [
+        327,
+        48
+      ],
+      "size": [
+        182,
+        68
+      ],
+      "sources": [
+        {
+          "path": "apps/shader_deep/src/shader_deep/infrastructure/storage/review_package.py",
+          "line": 349,
+          "end_line": 357
+        },
+        {
+          "path": "apps/shader_deep/src/shader_deep/domain/visual_review.py",
+          "line": 177,
+          "end_line": 189
+        },
+        {
+          "path": "apps/shader_deep/src/shader_deep/domain/visual_review.py",
+          "line": 210,
+          "end_line": 225
+        }
+      ]
+    },
+    {
+      "id": "evidence",
+      "type": "backend",
+      "label": "证据准备与分流",
+      "sublabel": "按需测量、检查覆盖",
+      "pos": [
+        616,
+        48
+      ],
+      "size": [
+        182,
+        68
+      ],
+      "sources": [
+        {
+          "path": "apps/shader_deep/src/shader_deep/imaging/review_evidence.py",
+          "line": 68,
+          "end_line": 90
+        },
+        {
+          "path": "apps/shader_deep/src/shader_deep/imaging/review_evidence.py",
+          "line": 40,
+          "end_line": 53
+        },
+        {
+          "path": "apps/shader_deep/src/shader_deep/workflows/review/entry.py",
+          "line": 47,
+          "end_line": 59
+        }
+      ],
+      "icon": "decision"
+    },
+    {
+      "id": "context",
+      "type": "backend",
+      "label": "固定评审上下文",
+      "sublabel": "双图、规则及可选证据",
+      "pos": [
+        905,
+        48
+      ],
+      "size": [
+        182,
+        68
+      ],
+      "sources": [
+        {
+          "path": "apps/shader_deep/src/shader_deep/agents/review/context.py",
+          "line": 14,
+          "end_line": 37
+        },
+        {
+          "path": "apps/shader_deep/src/shader_deep/agents/review/native.py",
+          "line": 59,
+          "end_line": 65
+        },
+        {
+          "path": "apps/shader_deep/src/shader_deep/agents/review/native.py",
+          "line": 116,
+          "end_line": 126
+        }
+      ]
+    },
+    {
+      "id": "model",
+      "type": "cloud",
+      "label": "视觉评审模型",
+      "sublabel": "visual-reviewer",
+      "pos": [
+        905,
+        224
+      ],
+      "size": [
+        182,
+        68
+      ],
+      "sources": [
+        {
+          "path": "apps/shader_deep/src/shader_deep/agents/review/native.py",
+          "line": 38,
+          "end_line": 49
+        },
+        {
+          "path": "apps/shader_deep/src/shader_deep/agents/review/native.py",
+          "line": 116,
+          "end_line": 128
+        },
+        {
+          "path": "apps/shader_deep/src/shader_deep/workflows/review/entry.py",
+          "line": 47,
+          "end_line": 59
+        }
+      ]
+    },
+    {
+      "id": "accept",
+      "type": "backend",
+      "label": "提交校验与接受",
+      "sublabel": "登记未评项，派生结论",
+      "pos": [
+        616,
+        224
+      ],
+      "size": [
+        182,
+        68
+      ],
+      "sources": [
+        {
+          "path": "apps/shader_deep/src/shader_deep/workflows/review/session.py",
+          "line": 97,
+          "end_line": 107
+        },
+        {
+          "path": "apps/shader_deep/src/shader_deep/domain/review_coverage.py",
+          "line": 54,
+          "end_line": 73
+        },
+        {
+          "path": "apps/shader_deep/src/shader_deep/domain/visual_review.py",
+          "line": 380,
+          "end_line": 391
+        }
+      ],
+      "icon": "decision"
+    },
+    {
+      "id": "publish",
+      "type": "backend",
+      "label": "报告发布与回读",
+      "sublabel": "先核对，再交付",
+      "pos": [
+        327,
+        224
+      ],
+      "size": [
+        182,
+        68
+      ],
+      "sources": [
+        {
+          "path": "apps/shader_deep/src/shader_deep/workflows/review/entry.py",
+          "line": 64,
+          "end_line": 77
+        },
+        {
+          "path": "apps/shader_deep/src/shader_deep/infrastructure/storage/review_package.py",
+          "line": 424,
+          "end_line": 436
+        },
+        {
+          "path": "apps/shader_deep/src/shader_deep/infrastructure/storage/review_package.py",
+          "line": 467,
+          "end_line": 482
+        }
+      ]
+    },
+    {
+      "id": "package",
+      "type": "database",
+      "label": "正式评审包",
+      "sublabel": "visual_review_v1",
+      "pos": [
+        38,
+        224
+      ],
+      "size": [
+        182,
+        68
+      ],
+      "sources": [
+        {
+          "path": "apps/shader_deep/src/shader_deep/infrastructure/storage/review_package.py",
+          "line": 399,
+          "end_line": 422
+        },
+        {
+          "path": "apps/shader_deep/src/shader_deep/infrastructure/storage/review_package.py",
+          "line": 467,
+          "end_line": 482
+        }
+      ]
+    },
+    {
+      "id": "blocked",
+      "type": "backend",
+      "label": "受阻终止",
+      "sublabel": "保留原因与运行状态",
+      "pos": [
+        905,
+        384
+      ],
+      "size": [
+        182,
+        68
+      ],
+      "sources": [
+        {
+          "path": "apps/shader_deep/src/shader_deep/workflows/review/session.py",
+          "line": 81,
+          "end_line": 89
+        },
+        {
+          "path": "apps/shader_deep/src/shader_deep/workflows/review/session.py",
+          "line": 109,
+          "end_line": 129
+        },
+        {
+          "path": "apps/shader_deep/src/shader_deep/workflows/review/entry.py",
+          "line": 64,
+          "end_line": 71
+        }
+      ],
+      "icon": "stop"
+    }
+  ],
+  "connections": [
+    {
+      "id": "provide",
+      "from": "request",
+      "to": "binding",
+      "label": "提交任务"
+    },
+    {
+      "id": "prepare",
+      "from": "binding",
+      "to": "evidence",
+      "label": "固定输入"
+    },
+    {
+      "id": "available",
+      "from": "evidence",
+      "to": "context",
+      "label": "有可评项"
+    },
+    {
+      "id": "infer",
+      "from": "context",
+      "to": "model",
+      "label": "注入每次请求"
+    },
+    {
+      "id": "submit",
+      "from": "model",
+      "to": "accept",
+      "label": "submit_review",
+      "variant": "emphasis"
+    },
+    {
+      "id": "correct",
+      "from": "accept",
+      "to": "model",
+      "label": "合同有误时修正"
+    },
+    {
+      "id": "skip",
+      "from": "evidence",
+      "to": "accept",
+      "label": "全部未覆盖时直接提交"
+    },
+    {
+      "id": "ship",
+      "from": "accept",
+      "to": "publish",
+      "label": "接受快照"
+    },
+    {
+      "id": "readback",
+      "from": "publish",
+      "to": "package",
+      "label": "核验通过"
+    },
+    {
+      "id": "stop",
+      "from": "model",
+      "to": "blocked",
+      "label": "stop_review"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "评审标准如何确定",
+      "items": [
+        "一个模型使用一个任务模板。模板决定关注层级，任务给出必查项、排除项和容差。",
+        "六个维度为内容、布局、形状、颜色、表面与关系。"
+      ]
+    },
+    {
+      "dot": "violet",
+      "title": "模型能依据什么判断",
+      "items": [
+        "指定采样区时，从两张固定 PNG 计算平均 RGB 和编码亮度。模型解释差异对目标的影响。",
+        "提供可信坐标映射时，程序核对必查区域。仅有部分区域可见，就评可见部分并保留未评原因。"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "怎样读报告结论",
+      "items": [
+        "有重大问题 → 需要修订。其余报告有必查项未评 → 无法判断。其余情况 → 未发现重大问题。",
+        "合法提交才会发布。预算内允许修正；主动停止或预算耗尽会记录受阻状态。"
+      ]
+    }
+  ]
+}

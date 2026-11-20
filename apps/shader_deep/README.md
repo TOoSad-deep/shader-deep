@@ -12,6 +12,66 @@
 
 独立分析提供 `shader-deep-analyze` 命令，一个原生 Deep Agents 角色观察整图，提交上下文、多元素 E、特征 F 与关系 R。应用交付 `scene_observations_v1` 后，`shader-deep-plan` 由一个规划角色组织整图 M/S，发布 `scene_planning_v1`。调用方显式选择 S 后，通过生成入口得到 Shader 与预览。观察实现见[单 Agent 记录](docs/work-items/single-agent-observations-20261110.md)，规划入口见[规划工作流](src/shader_deep/workflows/planning/README.md)。
 
+## 独立视觉评审
+
+`shader-deep-review` 接收参考 PNG、实际渲染 PNG 和固定任务 JSON, 发布 `visual_review_v1` 报告包. 一个评审角色按任务选择特征、元素或整图模板, 对照六维检查内容记录可见差异. API 为 `run_review(reference_path, rendered_path, request, *, options=None)` 与 `read_review_package(directory)`.
+
+在本目录创建任务文件, 下例聚焦圆形轮廓与边缘这一特征.
+
+```json
+{
+  "scope": "local",
+  "target_kind": "feature",
+  "target": "前方圆形的轮廓与边缘",
+  "requirements": "本轮检查轮廓和边缘, 其他外观留待后续评审",
+  "dimensions": [
+    {"id": "content", "required_checks": ["目标圆形存在"]},
+    {"id": "layout", "excluded_checks": ["本轮不检查位置和画面比例"]},
+    {"id": "shape", "required_checks": ["轮廓、厚度和边缘软硬符合参考"]},
+    {"id": "color", "excluded_checks": ["本轮不检查色场"]},
+    {"id": "surface", "excluded_checks": ["本轮不检查表面细节"]},
+    {"id": "relations", "excluded_checks": ["本轮不检查与其他元素的关系"]}
+  ]
+}
+```
+
+将其保存为 `review-task.json`, 使用现有模型配置执行.
+
+```sh
+uv run --no-sync --env-file .env python -m shader_deep.cli.review \
+  reference.png rendered.png --task review-task.json --output-dir runs/review
+```
+
+安装或同步后的 console script 为 `shader-deep-review`. 预算默认 3 次逻辑模型调用, YAML 由 `--config` 选择, 显式 CLI 参数覆盖对应配置. `output_dir` 在 YAML 中按配置文件目录解析. 参考与渲染路径按当前目录解析.
+
+`local` 必须指定 `target_kind=feature` 或 `element`, `scene` 省略该字段. 六个指标都需出现, 没有必查内容时填写排除理由. 可选 `reference_region` 和 `rendered_region` 使用 `{left, top, right, bottom}` 原始像素坐标, 对应左闭右开的区域. 系统保存完整图片与原像素裁剪, 根据固定标准评审. 呈现时间与背景未知时可以省略 `conditions`, 必要证据不足会进入未评项.
+
+如需追溯生成运行，可在任务中填写 `source.run_id` 和 `source.candidate_id`。请先核对所选 PNG 确属该候选。报告会保留这两个标识，评审模型看不到它们。
+
+标准输出为运行状态、视觉结论和报告目录的 JSON 索引. `completed` 表示报告交付, `verdict` 分别表达 `needs_revision`、`no_major_issue_observed` 或 `inconclusive`. 合法报告交付返回退出码 0, 受阻或运行失败返回 1, 启动前输入错误返回 2. 报告可用 `read_review_package` 核对固定材料、标准和结论.
+
+Python 调用可从任务 JSON 构造请求.
+
+```python
+from pathlib import Path
+
+from shader_deep.api import ReviewRequest, read_review_package, run_review
+
+request = ReviewRequest.model_validate_json(Path("review-task.json").read_bytes())
+outcome = run_review(Path("reference.png"), Path("rendered.png"), request)
+if outcome.report_dir is not None:
+    package = read_review_package(outcome.report_dir)
+    print(package.report.verdict, package.report.submission.summary)
+```
+
+独立会话只读取评审材料并提交自己的报告. 局部结果的适用范围随报告保留. 模块说明见[评审角色](src/shader_deep/agents/review/README.md)和[评审工作流](src/shader_deep/workflows/review/README.md), 分级依据见[指标准则](docs/visual-review-rubric.md), 验证记录见[实施方案](docs/work-items/independent-visual-review-implementation-20261117.md).
+
+任务 JSON 可选填 `samples` 或 `coverage`，分别启用区域测量和必查部位覆盖检查。报告回读后，程序证据位于 `package.report.evidence`。
+
+- `samples` 中每项给出 `label`、`reference_region` 和 `rendered_region`，两个矩形使用各自输入 PNG 的像素坐标。若任务指定了局部视图，采样须位于相应视图内。以磨砂叠圆为例，可以分别指定前圆内部和空背景两个样本。程序测量每侧的 RGB 均值、加权亮度和像素数，使用 0–255 编码 RGB 的单位及白底透明合成。区域测量接受最高 8 位 PNG，16 位输入可继续做视觉和覆盖评审。
+- `coverage` 中的 `reference_window` 和 `rendered_window` 描述整个输入 PNG 在共享坐标系中的 1:1 像素窗口。每个窗口的尺寸须与对应 PNG 一致。若任务另指定了局部视图，实际覆盖以该局部视图平移到共享坐标系后的矩形为准。每个 `required_regions` 条目提供 `dimension`、`check`（该维度必查项的原文）和共享坐标的 `region`。程序把任一侧未覆盖的必查项登记为未评。视图完整时，元素外观是否缺项仍以可见图像为依据。
+- Python 调用方可从 `shader_deep.api` 导入 `ReviewSample`、`PixelRegion`、`ReviewCoverage` 和 `RequiredRegion`。调用方负责提供可信的坐标对应关系；窗口尺寸校验适用于 1:1 平移。
+
 ## 安装与配置
 
 在本目录操作, 使用仓库约定的 `uv` 管理独立环境:
@@ -538,7 +598,7 @@ if outcome.selected_candidate is not None:
 
 提示词要求先渲染, 再对照真实预览进行修正或结束。候选选择只结束当前生成任务, 不修改原任务的基线, 也不自动建立全局采用或用户接受记录。
 
-未绑定报告的任务沿用上述 Context Builder 入口. 报告生成由公开 `run_generation_from_report` 统一准备, 内部每轮复用固定原图、有效方案和基线材料, 并刷新候选与错误; 不把带报告绑定的任务直接交给旧 `run_generation`. 当前分析在 `agents/analysis/` 为单个观察角色构造固定材料与受限工具. 原生分析接受 SDK 的上下文摘要与工具输出外置; 生成不额外调用摘要模型, 保留有限轮数下的完整有效历史. 独立视觉评审尚未接入.
+未绑定报告的任务沿用上述 Context Builder 入口. 报告生成由公开 `run_generation_from_report` 统一准备, 内部每轮复用固定原图、有效方案和基线材料, 并刷新候选与错误; 不把带报告绑定的任务直接交给旧 `run_generation`. 当前分析在 `agents/analysis/` 为单个观察角色构造固定材料与受限工具. 原生分析接受 SDK 的上下文摘要与工具输出外置; 生成不额外调用摘要模型, 保留有限轮数下的完整有效历史. 独立视觉评审通过 `run_review` 接收固定双图和任务标准, 使用专用上下文发布评审包.
 
 ## 开发检查
 

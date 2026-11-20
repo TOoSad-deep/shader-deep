@@ -1,6 +1,6 @@
 # Shader Deep 项目进度与思路
 
-最后更新为 2026-11-11。
+最后更新为 2026-11-18。
 
 本页用于恢复项目全局: 先看当前阶段和下一步, 再按链接阅读任务细节. 首版依据当前入口、架构与已有工作记录整理; 历史验证不代表本次重新实测, 未记录的进展仍需补充.
 
@@ -11,6 +11,8 @@
 ## 当前阶段
 
 已有独立分析和生成流程, 以及报告到生成、方案比较、两元素整图组合和本地网页入口. 当前仍由用户显式选择方案, 尚未形成独立视觉评审与持续优化的自动闭环.
+
+2026-11-18 已接通独立视觉评审首版. 同一个角色通过 feature/element/scene 模板和固定任务标准比较显式 PNG, 发布六维差异与派生结论. API、CLI 与正式报告读取已实现, 工程检查和待校准范围见[评审实施记录](work-items/independent-visual-review-implementation-20261117.md#10-2026-11-18-工程实施记录).
 
 2026-11-11，用户已认可现有 E/F/R 输出为可用基线。[单个全图规划 Agent](work-items/scene-planning-agent-plan-20261111.md)的领域合同、固定输入、草稿 harness、正式规划包、API/CLI 与整图生成接线已实现。十个 case 最终交付为 8 completed、2 partial，两图均有真实生成与预览。M 自包含、备选独立正文和视觉偏差集中写入实施记录。
 
@@ -28,6 +30,7 @@ VISTA 后续实施按最小 TODO 推进, 复杂检索和更广的公共能力在
 | --- | --- | --- | --- |
 | 单 Agent 全图 E/F/R 观察 | 已实现，现有输出获用户认可为可用基线 | 观察细节在实际规划与生成中继续核对 | [实施及实测记录](work-items/single-agent-observations-20261110.md)、[粒度规范](analysis-observation-guidelines.md)、[五图样例](analysis-observation-examples.md) |
 | 单个全图 M/S 规划 | 首版已接通，十图正式包及两图生成已验证 | M 自包含、gaps 判据、备选独立正文和生成视觉仍有偏差 | [实施方案与验证记录](work-items/scene-planning-agent-plan-20261111.md) |
+| 独立视觉评审 | 已完成一次基于测量证据的特征修订。元素与整图校准六组有五组符合预期 | 元素采集窗口误判及分层人工一致性待验证 | [实施记录](work-items/independent-visual-review-implementation-20261117.md)、[指标](visual-review-rubric.md) |
 | 原生多视角分析 | 已退出默认分析执行, 旧完整包读取与生成消费者保留 | 当前不提供多视角运行开关; 历史日志不能代表单角色实测状态 | [分析角色](../src/shader_deep/agents/analysis/README.md)、[历史原生记录](work-items/deep-agents-native-plan-20261028.md#单轮真实模型冒烟) |
 | 生成与渲染 | 已接入生成、WebGL2 渲染、预览回读、候选选择及受阻结束 | 程序完成与渲染成功不代表参考图复刻质量已验收 | [当前架构](architecture.md)、[生成闭环记录](work-items/generation-02-execution-loop.md) |
 | 报告到生成、方案比较、整图组合 | 生成阶段 01–04 已接入; 整图组合当前支持两个元素来源 | 分析到生成由用户显式选择; 真实组合效果需单独验收 | [生成架构与阶段入口](generation-architecture.md)、[组合验证记录](work-items/generation-04-scene-composition.md#实施记录) |
@@ -43,8 +46,8 @@ VISTA 后续实施按最小 TODO 推进, 复杂检索和更广的公共能力在
 
 ## 当前重点与下一步
 
-- 本轮主线为全图 M/S 规划。三个 subagents 已完成领域/存储、共享草稿及规划角色，主任务接入现有生成循环。独立 review 已覆盖合同、harness 和生成接线。
-- 当前验证通过 377 项无网络测试、22 项浏览器集成、安装包及轨迹核对。运行结果、预算收口、语义和视觉偏差集中记录到[规划实施记录](work-items/scene-planning-agent-plan-20261111.md)。
+- 磨砂叠圆实验验证了测量证据可用于一次局部亮度修订。元素与整图校准检出了明确缺项，也发现外轮廓证据不足时的一次误拒。[评审实施记录](work-items/independent-visual-review-implementation-20261117.md#16-元素与整图的小样本校准)
+- 此前 M/S 规划交付验证通过 377 项无网络测试、22 项浏览器集成、安装包及轨迹核对. 运行结果、预算收口、语义和视觉偏差集中记录到[规划实施记录](work-items/scene-planning-agent-plan-20261111.md).
 - 新五图独立测试: 修订后的 Codex 分析仅作对照, 未送入 Agent. 原规则下五图均合法交付, 3 completed / 2 partial; 水面/发光图形漏 R、精度缺口和局部事实误读仍需处理. 逐图指标见同一[实测记录](work-items/single-agent-observations-20261110.md).
 - 十图综合审阅: 同规则最终十份报告为 7 completed / 3 partial, 不作为准确率. 下一轮优先验证观察归属流程、少量错/对片段和受控同 Agent 复查, 再测预算与视觉回看; 建议尚未实施, 见[综合分析](work-items/ten-case-observation-review-20261110.md).
 - 其余方向: 继续保留候选与各自的设计状态, 不因本次开发准备自动扩大实施范围.

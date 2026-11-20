@@ -23,9 +23,9 @@ from shader_deep.infrastructure.llm.openrouter import (
 )
 
 if TYPE_CHECKING:
-    from collections.abc import Iterator
+    from collections.abc import AsyncIterator, Iterator
 
-    from langchain_core.callbacks import CallbackManagerForLLMRun
+    from langchain_core.callbacks import AsyncCallbackManagerForLLMRun, CallbackManagerForLLMRun
     from langchain_core.language_models import LanguageModelInput
     from langchain_core.messages import BaseMessage
     from langchain_core.outputs import ChatGenerationChunk, ChatResult
@@ -98,9 +98,10 @@ class AnalysisChatOpenAI(ChatOpenAI):
             for entry in payload.get("tools", []):
                 if entry.get("type") == "function":
                     # 保留动态 F/R 选择键的原 Schema, 不将字典的 additionalProperties 改为 false.
+                    strict_binding = entry["function"].get("strict") is True
                     entry["function"]["strict"] = True
                     if "parameters" in entry["function"]:
-                        entry["function"]["parameters"] = _tool_parameters(entry["function"]["parameters"])
+                        entry["function"]["parameters"] = _tool_parameters(entry["function"]["parameters"], strict_binding=strict_binding)
             restore_reasoning(payload, self._convert_input(input_).to_messages())
         return payload
 
@@ -124,19 +125,33 @@ class AnalysisChatOpenAI(ChatOpenAI):
         **kwargs: object,
     ) -> Iterator[ChatGenerationChunk]:
         """随流式片段保存参数原文, 由框架按 index 合并而不重新序列化参数."""
-        reasoning = ReasoningBuffer()
-        terminal = StreamTerminal()
-        # 每次网络请求独立汇集; 部分 chunk 可进入框架, 但完整响应校验前不能执行工具.
+        reasoning, terminal = ReasoningBuffer(), StreamTerminal()
+        # 每次请求独立汇集; 完整响应校验前不能执行工具.
         for chunk in super()._stream(messages, stop=stop, run_manager=run_manager, **kwargs):
-            details = chunk.message.additional_kwargs.pop(RAW_REASONING, [])
-            reasoning.append(details)
-            finished = terminal.accept(chunk.generation_info) if is_openrouter(self.openai_api_base) else False
-            if finished and reasoning.blocks:
-                chunk.message.additional_kwargs["reasoning_details"] = reasoning.details()
-            if isinstance(chunk.message, AIMessageChunk) and chunk.message.tool_call_chunks:
-                # 额外保存参数原文, 因为 SDK 的增量 JSON 解析可能提前补齐末尾括号.
-                chunk.message.additional_kwargs[RAW_TOOL_CALLS] = [dict(call) for call in chunk.message.tool_call_chunks]
-            yield chunk
+            yield self._preserve_stream_chunk(chunk, reasoning, terminal)
+
+    async def _astream(
+        self,
+        messages: list[BaseMessage],
+        stop: list[str] | None = None,
+        run_manager: AsyncCallbackManagerForLLMRun | None = None,
+        **kwargs: object,
+    ) -> AsyncIterator[ChatGenerationChunk]:
+        """异步流式响应使用相同的原始参数、推理与结束帧汇集."""
+        reasoning, terminal = ReasoningBuffer(), StreamTerminal()
+        async for chunk in super()._astream(messages, stop=stop, run_manager=run_manager, **kwargs):
+            yield self._preserve_stream_chunk(chunk, reasoning, terminal)
+
+    def _preserve_stream_chunk(self, chunk: ChatGenerationChunk, reasoning: ReasoningBuffer, terminal: StreamTerminal) -> ChatGenerationChunk:
+        details = chunk.message.additional_kwargs.pop(RAW_REASONING, [])
+        reasoning.append(details)
+        finished = terminal.accept(chunk.generation_info) if is_openrouter(self.openai_api_base) else False
+        if finished and reasoning.blocks:
+            chunk.message.additional_kwargs["reasoning_details"] = reasoning.details()
+        if isinstance(chunk.message, AIMessageChunk) and chunk.message.tool_call_chunks:
+            # SDK 的增量 JSON 解析可能补齐末尾括号, 原始参数必须另行保留.
+            chunk.message.additional_kwargs[RAW_TOOL_CALLS] = [dict(call) for call in chunk.message.tool_call_chunks]
+        return chunk
 
     def _create_chat_result(self, response: dict | BaseModel, generation_info: dict | None = None) -> ChatResult:
         """非流式响应同样保留原始参数; 不依赖适配器已解析的工具调用."""
@@ -214,11 +229,12 @@ def configure_analysis_model(model: ChatOpenAI, options: ModelOptions) -> ChatOp
         options: 分析流程专用的请求超时与输出预算.
 
     Returns:
-        共享现有传输连接、请求尝试次数受限的同步模型客户端.
+        共享现有同步与异步传输连接、请求尝试次数受限的模型客户端.
     """
     # with_options 共享 LangChain 缓存的 HTTP 连接; 此处不能关闭连接,
     # 因为其他并发子任务可能仍在使用该连接发送请求.
     client = model.root_client.with_options(max_retries=0, timeout=float(options.request_timeout_seconds))
+    async_client = model.root_async_client.with_options(max_retries=0, timeout=float(options.request_timeout_seconds))
     legacy_tokens = model.model_name.lower().startswith("deepseek") or is_openrouter(model.openai_api_base)
     extra_body = dict(model.extra_body or {})
     if legacy_tokens:
@@ -232,6 +248,8 @@ def configure_analysis_model(model: ChatOpenAI, options: ModelOptions) -> ChatOp
         update={
             "root_client": client,
             "client": client.chat.completions,
+            "root_async_client": async_client,
+            "async_client": async_client.chat.completions,
             "max_retries": 0,
             "request_timeout": float(options.request_timeout_seconds),
             "streaming": options.stream_model_responses,

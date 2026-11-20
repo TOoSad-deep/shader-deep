@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import configparser
 import os
 import subprocess
 import sys
@@ -23,8 +24,12 @@ from shader_deep import api
 from shader_deep.agents.analysis import run_analysis, run_analysis_task
 from shader_deep.agents.analysis.native import build_analysis_agent
 from shader_deep.workflows.planning import run_planning, PlanningOptions
+from shader_deep.workflows.review import run_review, ReviewOptions
+from shader_deep.infrastructure.storage.review_package import read_review_package
 if run_planning is not api.run_planning or PlanningOptions is not api.PlanningOptions:
     raise RuntimeError('Planning public entrypoints differ from the installed API')
+if run_review is not api.run_review or ReviewOptions is not api.ReviewOptions or read_review_package is not api.read_review_package:
+    raise RuntimeError('Review public entrypoints differ from the installed API')
 if run_analysis is not api.run_analysis or run_analysis_task is not api.run_analysis_task:
     raise RuntimeError('Analysis package changed the public entrypoint identity')
 if not callable(build_analysis_agent):
@@ -43,6 +48,7 @@ CLI_MODULES = (
     "shader_deep.cli.analysis",
     "shader_deep.cli.generation",
     "shader_deep.cli.planning",
+    "shader_deep.cli.review",
     "shader_deep.cli.web",
     "shader_deep.analysis_cli",
 )
@@ -54,6 +60,18 @@ def _run(arguments: list[str], root: Path) -> str:
         [sys.executable, "-W", "error", *arguments], cwd=root, env=environment, check=True, text=True, capture_output=True
     )
     return result.stdout
+
+
+def _check_review_script(archive: zipfile.ZipFile) -> None:
+    metadata = [name for name in archive.namelist() if name.endswith(".dist-info/entry_points.txt")]
+    if len(metadata) != 1:
+        msg = "Wheel must contain one console script registration file"
+        raise ValueError(msg)
+    parser = configparser.ConfigParser(interpolation=None)
+    parser.read_string(archive.read(metadata[0]).decode("utf-8"))
+    if parser.get("console_scripts", "shader-deep-review", fallback=None) != "shader_deep.cli.review:main":
+        msg = "Wheel is missing the shader-deep-review console script"
+        raise ValueError(msg)
 
 
 def check_wheel(wheel: Path) -> None:
@@ -68,6 +86,11 @@ def check_wheel(wheel: Path) -> None:
             required = {
                 "shader_deep/resources/analysis.yaml",
                 "shader_deep/resources/planning.yaml",
+                "shader_deep/resources/review.yaml",
+                "shader_deep/resources/skills/visual-review/SKILL.md",
+                "shader_deep/resources/skills/visual-review/profiles/feature.md",
+                "shader_deep/resources/skills/visual-review/profiles/element.md",
+                "shader_deep/resources/skills/visual-review/profiles/scene.md",
                 "shader_deep/resources/skills/scene-planner/SKILL.md",
                 "shader_deep/resources/skills/scene-planner/references/mechanisms.md",
                 "shader_deep/resources/skills/scene-planner/references/alternatives.md",
@@ -83,6 +106,7 @@ def check_wheel(wheel: Path) -> None:
             if not required <= set(archive.namelist()):
                 msg = "Wheel is missing analysis configuration, orchestration skill, or WebGL2 resources"
                 raise ValueError(msg)
+            _check_review_script(archive)
             archive.extractall(root)
         _run(["-c", IMPORT_CHECK], root)
         for module in CLI_MODULES:

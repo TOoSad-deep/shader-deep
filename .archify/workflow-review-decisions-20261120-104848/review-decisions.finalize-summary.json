@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "ok": false,
+  "command": "finalize",
+  "status": "fail",
+  "type": "workflow",
+  "quality": "showcase",
+  "specification": {
+    "path": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/.archify/workflow-review-decisions-20261120-104848/candidate.json",
+    "sha256": "c63ad21b39f109c64e7335371027ec3096297adfc4efe462a2abc140326f5b18",
+    "bytes": 11813
+  },
+  "artifact": {
+    "path": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/.archify/workflow-review-decisions-20261120-104848/review-decisions.html",
+    "sha256": "717c9714467c9123a7f8fdfd112fa746936d957c531bcf3dfc9b588d1b79214a",
+    "bytes": 835848
+  },
+  "gates": {
+    "validate": "pass",
+    "deliver": "pass",
+    "check": "pass",
+    "browser-check": "fail"
+  },
+  "failedStage": "browser-check",
+  "diagnostics": [
+    {
+      "code": "viewer/browser-check-runtime",
+      "severity": "error",
+      "message": "browser-check could not complete its Chrome inspection.",
+      "subject": {
+        "artifact": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/.archify/workflow-review-decisions-20261120-104848/review-decisions.html"
+      },
+      "evidence": {
+        "reason": "Chrome DevTools read pipe failed: stream ended\nChrome process: still running.\nChrome transport: Node v26.0.0, libuv 1.52.1, darwin; pid=75964, exitCode=null, signalCode=null.\nChrome read pipe: readable=false, ended=true, destroyed=false, receivedBytes=0, messages=0, bufferedBytes=0.\nChrome write pipe: writable=true, ended=false, destroyed=false, completedWrites=1, writtenBytes=50, bufferedBytes=0."
+      },
+      "supportedFixes": [
+        "resolve the reported Chrome inspection error, then rerun browser-check"
+      ]
+    }
+  ],
+  "diagnosticSummary": {
+    "total": 1,
+    "shown": 1,
+    "truncated": false
+  },
+  "evidence": {
+    "receipt": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/.archify/workflow-review-decisions-20261120-104848/review-decisions.finalize.json",
+    "summaryReceipt": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/.archify/workflow-review-decisions-20261120-104848/review-decisions.finalize-summary.json",
+    "browserCheckReceipt": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/.archify/workflow-review-decisions-20261120-104848/review-decisions.browser-check.json"
+  },
+  "update": {
+    "status": "current",
+    "installedVersion": "3.2.0",
+    "availableVersion": "3.2.0",
+    "releaseNotes": null,
+    "checkedAt": "2026-11-19T06:39:38.633Z",
+    "source": "cache",
+    "noticeRequired": false,
+    "noticeText": null
+  },
+  "visualReview": "not-requested",
+  "durationMs": 703,
+  "browserCheck": {
+    "requested": true,
+    "ran": false
+  }
+}

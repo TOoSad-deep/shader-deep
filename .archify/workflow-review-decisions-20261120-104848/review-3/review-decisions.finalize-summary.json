@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "ok": true,
+  "command": "finalize",
+  "status": "pass",
+  "type": "workflow",
+  "quality": "showcase",
+  "specification": {
+    "path": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/.archify/workflow-review-decisions-20261120-104848/candidate.json",
+    "sha256": "78179ef096d9455b631cb395bc18b3921fc94bff663af390535e19f3746c2d81",
+    "bytes": 12921
+  },
+  "artifact": {
+    "path": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/.archify/workflow-review-decisions-20261120-104848/review-decisions.html",
+    "sha256": "85c39eb900db9f4bf606d68d999eb795d7c2871e447aac2845f9def47d825226",
+    "bytes": 837017
+  },
+  "gates": {
+    "validate": "pass",
+    "deliver": "pass",
+    "check": "pass",
+    "browser-check": "pass"
+  },
+  "diagnostics": [],
+  "diagnosticSummary": {
+    "total": 0,
+    "shown": 0,
+    "truncated": false
+  },
+  "evidence": {
+    "receipt": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/.archify/workflow-review-decisions-20261120-104848/review-3/review-decisions.finalize.json",
+    "summaryReceipt": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/.archify/workflow-review-decisions-20261120-104848/review-3/review-decisions.finalize-summary.json",
+    "browserCheckReceipt": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/.archify/workflow-review-decisions-20261120-104848/review-3/review-decisions.browser-check.json"
+  },
+  "update": {
+    "status": "current",
+    "installedVersion": "3.2.0",
+    "availableVersion": "3.2.0",
+    "releaseNotes": null,
+    "checkedAt": "2026-11-19T06:39:38.633Z",
+    "source": "cache",
+    "noticeRequired": false,
+    "noticeText": null
+  },
+  "visualReview": "not-requested",
+  "durationMs": 1808,
+  "browserCheck": {
+    "requested": true,
+    "ran": true
+  }
+}

@@ -1,0 +1,7 @@
+# 独立视觉评审运行配置, 显式 CLI 参数优先.
+max_model_calls: 3
+max_request_retries: 2
+request_timeout_seconds: 240
+max_output_tokens: 8192
+stream_model_responses: true
+output_dir: null

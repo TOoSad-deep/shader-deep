@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "08a3fbab-ff68-4765-8df6-69097f77b485",
+  "status": "current",
+  "command": "deliver",
+  "type": "architecture",
+  "input": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/.archify/architecture-visual-reviewer-20261118-172249/candidate.json",
+  "output": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/.archify/architecture-visual-reviewer-20261118-172249/visual-reviewer.html",
+  "specification": {
+    "sha256": "929e854253bda8512b84df9450aca5f818e305183ec53e09645be17a0579ee85",
+    "bytes": 9325
+  },
+  "artifact": {
+    "sha256": "fe8b2dbd190e55efadf67977301260b240b4a7a667213aaab21fcf2982befaa9",
+    "bytes": 828136
+  }
+}

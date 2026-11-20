@@ -29,23 +29,25 @@ _SCHEMA_CHILDREN = {
 }
 
 
-def _tool_parameters(schema: object) -> object:
-    """仅在外发 Schema 移除非空白正则, 本地 Text 校验继续执行.
+def _tool_parameters(schema: object, *, strict_binding: bool = False) -> object:
+    """适配外发字符串约束和显式严格绑定的字段默认值.
 
     当前严格工具服务会把非空白查找正则约束成单字符. 保留长度和其他
-    正则约束, 仅遍历 Schema 子节点, 不修改 default、enum 或 examples 数据.
+    正则约束, 只遍历 Schema 子节点. 显式严格工具要求所有属性必填, 去除其默认值注解.
     """
     if isinstance(schema, list):
-        return [_tool_parameters(child) for child in schema]
+        return [_tool_parameters(child, strict_binding=strict_binding) for child in schema]
     if not isinstance(schema, dict):
         return schema
     result = dict(schema)
     # 只沿 JSON Schema 关键字递归; 示例数据里的同名 pattern 不属于待适配约束.
     for key, value in schema.items():
         if key in _SCHEMA_MAPS and isinstance(value, dict):
-            result[key] = {name: _tool_parameters(child) for name, child in value.items()}
+            result[key] = {name: _tool_parameters(child, strict_binding=strict_binding) for name, child in value.items()}
         elif key in _SCHEMA_CHILDREN:
-            result[key] = _tool_parameters(value)
+            result[key] = _tool_parameters(value, strict_binding=strict_binding)
+    if strict_binding:
+        result.pop("default", None)
     if schema.get("type") == "string" and schema.get("pattern") == r"\S":
         result.pop("pattern")
     return result

@@ -14,6 +14,7 @@
 | [observation_package.py](observation_package.py) | `write_observation_package` / `read_observation_package`: 全图 E/F/R 观察包发布与正式回读 |
 | [planning_inputs.py](planning_inputs.py) | `capture_planning_source` 捕获观察、要求与生成约束, 计算完整观察身份 |
 | [planning_package.py](planning_package.py) | `write_planning_package`、`read_planning_package`、`read_planning_sketch` 发布并校验整图 M/S 方案 |
+| [review_package.py](review_package.py) | `capture_review_source` 固定双图与标准, `write_review_package` / `read_review_package` 发布和核验独立评审包 |
 | [generation_planning_inputs.py](generation_planning_inputs.py) | `capture_planning_generation_inputs` 固定正式规划包、显式方案及本轮执行条件 |
 | [analysis_materials.py](analysis_materials.py)、[report_evidence.py](report_evidence.py) | 冻结证据字节转为包内材料, 校验路径、哈希、像素与统计字段 |
 | [generation_inputs.py](generation_inputs.py)、[scene_inputs.py](scene_inputs.py) | 捕获单方案或两元素来源, 形成后续请求使用的固定材料 |
@@ -82,6 +83,20 @@ planning_inputs 捕获观察 manifest、E/F/R 与原图的实际字节, 用文�
 generation_planning_inputs 捕获正式规划包, 校验副本内容身份, 按显式 S 和可选备选构造 CapturedPlanningInputs. 该对象为生成保存整图观察、生效方案、方法条件、上游观察 gaps 和 S.gaps. 省略生成配置时继承规划尺寸与时间, 显式配置的执行差异写入固定方案材料及结果 metadata.
 
 方案来源与本轮执行条件在捕获阶段固定. 实际渲染候选及结束资格由[生成工作流](../../workflows/generation.py)与[生成会话](../../agents/generation/tools/session.py)管理.
+
+## 独立视觉评审输入与报告
+
+[review_package.py](review_package.py) 从显式参考与候选 PNG 捕获固定字节, 保存调用方任务、共同规则及选定层级模板. `CapturedReviewSource.images` 包含带角色标签的完整双图, 声明区域时增加来自对应原图的局部视图. 后续请求与正式发布采用同一份不可变字节集合. 原文件或输入副本被改变不会替换本轮已固定的材料.
+
+捕获和正式回读均核对 PNG 签名、必需块、块长度、顺序与 CRC, 再解码并检查静态格式、32 MiB 文件容量和 16,777,216 像素上限. 1/2/4 位灰度局部图展开为 8 位灰度, 透明色键按同一比例换算. 区域使用原图左闭右开的像素坐标, 保留来源与固定区域. 正式回读重新验证局部视图与来源区域的像素一致性. 原图颜色与透明度保留, 呈现条件来自调用方声明.
+
+16 位 PNG 的局部视图通过 [png16.py](../../imaging/png16.py) 按原始样本裁剪, 保留位深、色型、显式 alpha 与 `tRNS` 透明色键. 该处理支持灰度、RGB、灰度 alpha、RGBA 及 Adam7 交错编码, 输出同色型的非交错 PNG. 正式回读核对完整 16 位样本、透明键和颜色元数据. 解压上限按图像尺寸与各交错 pass 计算. 像素重建只处理裁剪所需的行前缀及预测依赖. 捕获时生成局部图, 发布时复用固定字节, 正式读取器独立核对磁盘中的局部图.
+
+`visual_review_v1` 正式包包含固定任务与标准、两张原图、实际比较视图、采用的规则和 `review.json`. `ReviewPackage.report` 保存提交、程序派生结论与执行元数据. 读取器核对协议文件集合、包内路径、哈希、固定绑定、领域引用和派生结论. 发布使用同级暂存目录, 写齐并正式回读后改名, 已有报告目录拒绝覆盖. 运行目录的接受快照与交付状态由评审工作流管理.
+
+任务启用区域统计或覆盖时，[review_evidence.py](../../imaging/review_evidence.py) 从固定 PNG 与任务构造 `report.evidence`。正式读取器重新测量和检查覆盖，并核对报告内的程序未评记录。省略可选配置的旧任务继续使用相同的冻结标准摘要。
+
+[评审包行为测试](../../../../tests/unit_tests/infrastructure/test_review_package.py)覆盖固定图片、源文件变化、局部像素、移动回读、内容篡改、路径与符号链接、派生结论及发布失败. 领域和视觉含义见[评审准则](../../../../docs/visual-review-rubric.md).
 
 ## 视觉材料存储
 

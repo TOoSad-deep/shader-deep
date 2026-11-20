@@ -1,0 +1,493 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "视觉评审如何从任务得到结论",
+    "locale": "zh-CN",
+    "output": ".archify/workflow-review-decisions-20261120-104848/review-decisions.html",
+    "quality_profile": "showcase",
+    "repository": {
+      "url": "https://github.com/TOoSad-deep/shader-deep.git",
+      "revision": "2c8ce655eebff8da50bacb3e25d08f78473cc438",
+      "link_mode": "local-only"
+    },
+    "legend": {
+      "mode": "hidden"
+    }
+  },
+  "lanes": [
+    {
+      "id": "scope",
+      "label": "定范围 · 调用方与程序"
+    },
+    {
+      "id": "inspect",
+      "label": "取证与看图 · 程序和评审模型"
+    },
+    {
+      "id": "decide",
+      "label": "判定 · 程序"
+    },
+    {
+      "id": "verdict",
+      "label": "三种视觉结论"
+    },
+    {
+      "id": "publish",
+      "label": "报告交付"
+    }
+  ],
+  "mainPath": [
+    "task",
+    "freeze",
+    "cover",
+    "model",
+    "validate",
+    "judge",
+    "unknown",
+    "publish",
+    "done"
+  ],
+  "nodes": [
+    {
+      "id": "task",
+      "lane": "scope",
+      "col": 0,
+      "type": "external",
+      "icon": "person",
+      "label": "调用方定检查项",
+      "sublabel": "按任务划定必查与排除",
+      "sources": [
+        {
+          "path": "apps/shader_deep/src/shader_deep/domain/visual_review.py",
+          "line": 120,
+          "end_line": 135
+        },
+        {
+          "path": "apps/shader_deep/docs/visual-review-rubric.md",
+          "line": 35,
+          "end_line": 45
+        }
+      ]
+    },
+    {
+      "id": "freeze",
+      "lane": "scope",
+      "col": 1,
+      "type": "backend",
+      "icon": "briefcase",
+      "label": "程序冻结标准",
+      "sublabel": "绑定六维要求与层级模板",
+      "sources": [
+        {
+          "path": "apps/shader_deep/src/shader_deep/domain/visual_review.py",
+          "line": 136,
+          "end_line": 148
+        },
+        {
+          "path": "apps/shader_deep/src/shader_deep/infrastructure/storage/review_package.py",
+          "line": 349,
+          "end_line": 357
+        }
+      ]
+    },
+    {
+      "id": "auto",
+      "lane": "scope",
+      "col": 3,
+      "type": "backend",
+      "icon": "neutral",
+      "label": "程序直接登记未评",
+      "sublabel": "跳过模型，仍走提交校验",
+      "sources": [
+        {
+          "path": "apps/shader_deep/src/shader_deep/workflows/review/entry.py",
+          "line": 47,
+          "end_line": 52
+        },
+        {
+          "path": "apps/shader_deep/src/shader_deep/domain/review_coverage.py",
+          "line": 76,
+          "end_line": 89
+        }
+      ]
+    },
+    {
+      "id": "cover",
+      "lane": "inspect",
+      "col": 1,
+      "type": "backend",
+      "icon": "decision",
+      "label": "坐标能证实全部未覆盖？",
+      "sublabel": "调用方可选的 1:1 窗口映射",
+      "sources": [
+        {
+          "path": "apps/shader_deep/src/shader_deep/imaging/review_evidence.py",
+          "line": 24,
+          "end_line": 53
+        },
+        {
+          "path": "apps/shader_deep/src/shader_deep/imaging/review_evidence.py",
+          "line": 84,
+          "end_line": 90
+        },
+        {
+          "path": "apps/shader_deep/src/shader_deep/workflows/review/entry.py",
+          "line": 47,
+          "end_line": 54
+        }
+      ]
+    },
+    {
+      "id": "model",
+      "lane": "inspect",
+      "col": 2,
+      "type": "backend",
+      "icon": "person",
+      "label": "模型看图并提交六维",
+      "sublabel": "完整填写六项状态与依据",
+      "sources": [
+        {
+          "path": "apps/shader_deep/src/shader_deep/resources/skills/visual-review/SKILL.md",
+          "line": 12,
+          "end_line": 16
+        },
+        {
+          "path": "apps/shader_deep/src/shader_deep/resources/skills/visual-review/SKILL.md",
+          "line": 27,
+          "end_line": 39
+        }
+      ]
+    },
+    {
+      "id": "validate",
+      "lane": "inspect",
+      "col": 3,
+      "type": "security",
+      "icon": "decision",
+      "label": "程序合并未评并校验",
+      "sublabel": "按必查项合并，核对六维引用",
+      "sources": [
+        {
+          "path": "apps/shader_deep/src/shader_deep/workflows/review/session.py",
+          "line": 97,
+          "end_line": 107
+        },
+        {
+          "path": "apps/shader_deep/src/shader_deep/domain/visual_review.py",
+          "line": 353,
+          "end_line": 377
+        },
+        {
+          "path": "apps/shader_deep/src/shader_deep/domain/review_coverage.py",
+          "line": 54,
+          "end_line": 72
+        }
+      ]
+    },
+    {
+      "id": "blocked",
+      "lane": "decide",
+      "col": 2,
+      "type": "security",
+      "icon": "stop",
+      "label": "受阻 · blocked",
+      "sublabel": "留存停止原因与模型调用轮数",
+      "sources": [
+        {
+          "path": "apps/shader_deep/src/shader_deep/workflows/review/session.py",
+          "line": 47,
+          "end_line": 60
+        },
+        {
+          "path": "apps/shader_deep/src/shader_deep/workflows/review/session.py",
+          "line": 81,
+          "end_line": 90
+        },
+        {
+          "path": "apps/shader_deep/src/shader_deep/workflows/review/session.py",
+          "line": 109,
+          "end_line": 129
+        }
+      ]
+    },
+    {
+      "id": "judge",
+      "lane": "decide",
+      "col": 3,
+      "type": "backend",
+      "icon": "decision",
+      "label": "程序汇总结论",
+      "sublabel": "重大问题优先，再看必要未评",
+      "sources": [
+        {
+          "path": "apps/shader_deep/src/shader_deep/domain/visual_review.py",
+          "line": 380,
+          "end_line": 391
+        }
+      ]
+    },
+    {
+      "id": "revise",
+      "lane": "verdict",
+      "col": 2,
+      "type": "backend",
+      "icon": "flag",
+      "label": "需要修改",
+      "sublabel": "有重大问题，保留未评项",
+      "sources": [
+        {
+          "path": "apps/shader_deep/src/shader_deep/domain/visual_review.py",
+          "line": 380,
+          "end_line": 391
+        },
+        {
+          "path": "apps/shader_deep/docs/visual-review-rubric.md",
+          "line": 125,
+          "end_line": 131
+        }
+      ]
+    },
+    {
+      "id": "unknown",
+      "lane": "verdict",
+      "col": 3,
+      "type": "backend",
+      "icon": "waiting",
+      "label": "无法判断",
+      "sublabel": "无重大问题，有必要项未评",
+      "sources": [
+        {
+          "path": "apps/shader_deep/src/shader_deep/domain/visual_review.py",
+          "line": 380,
+          "end_line": 391
+        },
+        {
+          "path": "apps/shader_deep/docs/visual-review-rubric.md",
+          "line": 125,
+          "end_line": 131
+        }
+      ]
+    },
+    {
+      "id": "clear",
+      "lane": "verdict",
+      "col": 4,
+      "type": "backend",
+      "icon": "success",
+      "label": "未发现重大问题",
+      "sublabel": "无登记的必要未评，可含轻微差异",
+      "sources": [
+        {
+          "path": "apps/shader_deep/src/shader_deep/domain/visual_review.py",
+          "line": 380,
+          "end_line": 391
+        },
+        {
+          "path": "apps/shader_deep/docs/visual-review-rubric.md",
+          "line": 125,
+          "end_line": 131
+        }
+      ]
+    },
+    {
+      "id": "publish",
+      "lane": "publish",
+      "col": 3,
+      "type": "database",
+      "icon": "briefcase",
+      "label": "复验并发布正式报告",
+      "sublabel": "打包双图、标准和报告",
+      "sources": [
+        {
+          "path": "apps/shader_deep/src/shader_deep/infrastructure/storage/review_package.py",
+          "line": 399,
+          "end_line": 421
+        },
+        {
+          "path": "apps/shader_deep/src/shader_deep/infrastructure/storage/review_package.py",
+          "line": 425,
+          "end_line": 435
+        }
+      ]
+    },
+    {
+      "id": "done",
+      "lane": "publish",
+      "col": 4,
+      "type": "frontend",
+      "icon": "success",
+      "label": "报告已交付",
+      "sublabel": "completed",
+      "sources": [
+        {
+          "path": "apps/shader_deep/src/shader_deep/workflows/review/entry.py",
+          "line": 75,
+          "end_line": 96
+        },
+        {
+          "path": "apps/shader_deep/src/shader_deep/workflows/review/session.py",
+          "line": 119,
+          "end_line": 129
+        }
+      ]
+    },
+    {
+      "id": "failed",
+      "lane": "publish",
+      "col": 2,
+      "type": "security",
+      "icon": "failure",
+      "label": "发布失败 · failed",
+      "sublabel": "保留已接受的提交快照",
+      "sources": [
+        {
+          "path": "apps/shader_deep/src/shader_deep/workflows/review/entry.py",
+          "line": 64,
+          "end_line": 77
+        },
+        {
+          "path": "apps/shader_deep/src/shader_deep/workflows/review/session.py",
+          "line": 97,
+          "end_line": 107
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "id": "task-freeze",
+      "from": "task",
+      "to": "freeze"
+    },
+    {
+      "id": "freeze-cover",
+      "from": "freeze",
+      "to": "cover"
+    },
+    {
+      "id": "cover-auto",
+      "from": "cover",
+      "to": "auto",
+      "label": "是"
+    },
+    {
+      "id": "auto-validate",
+      "from": "auto",
+      "to": "validate"
+    },
+    {
+      "id": "cover-model",
+      "from": "cover",
+      "to": "model",
+      "label": "否"
+    },
+    {
+      "id": "model-validate",
+      "from": "model",
+      "to": "validate",
+      "label": "提交"
+    },
+    {
+      "id": "validate-model",
+      "from": "validate",
+      "to": "model",
+      "label": "拒绝，可重试",
+      "role": "return",
+      "variant": "dashed"
+    },
+    {
+      "id": "model-blocked",
+      "from": "model",
+      "to": "blocked",
+      "label": "停止或无提交",
+      "role": "error"
+    },
+    {
+      "id": "validate-judge",
+      "from": "validate",
+      "to": "judge",
+      "label": "通过"
+    },
+    {
+      "id": "judge-revise",
+      "from": "judge",
+      "to": "revise",
+      "label": "有重大问题"
+    },
+    {
+      "id": "judge-unknown",
+      "from": "judge",
+      "to": "unknown",
+      "label": "无重大，有未评"
+    },
+    {
+      "id": "judge-clear",
+      "from": "judge",
+      "to": "clear",
+      "label": "无重大、无未评"
+    },
+    {
+      "id": "revise-publish",
+      "from": "revise",
+      "to": "publish"
+    },
+    {
+      "id": "unknown-publish",
+      "from": "unknown",
+      "to": "publish"
+    },
+    {
+      "id": "clear-publish",
+      "from": "clear",
+      "to": "publish"
+    },
+    {
+      "id": "publish-done",
+      "from": "publish",
+      "to": "done",
+      "label": "成功"
+    },
+    {
+      "id": "publish-failed",
+      "from": "publish",
+      "to": "failed",
+      "label": "失败",
+      "role": "error"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "同一张图可以有不同的检查范围",
+      "items": [
+        "调用方先选特征、元素或整图模板。内容、布局、形状、色彩、表面和关系六维都要列出必查内容或排除理由，整场至少有一项必查。",
+        "只问齿盘外缘时，可以只查形状。若还要求中心孔存在，须在本轮标准中单独列出。"
+      ]
+    },
+    {
+      "dot": "violet",
+      "title": "六维怎么填写",
+      "items": [
+        "没有必查内容的一维记 not_applicable。有必查内容时，无差异且材料充足记 match，仅有必要内容无法判断记 uncertain。",
+        "已确认差异按最高严重性记 minor_gap 或 major_gap。严重性取决于差异对目标的影响。同一问题可以被相关维度引用。程序检查六维状态与引用是否完整，模型仍可能漏查某一项。"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "采集窗口缺一块时",
+      "items": [
+        "程序只检查调用方提供的 1:1 像素平移和必查区域。任一侧窗口未完整覆盖，程序即登记该项未评。没有坐标映射时，由模型根据图片判断材料是否足够。区域取样也由调用方按需指定。",
+        "还有可评项时，模型仍提交六维。程序将已确认的覆盖缺口按必查项并入报告。同维度的可见问题须指明可查项。只有全部必查项都被程序证实缺视图时，才跳过模型。"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "调用方会收到什么",
+      "items": [
+        "结论分别为 needs_revision、inconclusive、no_major_issue_observed。正式报告发布后，运行状态才是 completed。调用方据此决定是否修订或补图。",
+        "模型主动停止、预算耗尽或正常结束却无提交时，blocked 保存原因与轮数。接受前执行出错可得到 failed。正式发布失败也为 failed，并保留接受快照。无效输入在调用模型前报错。"
+      ]
+    }
+  ]
+}
