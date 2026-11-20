@@ -14,7 +14,8 @@ from langchain_core.messages import AIMessage
 from langchain_openai import ChatOpenAI
 
 from shader_deep.agents.review.context import review_input, review_message
-from shader_deep.agents.review.middleware import ALLOWED_TOOLS, ReviewGuard
+from shader_deep.agents.review.middleware import ReviewGuard
+from shader_deep.domain.review_items import CheckAnswer  # noqa: TC001  # 工具 schema 在运行时解析单项回答.
 from shader_deep.domain.visual_review import ReviewSubmission  # noqa: TC001  # 工具 schema 在运行时解析类型.
 from shader_deep.infrastructure.llm.openrouter import is_openrouter
 from shader_deep.infrastructure.llm.options import ResolvedModelOptions
@@ -35,6 +36,20 @@ if TYPE_CHECKING:
 __all__ = ["build_review_agent", "review_input"]
 
 
+def _check_tools(session: ReviewSession) -> list[BaseTool]:
+    @tool
+    def record_review_check(answer: CheckAnswer) -> str:
+        """登记一个可回答必查项的视觉依据、差异和未评原因. 已登记的内容不可覆盖."""
+        return json.dumps(session.record_check(answer), ensure_ascii=False)
+
+    @tool
+    def finish_review(summary: str, limitations: tuple[str, ...] = ()) -> str:
+        """全部可回答项已登记后提交总体摘要和可选限制, 由程序派生六维结论."""
+        return json.dumps(session.finish(summary, limitations), ensure_ascii=False)
+
+    return [record_review_check, finish_review]
+
+
 def _tools(session: ReviewSession) -> list[BaseTool]:
     @tool
     def submit_review(report: ReviewSubmission) -> str:
@@ -46,18 +61,20 @@ def _tools(session: ReviewSession) -> list[BaseTool]:
         """说明无法继续评审的非空原因并结束本次会话."""
         return json.dumps(session.stop(reason), ensure_ascii=False)
 
+    if session.source.request.protocol == "visual_review_v2":
+        return [*_check_tools(session), stop_review]
     return [submit_review, stop_review]
 
 
 class FixedReviewInput(AgentMiddleware[AgentState[object], None]):
     """实际请求中持续携带固定标准和捕获的图像字节."""
 
-    def __init__(self, session: ReviewSession, *, transport_guard: bool) -> None:
+    def __init__(self, session: ReviewSession, allowed_tools: frozenset[str], *, transport_guard: bool) -> None:
         """绑定固定材料与响应原文校验开关."""
-        self.session, self.transport_guard = session, transport_guard
+        self.session, self.allowed_tools, self.transport_guard = session, allowed_tools, transport_guard
 
     def _prepare(self, request: ModelRequest) -> ModelRequest:
-        tools = [item for item in request.tools if getattr(item, "name", None) in ALLOWED_TOOLS]
+        tools = [item for item in request.tools if getattr(item, "name", None) in self.allowed_tools]
         settings = request.model_settings
         if isinstance(request.model, ChatOpenAI) and is_openrouter(request.model.openai_api_base):
             # bind_tools 在发送前递归关闭对象并将全部属性列入 required.
@@ -113,16 +130,18 @@ def build_review_agent(model: BaseChatModel, session: ReviewSession, options: Re
         if isinstance(model, ChatOpenAI)
         else model
     )
+    tools = _tools(session)
+    allowed_tools = frozenset(tool.name for tool in tools)
     return create_deep_agent(
         model=selected,
-        tools=_tools(session),
+        tools=tools,
         name="visual-reviewer",
         system_prompt=f"{session.source.rule_text}\n\n{session.source.profile_text}",
         backend=StateBackend(),
         subagents=[],
         middleware=[
-            ReviewGuard(session),
+            ReviewGuard(session, allowed_tools),
             ModelRetryMiddleware(max_retries=options.max_request_retries, retry_on=_retryable, on_failure="error"),
-            FixedReviewInput(session, transport_guard=isinstance(model, ChatOpenAI)),
+            FixedReviewInput(session, allowed_tools, transport_guard=isinstance(model, ChatOpenAI)),
         ],
     )

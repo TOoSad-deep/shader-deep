@@ -29,14 +29,16 @@ from tests.unit_tests.infrastructure.test_openrouter_transport import DETAIL, _r
 if TYPE_CHECKING:
     import httpx2
 
+    from shader_deep.domain.visual_review import ReviewRequest
+
 
 class NativeReviewTests(unittest.TestCase):
-    def make_session(self, *, max_model_calls: int = 3, regions: bool = False) -> ReviewSession:
+    def make_session(self, *, max_model_calls: int = 3, regions: bool = False, request: ReviewRequest | None = None) -> ReviewSession:
         directory = Path(self.enterContext(tempfile.TemporaryDirectory()))
         reference, rendered = directory / "reference.png", directory / "rendered.png"
         Image.new("RGB", (8, 6), (20, 90, 150)).save(reference)
         Image.new("RGB", (8, 6), (160, 40, 10)).save(rendered)
-        request = review_request()
+        request = request or review_request()
         if regions:
             request = request.model_copy(
                 update={
@@ -126,6 +128,56 @@ class NativeReviewTests(unittest.TestCase):
                     else:
                         self.assertIsNone(session.submission)
                         self.assertEqual(session.finalize().status, "blocked")
+
+    def test_v2_checks_can_be_batched_and_finish_in_one_model_call(self) -> None:
+        request = review_request(required=("shape", "color")).model_copy(update={"protocol": "visual_review_v2"})
+        for asynchronous in (False, True):
+            with self.subTest(asynchronous=asynchronous):
+                session = self.make_session(max_model_calls=1, request=request)
+                calls = [
+                    {
+                        "name": "record_review_check",
+                        "args": {"answer": {"check_id": item.check_id, "rationale": "可见区域符合要求"}},
+                        "id": item.check_id,
+                    }
+                    for item in reversed(session.checks)
+                ]
+                calls.insert(1, {"name": "submit_review", "args": {"report": {}}, "id": "old-protocol"})
+                calls.append({"name": "finish_review", "args": {"summary": "两项已核对"}, "id": "finish"})
+                model = ReviewModel(responses=[AIMessage(content="", tool_calls=calls)])
+                graph = build_review_agent(model, session, session.options)
+                result = asyncio.run(graph.ainvoke(review_input(session))) if asynchronous else graph.invoke(review_input(session))
+                self.assertEqual(session.finalize().status, "completed")
+                self.assertEqual(
+                    {tool.name for tool in result["messages"] if isinstance(tool, ToolMessage) and tool.status == "success"},
+                    {"record_review_check", "finish_review"},
+                )
+                self.assertEqual(session.tool_refusals, 1)
+                self.assertCountEqual(model.offered_tools, ["record_review_check", "finish_review", "stop_review"])
+                self.assertEqual(session.model_calls, 1)
+                context = review_context(model.requests[0])
+                check_ids = [check.check_id for check in session.checks]
+                self.assertEqual([item["check_id"] for item in context["answerable_checks"]], check_ids)
+                self.assertEqual(context["answered_check_ids"], [])
+                accepted = json.loads((session.directory / "results/accepted.json").read_text())
+                self.assertEqual([item["check_id"] for item in accepted["check_answers"]], check_ids)
+
+    def test_v2_cannot_register_an_answer_if_its_snapshot_write_fails(self) -> None:
+        request = review_request().model_copy(update={"protocol": "visual_review_v2"})
+        session = self.make_session(request=request)
+        answer = {"check_id": session.checks[0].check_id, "rationale": "轮廓吻合"}
+        message = AIMessage(
+            content="",
+            tool_calls=[
+                {"name": "record_review_check", "args": {"answer": answer}, "id": "shape"},
+                {"name": "finish_review", "args": {"summary": "轮廓吻合"}, "id": "finish"},
+            ],
+        )
+        with patch("shader_deep.workflows.review.session.write_snapshot", side_effect=OSError("disk full")), self.assertRaises(OSError):
+            self.invoke(ReviewModel(responses=[message]), session)
+        self.assertEqual(session.check_answers, ())
+        self.assertIsNone(session.submission)
+        self.assertFalse((session.directory / "results/accepted.json").exists())
 
     def test_invalid_submissions_obey_budget_and_plain_text_is_no_submission(self) -> None:
         session = self.make_session(max_model_calls=2)

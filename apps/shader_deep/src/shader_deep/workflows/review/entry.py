@@ -45,10 +45,15 @@ def _record_metrics(session: ReviewSession, usage: UsageMetadataCallbackHandler,
 
 
 def _invoke(session: ReviewSession, usage: UsageMetadataCallbackHandler) -> None:
-    uncovered = coverage_only_submission(session.source.criteria, session.source.coverage)
-    if uncovered is not None:
-        session.submit(uncovered)
-        return
+    if session.source.request.protocol == "visual_review_v2":
+        if all(check.unassessed for check in session.checks):
+            session.finish("所有必查项均缺少完整视图。")
+            return
+    else:
+        uncovered = coverage_only_submission(session.source.criteria, session.source.coverage)
+        if uncovered is not None:
+            session.submit(uncovered)
+            return
     graph = build_review_agent(build_model(), session, session.options)
     graph.invoke(
         review_input(session),
@@ -65,7 +70,13 @@ def _publish(session: ReviewSession, result: ReviewResult) -> tuple[ReviewResult
     if result.submission is None:
         return result, None
     try:
-        directory = write_review_package(session.directory / "report", session.source, result.submission, metadata=session.execution())
+        directory = write_review_package(
+            session.directory / "report",
+            session.source,
+            result.submission,
+            metadata=session.execution(),
+            check_answers=session.check_answers if session.source.request.protocol == "visual_review_v2" else None,
+        )
     except Exception as error:  # noqa: BLE001  # 正式发布失败仍保留接受快照和 failed 索引.
         reason = f"publish_error: {type(error).__name__}: {error}"
         return replace(result, status="failed", error=f"{result.error}; {reason}" if result.error else reason), None
@@ -77,7 +88,7 @@ def _deliver(session: ReviewSession, result: ReviewResult) -> ReviewOutcome:
     verdict = derive_verdict(result.submission) if package is not None and result.submission is not None else None
     options = {**asdict(session.options), "output_dir": str(session.options.output_dir) if session.options.output_dir is not None else None}
     details = {
-        "review_protocol": "visual_review_v1",
+        "review_protocol": session.source.request.protocol,
         "status": result.status,
         "verdict": verdict,
         "error": result.error,
@@ -127,7 +138,7 @@ def run_review(reference_path: Path, rendered_path: Path, request: ReviewRequest
     """对固定参考与候选渲染运行独立视觉评审.
 
     !!! warning "实验性接口"
-        `visual_review_v1` 固定绑定本次层级模板、检查内容和双图身份.
+        两种评审协议均固定本次层级模板、检查内容和双图身份. 默认整份提交, V2 按必查项登记答案.
 
     Args:
         reference_path: 参考 PNG 文件.

@@ -129,7 +129,10 @@ class ReviewRequest(ReviewModel):
     rendered_region: PixelRegion | None = None
     conditions: ReviewConditions = Field(default_factory=ReviewConditions)
     source: ReviewSource = Field(default_factory=ReviewSource)
-    # 省略未启用的新增字段, 保留旧评审包的冻结标准摘要.
+    # 省略 V1 默认协议和未启用的新增字段, 保留旧评审包的冻结标准摘要.
+    protocol: Literal["visual_review_v1", "visual_review_v2"] = Field(
+        default="visual_review_v1", exclude_if=lambda value: value == "visual_review_v1"
+    )
     samples: tuple[ReviewSample, ...] = Field(default=(), exclude_if=lambda value: not value)
     coverage: ReviewCoverage | None = Field(default=None, exclude_if=lambda value: value is None)
 
@@ -139,6 +142,13 @@ class ReviewRequest(ReviewModel):
             (self.scope == "local") == (self.target_kind is not None), "invalid_scope", "/target_kind", "局部必须提供特征或元素类型, 整图省略局部类型"
         )
         _check_dimensions(tuple(item.id for item in self.dimensions), "/dimensions")
+        if self.protocol == "visual_review_v2":
+            for dimension in self.dimensions:
+                _unique(dimension.required_checks, f"/dimensions/{dimension.id}/required_checks")
+                overlap = set(dimension.required_checks).intersection(dimension.excluded_checks)
+                _require(
+                    not overlap, "conflicting_check", f"/dimensions/{dimension.id}", f"同一检查项同时列为必查和排除: {', '.join(sorted(overlap))}"
+                )
         _require(any(item.required_checks for item in self.dimensions), "empty_criteria", "/dimensions", "本轮至少包含一项必查内容")
         _require(
             self.scope == "local" or (self.reference_region is None and self.rendered_region is None),
@@ -163,6 +173,14 @@ def _validate_coverage_binding(coverage: ReviewCoverage, dimensions: tuple[Dimen
         keys.add(key)
 
 
+class FrozenReviewCheck(ReviewModel):
+    """正式包中可按标识查到原文和维度的一条必查项."""
+
+    check_id: Text
+    dimension: DimensionId
+    check: Text
+
+
 class BoundReviewCriteria(ReviewModel):
     """程序固定的任务、模板版本和完整标准身份."""
 
@@ -172,6 +190,7 @@ class BoundReviewCriteria(ReviewModel):
     rule_sha256: Digest
     profile_sha256: Digest
     criteria_sha256: Digest
+    checks: tuple[FrozenReviewCheck, ...] = Field(default=(), exclude_if=lambda value: not value)
 
 
 def review_profile(request: ReviewRequest) -> ProfileId:
@@ -193,6 +212,18 @@ def _digest(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
+def _freeze_checks(request: ReviewRequest) -> tuple[FrozenReviewCheck, ...]:
+    if request.protocol == "visual_review_v1":
+        return ()
+    checks = tuple(
+        FrozenReviewCheck(check_id=f"{dimension.id}-{_digest(check)[:12]}", dimension=dimension.id, check=check)
+        for dimension in request.dimensions
+        for check in dimension.required_checks
+    )
+    _require(len({check.check_id for check in checks}) == len(checks), "ambiguous_check_id", "/dimensions", "不同必查项不能共用标识")
+    return checks
+
+
 def bind_review_criteria(request: ReviewRequest, rule_text: str, profile_text: str) -> BoundReviewCriteria:
     """将本轮任务与实际规则内容固定为不可变标准.
 
@@ -208,13 +239,16 @@ def bind_review_criteria(request: ReviewRequest, rule_text: str, profile_text: s
     checked = ReviewRequest.model_validate(request.model_dump(mode="json"))
     entries = {item.id: item for item in checked.dimensions}
     checked = checked.model_copy(update={"dimensions": tuple(entries[identity] for identity in DIMENSION_IDS)})
-    payload = {
+    checks = _freeze_checks(checked)
+    payload: dict[str, object] = {
         "request": checked.model_dump(mode="json", exclude={"source"}),
         "profile_id": review_profile(checked),
         "profile_version": PROFILE_VERSION,
         "rule_sha256": _digest(rule_text),
         "profile_sha256": _digest(profile_text),
     }
+    if checks:
+        payload["checks"] = [check.model_dump(mode="json") for check in checks]
     identity = _digest(json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":"), allow_nan=False))
     return BoundReviewCriteria(
         request=checked,
@@ -222,6 +256,7 @@ def bind_review_criteria(request: ReviewRequest, rule_text: str, profile_text: s
         rule_sha256=_digest(rule_text),
         profile_sha256=_digest(profile_text),
         criteria_sha256=identity,
+        checks=checks,
     )
 
 
@@ -341,13 +376,22 @@ def _validate_references(submission: ReviewSubmission) -> None:
         _require(item.id in dimensions[item.dimension].unassessed_ids, "orphan_unassessed", f"/unassessed/{item.id}", "未评项必须被所属指标引用")
 
 
-def _expected_status(item: DimensionReview, criteria: DimensionCriteria, issues: tuple[ReviewIssue, ...]) -> DimensionStatus:
+def dimension_status(criteria: DimensionCriteria, issues: tuple[ReviewIssue, ...], unassessed_ids: tuple[str, ...]) -> DimensionStatus:
+    """根据某维度实际引用的证据派生状态.
+
+    Args:
+        criteria: 当前维度的固定范围.
+        issues: 该维度引用的全部问题, 包含关联到本维的问题.
+        unassessed_ids: 本维尚无足够证据的条目标识.
+
+    Returns:
+        满足固定范围和证据等级的维度状态.
+    """
     if not criteria.required_checks:
         return "not_applicable"
-    selected = [issue for issue in issues if issue.id in item.issue_ids]
-    if selected:
-        return "major_gap" if any(issue.severity == "major" for issue in selected) else "minor_gap"
-    return "uncertain" if item.unassessed_ids else "match"
+    if issues:
+        return "major_gap" if any(issue.severity == "major" for issue in issues) else "minor_gap"
+    return "uncertain" if unassessed_ids else "match"
 
 
 def _validate_states(submission: ReviewSubmission, criteria: BoundReviewCriteria) -> None:
@@ -356,7 +400,8 @@ def _validate_states(submission: ReviewSubmission, criteria: BoundReviewCriteria
         path = f"/dimensions/{item.id}"
         if not checks[item.id].required_checks:
             _require(not item.issue_ids and not item.unassessed_ids, "excluded_evidence", path, "范围外指标不能关联问题或必要未评项")
-        expected = _expected_status(item, checks[item.id], submission.issues)
+        selected = tuple(issue for issue in submission.issues if issue.id in item.issue_ids)
+        expected = dimension_status(checks[item.id], selected, item.unassessed_ids)
         _require(item.status == expected, "inconsistent_status", path + "/status", f"根据绑定与证据, 本项状态应为 {expected}")
 
 

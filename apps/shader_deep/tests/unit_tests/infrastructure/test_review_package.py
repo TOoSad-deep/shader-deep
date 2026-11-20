@@ -16,7 +16,8 @@ from unittest.mock import patch
 from PIL import Image
 from PIL.PngImagePlugin import PngInfo
 
-from shader_deep.domain.visual_review import PixelRegion, ReviewRequest, ReviewSource
+from shader_deep.domain.review_items import CheckAnswer, bound_checks, summarize_checks
+from shader_deep.domain.visual_review import PixelRegion, RequiredRegion, ReviewCoverage, ReviewRequest, ReviewSource, bind_review_criteria
 from shader_deep.imaging.png16 import decode_png16
 from shader_deep.infrastructure.storage.planning_inputs import content_sha256
 from shader_deep.infrastructure.storage.review_package import (
@@ -126,12 +127,86 @@ class ReviewPackageTests(TestCase):
         package = read_review_package(original)
         self.assertEqual(package.report.verdict, "no_major_issue_observed")
         self.assertEqual(package.report.metadata, {"model_calls": 1})
+        self.assertNotIn("check_answers", json.loads((original / "review.json").read_bytes()))
+        self.assertNotIn("protocol", json.loads((original / "task.json").read_bytes()))
         moved = self.root / "moved"
         original.rename(moved)
         loaded = read_review_package(moved)
         self.assertEqual(loaded.content_sha256, package.content_sha256)
         self.assertEqual(loaded.source.directory, moved)
         self.assertEqual(base64.b64decode(loaded.source.reference_url.split(",", 1)[1]), self.reference.read_bytes())
+
+    def test_v2_roundtrip_checks_answers_against_derived_report_after_resealing(self) -> None:
+        source = self.capture(request=review_request().model_copy(update={"protocol": "visual_review_v2"}))
+        (check,) = bound_checks(source.criteria, source.coverage)
+        answers = (CheckAnswer(check_id=check.check_id, rationale="两张图轮廓一致"),)
+        submission = summarize_checks(source.criteria, source.coverage, answers, summary="轮廓一致")
+        directory = write_review_package(self.root / "report", source, submission, check_answers=answers)
+        package = read_review_package(directory)
+        self.assertEqual(package.manifest.schema_version, "visual_review_v2")
+        self.assertEqual(package.report.check_answers, answers)
+        report_path = directory / "review.json"
+        report = json.loads(report_path.read_bytes())
+        report["check_answers"][0]["rationale"] = "换成未汇入报告的观察"
+        report_path.write_text(json.dumps(report), encoding="utf-8")
+        self.reseal(directory)
+        with self.assertRaisesRegex(ValueError, "报告汇总"):
+            read_review_package(directory)
+
+    def test_v2_uncovered_report_distinguishes_empty_answers_from_absent_answers(self) -> None:
+        window = PixelRegion(left=0, top=0, right=16, bottom=12)
+        needed = RequiredRegion(dimension="shape", check="符合参考表现", region=PixelRegion(left=0, top=0, right=20, bottom=14))
+        coverage = ReviewCoverage(reference_window=window, rendered_window=window, required_regions=(needed,))
+        source = self.capture(request=review_request().model_copy(update={"protocol": "visual_review_v2", "coverage": coverage}))
+        submission = summarize_checks(source.criteria, source.coverage, (), summary="所需的轮廓超出采集窗口")
+        with self.assertRaisesRegex(ValueError, "缺少逐项答案"):
+            write_review_package(self.root / "report", source, submission)
+        directory = write_review_package(self.root / "report", source, submission, check_answers=())
+        package = read_review_package(directory)
+        self.assertEqual(package.report.check_answers, ())
+        self.assertEqual(package.report.verdict, "inconclusive")
+        report_path = directory / "review.json"
+        report = json.loads(report_path.read_bytes())
+        self.assertEqual(report.pop("check_answers"), [])
+        report_path.write_text(json.dumps(report), encoding="utf-8")
+        self.reseal(directory)
+        with self.assertRaisesRegex(ValueError, "缺少逐项答案"):
+            read_review_package(directory)
+
+    def test_v1_rejects_item_answers_and_protocol_mismatch(self) -> None:
+        source = self.capture()
+        submission = matched_review(source.criteria)
+        directory = self.root / "report"
+        with self.assertRaisesRegex(ValueError, "V1"):
+            write_review_package(directory, source, submission, check_answers=())
+        write_review_package(directory, source, submission)
+        manifest_path = directory / "manifest.json"
+        manifest = json.loads(manifest_path.read_bytes())
+        manifest["schema_version"] = "visual_review_v2"
+        manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+        with self.assertRaisesRegex(ValueError, "协议与固定任务"):
+            read_review_package(directory)
+
+    def test_resealed_v1_downgrade_cannot_keep_archived_v2_rules(self) -> None:
+        original = self.capture(request=review_request().model_copy(update={"protocol": "visual_review_v2"}))
+        (check,) = bound_checks(original.criteria, original.coverage)
+        answers = (CheckAnswer(check_id=check.check_id, rationale="该处轮廓一致"),)
+        submission = summarize_checks(original.criteria, original.coverage, answers, summary="轮廓一致")
+        directory = write_review_package(self.root / "report", original, submission, check_answers=answers)
+        v1 = bind_review_criteria(review_request(), original.rule_text, original.profile_text)
+        (directory / "task.json").write_text(v1.request.model_dump_json(), encoding="utf-8")
+        (directory / "criteria.json").write_text(v1.model_dump_json(), encoding="utf-8")
+        manifest = json.loads((directory / "manifest.json").read_bytes())
+        digest = content_sha256({name: (directory / name).read_bytes() for name in manifest["files"] if name != "review.json"})
+        report = json.loads((directory / "review.json").read_bytes())
+        del report["check_answers"]
+        report.update(criteria=v1.model_dump(mode="json"), input_sha256=digest)
+        (directory / "review.json").write_text(json.dumps(report), encoding="utf-8")
+        manifest.update(schema_version="visual_review_v1", input_sha256=digest)
+        (directory / "manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
+        self.reseal(directory)
+        with self.assertRaisesRegex(ValueError, "共同规则的协议"):
+            read_review_package(directory)
 
     def test_original_and_captured_files_changes_do_not_replace_model_material(self) -> None:
         source = self.capture()

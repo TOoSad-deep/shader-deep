@@ -88,6 +88,7 @@ def check_wheel(wheel: Path) -> None:
                 "shader_deep/resources/planning.yaml",
                 "shader_deep/resources/review.yaml",
                 "shader_deep/resources/skills/visual-review/SKILL.md",
+                "shader_deep/resources/skills/visual-review/items.md",
                 "shader_deep/resources/skills/visual-review/profiles/feature.md",
                 "shader_deep/resources/skills/visual-review/profiles/element.md",
                 "shader_deep/resources/skills/visual-review/profiles/scene.md",

@@ -6,13 +6,15 @@ from threading import RLock
 from typing import TYPE_CHECKING, Literal
 
 from shader_deep.domain.review_coverage import complete_coverage, validate_coverage
-from shader_deep.domain.visual_review import derive_verdict, validate_review_submission
+from shader_deep.domain.review_items import bound_checks, summarize_checks, validate_check_answer
+from shader_deep.domain.visual_review import ReviewValidationError, derive_verdict, validate_review_submission
 from shader_deep.infrastructure.storage.snapshots import write_snapshot
 from shader_deep.workflows.review.contracts import ReviewResult
 
 if TYPE_CHECKING:
     from pydantic import JsonValue
 
+    from shader_deep.domain.review_items import CheckAnswer
     from shader_deep.domain.visual_review import ReviewSubmission
     from shader_deep.infrastructure.storage.review_package import CapturedReviewSource
     from shader_deep.workflows.review.options import ReviewOptions
@@ -29,6 +31,8 @@ class ReviewSession:
             raise ValueError(msg)
         self.state: Literal["running", "accepted", "stopped"] = "running"
         self.submission: ReviewSubmission | None = None
+        self.checks = bound_checks(source.criteria, source.coverage) if source.request.protocol == "visual_review_v2" else ()
+        self._answers: dict[str, CheckAnswer] = {}
         self.reason: str | None = None
         self.model_calls = 0
         self.validation_errors = 0
@@ -48,7 +52,7 @@ class ReviewSession:
         """返回不含图像载荷、密钥或模型历史的执行事实."""
         with self._lock:
             return {
-                "review_protocol": "visual_review_v1",
+                "review_protocol": self.source.request.protocol,
                 "state": self.state,
                 "reason": self.reason,
                 "model_calls": self.model_calls,
@@ -98,13 +102,56 @@ class ReviewSession:
         """校验并保存接受快照, 写入成功后才登记终态."""
         with self._lock:
             self._require_running()
+            if self.source.request.protocol != "visual_review_v1":
+                msg = "此协议要求逐项登记后结束评审"
+                raise ValueError(msg)
             report = complete_coverage(report, self.source.criteria, self.source.coverage)
             validate_review_submission(report, self.source.criteria)
             validate_coverage(report, self.source.criteria, self.source.coverage)
-            verdict = derive_verdict(report)
-            write_snapshot(self.directory / "results" / "accepted.json", report.model_dump(mode="json"))
-            self.submission, self.state = report, "accepted"
-            return {"status": "accepted", "verdict": verdict}
+            return self._accept(report, report.model_dump(mode="json"))
+
+    @property
+    def check_answers(self) -> tuple[CheckAnswer, ...]:
+        """返回冻结检查顺序内已登记的答案, 与同批声明次序解耦."""
+        with self._lock:
+            return tuple(self._answers[check.check_id] for check in self.checks if check.check_id in self._answers)
+
+    def _require_check_protocol(self) -> None:
+        self._require_running()
+        if self.source.request.protocol != "visual_review_v2":
+            msg = "此协议只接受整份评审提交"
+            raise ValueError(msg)
+
+    def record_check(self, answer: CheckAnswer) -> dict[str, JsonValue]:
+        """校验单项后写入答案快照, 拒绝后续工具改写已经登记的视觉判断."""
+        with self._lock:
+            self._require_check_protocol()
+            validate_check_answer(answer, self.checks)
+            previous = self._answers.get(answer.check_id)
+            if previous is not None and previous != answer:
+                code, msg = "check_already_answered", "该项已经登记, 保留原有答案"
+                raise ReviewValidationError(code, f"/answers/{answer.check_id}", msg)
+            if previous is None:
+                updated = {**self._answers, answer.check_id: answer}
+                snapshot = [updated[item.check_id].model_dump(mode="json") for item in self.checks if item.check_id in updated]
+                write_snapshot(self.directory / "results" / "check_answers.json", snapshot)
+                self._answers = updated
+            return {"status": "recorded", "check_id": answer.check_id}
+
+    def finish(self, summary: str, limitations: tuple[str, ...] = ()) -> dict[str, JsonValue]:
+        """按检查清单核对全部答案, 派生六维报告并与单项证据一起接受."""
+        with self._lock:
+            self._require_check_protocol()
+            answers = self.check_answers
+            report = summarize_checks(self.source.criteria, self.source.coverage, answers, summary=summary, limitations=limitations)
+            snapshot = {"submission": report.model_dump(mode="json"), "check_answers": [item.model_dump(mode="json") for item in answers]}
+            return self._accept(report, snapshot)
+
+    def _accept(self, report: ReviewSubmission, snapshot: object) -> dict[str, JsonValue]:
+        verdict = derive_verdict(report)
+        write_snapshot(self.directory / "results" / "accepted.json", snapshot)
+        self.submission, self.state = report, "accepted"
+        return {"status": "accepted", "verdict": verdict}
 
     def stop(self, reason: str) -> dict[str, JsonValue]:
         """记录非空受阻原因并结束会话."""

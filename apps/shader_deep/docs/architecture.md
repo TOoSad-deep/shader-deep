@@ -12,7 +12,7 @@
 | 输入固定、接受快照、终态与交付 | [分析工作流](../src/shader_deep/workflows/analysis/README.md) | 连接角色、领域校验与文件存储 |
 | E/F/R 观察、主归属与关系引用 | [观察合同](../src/shader_deep/domain/scene_observations.py) | 纯领域规则, 不依赖框架或 IO |
 | 单规划 Agent、草稿工具与渐进式 skill | [规划角色](../src/shader_deep/agents/planning/README.md) | 共用 SDK 草稿运行辅助，固定原图与完整观察每轮入模 |
-| 独立评审、层级模板与标准绑定 | [评审角色](../src/shader_deep/agents/review/README.md)、[工作流](../src/shader_deep/workflows/review/README.md) | 消费固定双图与标准, 发布 visual_review_v1 |
+| 独立评审、层级模板与标准绑定 | [评审角色](../src/shader_deep/agents/review/README.md)、[工作流](../src/shader_deep/workflows/review/README.md) | 消费固定双图与标准，发布默认 V1 六维报告或显式 V2 逐项报告 |
 | 规划输入、预算、接受与发布 | [规划工作流](../src/shader_deep/workflows/planning/README.md) | 绑定观察版本、要求与实际生成约束 |
 | 新 M/S、有效备选与组合候选 | [规划合同](../src/shader_deep/domain/scene_planning.py)、[规划包](../src/shader_deep/infrastructure/storage/planning_package.py) | 领域派生与文件发布分工，正式包为 scene_planning_v1 |
 | 五库对象、引用和合并保义 | [五库领域](../src/shader_deep/domain/five_libraries/README.md) | 纯业务规则, 不依赖模型框架或 IO |
@@ -72,7 +72,7 @@ PNG 或显式选定的报告/规划方案
 
 本地网页通过子进程运行已有 CLI, 不另建业务执行器. HTTP 服务仅监听回环地址, 限制同源操作、上传和会话制品访问; 运行方式见应用 README, 原实施与验证可按需查[网页记录](work-items/local-web-ui.md).
 
-独立评审通过 `run_review` / `shader-deep-review` 显式接收参考 PNG、渲染 PNG 和任务. 工作流选择 feature/element/scene 模板, 固定标准与图像, 单角色提交六维状态和差异证据, 领域规则校验并派生视觉结论, 存储发布后正式回读. 评审报告关联本次输入身份, 调用方依据报告组织后续任务. 当前验证状态见[实施记录](work-items/independent-visual-review-implementation-20261117.md).
+独立评审通过 `run_review` / `shader-deep-review` 显式接收参考 PNG、渲染 PNG 和任务。工作流选择 feature/element/scene 模板，固定标准与图像。V1 由模型整份提交六维状态与差异证据；V2 由模型登记每个待答项，领域规则将答案与固定的覆盖缺口汇总成六维报告。调用方依据正式回读的报告组织后续任务。[评审实施记录](work-items/independent-visual-review-implementation-20261117.md)
 
 ## 状态与依赖
 

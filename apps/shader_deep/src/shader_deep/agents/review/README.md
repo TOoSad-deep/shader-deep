@@ -8,9 +8,9 @@
 
 调用方声明的 `source.candidate_id`、`source.run_id` 和涵盖来源声明的完整输入摘要保存在运行材料和正式报告中。模型只收到评审所需的标准和图像材料，同一组图像和标准更换来源标签后，模型看到的内容相同。
 
-工具为 `submit_review` 和 `stop_review`。[middleware.py](middleware.py) 同时限制执行白名单并按模型声明顺序执行同批工具。首次有效提交或停止后，后续工具不能重开会话。终态与逻辑调用预算在下一次主模型请求前检查，同步和异步路径遵循相同约定。
+V1 使用 `submit_review` 和 `stop_review` 提交六维报告或停止。V2 的[逐项规则](../../resources/skills/visual-review/items.md)对应 `record_review_check`、`finish_review` 和 `stop_review`。每轮上下文列出允许回答的检查项与已登记的 ID；模型可以在一轮内依次登记多个答案再结束。[middleware.py](middleware.py) 按本轮协议限制工具可见性与执行，并按声明顺序处理同批调用。终态与逻辑调用预算在下一次主模型请求前检查。
 
-OpenRouter 请求在绑定两项工具时启用严格 schema. 工具对象及嵌套报告对象关闭额外属性, 全部声明属性列入必填, 集合可以提交空数组.
+OpenRouter 请求绑定本轮工具时启用严格 schema. 工具对象及嵌套报告对象关闭额外属性, 全部声明属性列入必填, 集合可以提交空数组.
 
 提交由领域合同检查六维状态、问题、未评项及绑定范围。视觉结论由程序派生。业务会话、接受快照和正式发布见[评审工作流](../../workflows/review/README.md)，指标含义见[评审准则](../../../../docs/visual-review-rubric.md)。
 

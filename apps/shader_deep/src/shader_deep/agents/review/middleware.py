@@ -23,8 +23,6 @@ if TYPE_CHECKING:
 
     from shader_deep.workflows.review.session import ReviewSession
 
-ALLOWED_TOOLS = frozenset({"submit_review", "stop_review"})
-
 
 @dataclass
 class _ToolBatch:
@@ -44,9 +42,10 @@ class _ToolBatch:
 class ReviewGuard(AgentMiddleware[AgentState[object], None]):
     """工具执行侧再次检查白名单, 接受后在下一次主请求之前结束."""
 
-    def __init__(self, session: ReviewSession) -> None:
+    def __init__(self, session: ReviewSession, allowed_tools: frozenset[str]) -> None:
         """绑定本次短会话."""
         self.session = session
+        self.allowed_tools = allowed_tools
         self._lock = Lock()
         self._batch: _ToolBatch | None = None
 
@@ -69,8 +68,8 @@ class ReviewGuard(AgentMiddleware[AgentState[object], None]):
     def _refusal(self, request: ToolCallRequest, *, aborted: bool = False) -> ToolMessage | None:
         if self.session.finished:
             reason = "评审会话已结束"
-        elif request.tool_call["name"] not in ALLOWED_TOOLS:
-            reason = "本轮只允许 submit_review 和 stop_review"
+        elif request.tool_call["name"] not in self.allowed_tools:
+            reason = f"本轮只允许 {', '.join(sorted(self.allowed_tools))}"
         elif aborted:
             reason = "前序工具执行异常, 本批后续工具已停止"
         else:
@@ -83,7 +82,7 @@ class ReviewGuard(AgentMiddleware[AgentState[object], None]):
         messages = cast("list[BaseMessage]", state.get("messages", []))
         latest = next((entry for entry in reversed(messages) if isinstance(entry, AIMessage)), None)
         calls = latest.tool_calls if latest is not None else [request.tool_call]
-        ids = tuple(str(call["id"]) for call in calls if call["name"] in ALLOWED_TOOLS)
+        ids = tuple(str(call["id"]) for call in calls if call["name"] in self.allowed_tools)
         key = str(latest.id if latest is not None and latest.id else id(latest))
         with self._lock:
             if self._batch is None or self._batch.key != key:
@@ -126,7 +125,7 @@ class ReviewGuard(AgentMiddleware[AgentState[object], None]):
 
     def wrap_tool_call(self, request: ToolCallRequest, handler: Callable[[ToolCallRequest], ToolMessage | Command]) -> ToolMessage | Command:
         """模型声明顺序决定首个有效终态, 后续工具明确拒绝."""
-        if request.tool_call["name"] not in ALLOWED_TOOLS:
+        if request.tool_call["name"] not in self.allowed_tools:
             return self._execute(request, handler)
         batch, index = self._ordered_batch(request)
         if index:
@@ -144,7 +143,7 @@ class ReviewGuard(AgentMiddleware[AgentState[object], None]):
         self, request: ToolCallRequest, handler: Callable[[ToolCallRequest], Awaitable[ToolMessage | Command]]
     ) -> ToolMessage | Command:
         """异步工具使用事件等待, 保持顺序而不阻塞事件循环."""
-        if request.tool_call["name"] not in ALLOWED_TOOLS:
+        if request.tool_call["name"] not in self.allowed_tools:
             return await self._aexecute(request, handler)
         batch, index = self._ordered_batch(request)
         if index:

@@ -6,6 +6,8 @@
 
 [review_coverage.py](../../domain/review_coverage.py) 将程序未评项合并到提交，再核对状态与引用。一个维度同时存在可查项和未评项时，问题须用 `check` 指向仍可查的必查项，且由主维度直接引用。可见重大差异仍可得到 `needs_revision`，并随报告保留未评项。
 
+显式指定 `protocol="visual_review_v2"` 时，[逐项合同](../../domain/review_items.py)为每条必查内容绑定 ID。程序拒绝范围外或已锁定的 ID；同一 ID 重放相同答案幂等，更改已登记答案会被拒绝。缺任何可答项时不能结束。每条答案保存依据、可见差异及可并存的未评原因，六维状态由程序汇总。全缺视图时模型答案为空，程序仍交付带有具体原因的正式报告。此协议保证必查项有记录，记录中的视觉判断仍需核对。
+
 接受材料由[评审包存储](../../infrastructure/storage/review_package.py)发布并正式回读。报告包交付成功为 `completed`，预算耗尽或主动停止为 `blocked`，执行或发布错误为 `failed`。`needs_revision`、`inconclusive` 与 `no_major_issue_observed` 是单独的视觉结论。发布失败保留接受快照，并且不返回成功报告位置。
 
 CLI 将输入文件读取与格式错误归为退出码 2. 运行目录创建、输入副本和结果写入故障归为退出码 1, 标准输出提供 JSON 失败索引.

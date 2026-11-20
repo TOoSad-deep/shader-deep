@@ -18,6 +18,7 @@ from PIL import Image, UnidentifiedImageError
 from pydantic import Field, JsonValue
 
 from shader_deep.domain.review_coverage import validate_coverage
+from shader_deep.domain.review_items import CheckAnswer, summarize_checks
 from shader_deep.domain.visual_review import (
     BoundReviewCriteria,
     PixelRegion,
@@ -53,7 +54,7 @@ Digest = Annotated[str, Field(strict=True, pattern=r"^[0-9a-f]{64}$")]
 class ReviewManifest(ReviewModel):
     """正式包的固定文件集合及内容身份."""
 
-    schema_version: Literal["visual_review_v1"] = "visual_review_v1"
+    schema_version: Literal["visual_review_v1", "visual_review_v2"] = "visual_review_v1"
     input_sha256: Digest
     content_sha256: Digest
     files: dict[str, Digest]
@@ -69,6 +70,7 @@ class ReviewReport(ReviewModel):
     verdict: ReviewVerdict
     metadata: dict[str, JsonValue] = Field(default_factory=dict)
     evidence: ReviewEvidence | None = Field(default=None, exclude_if=lambda value: value is None)
+    check_answers: tuple[CheckAnswer, ...] | None = Field(default=None, exclude_if=lambda value: value is None)
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -292,10 +294,27 @@ def _measurement_input(content: bytes, size: tuple[int, int]) -> bytes:
     return content
 
 
+def _validate_rule_protocol(request: ReviewRequest, rule_text: str) -> None:
+    # 历史 V1 规则没有协议标记. V2 保留固定的头部标记, 规则正文可随包独立归档.
+    declared = "visual_review_v1"
+    lines = iter(rule_text.splitlines())
+    if next(lines, "") == "---":
+        for line in lines:
+            if line == "---":
+                break
+            key, _, value = line.partition(":")
+            if key == "review_protocol":
+                declared = value.strip()
+    if declared != request.protocol:
+        msg = "评审共同规则的协议与固定任务不一致"
+        raise ValueError(msg)
+
+
 def _source(directory: Path, contents: dict[str, bytes], *, capturing: bool = False) -> CapturedReviewSource:
     request = ReviewRequest.model_validate(parse_json(contents["task.json"]))
     criteria = BoundReviewCriteria.model_validate(parse_json(contents["criteria.json"]))
     rule_text, profile_text = (contents[name].decode("utf-8") for name in ("rules/SKILL.md", "rules/profile.md"))
+    _validate_rule_protocol(request, rule_text)
     validate_bound_criteria(criteria, rule_text, profile_text)
     if request != criteria.request:
         msg = "评审任务与冻结标准不一致"
@@ -347,7 +366,8 @@ def capture_review_source(reference_path: Path, rendered_path: Path, directory: 
         OSError: 读取或保存输入失败.
     """
     resource = files("shader_deep.resources").joinpath("skills", "visual-review")
-    rule_text = resource.joinpath("SKILL.md").read_text(encoding="utf-8")
+    rule_name = "items.md" if request.protocol == "visual_review_v2" else "SKILL.md"
+    rule_text = resource.joinpath(rule_name).read_text(encoding="utf-8")
     profile_text = resource.joinpath("profiles", f"{review_profile(request)}.md").read_text(encoding="utf-8")
     criteria = bind_review_criteria(request, rule_text, profile_text)
     contents = _capture_contents(reference_path, rendered_path, criteria, rule_text, profile_text)
@@ -378,8 +398,30 @@ def _new_destination(directory: Path) -> None:
         raise ValueError(msg)
 
 
+def _validate_submission(source: CapturedReviewSource, submission: ReviewSubmission, answers: tuple[CheckAnswer, ...] | None) -> None:
+    if source.request.protocol == "visual_review_v1":
+        if answers is not None:
+            msg = "V1 评审不能携带逐项答案"
+            raise ValueError(msg)
+        validate_review_submission(submission, source.criteria)
+        validate_coverage(submission, source.criteria, source.coverage)
+        return
+    if answers is None:
+        msg = "V2 评审缺少逐项答案清单"
+        raise ValueError(msg)
+    expected = summarize_checks(source.criteria, source.coverage, answers, summary=submission.summary, limitations=submission.limitations)
+    if submission != expected:
+        msg = "逐项答案及程序覆盖证据与报告汇总不一致"
+        raise ValueError(msg)
+
+
 def write_review_package(
-    directory: Path, source: CapturedReviewSource, submission: ReviewSubmission, *, metadata: dict[str, JsonValue] | None = None
+    directory: Path,
+    source: CapturedReviewSource,
+    submission: ReviewSubmission,
+    *,
+    metadata: dict[str, JsonValue] | None = None,
+    check_answers: tuple[CheckAnswer, ...] | None = None,
 ) -> Path:
     """写齐固定输入与报告, 正式回读后发布新目录.
 
@@ -388,6 +430,7 @@ def write_review_package(
         source: 本轮实际采用的固定材料.
         submission: 领域校验通过的模型提交.
         metadata: 程序提取的模型、预算和执行记录.
+        check_answers: V2 采用的逐项答案, 全部必查项缺视图时为空元组.
 
     Returns:
         可移动后正式回读的报告目录.
@@ -396,8 +439,7 @@ def write_review_package(
         ValueError: 合同、来源或目标无效.
         OSError: 写入、回读或发布失败.
     """
-    validate_review_submission(submission, source.criteria)
-    validate_coverage(submission, source.criteria, source.coverage)
+    _validate_submission(source, submission, check_answers)
     contents = dict(source.contents)
     # 捕获字节已固定. 发布前检查身份, 暂存包的正式读取器独立复核像素与标准.
     if content_sha256(contents) != source.input_sha256:
@@ -411,9 +453,11 @@ def write_review_package(
         verdict=derive_verdict(submission),
         metadata=metadata or {},
         evidence=source.evidence,
+        check_answers=check_answers,
     )
     contents["review.json"] = _json_bytes(report.model_dump(mode="json"))
     manifest = ReviewManifest(
+        schema_version=source.request.protocol,
         input_sha256=source.input_sha256,
         content_sha256=content_sha256(contents),
         files={name: hashlib.sha256(content).hexdigest() for name, content in contents.items()},
@@ -455,7 +499,7 @@ def read_review_package(directory: Path) -> ReviewPackage:
     """正式回读输入、规则、提交及派生结论.
 
     Args:
-        directory: 自包含 visual_review_v1 报告目录.
+        directory: 自包含的 V1 或 V2 评审报告目录.
 
     Returns:
         以当前目录和实际文件字节装配的已校验报告.
@@ -468,8 +512,13 @@ def read_review_package(directory: Path) -> ReviewPackage:
     contents = _verified_contents(directory, manifest)
     report = ReviewReport.model_validate(parse_json(contents.pop("review.json")))
     source = _source(directory, contents)
-    validate_review_submission(report.submission, source.criteria)
-    validate_coverage(report.submission, source.criteria, source.coverage)
+    if manifest.schema_version != source.request.protocol:
+        msg = "评审包协议与固定任务不一致"
+        raise ValueError(msg)
+    if report.check_answers is None and "check_answers" in report.model_fields_set:
+        msg = "逐项答案必须为数组, V1 省略此字段"
+        raise ValueError(msg)
+    _validate_submission(source, report.submission, report.check_answers)
     if report.evidence != source.evidence:
         msg = "评审报告证据与固定双图及任务不一致"
         raise ValueError(msg)
