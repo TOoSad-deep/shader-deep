@@ -1,0 +1,192 @@
+{
+  "date": "2026-11-20",
+  "base_revision": "d61dc9bf",
+  "run_directory": "visual-review-v2-batch-cycle-20261120-145311",
+  "model_requested": "z-ai/glm-5.3-flash",
+  "reasoning_effort": "low",
+  "logical_call_cap_per_case": 1,
+  "extra_network_retries": 0,
+  "max_output_tokens_per_call": 2048,
+  "assets_sha256": {
+    "control.png": "9aefc21d349f7720998b4715ff648a4c230910e63b27fa832eb41e5b41097182",
+    "filled.png": "3c96ba3354a65f5706029fb609f536433c3034bad4b237e465c542f1782cd089",
+    "partial.png": "884b197ca64fb4e891610dafd3f850963bee4e3696774e0dd2c04e84b712f349"
+  },
+  "frozen_task_sha256": {
+    "filled": "4b8e6820890b84b522e0a3916df7778be4afe08e0a438f51703ad136143524af",
+    "partial": "639c84a7a4b10ef25ac69359e7db86d0b208e405fdce1d6b6e5184e3892c9954"
+  },
+  "offline_fixture_check": {
+    "filled_changed_pixel_count": 2276,
+    "filled_changed_pixel_bbox_half_open": [
+      53,
+      53,
+      107,
+      107
+    ],
+    "supplied_to_model": false
+  },
+  "predeclared_conditions": {
+    "filled": "outer contour match with no gaps or findings, exactly one major finding for the missing hole",
+    "partial": "no model answer for the locked outer contour, one program coverage gap for it, exactly one major finding for the missing hole"
+  },
+  "stages": {
+    "before": {
+      "rules_sha256": "7e2b3585a0a79495b0436d4bce15873efe35f02ac1531b086464f99138316c4e",
+      "cases": [
+        {
+          "case": "filled",
+          "run": "filled/run-4rdxsmkx",
+          "status": "completed",
+          "verdict": "needs_revision",
+          "receipt_sha256": "146ac8839e13b9dfd4590f06f6396856c272abdca7fca363b0a6dd574015fb14",
+          "criteria_sha256": "d657fe6aed8e685b74cc6ba21d34c1a6e72b4974a2406616f767ba6ea4655e49",
+          "input_sha256": "2efa5ca9be63ca98a750d4e1af76b405ca229dfcd1bdc200cbbf70bd337e1d4f",
+          "tool_calls": [
+            {
+              "name": "finish_review",
+              "answers_count": 2
+            }
+          ],
+          "validation_errors": 0,
+          "whole_case_pass": false,
+          "minor_issue_count": 1,
+          "major_checks": [
+            "检查圆环中心的白色圆孔是否存在"
+          ],
+          "unassessed_checks": [],
+          "dimensions": {
+            "content": "major_gap",
+            "shape": "minor_gap"
+          },
+          "usage": {
+            "input_tokens": 3450,
+            "output_tokens": 485,
+            "total_tokens": 3935
+          }
+        },
+        {
+          "case": "partial",
+          "run": "partial/run-tjqdw1yn",
+          "status": "completed",
+          "verdict": "needs_revision",
+          "receipt_sha256": "e7b6428362d6fd44284516fd47dc0cc40dfd3bcbd4ca58ffb38eadcbae92772b",
+          "criteria_sha256": "0cf8ba19ea8d7929b7a83588332826b18eddc0b351b691fce95bfdf55b937e05",
+          "input_sha256": "7cea8e62749fb9167ef0a1a7c648d7532a074b5e754dde2977c2305e6d65611b",
+          "tool_calls": [
+            {
+              "name": "finish_review",
+              "answers_count": 1
+            }
+          ],
+          "validation_errors": 0,
+          "whole_case_pass": true,
+          "minor_issue_count": 0,
+          "major_checks": [
+            "检查圆环中心的白色圆孔是否存在"
+          ],
+          "unassessed_checks": [
+            "检查整个圆环的外缘轮廓"
+          ],
+          "dimensions": {
+            "content": "major_gap",
+            "shape": "uncertain"
+          },
+          "usage": {
+            "input_tokens": 3447,
+            "output_tokens": 421,
+            "total_tokens": 3868
+          }
+        }
+      ],
+      "calls": 2,
+      "usage_total": 7803
+    },
+    "after": {
+      "rules_sha256": "4ad8547e8da4e7bfa2e327c41bbf26efe3e65b600be0fa7bde8dc0e65412fc24",
+      "cases": [
+        {
+          "case": "filled",
+          "run": "filled/run-ht9klkbq",
+          "status": "completed",
+          "verdict": "needs_revision",
+          "receipt_sha256": "918bf3f53632238d56e3d7879affa99e6ae6a8fe38707f8baf29e149a7a23307",
+          "criteria_sha256": "aae6de78929f985901b32a5d4483fed80c9a5dfca5c2a5c2277ed2cc08ce9f84",
+          "input_sha256": "3c19ac161ff15265146bbd96761eb9a8eadb7dc45add4fb627ca0c6fca92e9e8",
+          "tool_calls": [
+            {
+              "name": "finish_review",
+              "answers_count": 2
+            }
+          ],
+          "validation_errors": 0,
+          "whole_case_pass": true,
+          "minor_issue_count": 0,
+          "major_checks": [
+            "检查圆环中心的白色圆孔是否存在"
+          ],
+          "unassessed_checks": [],
+          "dimensions": {
+            "content": "major_gap",
+            "shape": "match"
+          },
+          "usage": {
+            "input_tokens": 3785,
+            "output_tokens": 372,
+            "total_tokens": 4157
+          }
+        },
+        {
+          "case": "partial",
+          "run": "partial/run-s2y5m0tk",
+          "status": "completed",
+          "verdict": "needs_revision",
+          "receipt_sha256": "023170d42f7576fdd3cefce1e01fe709a508046230a7991b13ad6130dac71ce2",
+          "criteria_sha256": "f897a6ea2fcd0cabd07a2a3b93f568329663f4d87615bdec6905bc4e5a9d2fc7",
+          "input_sha256": "5186312f7420c2d05bcf226fdbf7b9c041e8ac3b134810793145e0bc9a8e4b44",
+          "tool_calls": [
+            {
+              "name": "finish_review",
+              "answers_count": 1
+            }
+          ],
+          "validation_errors": 0,
+          "whole_case_pass": true,
+          "minor_issue_count": 0,
+          "major_checks": [
+            "检查圆环中心的白色圆孔是否存在"
+          ],
+          "unassessed_checks": [
+            "检查整个圆环的外缘轮廓"
+          ],
+          "dimensions": {
+            "content": "major_gap",
+            "shape": "uncertain"
+          },
+          "usage": {
+            "input_tokens": 3787,
+            "output_tokens": 270,
+            "total_tokens": 4057
+          }
+        }
+      ],
+      "calls": 2,
+      "usage_total": 8214
+    }
+  },
+  "scope": "Two related cases share one synthetic reference, one response per stage and case. No estimate of stability or generalization.",
+  "schema_note": "V2 field descriptions were clarified while preserving field names, validation and defaults. Two punctuation edits occurred between recording the after plan and launching evaluation; the observation logger retained tool names/counts, not raw schemas.",
+  "final_tool_source_sha256": "230661648752eee4b23daa83978c6a54d3da0c79a77fe07a33f89bcd51824904",
+  "total_tokens": 16017,
+  "qualitative_review": {
+    "before": {
+      "filled": "Both outer contours are explicitly described as identical, but the center-hole change is also registered as a minor outer-contour issue.",
+      "partial": "The missing center hole and uncovered contour are correctly distinguished."
+    },
+    "after": {
+      "filled": "Missing hole is the sole major issue. Outer contour has an explicit comparison and no finding.",
+      "partial": "Only the missing center hole is assessed. The full outer contour is program-unassessed. One impact sentence describes an entire solid disk, although the center crop only supports the loss of the hole."
+    },
+    "unsupported_measurement_claims": 0
+  }
+}

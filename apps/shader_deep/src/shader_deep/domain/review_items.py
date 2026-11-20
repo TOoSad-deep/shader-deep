@@ -44,7 +44,7 @@ class CheckFinding(ReviewModel):
     region: Text
     reference_observation: Text
     rendered_observation: Text
-    severity: Literal["minor", "major"]
+    severity: Literal["minor", "major"] = Field(description="minor 也须指出本项对应部位在参考图与候选图中的具体差别。按该差别对本项要求的影响分级。")
     impact: Text
 
 
@@ -52,8 +52,10 @@ class CheckAnswer(ReviewModel):
     """模型只提交本检查的观察、可见差异和仍然缺证的原因."""
 
     check_id: Text
-    rationale: Text
-    findings: tuple[CheckFinding, ...] = ()
+    rationale: Text = Field(description="说明本项在两张图中的可见表现。若两侧相符, 在这里写清相符的依据。")
+    findings: tuple[CheckFinding, ...] = Field(
+        default=(), description="只登记直接违反当前必查项的可见差异。本项自身未见差异时填 []。其他项的缺陷归入其对应项。"
+    )
     unassessed_reason: Text | None = None
 
 
