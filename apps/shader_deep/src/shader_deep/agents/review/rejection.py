@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, get_args
 
 from pydantic import BaseModel, ValidationError
+from pydantic_core import ErrorType
 
 from shader_deep.domain.visual_review import ReviewValidationError
 
@@ -17,6 +18,7 @@ _TOOL_FIELDS = ("answer", "answers", "summary", "limitations", "reason", "eviden
 _ANSWER_FIELDS = ("check_id", "rationale", "findings", "unassessed_reason")
 _PATH_FIELDS = frozenset((*_TOOL_FIELDS, *_ANSWER_FIELDS, "region", "severity", "impact", "reference_observation", "rendered_observation"))
 _MAX_PENDING_IDS = 8
+_SCHEMA_ERROR_TYPES = frozenset(get_args(ErrorType))
 
 
 def _shape(value: object) -> dict[str, object]:
@@ -40,22 +42,25 @@ def _arguments(args: dict[str, object], known_ids: set[str]) -> dict[str, object
     return summary
 
 
-def _schema_path(request: ToolCallRequest) -> str:
+def _schema_failure(request: ToolCallRequest, error: ValidationError | None) -> tuple[str, str | None]:
     # SDK 的错误消息可能连着任意工具参数. 用本工具的纯输入 schema 还原字段位置.
     schema = request.tool.get_input_schema() if request.tool is not None else None
-    if schema is not None and issubclass(schema, BaseModel):
+    if error is None and schema is not None and issubclass(schema, BaseModel):
         try:
             schema.model_validate(request.tool_call["args"])
-        except ValidationError as error:
-            first = error.errors(include_input=False, include_url=False, include_context=False)[0]
-            fields = []
-            for part in first["loc"]:
-                if isinstance(part, str) and part not in _PATH_FIELDS:
-                    break
-                fields.append(str(part))
-            if fields:
-                return "/arguments/" + "/".join(fields)
-    return "/arguments"
+        except ValidationError as caught:
+            error = caught
+    if error is None:
+        return "/arguments", None
+    first = error.errors(include_input=False, include_url=False, include_context=False)[0]
+    fields = ["arguments"]
+    for part in first["loc"]:
+        if isinstance(part, str) and part not in _PATH_FIELDS:
+            break
+        fields.append(str(part))
+    # 自定义错误类型也可能含任意文本, 仅保存 Pydantic 内置的固定枚举.
+    kind = first["type"] if first["type"] in _SCHEMA_ERROR_TYPES else "custom_error"
+    return "/" + "/".join(fields), kind
 
 
 def rejection_diagnostic(session: ReviewSession, request: ToolCallRequest, error: ValueError | None) -> dict[str, object]:
@@ -71,13 +76,15 @@ def rejection_diagnostic(session: ReviewSession, request: ToolCallRequest, error
     """
     known_ids = {check.check_id for check in session.checks}
     code, path = "invalid_tool_value", "/arguments"
+    schema_error_type = None
     if isinstance(error, ReviewValidationError):
         # code 来自领域规则. path 中的未知检查项可能整段来自模型.
         code = error.code
         check_id = error.path.removeprefix("/answers/")
         path = f"/answers/{check_id}" if check_id in known_ids else "/answers"
-    elif error is None:
-        code, path = "invalid_tool_arguments", _schema_path(request)
+    elif error is None or isinstance(error, ValidationError):
+        code = "invalid_tool_arguments"
+        path, schema_error_type = _schema_failure(request, error)
     snapshot: dict[str, object] = {
         "tool": request.tool_call["name"],
         "model_call": session.model_calls,
@@ -85,6 +92,8 @@ def rejection_diagnostic(session: ReviewSession, request: ToolCallRequest, error
         "path": path,
         "arguments": _arguments(request.tool_call["args"], known_ids),
     }
+    if schema_error_type is not None:
+        snapshot["schema_error_type"] = schema_error_type
     if code == "missing_answers":
         recorded = {answer.check_id for answer in session.check_answers}
         # 批次校验已确认这些 ID 合法. 诊断说明这次提交缺了哪些项, 其内容仍未登记.

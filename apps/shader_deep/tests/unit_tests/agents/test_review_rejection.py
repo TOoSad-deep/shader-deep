@@ -64,11 +64,28 @@ class RejectionDiagnosticTests(unittest.TestCase):
         diagnostic = json.loads(content)
         self.assertEqual(diagnostic["code"], "invalid_tool_arguments")
         self.assertEqual(diagnostic["path"], "/arguments/answer/findings/0/severity")
+        self.assertEqual(diagnostic["schema_error_type"], "literal_error")
         self.assertEqual(diagnostic["arguments"]["check_id"], self.check_id)
         self.assertEqual(diagnostic["arguments"]["answer_fields"]["rationale"]["length"], len(private))
         self.assertLess(len(content), 2048)
         for fragment in (b"data:image/", b"sensitive", b"private-id"):
             self.assertNotIn(fragment, content)
+
+    def test_finish_id_rejection_distinguishes_missing_invalid_type_and_blank_at_same_path(self) -> None:
+        for fields, reason in (
+            ({}, "missing"),
+            ({"check_id": None}, "string_type"),
+            ({"check_id": 8}, "string_type"),
+            ({"check_id": " "}, "string_pattern_mismatch"),
+        ):
+            with self.subTest(fields=fields):
+                answer = {"rationale": "private observation", **fields}
+                call = review_call("finish_review", {"answers": [answer], "summary": "private summary"})
+                outcome = self.run_responses(self.request, call)
+                content = (outcome.run_dir / "results" / "last_rejection.json").read_bytes()
+                diagnostic = json.loads(content)
+                self.assertEqual((diagnostic["path"], diagnostic["schema_error_type"]), ("/arguments/answers/0/check_id", reason))
+                self.assertNotIn(b"private", content)
 
     def test_partial_finish_diagnostic_reports_only_omitted_ids_without_saving_answers(self) -> None:
         req = review_request(required=("shape", "color")).model_copy(update={"protocol": "visual_review_v2"})

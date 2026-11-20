@@ -178,6 +178,7 @@ class NativeReviewTests(unittest.TestCase):
         self.assertNotIn("final_call", initial)
         self.assertEqual(last["model_calls_remaining"], 0)
         self.assertEqual(last["final_call"]["pending_check_ids"], [second.check_id])
+        self.assertEqual(last["final_call"]["answer_id_fields"], [{"check_id": second.check_id}])
         self.assertEqual([answer.check_id for answer in session.check_answers], [first.check_id, second.check_id])
         outcome = session.finalize()
         self.assertEqual((outcome.status, outcome.error, outcome.submission), ("blocked", "model_call_limit", None))

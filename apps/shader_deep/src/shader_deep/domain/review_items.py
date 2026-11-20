@@ -51,7 +51,7 @@ class CheckFinding(ReviewModel):
 class CheckAnswer(ReviewModel):
     """模型只提交本检查的观察、可见差异和仍然缺证的原因."""
 
-    check_id: Text
+    check_id: Text = Field(description="必填。逐字复制当前所答检查项的 check_id 字符串。检查项原文、维度名和序号均不能代替此 ID。")
     rationale: Text = Field(description="说明本项在两张图中的可见表现。若两侧相符, 在这里写清相符的依据。")
     findings: tuple[CheckFinding, ...] = Field(
         default=(), description="只登记直接违反当前必查项的可见差异。本项自身未见差异时填 []。其他项的缺陷归入其对应项。"

@@ -23,6 +23,11 @@ def review_message(session: ReviewSession) -> HumanMessage:
     }
     item_protocol = session.source.request.protocol == "visual_review_v2"
     if item_protocol:
+        if session.source.coverage is not None:
+            payload["view_notes"] = (
+                "每张 PNG 对应标签所示的采集窗口。请按各自实际入画的范围描述参考和候选。"
+                "局部差异可以说明该项要求未满足; 窗口外的对象外形或场景状态仍须相应视图才能判断。"
+            )
         payload["answerable_checks"] = [
             {"check_id": item.check_id, "dimension": item.dimension, "check": item.check} for item in session.checks if not item.unassessed
         ]
@@ -30,11 +35,13 @@ def review_message(session: ReviewSession) -> HumanMessage:
         answered = session.answer_revisions
         payload["answer_revisions"] = answered
         if session.model_calls == session.options.max_model_calls:
+            pending_ids = [item.check_id for item in session.checks if item.unassessed is None and item.check_id not in answered]
             payload["final_call"] = {
-                "pending_check_ids": [item.check_id for item in session.checks if item.unassessed is None and item.check_id not in answered],
+                "pending_check_ids": pending_ids,
+                "answer_id_fields": [{"check_id": check_id} for check_id in pending_ids],
                 "instructions": (
-                    "这是最后一次模型调用。观察完成时只需调用一次 finish_review: 将每个 pending_check_ids 对应的答案放进 answers,"
-                    "同时提交 summary 和 limitations。已登记的答案由程序并入; 没有待答项时传 answers=[]。"
+                    "这是最后一次模型调用。调用 finish_review 时, 把 answer_id_fields 中每个对象的 check_id 字段和值原样复制到对应答案,"
+                    "补齐判断后放入 answers 数组, 同时提交 summary 和 limitations。仅有一项时也要填写 check_id。已登记齐全时传 answers=[]。"
                     "单项证据不足时填写 unassessed_reason。整次评审无法继续时调用 stop_review。"
                 ),
             }
