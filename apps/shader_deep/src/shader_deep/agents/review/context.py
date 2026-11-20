@@ -27,6 +27,17 @@ def review_message(session: ReviewSession) -> HumanMessage:
             {"check_id": item.check_id, "dimension": item.dimension, "check": item.check} for item in session.checks if not item.unassessed
         ]
         payload["answered_check_ids"] = [answer.check_id for answer in session.check_answers]
+        answered = session.answer_revisions
+        payload["answer_revisions"] = answered
+        if session.model_calls == session.options.max_model_calls:
+            payload["final_call"] = {
+                "pending_check_ids": [item.check_id for item in session.checks if item.unassessed is None and item.check_id not in answered],
+                "instructions": (
+                    "这是最后一次模型调用。观察完成时, 在本条 assistant 消息中依次调用 record_review_check 登记所有待答项,"
+                    "最后调用 finish_review 提交报告。待答项为空时直接调用 finish_review。"
+                    "单项证据不足时填写 unassessed_reason。若整次评审无法继续, 调用 stop_review 说明原因。仅登记答案不会提交报告。"
+                ),
+            }
     evidence = session.source.evidence
     if evidence is not None:
         payload["evidence"] = evidence.model_dump(mode="json")

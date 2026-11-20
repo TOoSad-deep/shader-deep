@@ -24,12 +24,14 @@ from shader_deep import api
 from shader_deep.agents.analysis import run_analysis, run_analysis_task
 from shader_deep.agents.analysis.native import build_analysis_agent
 from shader_deep.workflows.planning import run_planning, PlanningOptions
-from shader_deep.workflows.review import run_review, ReviewOptions
+from shader_deep.workflows.review import republish_review, run_review, ReviewOptions
 from shader_deep.infrastructure.storage.review_package import read_review_package
 if run_planning is not api.run_planning or PlanningOptions is not api.PlanningOptions:
     raise RuntimeError('Planning public entrypoints differ from the installed API')
 if run_review is not api.run_review or ReviewOptions is not api.ReviewOptions or read_review_package is not api.read_review_package:
     raise RuntimeError('Review public entrypoints differ from the installed API')
+if republish_review is not api.republish_review:
+    raise RuntimeError('Review publication recovery is unavailable')
 if run_analysis is not api.run_analysis or run_analysis_task is not api.run_analysis_task:
     raise RuntimeError('Analysis package changed the public entrypoint identity')
 if not callable(build_analysis_agent):

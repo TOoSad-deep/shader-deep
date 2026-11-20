@@ -15,8 +15,8 @@ from langchain_openai import ChatOpenAI
 
 from shader_deep.agents.review.context import review_input, review_message
 from shader_deep.agents.review.middleware import ReviewGuard
-from shader_deep.domain.review_items import CheckAnswer  # noqa: TC001  # 工具 schema 在运行时解析单项回答.
-from shader_deep.domain.visual_review import ReviewSubmission  # noqa: TC001  # 工具 schema 在运行时解析类型.
+from shader_deep.domain.review_items import CheckAnswer, RevisionNumber  # noqa: TC001  # 工具 schema 在运行时解析单项回答和版本.
+from shader_deep.domain.visual_review import ReviewSubmission, Text  # noqa: TC001  # 工具 schema 在运行时解析类型.
 from shader_deep.infrastructure.llm.openrouter import is_openrouter
 from shader_deep.infrastructure.llm.options import ResolvedModelOptions
 from shader_deep.infrastructure.llm.transport import _retryable, configure_analysis_model, validate_analysis_message
@@ -43,11 +43,16 @@ def _check_tools(session: ReviewSession) -> list[BaseTool]:
         return json.dumps(session.record_check(answer), ensure_ascii=False)
 
     @tool
+    def revise_review_check(answer: CheckAnswer, expected_revision: RevisionNumber, reason: Text, evidence: Text) -> str:
+        """按指定版本重评一个已登记项. 写明原判断为何需改变, 并指出能在固定双图或区域测量中复核的依据."""
+        return json.dumps(session.revise_check(answer, expected_revision, reason, evidence), ensure_ascii=False)
+
+    @tool
     def finish_review(summary: str, limitations: tuple[str, ...] = ()) -> str:
         """全部可回答项已登记后提交总体摘要和可选限制, 由程序派生六维结论."""
         return json.dumps(session.finish(summary, limitations), ensure_ascii=False)
 
-    return [record_review_check, finish_review]
+    return [record_review_check, revise_review_check, finish_review]
 
 
 def _tools(session: ReviewSession) -> list[BaseTool]:

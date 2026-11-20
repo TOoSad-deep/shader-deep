@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING, Annotated, Literal
+
+from pydantic import Field
 
 from shader_deep.domain.review_coverage import validate_coverage
 from shader_deep.domain.visual_review import (
@@ -12,6 +14,7 @@ from shader_deep.domain.visual_review import (
     ReviewIssue,
     ReviewModel,
     ReviewSubmission,
+    ReviewValidationError,
     Text,
     UnassessedItem,
     _require,
@@ -20,7 +23,13 @@ from shader_deep.domain.visual_review import (
 )
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping
+
+    from pydantic import JsonValue
+
     from shader_deep.domain.visual_review import BoundReviewCriteria, CoverageEvidence, DimensionCriteria
+
+RevisionNumber = Annotated[int, Field(strict=True, ge=1)]
 
 
 class BoundCheck(FrozenReviewCheck):
@@ -46,6 +55,76 @@ class CheckAnswer(ReviewModel):
     rationale: Text
     findings: tuple[CheckFinding, ...] = ()
     unassessed_reason: Text | None = None
+
+
+class CheckRevision(ReviewModel):
+    """记录一次显式重评的前后答案、理由、可复核依据和实际模型轮次."""
+
+    before: CheckAnswer
+    after: CheckAnswer
+    revision: RevisionNumber
+    model_call: RevisionNumber
+    reason: Text
+    evidence: Text
+
+    @classmethod
+    def from_answer(
+        cls, before: CheckAnswer | None, after: CheckAnswer, *, current: int, expected: int, reason: str, evidence: str, model_call: int
+    ) -> CheckRevision:
+        """检查当前版本及原答案, 创建下一版. 首次登记的版本为 1."""
+        path = f"/answers/{after.check_id}"
+        if before is None:
+            code, msg = "unrecorded_check", f"检查项 {after.check_id} 尚未登记, 请先登记原始答案"
+            raise ReviewValidationError(code, path, msg)
+        _require(type(expected) is int and expected == current, "stale_revision", path, f"答案当前为第 {current} 版, 请按当前版本复核")
+        _require(before.check_id == after.check_id and before != after, "unchanged_revision", path, "重评须改变同一检查项的答案")
+        return cls(before=before, after=after, revision=current + 1, model_call=model_call, reason=reason, evidence=evidence)
+
+
+def validate_check_revisions(
+    criteria: BoundReviewCriteria, coverage: CoverageEvidence | None, answers: tuple[CheckAnswer, ...] | None, metadata: Mapping[str, JsonValue]
+) -> None:
+    """从固定检查范围、逐项审计和交付答案检验重评链.
+
+    Args:
+        criteria: 固定的版本和检查标准.
+        coverage: 同次采集得到的程序未评项.
+        answers: 正式报告的最终逐项答案.
+        metadata: 含可选重评审计及实际模型调用数的运行记录.
+
+    Raises:
+        ValueError: 协议、记录格式、版本顺序、模型轮次或最终答案不一致.
+    """
+    if "check_revisions" not in metadata:
+        return
+    path = "/metadata/check_revisions"
+    raw, calls = metadata["check_revisions"], metadata.get("model_calls")
+    _require(criteria.request.protocol == "visual_review_v2" and answers is not None, "invalid_revision_protocol", path, "逐项重评需要 V2 逐项答案")
+    if not isinstance(raw, list) or not raw or type(calls) is not int or calls < 1:
+        msg = f"{path}: 审计必须为非空列表并具有有效的模型调用数"
+        raise ValueError(msg)
+    budget = metadata.get("max_model_calls")
+    _require(budget is None or (type(budget) is int and calls <= budget), "invalid_revision_budget", path, "实际重评轮次不能超过本轮逻辑预算")
+    check_index = {check.check_id: check for check in bound_checks(criteria, coverage)}
+    latest: dict[str, CheckRevision] = {}
+    last_call = 0
+    for index, value in enumerate(raw):
+        revision = CheckRevision.model_validate(value)
+        check_id = revision.after.check_id
+        _validate_answer_id(revision.after, check_index)
+        _validate_revision_step(revision, latest.get(check_id), f"{path}/{index}")
+        _require(last_call <= revision.model_call <= calls, "invalid_revision_round", path, "重评轮次须按序且处于本次实际模型调用范围内")
+        latest[check_id], last_call = revision, revision.model_call
+    final = {answer.check_id: answer for answer in answers or ()}
+    _require(all(final.get(key) == item.after for key, item in latest.items()), "revision_answer_mismatch", path, "审计末次答案与正式逐项答案不符")
+
+
+def _validate_revision_step(revision: CheckRevision, previous: CheckRevision | None, path: str) -> None:
+    _require(revision.before.check_id == revision.after.check_id, "revision_check_mismatch", path, "重评前后必须属于同一检查项")
+    _require(revision.before != revision.after, "unchanged_revision", path, "重评须提供发生变化的检查答案")
+    expected = previous.revision + 1 if previous is not None else 2
+    _require(revision.revision == expected, "revision_out_of_order", path, f"此处应为第 {expected} 版答案")
+    _require(previous is None or previous.after == revision.before, "broken_revision_chain", path, "前次重评结果与本次重评起点不一致")
 
 
 def bound_checks(criteria: BoundReviewCriteria, coverage: CoverageEvidence | None) -> tuple[BoundCheck, ...]:

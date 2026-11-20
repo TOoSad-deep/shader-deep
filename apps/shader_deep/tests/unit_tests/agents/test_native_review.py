@@ -153,14 +153,34 @@ class NativeReviewTests(unittest.TestCase):
                     {"record_review_check", "finish_review"},
                 )
                 self.assertEqual(session.tool_refusals, 1)
-                self.assertCountEqual(model.offered_tools, ["record_review_check", "finish_review", "stop_review"])
+                self.assertCountEqual(model.offered_tools, ["record_review_check", "revise_review_check", "finish_review", "stop_review"])
                 self.assertEqual(session.model_calls, 1)
                 context = review_context(model.requests[0])
                 check_ids = [check.check_id for check in session.checks]
                 self.assertEqual([item["check_id"] for item in context["answerable_checks"]], check_ids)
                 self.assertEqual(context["answered_check_ids"], [])
+                self.assertEqual(context["final_call"]["pending_check_ids"], check_ids)
+                self.assertIn("finish_review", context["final_call"]["instructions"])
                 accepted = json.loads((session.directory / "results/accepted.json").read_text())
                 self.assertEqual([item["check_id"] for item in accepted["check_answers"]], check_ids)
+
+    def test_v2_last_call_identifies_pending_checks_and_still_requires_explicit_finish(self) -> None:
+        request = review_request(required=("shape", "color")).model_copy(update={"protocol": "visual_review_v2"})
+        session = self.make_session(max_model_calls=2, request=request)
+        first, second = session.checks
+        responses = [
+            review_call("record_review_check", {"answer": {"check_id": item.check_id, "rationale": "可见区域符合要求"}}, item.check_id)
+            for item in (first, second)
+        ]
+        model = ReviewModel(responses=responses)
+        self.invoke(model, session)
+        initial, last = [review_context(messages) for messages in model.requests]
+        self.assertNotIn("final_call", initial)
+        self.assertEqual(last["model_calls_remaining"], 0)
+        self.assertEqual(last["final_call"]["pending_check_ids"], [second.check_id])
+        self.assertEqual([answer.check_id for answer in session.check_answers], [first.check_id, second.check_id])
+        outcome = session.finalize()
+        self.assertEqual((outcome.status, outcome.error, outcome.submission), ("blocked", "model_call_limit", None))
 
     def test_v2_cannot_register_an_answer_if_its_snapshot_write_fails(self) -> None:
         request = review_request().model_copy(update={"protocol": "visual_review_v2"})
@@ -187,6 +207,7 @@ class NativeReviewTests(unittest.TestCase):
         self.assertEqual(session.finalize().status, "blocked")
         self.assertEqual(session.reason, "model_call_limit")
         self.assertEqual(len(model.requests), 2)
+        self.assertNotIn("final_call", review_context(model.requests[-1]))
         another = self.make_session()
         self.invoke(ReviewModel(responses=[AIMessage(content="已评审")]), another)
         self.assertEqual(another.finalize().error, "no_submission")

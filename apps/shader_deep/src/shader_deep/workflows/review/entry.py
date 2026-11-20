@@ -20,6 +20,7 @@ from shader_deep.infrastructure.storage.review_package import capture_review_sou
 from shader_deep.infrastructure.storage.snapshots import write_snapshot
 from shader_deep.workflows.review.contracts import ReviewOutcome, ReviewResult
 from shader_deep.workflows.review.options import ReviewOptions
+from shader_deep.workflows.review.publication import deliver_accepted_review, publication_lock
 from shader_deep.workflows.review.session import ReviewSession
 
 if TYPE_CHECKING:
@@ -84,6 +85,10 @@ def _publish(session: ReviewSession, result: ReviewResult) -> tuple[ReviewResult
 
 
 def _deliver(session: ReviewSession, result: ReviewResult) -> ReviewOutcome:
+    if session.source.request.protocol == "visual_review_v2" and result.submission is not None:
+        outcome = deliver_accepted_review(session, result)
+        log_analysis(session.directory, "评审运行结束", details={"status": outcome.status, "verdict": outcome.verdict, "error": outcome.error})
+        return outcome
     result, package = _publish(session, result)
     verdict = derive_verdict(result.submission) if package is not None and result.submission is not None else None
     options = {**asdict(session.options), "output_dir": str(session.options.output_dir) if session.options.output_dir is not None else None}
@@ -160,4 +165,8 @@ def run_review(reference_path: Path, rendered_path: Path, request: ReviewRequest
     except (TypeError, ValueError) as error:
         msg = f"评审输入准备失败: {error}"
         raise ValueError(msg) from error
-    return _execute(ReviewSession(source, selected))
+    session = ReviewSession(source, selected)
+    if source.request.protocol == "visual_review_v2":
+        with publication_lock(directory):
+            return _execute(session)
+    return _execute(session)

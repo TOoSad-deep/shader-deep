@@ -3,6 +3,7 @@
 from shader_deep.agents.generation.contracts import GenerationOutcome
 from shader_deep.agents.generation.options import GenerationOptions
 from shader_deep.domain.generation_comparison import GenerationComparison, GenerationPlan
+from shader_deep.domain.review_actions import ReviewActionSummary
 from shader_deep.domain.scene import SceneElementSource
 from shader_deep.domain.visual_review import DimensionCriteria, PixelRegion, RequiredRegion, ReviewCoverage, ReviewRequest, ReviewSample
 from shader_deep.infrastructure.storage.generation_comparison import read_generation_comparison, select_generation_comparison
@@ -18,7 +19,7 @@ from shader_deep.workflows.generation_from_report import run_generation_from_rep
 from shader_deep.workflows.options import AnalysisOptions
 from shader_deep.workflows.outcomes import AnalysisOutcome
 from shader_deep.workflows.planning import PlanningOptions, PlanningOutcome, run_planning
-from shader_deep.workflows.review import ReviewOptions, ReviewOutcome, run_review
+from shader_deep.workflows.review import ReviewOptions, ReviewOutcome, republish_review, run_review
 from shader_deep.workflows.scene_generation import run_scene_generation
 
 __all__ = [
@@ -34,6 +35,7 @@ __all__ = [
     "PlanningOptions",
     "PlanningOutcome",
     "RequiredRegion",
+    "ReviewActionSummary",
     "ReviewCoverage",
     "ReviewOptions",
     "ReviewOutcome",
@@ -49,6 +51,7 @@ __all__ = [
     "read_report_package",
     "read_review_package",
     "read_sketch",
+    "republish_review",
     "run_analysis",
     "run_analysis_task",
     "run_generation",

@@ -17,8 +17,9 @@ from typing import TYPE_CHECKING, Annotated, Literal
 from PIL import Image, UnidentifiedImageError
 from pydantic import Field, JsonValue
 
+from shader_deep.domain.review_actions import ReviewActionSummary, summarize_review_actions
 from shader_deep.domain.review_coverage import validate_coverage
-from shader_deep.domain.review_items import CheckAnswer, summarize_checks
+from shader_deep.domain.review_items import CheckAnswer, summarize_checks, validate_check_revisions
 from shader_deep.domain.visual_review import (
     BoundReviewCriteria,
     PixelRegion,
@@ -71,6 +72,11 @@ class ReviewReport(ReviewModel):
     metadata: dict[str, JsonValue] = Field(default_factory=dict)
     evidence: ReviewEvidence | None = Field(default=None, exclude_if=lambda value: value is None)
     check_answers: tuple[CheckAnswer, ...] | None = Field(default=None, exclude_if=lambda value: value is None)
+
+    @property
+    def action_summary(self) -> ReviewActionSummary:
+        """按已核验条目派生修订及补证摘要, 保持归档报告的字节兼容."""
+        return summarize_review_actions(self.submission)
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -349,6 +355,25 @@ def _write_contents(directory: Path, contents: dict[str, bytes]) -> None:
         path.write_bytes(content)
 
 
+def read_captured_review_source(directory: Path) -> CapturedReviewSource:
+    """从运行目录读取捕获副本, 复核区域、模板和程序证据.
+
+    Args:
+        directory: 原评审运行目录.
+
+    Returns:
+        绑定原运行身份的固定评审材料.
+    """
+    inputs = _asset(directory, "inputs")
+    task = _read_file(_asset(inputs, "task.json"), MAX_TEXT_BYTES)
+    request = ReviewRequest.model_validate(parse_json(task))
+    contents = {"task.json": task}
+    for name in _expected_files(request) - contents.keys():
+        limit = MAX_IMAGE_BYTES if name.endswith(".png") else MAX_TEXT_BYTES
+        contents[name] = _read_file(_asset(inputs, name), limit)
+    return _source(directory, contents)
+
+
 def capture_review_source(reference_path: Path, rendered_path: Path, directory: Path, request: ReviewRequest) -> CapturedReviewSource:
     """捕获指定双图、任务与规则, 后续请求只使用固定字节.
 
@@ -440,6 +465,7 @@ def write_review_package(
         OSError: 写入、回读或发布失败.
     """
     _validate_submission(source, submission, check_answers)
+    validate_check_revisions(source.criteria, source.coverage, check_answers, metadata or {})
     contents = dict(source.contents)
     # 捕获字节已固定. 发布前检查身份, 暂存包的正式读取器独立复核像素与标准.
     if content_sha256(contents) != source.input_sha256:
@@ -519,6 +545,7 @@ def read_review_package(directory: Path) -> ReviewPackage:
         msg = "逐项答案必须为数组, V1 省略此字段"
         raise ValueError(msg)
     _validate_submission(source, report.submission, report.check_answers)
+    validate_check_revisions(source.criteria, source.coverage, report.check_answers, report.metadata)
     if report.evidence != source.evidence:
         msg = "评审报告证据与固定双图及任务不一致"
         raise ValueError(msg)

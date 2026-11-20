@@ -103,11 +103,18 @@ class ItemReviewWorkflowTests(unittest.TestCase):
         task_file = self.root / "task.json"
         task_file.write_text(request.model_dump_json(), encoding="utf-8")
         checks = {item.check: item.check_id for item in bound_checks(review_criteria(request), None)}
+        hole_evidence = record(checks["中心孔"], "中心被填平", "visible", missing_hole=True).tool_calls[0]["args"]["answer"]
+        correction = review_call(
+            "revise_review_check",
+            {"answer": hole_evidence, "expected_revision": 1, "reason": "初次漏看了中心", "evidence": "参考中央是白孔, 候选中央采集区是连续的黑色"},
+            "revised",
+        )
         model = ReviewModel(
             responses=[
                 batch(
                     record(checks["外轮廓"], "窗口内轮廓一致", "locked"),
-                    record(checks["中心孔"], "中心被填平", "visible", missing_hole=True),
+                    record(checks["中心孔"], "初看一致", "initial"),
+                    correction,
                     finish("done"),
                 ),
             ]
@@ -121,12 +128,28 @@ class ItemReviewWorkflowTests(unittest.TestCase):
             redirect_stderr(io.StringIO()),
         ):
             self.assertEqual(main(), 0)
-        report = read_review_package(Path(json.loads(output.getvalue())["report_dir"])).report
+        index = json.loads(output.getvalue())
+        package = read_review_package(Path(index["report_dir"]))
+        report = package.report
         self.assertEqual(report.verdict, "needs_revision")
         self.assertEqual([answer.check_id for answer in report.check_answers], [checks["中心孔"]])
         self.assertEqual([item.subject for item in report.submission.unassessed], ["外轮廓"])
         self.assertEqual([item.check for item in report.submission.issues], ["中心孔"])
         self.assertEqual(report.metadata["validation_errors"], 1)
+        self.assertEqual(index["action_summary"], report.action_summary.model_dump(mode="json"))
+        self.assertEqual([issue.check for issue in report.action_summary.major_issues], ["中心孔"])
+        self.assertEqual([gap.subject for gap in report.action_summary.unassessed], ["外轮廓"])
+        self.assertEqual(report.metadata["check_revisions"][0]["before"]["findings"], [])
+        recovered = io.StringIO()
+        with (
+            patch("sys.argv", ["review", "--republish", index["run_dir"]]),
+            patch("shader_deep.workflows.review.entry.build_model") as unused_model,
+            redirect_stdout(recovered),
+        ):
+            self.assertEqual(main(), 0)
+        unused_model.assert_not_called()
+        self.assertEqual(json.loads(recovered.getvalue())["action_summary"], index["action_summary"])
+        self.assertEqual(read_review_package(package.directory).content_sha256, package.content_sha256)
 
     def test_all_checks_outside_capture_have_formal_report_without_model(self) -> None:
         window = PixelRegion(left=0, top=0, right=32, bottom=32)

@@ -48,7 +48,7 @@ uv run --no-sync --env-file .env python -m shader_deep.cli.review \
 
 如需追溯生成运行，可在任务中填写 `source.run_id` 和 `source.candidate_id`。请先核对所选 PNG 确属该候选。报告会保留这两个标识，评审模型看不到它们。
 
-V2 对每个 `required_checks` 数组元素登记一个答案。若要分别核对外轮廓和中心孔，请写成 `["外轮廓", "中心孔"]`。每条有可见证据的判断、差异或未评原因随报告保留。程序回填预先排除的维度和已确认缺视图的项目；漏答时返回待补的 ID，已登记的判断在纠错时保持固定。正式回读后的 `package.report.check_answers` 是模型实际登记的答案，`package.report.submission` 是包含程序未评项的六维汇总。
+V2 对每个 `required_checks` 数组元素登记一个答案。若要分别核对外轮廓和中心孔，请写成 `["外轮廓", "中心孔"]`。每条有可见证据的判断、差异或未评原因随报告保留。程序回填预先排除的维度和已确认缺视图的项目；漏答时返回待补的 ID，普通补答保留已登记的判断。显式重评同一检查项时，须提供当前版本、改判理由和图像依据。正式回读后的 `package.report.check_answers` 是模型实际登记的答案，`package.report.submission` 是包含程序未评项的六维汇总。
 
 标准输出为运行状态、视觉结论和报告目录的 JSON 索引. `completed` 表示报告交付, `verdict` 分别表达 `needs_revision`、`no_major_issue_observed` 或 `inconclusive`. 合法报告交付返回退出码 0, 受阻或运行失败返回 1, 启动前输入错误返回 2. 报告可用 `read_review_package` 核对固定材料、标准和结论.
 
@@ -65,6 +65,10 @@ if outcome.report_dir is not None:
     package = read_review_package(outcome.report_dir)
     print(package.report.verdict, package.report.submission.summary)
 ```
+
+V2 正常交付后，Python 的 `outcome.action_summary`、CLI JSON 及运行目录下的 `result.json` 都含下游摘要。`major_issues` 指出哪些目标需要修正，`unassessed` 同时列出仍须补图的检查项及原因，`minor_issue_count` 按问题 ID 计数。历史正式包可用 `package.report.action_summary` 取得相同口径的摘要。
+
+对于本版生成且已经接受的 V2 运行，发布中断后可以执行 `shader-deep-review --republish <原运行目录>`，或调用 `shader_deep.api.republish_review(run_dir)`。恢复使用该运行保存的输入、接受答案与执行身份，返回同一报告的交付索引，模型调用增量为零。
 
 独立会话只读取评审材料并提交自己的报告. 局部结果的适用范围随报告保留. 模块说明见[评审角色](src/shader_deep/agents/review/README.md)和[评审工作流](src/shader_deep/workflows/review/README.md), 分级依据见[指标准则](docs/visual-review-rubric.md), 验证记录见[实施方案](docs/work-items/independent-visual-review-implementation-20261117.md).
 

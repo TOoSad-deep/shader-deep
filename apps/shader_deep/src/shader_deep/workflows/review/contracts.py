@@ -10,6 +10,7 @@ if TYPE_CHECKING:
 
     from pydantic import JsonValue
 
+    from shader_deep.domain.review_actions import ReviewActionSummary
     from shader_deep.domain.visual_review import ReviewSubmission
 
 ReviewStatus = Literal["completed", "blocked", "failed"]
@@ -35,6 +36,7 @@ class ReviewOutcome:
         verdict: 已交付报告的视觉结论.
         error: 停止原因或运行诊断.
         execution: 调用、规则与输入身份等运行事实.
+        action_summary: 已交付报告的轻微问题数量、重大问题和待补证条目.
     """
 
     run_dir: Path
@@ -43,6 +45,7 @@ class ReviewOutcome:
     verdict: str | None = None
     error: str | None = None
     execution: dict[str, JsonValue] = field(default_factory=dict)
+    action_summary: ReviewActionSummary | None = None
 
     @property
     def stop_reason(self) -> ReviewStatus:

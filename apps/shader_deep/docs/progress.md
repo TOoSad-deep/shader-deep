@@ -1,6 +1,6 @@
 # Shader Deep 项目进度与思路
 
-最后更新为 2026-11-18。
+最后更新为 2026-11-20。
 
 本页用于恢复项目全局: 先看当前阶段和下一步, 再按链接阅读任务细节. 首版依据当前入口、架构与已有工作记录整理; 历史验证不代表本次重新实测, 未记录的进展仍需补充.
 
@@ -30,7 +30,7 @@ VISTA 后续实施按最小 TODO 推进, 复杂检索和更广的公共能力在
 | --- | --- | --- | --- |
 | 单 Agent 全图 E/F/R 观察 | 已实现，现有输出获用户认可为可用基线 | 观察细节在实际规划与生成中继续核对 | [实施及实测记录](work-items/single-agent-observations-20261110.md)、[粒度规范](analysis-observation-guidelines.md)、[五图样例](analysis-observation-examples.md) |
 | 单个全图 M/S 规划 | 首版已接通，十图正式包及两图生成已验证 | M 自包含、gaps 判据、备选独立正文和生成视觉仍有偏差 | [实施方案与验证记录](work-items/scene-planning-agent-plan-20261111.md) |
-| 独立视觉评审 | 已完成一次基于测量证据的特征修订。元素与整图校准六组有五组符合预期 | 元素采集窗口误判及分层人工一致性待验证 | [实施记录](work-items/independent-visual-review-implementation-20261117.md)、[指标](visual-review-rubric.md) |
+| 独立视觉评审 | V1 已固定，V2 支持逐项记录、显式重评、交付摘要和离线恢复发布 | 本轮三个合成案例只交付一份正式报告。末轮结束提示已改，线上改进效果待测 | [实施记录](work-items/independent-visual-review-implementation-20261117.md)、[指标](visual-review-rubric.md) |
 | 原生多视角分析 | 已退出默认分析执行, 旧完整包读取与生成消费者保留 | 当前不提供多视角运行开关; 历史日志不能代表单角色实测状态 | [分析角色](../src/shader_deep/agents/analysis/README.md)、[历史原生记录](work-items/deep-agents-native-plan-20261028.md#单轮真实模型冒烟) |
 | 生成与渲染 | 已接入生成、WebGL2 渲染、预览回读、候选选择及受阻结束 | 程序完成与渲染成功不代表参考图复刻质量已验收 | [当前架构](architecture.md)、[生成闭环记录](work-items/generation-02-execution-loop.md) |
 | 报告到生成、方案比较、整图组合 | 生成阶段 01–04 已接入; 整图组合当前支持两个元素来源 | 分析到生成由用户显式选择; 真实组合效果需单独验收 | [生成架构与阶段入口](generation-architecture.md)、[组合验证记录](work-items/generation-04-scene-composition.md#实施记录) |

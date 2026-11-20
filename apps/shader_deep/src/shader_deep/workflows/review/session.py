@@ -6,10 +6,11 @@ from threading import RLock
 from typing import TYPE_CHECKING, Literal
 
 from shader_deep.domain.review_coverage import complete_coverage, validate_coverage
-from shader_deep.domain.review_items import bound_checks, summarize_checks, validate_check_answer
+from shader_deep.domain.review_items import CheckRevision, bound_checks, summarize_checks, validate_check_answer
 from shader_deep.domain.visual_review import ReviewValidationError, derive_verdict, validate_review_submission
 from shader_deep.infrastructure.storage.snapshots import write_snapshot
 from shader_deep.workflows.review.contracts import ReviewResult
+from shader_deep.workflows.review.publication import with_publication_seed
 
 if TYPE_CHECKING:
     from pydantic import JsonValue
@@ -33,6 +34,7 @@ class ReviewSession:
         self.submission: ReviewSubmission | None = None
         self.checks = bound_checks(source.criteria, source.coverage) if source.request.protocol == "visual_review_v2" else ()
         self._answers: dict[str, CheckAnswer] = {}
+        self._revisions: tuple[CheckRevision, ...] = ()
         self.reason: str | None = None
         self.model_calls = 0
         self.validation_errors = 0
@@ -63,11 +65,15 @@ class ReviewSession:
                 "input_sha256": self.source.input_sha256,
                 "accepted_snapshot": "results/accepted.json" if self.submission is not None else None,
                 **self.runtime_metadata,
+                **self._revision_metadata(self._revisions),
             }
 
     def record_runtime(self, values: dict[str, JsonValue]) -> None:
         """合并程序提取的安全配置与实际用量."""
         with self._lock:
+            if "check_revisions" in values:
+                msg = "逐项审计由重评工具生成"
+                raise ValueError(msg)
             self.runtime_metadata.update(values)
 
     def record_rejection(self, *, validation: bool) -> None:
@@ -116,6 +122,24 @@ class ReviewSession:
         with self._lock:
             return tuple(self._answers[check.check_id] for check in self.checks if check.check_id in self._answers)
 
+    @property
+    def answer_revisions(self) -> dict[str, int]:
+        """返回已登记项的当前版本, 供模型指定重评的起点."""
+        with self._lock:
+            return {**dict.fromkeys(self._answers, 1), **{item.after.check_id: item.revision for item in self._revisions}}
+
+    @staticmethod
+    def _revision_metadata(revisions: tuple[CheckRevision, ...]) -> dict[str, JsonValue]:
+        return {"check_revisions": [revision.model_dump(mode="json") for revision in revisions]} if revisions else {}
+
+    def _save_answer(self, answer: CheckAnswer, revisions: tuple[CheckRevision, ...]) -> None:
+        updated = {**self._answers, answer.check_id: answer}
+        ordered = [updated[item.check_id].model_dump(mode="json") for item in self.checks if item.check_id in updated]
+        # 旧未重评快照保留列表外形; 首次重评起, 一次原子替换同时提交新答案和完整审计.
+        snapshot = {"check_answers": ordered, **self._revision_metadata(revisions)} if revisions else ordered
+        write_snapshot(self.directory / "results" / "check_answers.json", snapshot)
+        self._answers, self._revisions = updated, revisions
+
     def _require_check_protocol(self) -> None:
         self._require_running()
         if self.source.request.protocol != "visual_review_v2":
@@ -132,11 +156,25 @@ class ReviewSession:
                 code, msg = "check_already_answered", "该项已经登记, 保留原有答案"
                 raise ReviewValidationError(code, f"/answers/{answer.check_id}", msg)
             if previous is None:
-                updated = {**self._answers, answer.check_id: answer}
-                snapshot = [updated[item.check_id].model_dump(mode="json") for item in self.checks if item.check_id in updated]
-                write_snapshot(self.directory / "results" / "check_answers.json", snapshot)
-                self._answers = updated
-            return {"status": "recorded", "check_id": answer.check_id}
+                self._save_answer(answer, self._revisions)
+            return {"status": "recorded", "check_id": answer.check_id, "revision": self.answer_revisions[answer.check_id]}
+
+    def revise_check(self, answer: CheckAnswer, expected_revision: int, reason: str, evidence: str) -> dict[str, JsonValue]:
+        """按调用方看到的版本进行一次单项改判, 保存证据说明与前后答案."""
+        with self._lock:
+            self._require_check_protocol()
+            validate_check_answer(answer, self.checks)
+            change = CheckRevision.from_answer(
+                self._answers.get(answer.check_id),
+                answer,
+                current=self.answer_revisions.get(answer.check_id, 0),
+                expected=expected_revision,
+                reason=reason,
+                evidence=evidence,
+                model_call=self.model_calls,
+            )
+            self._save_answer(answer, (*self._revisions, change))
+            return {"status": "revised", "check_id": answer.check_id, "revision": change.revision}
 
     def finish(self, summary: str, limitations: tuple[str, ...] = ()) -> dict[str, JsonValue]:
         """按检查清单核对全部答案, 派生六维报告并与单项证据一起接受."""
@@ -144,8 +182,13 @@ class ReviewSession:
             self._require_check_protocol()
             answers = self.check_answers
             report = summarize_checks(self.source.criteria, self.source.coverage, answers, summary=summary, limitations=limitations)
-            snapshot = {"submission": report.model_dump(mode="json"), "check_answers": [item.model_dump(mode="json") for item in answers]}
-            return self._accept(report, snapshot)
+            snapshot = {
+                "submission": report.model_dump(mode="json"),
+                "check_answers": [item.model_dump(mode="json") for item in answers],
+                **self._revision_metadata(self._revisions),
+            }
+            # 一次原子替换保存最终答案、审计和离线发布绑定. 正式发布凭据写入前退出也能恢复.
+            return self._accept(report, with_publication_seed(self, snapshot))
 
     def _accept(self, report: ReviewSubmission, snapshot: object) -> dict[str, JsonValue]:
         verdict = derive_verdict(report)

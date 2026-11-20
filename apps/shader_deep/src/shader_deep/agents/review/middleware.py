@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import logging
 from dataclasses import dataclass, field
 from threading import Event, Lock
 from typing import TYPE_CHECKING, cast
@@ -11,7 +12,9 @@ from typing import TYPE_CHECKING, cast
 from langchain.agents.middleware import AgentMiddleware, AgentState, hook_config
 from langchain_core.messages import AIMessage, ToolMessage
 
+from shader_deep.agents.review.rejection import rejection_diagnostic
 from shader_deep.domain.visual_review import ReviewValidationError
+from shader_deep.infrastructure.storage.snapshots import write_snapshot
 
 if TYPE_CHECKING:
     from collections.abc import Awaitable, Callable, Mapping
@@ -90,7 +93,7 @@ class ReviewGuard(AgentMiddleware[AgentState[object], None]):
             return self._batch, ids.index(str(request.tool_call["id"]))
 
     def _validation_error(self, request: ToolCallRequest, error: ValueError) -> ToolMessage:
-        self.session.record_rejection(validation=True)
+        self._record_rejection(request, error)
         values = (
             {"code": error.code, "path": error.path, "message": error.message}
             if isinstance(error, ReviewValidationError)
@@ -98,9 +101,19 @@ class ReviewGuard(AgentMiddleware[AgentState[object], None]):
         )
         return self._error(request, values)
 
-    def _record(self, result: ToolMessage | Command) -> ToolMessage | Command:
+    def _record_rejection(self, request: ToolCallRequest, error: ValueError | None) -> None:
+        self.session.record_rejection(validation=True)
+        if self.session.source.request.protocol == "visual_review_v2":
+            with self._lock:
+                snapshot = rejection_diagnostic(self.session, request, error)
+                try:
+                    write_snapshot(self.session.directory / "results" / "last_rejection.json", snapshot)
+                except OSError:
+                    logging.getLogger(__name__).warning("评审校验诊断未能写入, 继续返回原有工具反馈")
+
+    def _record(self, request: ToolCallRequest, result: ToolMessage | Command) -> ToolMessage | Command:
         if isinstance(result, ToolMessage) and result.status == "error":
-            self.session.record_rejection(validation=True)
+            self._record_rejection(request, None)
         return result
 
     def _execute(self, request: ToolCallRequest, handler: Callable[[ToolCallRequest], ToolMessage | Command]) -> ToolMessage | Command:
@@ -108,7 +121,7 @@ class ReviewGuard(AgentMiddleware[AgentState[object], None]):
         if refusal is not None:
             return refusal
         try:
-            return self._record(handler(request))
+            return self._record(request, handler(request))
         except ValueError as error:
             return self._validation_error(request, error)
 
@@ -119,7 +132,7 @@ class ReviewGuard(AgentMiddleware[AgentState[object], None]):
         if refusal is not None:
             return refusal
         try:
-            return self._record(await handler(request))
+            return self._record(request, await handler(request))
         except ValueError as error:
             return self._validation_error(request, error)
 

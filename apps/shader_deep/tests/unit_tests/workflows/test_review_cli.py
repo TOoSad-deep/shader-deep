@@ -103,6 +103,19 @@ class ReviewCliTests(unittest.TestCase):
             self.assertEqual(main(), 2)
         self.assertEqual(output.getvalue(), "")
 
+    def test_republish_rejects_new_inputs_and_model_overrides(self) -> None:
+        for extra in (["r.png", "c.png"], ["--max-model-calls", "5"], ["--output-dir", "elsewhere"]):
+            with (
+                self.subTest(extra=extra),
+                patch("sys.argv", ["review", "--republish", str(self.root), *extra]),
+                patch("shader_deep.cli.review.republish_review") as recover,
+                patch("shader_deep.cli.review.run_review") as review,
+                redirect_stderr(io.StringIO()),
+            ):
+                self.assertEqual(main(), 2)
+                recover.assert_not_called()
+                review.assert_not_called()
+
     def test_blocked_uses_failure_exit_code(self) -> None:
         outcome = ReviewOutcome(run_dir=self.root, report_dir=None, status="blocked", error="no_submission")
         with (

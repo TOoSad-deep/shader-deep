@@ -1,0 +1,170 @@
+{
+  "date": "2026-11-20",
+  "model_requested": "z-ai/glm-5.3-flash",
+  "images": "One 160x160 synthetic black ring on white, a filled disk on the same canvas, and its [50,50,110,110) center crop.",
+  "asset_sha256": {
+    "control.png": "9aefc21d349f7720998b4715ff648a4c230910e63b27fa832eb41e5b41097182",
+    "filled.png": "3c96ba3354a65f5706029fb609f536433c3034bad4b237e465c542f1782cd089",
+    "partial.png": "884b197ca64fb4e891610dafd3f850963bee4e3696774e0dd2c04e84b712f349"
+  },
+  "model_facing_files_sha256": {
+    "agents/review/context.py": "74c1e8e2de24fa07bc8abc250befdd0032300f893cae6341fa8b1bb33c4d944a",
+    "agents/review/native.py": "138852a5201d3a973dfc391d61e0c5156377b3bb862d2aeb3029982b9fde1330",
+    "resources/skills/visual-review/items.md": "6588d3aca7215bccbd23d5fba1ccccacb6e5569340e9ed5fa67364125df6ee5d",
+    "resources/skills/visual-review/profiles/element.md": "640a0f47efe9261c6332281ec16cb9372565a633e02afac03e3504df2d70de30"
+  },
+  "expected": {
+    "control": {
+      "verdict": "no_major_issue_observed",
+      "major_checks": [],
+      "unassessed_checks": []
+    },
+    "filled": {
+      "verdict": "needs_revision",
+      "major_checks": [
+        "检查圆环中心的白色圆孔是否存在"
+      ],
+      "unassessed_checks": []
+    },
+    "partial": {
+      "verdict": "needs_revision",
+      "major_checks": [
+        "检查圆环中心的白色圆孔是否存在"
+      ],
+      "unassessed_checks": [
+        "检查整个圆环的外缘轮廓"
+      ]
+    }
+  },
+  "expected_file_sha256": "c48b7fe488a9c3e1f3aecad0ba1e87c5c32aca5dbc5e656cd23f4cc3deb6774f",
+  "max_output_tokens_per_call": 2048,
+  "extra_network_retries": 0,
+  "calls": 6,
+  "usage": {
+    "input_tokens": 20310,
+    "output_tokens": 7010,
+    "total_tokens": 27320
+  },
+  "attempts": [
+    {
+      "case": "control",
+      "stage": "primary",
+      "run": "run-uq0hmo14",
+      "reference": "control.png",
+      "candidate": "control.png",
+      "criteria_sha256": "07e521e397fe4e280ad65ee05275bcc290eeae8d7961835b0c99ad5904ccd8d1",
+      "input_sha256": "1c751ec77993104f29549ebffb23e98ec1939d5dbb9d9d37f8b7b7fe0fe78edf",
+      "model_calls": 2,
+      "max_model_calls": 2,
+      "reasoning_effort": null,
+      "status": "completed",
+      "verdict": "no_major_issue_observed",
+      "error": null,
+      "usage": {
+        "input_tokens": 8153,
+        "output_tokens": 2338,
+        "total_tokens": 10491
+      },
+      "checks_recorded": 2,
+      "validation_errors": 0,
+      "recorded_major_check_ids": [],
+      "report_sha256": "4e7d2603ab48c4f73d456a75397c3f0d4162a1266187eacbca3954e12a9678a7"
+    },
+    {
+      "case": "filled",
+      "stage": "primary",
+      "run": "run-kwnx17am",
+      "reference": "control.png",
+      "candidate": "filled.png",
+      "criteria_sha256": "07e521e397fe4e280ad65ee05275bcc290eeae8d7961835b0c99ad5904ccd8d1",
+      "input_sha256": "f37d7459a230fdf9f02ff843fcfa1461fae5f7a0c085568a7f55342266f58280",
+      "model_calls": 1,
+      "max_model_calls": 2,
+      "reasoning_effort": null,
+      "status": "failed",
+      "verdict": null,
+      "error": "ValueError: Analysis response reached output limit; no tools executed",
+      "usage": {
+        "input_tokens": 3033,
+        "output_tokens": 2048,
+        "total_tokens": 5081
+      },
+      "checks_recorded": 0,
+      "validation_errors": 0
+    },
+    {
+      "case": "filled",
+      "stage": "diagnostic",
+      "run": "run-6v8rwxzo",
+      "reference": "control.png",
+      "candidate": "filled.png",
+      "criteria_sha256": "07e521e397fe4e280ad65ee05275bcc290eeae8d7961835b0c99ad5904ccd8d1",
+      "input_sha256": "f37d7459a230fdf9f02ff843fcfa1461fae5f7a0c085568a7f55342266f58280",
+      "model_calls": 1,
+      "max_model_calls": 1,
+      "reasoning_effort": "low",
+      "status": "blocked",
+      "verdict": null,
+      "error": "model_call_limit",
+      "usage": {
+        "input_tokens": 3032,
+        "output_tokens": 349,
+        "total_tokens": 3381
+      },
+      "checks_recorded": 2,
+      "validation_errors": 0,
+      "recorded_major_check_ids": [
+        "content-7bd765537de9",
+        "shape-b84a12bd3888"
+      ]
+    },
+    {
+      "case": "partial",
+      "stage": "primary",
+      "run": "run-fwkxg88z",
+      "reference": "control.png",
+      "candidate": "partial.png",
+      "criteria_sha256": "2e7d1264b9d936902b64f7008b322beb586c743864ed5e51460cf7591ce13434",
+      "input_sha256": "d9c5185db041330c32616ff7c4da7511aab8145d8a6da01db328aa03c2eef76b",
+      "model_calls": 1,
+      "max_model_calls": 2,
+      "reasoning_effort": null,
+      "status": "failed",
+      "verdict": null,
+      "error": "ValueError: Analysis response reached output limit; no tools executed",
+      "usage": {
+        "input_tokens": 3046,
+        "output_tokens": 2048,
+        "total_tokens": 5094
+      },
+      "checks_recorded": 0,
+      "validation_errors": 0
+    },
+    {
+      "case": "partial",
+      "stage": "diagnostic",
+      "run": "run-w3zffcwp",
+      "reference": "control.png",
+      "candidate": "partial.png",
+      "criteria_sha256": "2e7d1264b9d936902b64f7008b322beb586c743864ed5e51460cf7591ce13434",
+      "input_sha256": "d9c5185db041330c32616ff7c4da7511aab8145d8a6da01db328aa03c2eef76b",
+      "model_calls": 1,
+      "max_model_calls": 1,
+      "reasoning_effort": "low",
+      "status": "blocked",
+      "verdict": null,
+      "error": "model_call_limit",
+      "usage": {
+        "input_tokens": 3046,
+        "output_tokens": 227,
+        "total_tokens": 3273
+      },
+      "checks_recorded": 1,
+      "validation_errors": 0,
+      "recorded_major_check_ids": [
+        "content-7bd765537de9"
+      ]
+    }
+  ],
+  "note": "Primary runs were capped at two logical calls each. The two failed cases each used one remaining call in a separate diagnostic run with low reasoning effort. A blocked or failed run has no visual verdict. These runs precede the final-call prompt clarification."
+}
