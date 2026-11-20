@@ -33,19 +33,23 @@ def review_message(session: ReviewSession) -> HumanMessage:
             payload["final_call"] = {
                 "pending_check_ids": [item.check_id for item in session.checks if item.unassessed is None and item.check_id not in answered],
                 "instructions": (
-                    "这是最后一次模型调用。观察完成时, 在本条 assistant 消息中依次调用 record_review_check 登记所有待答项,"
-                    "最后调用 finish_review 提交报告。待答项为空时直接调用 finish_review。"
-                    "单项证据不足时填写 unassessed_reason。若整次评审无法继续, 调用 stop_review 说明原因。仅登记答案不会提交报告。"
+                    "这是最后一次模型调用。观察完成时只需调用一次 finish_review: 将每个 pending_check_ids 对应的答案放进 answers,"
+                    "同时提交 summary 和 limitations。已登记的答案由程序并入; 没有待答项时传 answers=[]。"
+                    "单项证据不足时填写 unassessed_reason。整次评审无法继续时调用 stop_review。"
                 ),
             }
     evidence = session.source.evidence
     if evidence is not None:
-        payload["evidence"] = evidence.model_dump(mode="json")
-        notes = (
-            "采样值由程序从固定 PNG 计算, 表示各自区域在白底合成后的编码 RGB 均值与加权亮度。"
+        coverage_only = item_protocol and not evidence.samples
+        payload["evidence"] = evidence.model_dump(mode="json", exclude={"units", "alpha_background"} if coverage_only else set())
+        measures = (
+            "本轮没有区域采样。请依据标记的两张图描述视觉表现。"
+            if coverage_only
+            else "采样值由程序从固定 PNG 计算, 表示各自区域在白底合成后的编码 RGB 均值与加权亮度。"
             "请结合图像解释差异及影响, 引用已有数值, 不要估造测量。"
-            "coverage.unassessed 由程序登记, 请不要在提交中重复。只评价有覆盖的必查项。"
         )
+        coverage_note = "coverage.unassessed 由程序登记, 请不要在提交中重复。只评价有覆盖的必查项。"
+        notes = measures + (coverage_note if evidence.coverage is not None or not item_protocol else "")
         payload["evidence_notes"] = (
             notes if item_protocol else notes + "同一维度既有可查项又有程序未评项时, 有覆盖的问题须填写 check(对应必查项原文), 由该维度直接引用。"
         )

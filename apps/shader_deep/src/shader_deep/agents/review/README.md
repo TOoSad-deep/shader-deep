@@ -8,7 +8,7 @@
 
 调用方声明的 `source.candidate_id`、`source.run_id` 和涵盖来源声明的完整输入摘要保存在运行材料和正式报告中。模型只收到评审所需的标准和图像材料，同一组图像和标准更换来源标签后，模型看到的内容相同。
 
-V1 使用 `submit_review` 和 `stop_review` 提交六维报告或停止。V2 按[逐项规则](../../resources/skills/visual-review/items.md)运行。模型可在同一轮依次用 `record_review_check` 登记多项，再以 `finish_review` 提交或以 `stop_review` 停止。[middleware.py](middleware.py) 按本轮协议限制工具可见性与执行，并按声明顺序处理同批调用。终态与逻辑调用预算在下一次主模型请求前检查。
+V1 使用 `submit_review` 和 `stop_review` 提交六维报告或停止。V2 按[逐项规则](../../resources/skills/visual-review/items.md)运行。模型可用一个 `finish_review` 调用，在 `answers` 中提交所有剩余答案和总体摘要。分步观察时仍可先用 `record_review_check` 登记；已登记齐全时使用空的 `answers`。本地工具调用可省略这个参数，严格传输 schema 中显式传数组。整次无法继续时可用 `stop_review` 停止。[middleware.py](middleware.py) 按本轮协议限制工具可见性与执行，并按声明顺序处理同批调用。终态与逻辑调用预算在下一次主模型请求前检查。
 
 V2 普通登记保留已经回答的项目。确需改判时，`revise_review_check` 接受当前版本、同一检查项的新答案、改判理由和可核查的证据说明。工具和实际模型上下文的 `answer_revisions` 提供版本，从 1 开始。过时版本返回冲突。首次重评前，运行中的 `results/check_answers.json` 是答案列表。发生重评后，一次文件替换同时保存 `check_answers` 和 `check_revisions`。接受快照保存同一份审计，正式报告保存在 `metadata.check_revisions`。每条审计记录前后答案、修订版本、模型轮次、理由和依据。
 

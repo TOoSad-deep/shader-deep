@@ -48,9 +48,9 @@ def _check_tools(session: ReviewSession) -> list[BaseTool]:
         return json.dumps(session.revise_check(answer, expected_revision, reason, evidence), ensure_ascii=False)
 
     @tool
-    def finish_review(summary: str, limitations: tuple[str, ...] = ()) -> str:
-        """全部可回答项已登记后提交总体摘要和可选限制, 由程序派生六维结论."""
-        return json.dumps(session.finish(summary, limitations), ensure_ascii=False)
+    def finish_review(summary: str, limitations: tuple[str, ...] = (), *, answers: tuple[CheckAnswer, ...] = ()) -> str:
+        """提交总体摘要、可选限制及全部尚未登记的答案. 已登记齐全时 answers 为空. 整批校验通过后才接受."""
+        return json.dumps(session.finish(summary, limitations, answers=answers), ensure_ascii=False)
 
     return [record_review_check, revise_review_check, finish_review]
 

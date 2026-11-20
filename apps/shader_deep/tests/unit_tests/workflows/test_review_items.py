@@ -134,6 +134,10 @@ class ItemReviewWorkflowTests(unittest.TestCase):
         self.assertEqual(report.verdict, "needs_revision")
         self.assertEqual([answer.check_id for answer in report.check_answers], [checks["中心孔"]])
         self.assertEqual([item.subject for item in report.submission.unassessed], ["外轮廓"])
+        evidence_message = review_context(model.requests[0])["evidence"]
+        self.assertEqual(evidence_message["coverage"], report.evidence.coverage.model_dump(mode="json"))
+        self.assertEqual(evidence_message["samples"], [])
+        self.assertNotIn("units", evidence_message)
         self.assertEqual([item.check for item in report.submission.issues], ["中心孔"])
         self.assertEqual(report.metadata["validation_errors"], 1)
         self.assertEqual(index["action_summary"], report.action_summary.model_dump(mode="json"))

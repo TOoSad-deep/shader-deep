@@ -13,7 +13,7 @@ if TYPE_CHECKING:
 
     from shader_deep.workflows.review.session import ReviewSession
 
-_TOOL_FIELDS = ("answer", "summary", "limitations", "reason", "evidence", "expected_revision")
+_TOOL_FIELDS = ("answer", "answers", "summary", "limitations", "reason", "evidence", "expected_revision")
 _ANSWER_FIELDS = ("check_id", "rationale", "findings", "unassessed_reason")
 _PATH_FIELDS = frozenset((*_TOOL_FIELDS, *_ANSWER_FIELDS, "region", "severity", "impact", "reference_observation", "rendered_observation"))
 _MAX_PENDING_IDS = 8
@@ -87,6 +87,9 @@ def rejection_diagnostic(session: ReviewSession, request: ToolCallRequest, error
     }
     if code == "missing_answers":
         recorded = {answer.check_id for answer in session.check_answers}
+        # 批次校验已确认这些 ID 合法. 诊断说明这次提交缺了哪些项, 其内容仍未登记.
+        offered = request.tool_call["args"].get("answers", [])
+        recorded.update(answer["check_id"] for answer in offered)
         missing = [check.check_id for check in session.checks if check.unassessed is None and check.check_id not in recorded]
         snapshot.update(missing_count=len(missing), missing_check_ids=missing[:_MAX_PENDING_IDS])
     return snapshot

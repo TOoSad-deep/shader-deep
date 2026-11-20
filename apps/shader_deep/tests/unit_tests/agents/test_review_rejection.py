@@ -70,6 +70,20 @@ class RejectionDiagnosticTests(unittest.TestCase):
         for fragment in (b"data:image/", b"sensitive", b"private-id"):
             self.assertNotIn(fragment, content)
 
+    def test_partial_finish_diagnostic_reports_only_omitted_ids_without_saving_answers(self) -> None:
+        req = review_request(required=("shape", "color")).model_copy(update={"protocol": "visual_review_v2"})
+        sent, omitted = bound_checks(review_criteria(req), None)
+        msg = review_call("finish_review", {"summary": "完成", "answers": [{"check_id": sent.check_id, "rationale": "私有观察"}]})
+        result = self.run_responses(req, msg)
+        self.assertEqual(result.status, "blocked")
+        path = result.run_dir / "results"
+        diagnostic = json.loads((path / "last_rejection.json").read_bytes())
+        self.assertEqual(diagnostic["code"], "missing_answers")
+        self.assertEqual((diagnostic["missing_count"], diagnostic["missing_check_ids"]), (1, [omitted.check_id]))
+        self.assertEqual(diagnostic["arguments"]["fields"]["answers"], {"type": "list", "length": 1})
+        self.assertNotIn("私有观察", (path / "last_rejection.json").read_text())
+        self.assertFalse((path / "check_answers.json").exists())
+
     def test_unknown_check_id_is_not_persisted_even_in_domain_error_path(self) -> None:
         private = "private-credential-or-label"
         result = self.run_responses(self.request, review_call("record_review_check", {"answer": {"check_id": private, "rationale": private}}))

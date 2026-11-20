@@ -48,7 +48,7 @@ uv run --no-sync --env-file .env python -m shader_deep.cli.review \
 
 如需追溯生成运行，可在任务中填写 `source.run_id` 和 `source.candidate_id`。请先核对所选 PNG 确属该候选。报告会保留这两个标识，评审模型看不到它们。
 
-V2 对每个 `required_checks` 数组元素登记一个答案。若要分别核对外轮廓和中心孔，请写成 `["外轮廓", "中心孔"]`。每条有可见证据的判断、差异或未评原因随报告保留。程序回填预先排除的维度和已确认缺视图的项目；漏答时返回待补的 ID，普通补答保留已登记的判断。显式重评同一检查项时，须提供当前版本、改判理由和图像依据。正式回读后的 `package.report.check_answers` 是模型实际登记的答案，`package.report.submission` 是包含程序未评项的六维汇总。
+V2 对每个 `required_checks` 数组元素登记一个答案。若要分别核对外轮廓和中心孔，请写成 `["外轮廓", "中心孔"]`。每条有可见证据的判断、差异或未评原因随报告保留。程序回填预先排除的维度和已确认缺视图的项目。模型可一次调用 `finish_review`，同时提交全部待答项、摘要和限制，也可以先逐项登记再结束。漏答时返回待补的 ID，普通补答保留已登记的判断。显式重评同一检查项时，须提供当前版本、改判理由和图像依据。正式回读后的 `package.report.check_answers` 是模型实际登记的答案，`package.report.submission` 是包含程序未评项的六维汇总。
 
 标准输出为运行状态、视觉结论和报告目录的 JSON 索引. `completed` 表示报告交付, `verdict` 分别表达 `needs_revision`、`no_major_issue_observed` 或 `inconclusive`. 合法报告交付返回退出码 0, 受阻或运行失败返回 1, 启动前输入错误返回 2. 报告可用 `read_review_package` 核对固定材料、标准和结论.
 

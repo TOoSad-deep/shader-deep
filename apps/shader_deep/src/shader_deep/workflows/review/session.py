@@ -114,13 +114,16 @@ class ReviewSession:
             report = complete_coverage(report, self.source.criteria, self.source.coverage)
             validate_review_submission(report, self.source.criteria)
             validate_coverage(report, self.source.criteria, self.source.coverage)
-            return self._accept(report, report.model_dump(mode="json"))
+            return self._accept(report, report.model_dump(mode="json"), self._answers)
+
+    def _ordered_answers(self, answers: dict[str, CheckAnswer]) -> tuple[CheckAnswer, ...]:
+        return tuple(answers[check.check_id] for check in self.checks if check.check_id in answers)
 
     @property
     def check_answers(self) -> tuple[CheckAnswer, ...]:
         """返回冻结检查顺序内已登记的答案, 与同批声明次序解耦."""
         with self._lock:
-            return tuple(self._answers[check.check_id] for check in self.checks if check.check_id in self._answers)
+            return self._ordered_answers(self._answers)
 
     @property
     def answer_revisions(self) -> dict[str, int]:
@@ -134,7 +137,7 @@ class ReviewSession:
 
     def _save_answer(self, answer: CheckAnswer, revisions: tuple[CheckRevision, ...]) -> None:
         updated = {**self._answers, answer.check_id: answer}
-        ordered = [updated[item.check_id].model_dump(mode="json") for item in self.checks if item.check_id in updated]
+        ordered = [item.model_dump(mode="json") for item in self._ordered_answers(updated)]
         # 旧未重评快照保留列表外形; 首次重评起, 一次原子替换同时提交新答案和完整审计.
         snapshot = {"check_answers": ordered, **self._revision_metadata(revisions)} if revisions else ordered
         write_snapshot(self.directory / "results" / "check_answers.json", snapshot)
@@ -176,24 +179,26 @@ class ReviewSession:
             self._save_answer(answer, (*self._revisions, change))
             return {"status": "revised", "check_id": answer.check_id, "revision": change.revision}
 
-    def finish(self, summary: str, limitations: tuple[str, ...] = ()) -> dict[str, JsonValue]:
-        """按检查清单核对全部答案, 派生六维报告并与单项证据一起接受."""
+    def finish(self, summary: str, limitations: tuple[str, ...] = (), *, answers: tuple[CheckAnswer, ...] = ()) -> dict[str, JsonValue]:
+        """核对已登记项与本次补交的答案, 一并接受最终报告和证据."""
         with self._lock:
             self._require_check_protocol()
-            answers = self.check_answers
-            report = summarize_checks(self.source.criteria, self.source.coverage, answers, summary=summary, limitations=limitations)
+            # 先保留全部条目, 让领域校验看见与已登记项或同批新项冲突的重复 ID.
+            combined = (*self._answers.values(), *answers)
+            report = summarize_checks(self.source.criteria, self.source.coverage, combined, summary=summary, limitations=limitations)
+            merged = {item.check_id: item for item in combined}
             snapshot = {
                 "submission": report.model_dump(mode="json"),
-                "check_answers": [item.model_dump(mode="json") for item in answers],
+                "check_answers": [item.model_dump(mode="json") for item in self._ordered_answers(merged)],
                 **self._revision_metadata(self._revisions),
             }
             # 一次原子替换保存最终答案、审计和离线发布绑定. 正式发布凭据写入前退出也能恢复.
-            return self._accept(report, with_publication_seed(self, snapshot))
+            return self._accept(report, with_publication_seed(self, snapshot), merged)
 
-    def _accept(self, report: ReviewSubmission, snapshot: object) -> dict[str, JsonValue]:
+    def _accept(self, report: ReviewSubmission, snapshot: object, answers: dict[str, CheckAnswer]) -> dict[str, JsonValue]:
         verdict = derive_verdict(report)
         write_snapshot(self.directory / "results" / "accepted.json", snapshot)
-        self.submission, self.state = report, "accepted"
+        self._answers, self.submission, self.state = answers, report, "accepted"
         return {"status": "accepted", "verdict": verdict}
 
     def stop(self, reason: str) -> dict[str, JsonValue]:

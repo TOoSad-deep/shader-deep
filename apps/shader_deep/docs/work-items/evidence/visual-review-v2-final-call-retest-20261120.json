@@ -1,0 +1,150 @@
+{
+  "date": "2026-11-20",
+  "plan": {
+    "tested_revision": "38d8bea6",
+    "model": "z-ai/glm-5.3-flash",
+    "max_model_calls_per_case": 1,
+    "max_request_retries": 0,
+    "max_output_tokens_per_call": 2048,
+    "reasoning_effort": "low",
+    "cases": {
+      "filled": {
+        "verdict": "needs_revision",
+        "major_checks": [
+          "检查圆环中心的白色圆孔是否存在"
+        ],
+        "unassessed_checks": []
+      },
+      "partial": {
+        "verdict": "needs_revision",
+        "major_checks": [
+          "检查圆环中心的白色圆孔是否存在"
+        ],
+        "unassessed_checks": [
+          "检查整个圆环的外缘轮廓"
+        ]
+      }
+    },
+    "additional_pass_conditions": {
+      "filled": "outer contour match with no gaps or findings, exactly one major finding for the missing hole",
+      "partial": "no model answer for the locked outer contour, one program coverage gap for it, exactly one major finding for the missing hole"
+    },
+    "asset_sha256": {
+      "control.png": "9aefc21d349f7720998b4715ff648a4c230910e63b27fa832eb41e5b41097182",
+      "filled.png": "3c96ba3354a65f5706029fb609f536433c3034bad4b237e465c542f1782cd089",
+      "partial.png": "884b197ca64fb4e891610dafd3f850963bee4e3696774e0dd2c04e84b712f349"
+    },
+    "task_sha256": {
+      "filled": "4b8e6820890b84b522e0a3916df7778be4afe08e0a438f51703ad136143524af",
+      "partial": "639c84a7a4b10ef25ac69359e7db86d0b208e405fdce1d6b6e5184e3892c9954"
+    },
+    "rules_sha256": "b43deed98dda21ac212e6a99ab6488edfb000e8423f9094f27ea4c1c8092ce20",
+    "context_sha256": "2212b937733c93ef7b188e135b7ebbbb33aa1484c82bfc9bc409756c4cf0b44e"
+  },
+  "results": [
+    {
+      "case": "filled",
+      "run": "filled/run-6rjg_2od",
+      "status": "blocked",
+      "verdict": null,
+      "error": "model_call_limit",
+      "model_calls": 1,
+      "usage": {
+        "input_tokens": 3171,
+        "output_tokens": 334,
+        "total_tokens": 3505
+      },
+      "validation_errors": 0,
+      "criteria_sha256": "46ea1317183953fa6b8946d445b2d16542fa3ff422d9f8b5b0c3610a10cc47d8",
+      "input_sha256": "46f1d3d366f687ca76e6498b8b01dfccd0f443fbd9f1b715336c9dc3b6978841",
+      "formal_pass": false,
+      "model_requested": "z-ai/glm-5.3-flash",
+      "prior_low_run": "run-6v8rwxzo",
+      "progress_major_check_ids": [
+        "content-7bd765537de9"
+      ],
+      "frozen_check_ids": [
+        "content-7bd765537de9",
+        "shape-b84a12bd3888"
+      ],
+      "recorded_check_ids": [
+        "content-7bd765537de9",
+        "shape-b84a12bd3888"
+      ],
+      "accepted_snapshot": false,
+      "report_published": false
+    },
+    {
+      "case": "partial",
+      "run": "partial/run-18pqbq5d",
+      "status": "blocked",
+      "verdict": null,
+      "error": "model_call_limit",
+      "model_calls": 1,
+      "usage": {
+        "input_tokens": 3170,
+        "output_tokens": 385,
+        "total_tokens": 3555
+      },
+      "validation_errors": 0,
+      "criteria_sha256": "c8bd8b6774d6c6f1ee17f5347a90ef2018f3906ff41f573d3750c203bea426ee",
+      "input_sha256": "8b20bab517e8256cc14eb520bc244e776dd127d677dca55472c9c4387269d5a7",
+      "formal_pass": false,
+      "model_requested": "z-ai/glm-5.3-flash",
+      "prior_low_run": "run-w3zffcwp",
+      "progress_major_check_ids": [
+        "content-7bd765537de9"
+      ],
+      "frozen_check_ids": [
+        "content-7bd765537de9",
+        "shape-b84a12bd3888"
+      ],
+      "recorded_check_ids": [
+        "content-7bd765537de9"
+      ],
+      "accepted_snapshot": false,
+      "report_published": false
+    }
+  ],
+  "total_logical_model_calls": 2,
+  "total_tokens": 7060,
+  "source_directory": "visual-review-v2-final-call-retest-20261120-144243",
+  "interpretation": {
+    "filled": "Draft locates missing center hole, explicitly compares both outer contours, and records no outer-contour finding. No formal submission.",
+    "partial": "Draft locates the missing center hole; outer contour is program-unassessed. Draft wrongly cites a sample mean despite an empty samples list. No formal submission."
+  },
+  "offline_batch_replay": {
+    "summary_source": "offline replay program; not model output",
+    "real_model_calls": 0,
+    "cases": [
+      {
+        "case": "filled",
+        "source_draft_sha256": "0bfc6273c421e5c1f5b9f5f74ffa1b1255f917484fae0da766e4b8bf6cc229d4",
+        "report_sha256": "8392cb1170109a9e8cbf52ae104d7807e948f27a1d8b88b889c33f3d289ef507",
+        "replay_criteria_sha256": "d657fe6aed8e685b74cc6ba21d34c1a6e72b4974a2406616f767ba6ea4655e49",
+        "report": "offline-batch/filled/run-ommmt16k/report",
+        "exact_answer_objects_equal": true,
+        "status": "completed",
+        "verdict": "needs_revision",
+        "content": "major_gap",
+        "shape": "match",
+        "sample_count": 0,
+        "unsupported_sample_mean_claim_preserved": false
+      },
+      {
+        "case": "partial",
+        "source_draft_sha256": "841ce3b390c54ec134778f185acb11a5de53a75c332812bf1eb1ce41d20cebf2",
+        "report_sha256": "e18d44dada4f3c5d4fcdf955d697a8fdf537c2e2b8e4ec3531195135b093ae02",
+        "replay_criteria_sha256": "0cf8ba19ea8d7929b7a83588332826b18eddc0b351b691fce95bfdf55b937e05",
+        "report": "offline-batch/partial/run-8j75e00c/report",
+        "exact_answer_objects_equal": true,
+        "status": "completed",
+        "verdict": "needs_revision",
+        "content": "major_gap",
+        "shape": "uncertain",
+        "sample_count": 0,
+        "unsupported_sample_mean_claim_preserved": true
+      }
+    ]
+  }
+}
