@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "696abcb4-2cb8-4292-857e-4e034e307155",
+  "status": "current",
+  "command": "deliver",
+  "type": "workflow",
+  "input": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/.archify/workflow-png-shader-agents-artifacts-20261120-171119/candidate.json",
+  "output": "/Users/douwen/Documents/HUAWEl/Shader-Agent/shader-deep/.archify/workflow-png-shader-agents-artifacts-20261120-171119/agents-and-artifacts.html",
+  "specification": {
+    "sha256": "cc6790a289bfc53e585566d29ebb9f41d0705a2eb999b5f1f6d3ac6c0d5c338f",
+    "bytes": 17608
+  },
+  "artifact": {
+    "sha256": "03b0924fb8525040db818bca8c696336a31ca1d36f794fa5f3d35ca003232bdc",
+    "bytes": 865568
+  }
+}

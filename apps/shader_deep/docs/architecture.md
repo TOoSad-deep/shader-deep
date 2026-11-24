@@ -26,6 +26,8 @@ Python 消费者从 [api.py](../src/shader_deep/api.py) 进入。`resources/skil
 
 ## 跨模块流程
 
+[PNG 转 Shader 交互流程图（2026-11-20 设计快照）](../../../.archify/workflow-png-shader-agents-artifacts-20261120-171119/agents-and-artifacts.html)展示各角色如何交接、传递产物和处理评审反馈。当前运行行为见下文。
+
 分析:
 
 ```text

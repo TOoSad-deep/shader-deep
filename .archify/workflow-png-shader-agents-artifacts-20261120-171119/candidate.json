@@ -1,0 +1,768 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "PNG 转 Shader · 角色、产物与反馈",
+    "output": ".archify/workflow-png-shader-agents-artifacts-20261120-171119/agents-and-artifacts.html",
+    "locale": "zh-CN",
+    "quality_profile": "showcase",
+    "repository": {
+      "url": "https://github.com/TOoSad-deep/shader-deep.git",
+      "revision": "2f08bdf691385eba92279cc2017f7f3277b0b083",
+      "link_mode": "local-only"
+    },
+    "legend": {
+      "entries": {
+        "backend": {
+          "label": "Agent · 执行角色"
+        },
+        "database": {
+          "label": "材料 · 输入或产物"
+        },
+        "frontend": {
+          "label": "程序 · 渲染操作"
+        },
+        "messagebus": {
+          "label": "调度 · 决定与转接"
+        }
+      }
+    }
+  },
+  "lanes": [
+    {
+      "id": "think",
+      "label": "参考 → 观察产物 → 假设"
+    },
+    {
+      "id": "build",
+      "label": "局部试验与整图生成"
+    },
+    {
+      "id": "code",
+      "label": "可执行的代码与参数"
+    },
+    {
+      "id": "runtime",
+      "label": "渲染与回看"
+    },
+    {
+      "id": "judge",
+      "label": "按标准独立评审"
+    },
+    {
+      "id": "control",
+      "label": "报告与下一轮任务"
+    },
+    {
+      "id": "end",
+      "label": "返回指定角色或结束"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "input",
+      "lane": "think",
+      "col": 0,
+      "type": "database",
+      "icon": "database",
+      "tag": "输入",
+      "label": "参考 PNG",
+      "sublabel": "用户目标与约束",
+      "sources": [
+        {
+          "path": "apps/shader_deep/docs/architecture.md",
+          "line": 32,
+          "end_line": 39
+        }
+      ]
+    },
+    {
+      "id": "see",
+      "lane": "think",
+      "col": 1,
+      "type": "backend",
+      "icon": "person",
+      "tag": "Agent",
+      "label": "① 分析 Agent",
+      "sublabel": "观察画面并解构",
+      "sources": [
+        {
+          "path": "apps/shader_deep/docs/architecture.md",
+          "line": 32,
+          "end_line": 39
+        }
+      ]
+    },
+    {
+      "id": "observed",
+      "lane": "think",
+      "col": 2,
+      "type": "database",
+      "icon": "database",
+      "tag": "产物",
+      "label": "观察记录 E/F/R",
+      "sublabel": "元素、特征及可见关系",
+      "sources": [
+        {
+          "path": "apps/shader_deep/docs/architecture.md",
+          "line": 32,
+          "end_line": 39
+        }
+      ]
+    },
+    {
+      "id": "plan",
+      "lane": "think",
+      "col": 3,
+      "type": "backend",
+      "icon": "person",
+      "tag": "Agent",
+      "label": "② 假设 Agent",
+      "sublabel": "提出可试验的实现方法",
+      "sources": [
+        {
+          "path": "apps/shader_deep/docs/architecture.md",
+          "line": 44,
+          "end_line": 56
+        }
+      ]
+    },
+    {
+      "id": "scene",
+      "lane": "think",
+      "col": 4,
+      "type": "database",
+      "icon": "database",
+      "tag": "产物",
+      "label": "整图草图 S",
+      "sublabel": "组合方法、布局与遮挡",
+      "sources": [
+        {
+          "path": "apps/shader_deep/docs/architecture.md",
+          "line": 44,
+          "end_line": 56
+        }
+      ]
+    },
+    {
+      "id": "method",
+      "lane": "build",
+      "col": 3,
+      "type": "database",
+      "icon": "database",
+      "tag": "产物",
+      "label": "局部机制 M",
+      "sublabel": "目标特征与预期效果",
+      "sources": [
+        {
+          "path": "apps/shader_deep/docs/architecture.md",
+          "line": 44,
+          "end_line": 56
+        }
+      ]
+    },
+    {
+      "id": "gen",
+      "lane": "build",
+      "col": 4,
+      "type": "backend",
+      "icon": "person",
+      "tag": "Agent",
+      "label": "③ 生成 Agent",
+      "sublabel": "写代码、回看并选候选",
+      "sources": [
+        {
+          "path": "apps/shader_deep/docs/architecture.md",
+          "line": 61,
+          "end_line": 71
+        },
+        {
+          "path": "apps/shader_deep/docs/generation-architecture.md",
+          "line": 157,
+          "end_line": 161
+        }
+      ]
+    },
+    {
+      "id": "tune",
+      "lane": "build",
+      "col": 5,
+      "type": "backend",
+      "icon": "person",
+      "tag": "Agent",
+      "label": "调参 Agent",
+      "sublabel": "按需调整获准的参数",
+      "sources": [
+        {
+          "path": "apps/shader_deep/docs/work-items/independent-visual-review-implementation-20261117.md",
+          "line": 361,
+          "end_line": 365
+        }
+      ]
+    },
+    {
+      "id": "glsl",
+      "lane": "code",
+      "col": 4,
+      "type": "database",
+      "icon": "database",
+      "tag": "产物",
+      "label": "GLSL 代码",
+      "sublabel": "基线结构与默认参数",
+      "sources": [
+        {
+          "path": "apps/shader_deep/docs/architecture.md",
+          "line": 61,
+          "end_line": 71
+        },
+        {
+          "path": "apps/shader_deep/docs/generation-architecture.md",
+          "line": 157,
+          "end_line": 161
+        }
+      ]
+    },
+    {
+      "id": "params",
+      "lane": "code",
+      "col": 5,
+      "type": "database",
+      "icon": "database",
+      "tag": "产物",
+      "label": "参数改动",
+      "sublabel": "绑定基线与本轮改动值",
+      "sources": [
+        {
+          "path": "apps/shader_deep/docs/work-items/independent-visual-review-implementation-20261117.md",
+          "line": 361,
+          "end_line": 365
+        }
+      ]
+    },
+    {
+      "id": "render",
+      "lane": "runtime",
+      "col": 4,
+      "type": "frontend",
+      "icon": "backend",
+      "tag": "程序动作",
+      "label": "WebGL2 渲染",
+      "sublabel": "按固定尺寸和时间执行",
+      "sources": [
+        {
+          "path": "apps/shader_deep/docs/architecture.md",
+          "line": 61,
+          "end_line": 71
+        },
+        {
+          "path": "apps/shader_deep/docs/generation-architecture.md",
+          "line": 157,
+          "end_line": 161
+        }
+      ]
+    },
+    {
+      "id": "png",
+      "lane": "runtime",
+      "col": 5,
+      "type": "database",
+      "icon": "database",
+      "tag": "产物",
+      "label": "候选渲染图",
+      "sublabel": "实际输出的 PNG",
+      "sources": [
+        {
+          "path": "apps/shader_deep/docs/architecture.md",
+          "line": 61,
+          "end_line": 71
+        },
+        {
+          "path": "apps/shader_deep/docs/generation-architecture.md",
+          "line": 157,
+          "end_line": 161
+        }
+      ]
+    },
+    {
+      "id": "basis",
+      "lane": "judge",
+      "col": 0,
+      "type": "database",
+      "icon": "database",
+      "tag": "产物",
+      "label": "冻结的评审依据",
+      "sublabel": "原参考图与本轮必查项",
+      "sources": [
+        {
+          "path": "apps/shader_deep/docs/architecture.md",
+          "line": 75,
+          "end_line": 75
+        },
+        {
+          "path": "apps/shader_deep/docs/work-items/independent-visual-review-implementation-20261117.md",
+          "line": 373,
+          "end_line": 377
+        }
+      ]
+    },
+    {
+      "id": "judge",
+      "lane": "judge",
+      "col": 3,
+      "type": "backend",
+      "icon": "person",
+      "tag": "Agent",
+      "label": "评审 Agent",
+      "sublabel": "比较特征、元素或整图",
+      "sources": [
+        {
+          "path": "apps/shader_deep/docs/architecture.md",
+          "line": 75,
+          "end_line": 75
+        },
+        {
+          "path": "apps/shader_deep/docs/work-items/independent-visual-review-implementation-20261117.md",
+          "line": 373,
+          "end_line": 377
+        }
+      ]
+    },
+    {
+      "id": "pick",
+      "lane": "judge",
+      "col": 5,
+      "type": "database",
+      "icon": "database",
+      "tag": "产物",
+      "label": "本轮送审候选",
+      "sublabel": "选定的渲染图与版本",
+      "sources": [
+        {
+          "path": "apps/shader_deep/docs/architecture.md",
+          "line": 61,
+          "end_line": 71
+        },
+        {
+          "path": "apps/shader_deep/docs/generation-architecture.md",
+          "line": 157,
+          "end_line": 161
+        }
+      ]
+    },
+    {
+      "id": "report",
+      "lane": "control",
+      "col": 2,
+      "type": "database",
+      "icon": "database",
+      "tag": "产物",
+      "label": "评审报告",
+      "sublabel": "可见差异、证据与未评项",
+      "sources": [
+        {
+          "path": "apps/shader_deep/docs/architecture.md",
+          "line": 75,
+          "end_line": 75
+        },
+        {
+          "path": "apps/shader_deep/docs/work-items/independent-visual-review-implementation-20261117.md",
+          "line": 373,
+          "end_line": 377
+        }
+      ],
+      "yOffset": -65
+    },
+    {
+      "id": "route",
+      "lane": "control",
+      "col": 3,
+      "type": "messagebus",
+      "icon": "decision",
+      "tag": "调度决定",
+      "label": "主控选择下一步",
+      "sublabel": "现由调用方或人工承担",
+      "sources": [
+        {
+          "path": "apps/shader_deep/docs/architecture.md",
+          "line": 75,
+          "end_line": 75
+        },
+        {
+          "path": "apps/shader_deep/docs/work-items/independent-visual-review-implementation-20261117.md",
+          "line": 369,
+          "end_line": 371
+        }
+      ]
+    },
+    {
+      "id": "more",
+      "lane": "judge",
+      "col": 4,
+      "type": "messagebus",
+      "icon": "decision",
+      "tag": "调度决定",
+      "label": "安排补采视图",
+      "sublabel": "沿用同一候选与标准",
+      "sources": [
+        {
+          "path": "apps/shader_deep/docs/architecture.md",
+          "line": 75,
+          "end_line": 75
+        },
+        {
+          "path": "apps/shader_deep/docs/work-items/independent-visual-review-implementation-20261117.md",
+          "line": 373,
+          "end_line": 377
+        }
+      ]
+    },
+    {
+      "id": "task",
+      "lane": "control",
+      "col": 1,
+      "type": "database",
+      "icon": "database",
+      "tag": "产物",
+      "label": "下一轮修订任务",
+      "sublabel": "负责人、基线与复验条件",
+      "sources": [
+        {
+          "path": "apps/shader_deep/docs/work-items/independent-visual-review-implementation-20261117.md",
+          "line": 361,
+          "end_line": 365
+        }
+      ]
+    },
+    {
+      "id": "back_see",
+      "lane": "end",
+      "col": 0,
+      "type": "messagebus",
+      "icon": "active",
+      "tag": "流程转接",
+      "label": "返回① 分析",
+      "sublabel": "重看原图，修订观察",
+      "sources": [
+        {
+          "path": "apps/shader_deep/docs/architecture.md",
+          "line": 32,
+          "end_line": 39
+        }
+      ]
+    },
+    {
+      "id": "back_plan",
+      "lane": "end",
+      "col": 1,
+      "type": "messagebus",
+      "icon": "active",
+      "tag": "流程转接",
+      "label": "返回② 假设",
+      "sublabel": "更换方法或组合方案",
+      "sources": [
+        {
+          "path": "apps/shader_deep/docs/architecture.md",
+          "line": 44,
+          "end_line": 56
+        }
+      ]
+    },
+    {
+      "id": "back_gen",
+      "lane": "end",
+      "col": 2,
+      "type": "messagebus",
+      "icon": "active",
+      "tag": "流程转接",
+      "label": "返回③ 生成",
+      "sublabel": "修实现或派发调参",
+      "sources": [
+        {
+          "path": "apps/shader_deep/docs/architecture.md",
+          "line": 61,
+          "end_line": 71
+        },
+        {
+          "path": "apps/shader_deep/docs/generation-architecture.md",
+          "line": 157,
+          "end_line": 161
+        }
+      ]
+    },
+    {
+      "id": "keep",
+      "lane": "end",
+      "col": 3,
+      "type": "database",
+      "icon": "database",
+      "tag": "产物",
+      "label": "本轮保留的候选",
+      "sublabel": "局部再查整图，整图待验收",
+      "sources": [
+        {
+          "path": "apps/shader_deep/docs/architecture.md",
+          "line": 75,
+          "end_line": 75
+        },
+        {
+          "path": "apps/shader_deep/docs/work-items/independent-visual-review-implementation-20261117.md",
+          "line": 369,
+          "end_line": 371
+        }
+      ]
+    },
+    {
+      "id": "stop",
+      "lane": "end",
+      "col": 4,
+      "type": "database",
+      "icon": "database",
+      "tag": "产物",
+      "label": "受阻记录",
+      "sublabel": "现有候选与剩余问题",
+      "sources": [
+        {
+          "path": "apps/shader_deep/docs/generation-architecture.md",
+          "line": 157,
+          "end_line": 161
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "id": "input-see",
+      "from": "input",
+      "to": "see",
+      "label": "读取",
+      "role": "main"
+    },
+    {
+      "id": "see-observed",
+      "from": "see",
+      "to": "observed",
+      "label": "产出",
+      "role": "main"
+    },
+    {
+      "id": "observed-plan",
+      "from": "observed",
+      "to": "plan",
+      "label": "依据",
+      "role": "main"
+    },
+    {
+      "id": "plan-scene",
+      "from": "plan",
+      "to": "scene",
+      "label": "全局假设",
+      "role": "main"
+    },
+    {
+      "id": "plan-method",
+      "from": "plan",
+      "to": "method",
+      "label": "局部假设",
+      "role": "branch"
+    },
+    {
+      "id": "method-gen",
+      "from": "method",
+      "to": "gen",
+      "label": "特征试验",
+      "role": "branch"
+    },
+    {
+      "id": "scene-gen",
+      "from": "scene",
+      "to": "gen",
+      "label": "整图生成",
+      "role": "main"
+    },
+    {
+      "id": "gen-glsl",
+      "from": "gen",
+      "to": "glsl",
+      "label": "提交",
+      "role": "main"
+    },
+    {
+      "id": "gen-tune",
+      "from": "gen",
+      "to": "tune",
+      "label": "派发调参",
+      "role": "branch"
+    },
+    {
+      "id": "tune-params",
+      "from": "tune",
+      "to": "params",
+      "label": "产出",
+      "role": "branch"
+    },
+    {
+      "id": "glsl-render",
+      "from": "glsl",
+      "to": "render",
+      "label": "编译执行",
+      "role": "main"
+    },
+    {
+      "id": "params-render",
+      "from": "params",
+      "to": "render",
+      "label": "应用改动",
+      "role": "branch"
+    },
+    {
+      "id": "render-png",
+      "from": "render",
+      "to": "png",
+      "label": "输出",
+      "role": "main"
+    },
+    {
+      "id": "png-gen",
+      "from": "png",
+      "to": "gen",
+      "label": "回看后需修改",
+      "role": "return"
+    },
+    {
+      "id": "png-pick",
+      "from": "png",
+      "to": "pick",
+      "label": "生成者选定",
+      "role": "main"
+    },
+    {
+      "id": "input-basis",
+      "from": "input",
+      "to": "basis",
+      "label": "固定参考",
+      "role": "branch"
+    },
+    {
+      "id": "basis-judge",
+      "from": "basis",
+      "to": "judge",
+      "label": "参考与标准",
+      "role": "branch"
+    },
+    {
+      "id": "pick-judge",
+      "from": "pick",
+      "to": "judge",
+      "label": "显式送评",
+      "role": "main"
+    },
+    {
+      "id": "judge-report",
+      "from": "judge",
+      "to": "report",
+      "label": "发布",
+      "role": "main"
+    },
+    {
+      "id": "report-route",
+      "from": "report",
+      "to": "route",
+      "label": "读取",
+      "role": "main"
+    },
+    {
+      "id": "route-more",
+      "from": "route",
+      "to": "more",
+      "label": "证据不足",
+      "role": "branch"
+    },
+    {
+      "id": "more-judge",
+      "from": "more",
+      "to": "judge",
+      "label": "补图复评",
+      "role": "return"
+    },
+    {
+      "id": "route-task",
+      "from": "route",
+      "to": "task",
+      "label": "需修订",
+      "role": "branch"
+    },
+    {
+      "id": "task-back_see",
+      "from": "task",
+      "to": "back_see",
+      "label": "误读参考",
+      "role": "branch"
+    },
+    {
+      "id": "task-back_plan",
+      "from": "task",
+      "to": "back_plan",
+      "label": "方法受限",
+      "role": "branch"
+    },
+    {
+      "id": "task-back_gen",
+      "from": "task",
+      "to": "back_gen",
+      "label": "实现或参数",
+      "role": "branch"
+    },
+    {
+      "id": "route-keep",
+      "from": "route",
+      "to": "keep",
+      "label": "范围达标",
+      "role": "main"
+    },
+    {
+      "id": "route-stop",
+      "from": "route",
+      "to": "stop",
+      "label": "预算尽或受阻",
+      "role": "branch"
+    }
+  ],
+  "mainPath": [
+    "input",
+    "see",
+    "observed",
+    "plan",
+    "scene",
+    "gen",
+    "glsl",
+    "render",
+    "png",
+    "pick"
+  ],
+  "cards": [
+    {
+      "dot": "emerald",
+      "title": "谁在做",
+      "items": [
+        "绿色人物节点是工作角色。调参由生成角色按需派发，接收旧候选、允许改动的参数与保护区。",
+        "独立评审给出画面差异和待补证项。"
+      ]
+    },
+    {
+      "dot": "violet",
+      "title": "交出了什么",
+      "items": [
+        "紫色节点保存可交接的材料。E/F/R 交给假设角色，M 或 S 交给生成角色。",
+        "评审报告交给主控；生成者选中的候选保留实际 PNG 和版本。"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "怎样进入下一轮",
+      "items": [
+        "齿盘只拍到中心时，补拍同一候选再评。完整入图但确实缺齿时，派发修订任务。",
+        "自动调度是目标设计，现阶段由调用方决定。"
+      ]
+    }
+  ]
+}
