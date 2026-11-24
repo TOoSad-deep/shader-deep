@@ -1,0 +1,106 @@
+{
+  "scope": "local",
+  "target_kind": "element",
+  "target": "灯塔",
+  "requirements": "窗口内两条红带都是必要组成，少一条即重大。核对塔顶灯室是否保留。允许色差、锐度差。",
+  "dimensions": [
+    {
+      "id": "content",
+      "required_checks": [
+        "输入窗口内塔身保留两条分离的红色横带",
+        "塔顶灯室保留完整"
+      ],
+      "excluded_checks": [],
+      "tolerances": []
+    },
+    {
+      "id": "layout",
+      "required_checks": [],
+      "excluded_checks": [
+        "此维不在本次范围"
+      ],
+      "tolerances": []
+    },
+    {
+      "id": "shape",
+      "required_checks": [],
+      "excluded_checks": [
+        "此维不在本次范围"
+      ],
+      "tolerances": []
+    },
+    {
+      "id": "color",
+      "required_checks": [],
+      "excluded_checks": [
+        "此维不在本次范围"
+      ],
+      "tolerances": []
+    },
+    {
+      "id": "surface",
+      "required_checks": [],
+      "excluded_checks": [
+        "此维不在本次范围"
+      ],
+      "tolerances": []
+    },
+    {
+      "id": "relations",
+      "required_checks": [],
+      "excluded_checks": [
+        "此维不在本次范围"
+      ],
+      "tolerances": []
+    }
+  ],
+  "reference_region": null,
+  "rendered_region": null,
+  "conditions": {
+    "reference_time": null,
+    "rendered_time": null,
+    "reference_background": null,
+    "rendered_background": null,
+    "comparison_notes": []
+  },
+  "source": {
+    "candidate_id": null,
+    "run_id": null
+  },
+  "coverage": {
+    "reference_window": {
+      "left": 75,
+      "top": 48,
+      "right": 137,
+      "bottom": 105
+    },
+    "rendered_window": {
+      "left": 75,
+      "top": 48,
+      "right": 137,
+      "bottom": 105
+    },
+    "required_regions": [
+      {
+        "dimension": "content",
+        "check": "输入窗口内塔身保留两条分离的红色横带",
+        "region": {
+          "left": 75,
+          "top": 48,
+          "right": 137,
+          "bottom": 105
+        }
+      },
+      {
+        "dimension": "content",
+        "check": "塔顶灯室保留完整",
+        "region": {
+          "left": 65,
+          "top": 5,
+          "right": 147,
+          "bottom": 29
+        }
+      }
+    ]
+  }
+}

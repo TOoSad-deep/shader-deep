@@ -1,0 +1,69 @@
+{
+  "scope": "scene",
+  "target_kind": null,
+  "target": "山脊景观",
+  "requirements": "检查三层山脊的存在与遮挡先后。允许整片天空更换配色，天空颜色及纹理均不评分。",
+  "dimensions": [
+    {
+      "id": "content",
+      "required_checks": [
+        "三个层叠山脊均存在"
+      ],
+      "excluded_checks": [],
+      "tolerances": []
+    },
+    {
+      "id": "layout",
+      "required_checks": [],
+      "excluded_checks": [
+        "此维不在本次范围"
+      ],
+      "tolerances": []
+    },
+    {
+      "id": "shape",
+      "required_checks": [],
+      "excluded_checks": [
+        "此维不在本次范围"
+      ],
+      "tolerances": []
+    },
+    {
+      "id": "color",
+      "required_checks": [],
+      "excluded_checks": [
+        "此维不在本次范围"
+      ],
+      "tolerances": []
+    },
+    {
+      "id": "surface",
+      "required_checks": [],
+      "excluded_checks": [
+        "此维不在本次范围"
+      ],
+      "tolerances": []
+    },
+    {
+      "id": "relations",
+      "required_checks": [
+        "山脊的遮挡顺序保持"
+      ],
+      "excluded_checks": [],
+      "tolerances": []
+    }
+  ],
+  "reference_region": null,
+  "rendered_region": null,
+  "conditions": {
+    "reference_time": null,
+    "rendered_time": null,
+    "reference_background": null,
+    "rendered_background": null,
+    "comparison_notes": []
+  },
+  "source": {
+    "candidate_id": null,
+    "run_id": null
+  }
+}

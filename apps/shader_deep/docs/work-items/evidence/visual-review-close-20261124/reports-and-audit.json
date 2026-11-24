@@ -1,0 +1,1275 @@
+{
+  "base_revision": "2f08bdf6",
+  "run_directory": "visual-review-v2-close-20261124",
+  "runs": [
+    {
+      "phase": "bloom/before",
+      "case": "a",
+      "protocol": "v2",
+      "run": "a/run-ng329ykc",
+      "calls": 1,
+      "verdict": "needs_revision",
+      "usage": {
+        "input_tokens": 4106,
+        "output_tokens": 581,
+        "total_tokens": 4687
+      },
+      "model": "z-ai/glm-5.3-flash",
+      "input_sha256": "6fdd4ac3848d5f355c8a71cc8423d39e720b2cd2bb0fff11f5c2ce011a85eb8b",
+      "criteria_sha256": "c38dea2381e43726dec57cecc41578190c1d13201c489cb2aced934161843c50",
+      "image_sha256": {
+        "reference.png": "cc3b7292b6b8ed12c1aac90d4126dae2889601171fe695809ad05c904ed19658",
+        "rendered.png": "62c719635b68ae56a2751b4bc6973e2f29b697a009871a08fd63ab63b52a1be1"
+      },
+      "issue_audit": [
+        {
+          "id": "shape-49e22c908dd6-issue-1",
+          "assessment": "重大缺陷的对象、位置和未评项正确。impact 的“移出窗口下方”并无图像依据；整体严格不通过。"
+        }
+      ],
+      "case_audit": "重大缺陷的对象、位置和未评项正确。impact 的“移出窗口下方”并无图像依据；整体严格不通过。",
+      "submission": {
+        "summary": "在固定配对窗口内，参考图显示暖色发光体两侧亮边向下收拢并汇合成一个带圆角的清晰端点；候选图同区域端点不可辨，亮区以竖直亮带延伸至窗口下缘并出现底部暗色楔形缺口，构成 shape 维度重大差异。",
+        "dimensions": [
+          {
+            "id": "content",
+            "status": "not_applicable",
+            "rationale": "本轮仅检查指定边界表现",
+            "issue_ids": [],
+            "unassessed_ids": []
+          },
+          {
+            "id": "layout",
+            "status": "not_applicable",
+            "rationale": "本轮仅检查指定边界表现",
+            "issue_ids": [],
+            "unassessed_ids": []
+          },
+          {
+            "id": "shape",
+            "status": "major_gap",
+            "rationale": "比较窗口内两侧亮边是否在下方汇合成一个可辨的端点（允许圆角）: 本项检查配对窗口（716,139–817,210）内暖色发光主体的两侧亮边是否在下方汇合成一个可辨的端点（允许圆角）。参考图中两条亮边在窗口中下部明显向内收拢，底部以圆角汇合成一个清晰可辨的 V 形端点，端点两侧对称、下方与背景分界明确。候选图中同一窗口内亮区并未向下收拢汇合：中央保持一条较宽的竖直亮带，一直延伸到窗口底边附近，看不到两侧亮边交汇成端点的可辨形态，仅底部两角可见小段暗色背景楔入，端点形态缺失。端点位置、宽度、锐度等不在本轮评分范围，此处只判定端点是否保留可辨。\n比较整个暖色发光主体的完整轮廓与参考是否一致: 参考和候选视图未完整覆盖「比较整个暖色发光主体的完整轮廓与参考是否一致」的必查区域, 需要提供包含该部位的完整视图。",
+            "issue_ids": [
+              "shape-49e22c908dd6-issue-1"
+            ],
+            "unassessed_ids": [
+              "program-coverage-2"
+            ]
+          },
+          {
+            "id": "color",
+            "status": "not_applicable",
+            "rationale": "本轮仅检查指定边界表现",
+            "issue_ids": [],
+            "unassessed_ids": []
+          },
+          {
+            "id": "surface",
+            "status": "not_applicable",
+            "rationale": "本轮仅检查指定边界表现",
+            "issue_ids": [],
+            "unassessed_ids": []
+          },
+          {
+            "id": "relations",
+            "status": "not_applicable",
+            "rationale": "本轮仅检查指定边界表现",
+            "issue_ids": [],
+            "unassessed_ids": []
+          }
+        ],
+        "issues": [
+          {
+            "id": "shape-49e22c908dd6-issue-1",
+            "dimension": "shape",
+            "region": "窗口中下部（约 750–800, 170–210）",
+            "reference_observation": "参考图中两侧暖色亮边从窗口上部向下收拢，在窗口中下部汇合成一个圆润、可辨认的 V 形端点，端点下方是背景色。",
+            "rendered_observation": "候选图同区域未见汇合端点；亮区呈一条竖直亮带一直延伸到窗口下边缘，未在窗内收拢成端点，且窗口底部两角出现尖角状暗色缺口。",
+            "severity": "major",
+            "impact": "窗口内朝下汇合的可辨端点消失，必要目标未满足；表现为端点缺失或移出窗口下方。",
+            "check": "比较窗口内两侧亮边是否在下方汇合成一个可辨的端点（允许圆角）"
+          }
+        ],
+        "unassessed": [
+          {
+            "id": "program-coverage-2",
+            "dimension": "shape",
+            "subject": "比较整个暖色发光主体的完整轮廓与参考是否一致",
+            "reason": "参考和候选视图未完整覆盖「比较整个暖色发光主体的完整轮廓与参考是否一致」的必查区域, 需要提供包含该部位的完整视图。"
+          }
+        ],
+        "limitations": [
+          "仅获得 101×71 的局部窗口视图，只能评价窗内端点表现；窗外的整体轮廓与光晕依赖背景的关系无法核对，由程序按未覆盖项登记。"
+        ]
+      }
+    },
+    {
+      "phase": "bloom/before",
+      "case": "b",
+      "protocol": "v2",
+      "run": "b/run-yr58shi8",
+      "calls": 1,
+      "verdict": "needs_revision",
+      "usage": {
+        "input_tokens": 4110,
+        "output_tokens": 515,
+        "total_tokens": 4625
+      },
+      "model": "z-ai/glm-5.3-flash",
+      "input_sha256": "bdfccf88601033fce85d2d6a2cb20ee4a09f46588c635cc1be17ef2b70fd0a08",
+      "criteria_sha256": "c38dea2381e43726dec57cecc41578190c1d13201c489cb2aced934161843c50",
+      "image_sha256": {
+        "reference.png": "cc3b7292b6b8ed12c1aac90d4126dae2889601171fe695809ad05c904ed19658",
+        "rendered.png": "5c83246ecf9d5120f4a95b50fa38ca2dda3e7701c0b2e250a010a7ed35da070f"
+      },
+      "issue_audit": [
+        {
+          "id": "shape-49e22c908dd6-issue-1",
+          "assessment": "模型声称窗内没有汇合，实际偏左处存在允许的圆钝端点。重大问题、理由和 needs_revision 均错；整体轮廓未评正确。这次并非把锐度列为轻微。"
+        }
+      ],
+      "case_audit": "模型声称窗内没有汇合，实际偏左处存在允许的圆钝端点。重大问题、理由和 needs_revision 均错；整体轮廓未评正确。这次并非把锐度列为轻微。",
+      "submission": {
+        "summary": "在固定窗口 (716,139)-(817,210) 内, 参考图中暖色发光主体的两条亮边向下收窄并汇合成一个可辨的圆角端点; 候选图中该端点消失, 亮区以宽幅边界延伸出窗口底缘并向两侧扩展, 未形成向下汇合的端点。属重大形状差异。完整主体轮廓检查因视图未覆盖整个必查区域而无法评审。",
+        "dimensions": [
+          {
+            "id": "content",
+            "status": "not_applicable",
+            "rationale": "本轮仅检查指定边界表现",
+            "issue_ids": [],
+            "unassessed_ids": []
+          },
+          {
+            "id": "layout",
+            "status": "not_applicable",
+            "rationale": "本轮仅检查指定边界表现",
+            "issue_ids": [],
+            "unassessed_ids": []
+          },
+          {
+            "id": "shape",
+            "status": "major_gap",
+            "rationale": "比较窗口内两侧亮边是否在下方汇合成一个可辨的端点（允许圆角）: 参考图中, 窗口内左右两条亮边向下逐渐收窄, 在窗口下部约中央位置汇合成一个可辨的圆角端点, 端点以下的区域为粉紫色背景。候选图中, 亮区同样从上方进入窗口, 但两条亮边没有向下收拢汇合: 下侧边界在窗口内保持宽幅, 亮黄色主体一直延伸到窗口底缘, 并在窗口中下方向左右两侧扩展 (尤其右下方更宽), 未形成任何可辨的向下汇合端点。因此必要目标『两侧亮边在下方汇合成可辨端点』未满足。\n比较整个暖色发光主体的完整轮廓与参考是否一致: 参考和候选视图未完整覆盖「比较整个暖色发光主体的完整轮廓与参考是否一致」的必查区域, 需要提供包含该部位的完整视图。",
+            "issue_ids": [
+              "shape-49e22c908dd6-issue-1"
+            ],
+            "unassessed_ids": [
+              "program-coverage-2"
+            ]
+          },
+          {
+            "id": "color",
+            "status": "not_applicable",
+            "rationale": "本轮仅检查指定边界表现",
+            "issue_ids": [],
+            "unassessed_ids": []
+          },
+          {
+            "id": "surface",
+            "status": "not_applicable",
+            "rationale": "本轮仅检查指定边界表现",
+            "issue_ids": [],
+            "unassessed_ids": []
+          },
+          {
+            "id": "relations",
+            "status": "not_applicable",
+            "rationale": "本轮仅检查指定边界表现",
+            "issue_ids": [],
+            "unassessed_ids": []
+          }
+        ],
+        "issues": [
+          {
+            "id": "shape-49e22c908dd6-issue-1",
+            "dimension": "shape",
+            "region": "采集窗口 (716,139)-(817,210) 的下中部",
+            "reference_observation": "两侧亮边在窗口下部中央汇合, 形成一个明显的圆角尖端 (倒 V 形端点), 下方为背景粉紫色调。",
+            "rendered_observation": "亮区向下延伸到窗口底缘并侧向展开, 未在下方汇合成点; 中央下侧没有对应的尖端, 而是宽阔连续的亮黄-橙色边界。",
+            "severity": "major",
+            "impact": "参考中窗口内下方汇合成一个可辨的圆角端点, 候选在同一窗口内没有此端点, 未满足『保留可辨端点』的必要目标。",
+            "check": "比较窗口内两侧亮边是否在下方汇合成一个可辨的端点（允许圆角）"
+          }
+        ],
+        "unassessed": [
+          {
+            "id": "program-coverage-2",
+            "dimension": "shape",
+            "subject": "比较整个暖色发光主体的完整轮廓与参考是否一致",
+            "reason": "参考和候选视图未完整覆盖「比较整个暖色发光主体的完整轮廓与参考是否一致」的必查区域, 需要提供包含该部位的完整视图。"
+          }
+        ],
+        "limitations": [
+          "仅有 (716,139)-(817,210) 局部窗口视图, 端点在完整主体轮廓中的位置及主体整体轮廓一致性无法评审, 依据程序登记为未覆盖。",
+          "未提供区域采样或亮度测量, 判断仅基于视觉观察。"
+        ]
+      }
+    },
+    {
+      "phase": "pairs",
+      "case": "circuit",
+      "protocol": "v1",
+      "run": "circuit-v1/run-2737_1le",
+      "calls": 1,
+      "verdict": "needs_revision",
+      "usage": {
+        "input_tokens": 2542,
+        "output_tokens": 875,
+        "total_tokens": 3417
+      },
+      "model": "z-ai/glm-5.3-flash",
+      "input_sha256": "baed3cbe7e861f2180aab4d714af181f76c1dbeed883101ebdd70664a477e44f",
+      "criteria_sha256": "7bb59cda8246f41d4c60aec81067139e996cb66fb9413756f1e0ad7b6b04e031",
+      "image_sha256": {
+        "reference.png": "fb9ac8db9be6c8ca2281014eb7a21419abad4cd64851e0eb53bcfd27001668b5",
+        "rendered.png": "143f9f34f99286b8d371962025962531ea68f5b68d055d51f494db76602f8203"
+      },
+      "issue_audit": [
+        {
+          "id": "R1",
+          "truth": "上路断口",
+          "match": true,
+          "reason": "主线路确实断开。V1 描述靠近转折处，实际缺口在平直段；导电功能只是对画面的推断。"
+        },
+        {
+          "id": "S1",
+          "truth": "右上框加粗",
+          "match": false,
+          "reason": "实际描边从2增至6像素，V1将参考与候选的粗细方向写反。"
+        }
+      ],
+      "case_audit": "真值两项，允许走线换色。两版主结论均正确。",
+      "submission": {
+        "summary": "在绑定的两项检查中，右上矩形框仍存在但边线明显变细（轻微）；上方主线路在斜坡与水平段衔接处出现中断（重大）。线路整体由青绿变为蓝色属允许范围，不计差异。",
+        "dimensions": [
+          {
+            "id": "content",
+            "status": "not_applicable",
+            "rationale": "绑定说明本维不在本次范围，无必查内容。",
+            "issue_ids": [],
+            "unassessed_ids": []
+          },
+          {
+            "id": "layout",
+            "status": "not_applicable",
+            "rationale": "绑定说明本维不在本次范围，无必查内容。",
+            "issue_ids": [],
+            "unassessed_ids": []
+          },
+          {
+            "id": "shape",
+            "status": "minor_gap",
+            "rationale": "右上矩形框在渲染图中仍存在且位置一致，但边线粗细明显比参考更细，按绑定要求属轻微差异。",
+            "issue_ids": [
+              "S1"
+            ],
+            "unassessed_ids": []
+          },
+          {
+            "id": "color",
+            "status": "not_applicable",
+            "rationale": "绑定说明本维不在本次范围；线路由青绿变为蓝色已被明确允许，不构成差异。",
+            "issue_ids": [],
+            "unassessed_ids": []
+          },
+          {
+            "id": "surface",
+            "status": "not_applicable",
+            "rationale": "绑定说明本维不在本次范围，无必查内容。",
+            "issue_ids": [],
+            "unassessed_ids": []
+          },
+          {
+            "id": "relations",
+            "status": "major_gap",
+            "rationale": "参考中主线路从左端圆点经斜坡到右上弯折再到右端圆点连续不断，渲染图中在斜坡顶端与水平段衔接处（约画面上中部）出现可见缺口，主线路连续性被破坏，属绑定声明的重大问题。",
+            "issue_ids": [
+              "R1"
+            ],
+            "unassessed_ids": []
+          }
+        ],
+        "issues": [
+          {
+            "id": "R1",
+            "dimension": "relations",
+            "region": "上方主线路中部（约 x≈95–125, y≈55–60 处的衔接段）",
+            "reference_observation": "主线路从左端圆点起，经斜坡上升到顶部水平段并连续延伸到右侧弯折下坡至右端圆点，全程连续无缺口。",
+            "rendered_observation": "在斜坡顶端与水平段衔接处出现明显断口，线路中断为两段，透出深色背景。",
+            "severity": "major",
+            "impact": "主线路的连续导电通路关系被破坏，符合绑定声明的重大问题。",
+            "check": "主线路从左端到右端必须连续"
+          },
+          {
+            "id": "S1",
+            "dimension": "shape",
+            "region": "右上角矩形框（约 x≈155–195, y≈12–35）",
+            "reference_observation": "右上矩形框存在，边线为较粗的圆角描边。",
+            "rendered_observation": "矩形框仍存在且位置、尺寸基本一致，但边线明显变细。",
+            "severity": "minor",
+            "impact": "描边粗细变化削弱线条视觉分量，但矩形框目标仍可识别，属绑定声明的轻微差异。",
+            "check": "右上矩形框存在且边线粗细符合参考"
+          }
+        ],
+        "unassessed": [],
+        "limitations": [
+          "仅按绑定检查两项内容（主线路连续性与右上矩形框边线粗细），其余维度均不在本次范围。",
+          "基于 216×144 小尺寸整图目视比较，未做像素级测量。"
+        ]
+      }
+    },
+    {
+      "phase": "pairs",
+      "case": "circuit",
+      "protocol": "v2",
+      "run": "circuit-v2/run-zoslyw2t",
+      "calls": 2,
+      "verdict": "needs_revision",
+      "usage": {
+        "input_tokens": 7850,
+        "output_tokens": 565,
+        "total_tokens": 8415
+      },
+      "model": "z-ai/glm-5.3-flash",
+      "input_sha256": "70885a08a6db74d67b5018d9b13511a9b0ceb833d356e2706d8ce9b263552aca",
+      "criteria_sha256": "521eb41071ab4c36b3ff4e63949358bcc17434c6c84a9cb923ca0456e499fca8",
+      "image_sha256": {
+        "reference.png": "fb9ac8db9be6c8ca2281014eb7a21419abad4cd64851e0eb53bcfd27001668b5",
+        "rendered.png": "143f9f34f99286b8d371962025962531ea68f5b68d055d51f494db76602f8203"
+      },
+      "issue_audit": [
+        {
+          "id": "shape-3f70e634fbfb-issue-1",
+          "truth": "右上框加粗",
+          "match": true,
+          "reason": "变粗方向和轻微等级正确。把它称作“允许的轻微变化”不够严谨：任务把粗细变化列为轻微，真正免评的是走线色相。"
+        },
+        {
+          "id": "relations-6762d478963c-issue-1",
+          "truth": "上路断口",
+          "match": true,
+          "reason": "对象、水平段位置、断开方向与重大等级均正确。"
+        }
+      ],
+      "case_audit": "真值两项，允许走线换色。两版主结论均正确。",
+      "submission": {
+        "summary": "对照参考图与候选图（均为 216×144）：形状方面，右上米黄色矩形框在候选中仍存在且位置一致，仅边线略粗、角部略圆钝，属任务说明允许的轻微变化；关系方面，参考中从左端节点连续延伸至右端的上方主线路，在候选中该线路水平段中部出现明显断口，线路中断，构成重大差异。允许的青绿变蓝未作为差异登记。",
+        "dimensions": [
+          {
+            "id": "content",
+            "status": "not_applicable",
+            "rationale": "此维不在本次范围",
+            "issue_ids": [],
+            "unassessed_ids": []
+          },
+          {
+            "id": "layout",
+            "status": "not_applicable",
+            "rationale": "此维不在本次范围",
+            "issue_ids": [],
+            "unassessed_ids": []
+          },
+          {
+            "id": "shape",
+            "status": "minor_gap",
+            "rationale": "右上矩形框存在且边线粗细符合参考: 两图右上角均存在米黄色矩形框，位置与大小一致；参考图矩形边线较细，候选图边线略粗且角部更显圆钝，符合任务说明中‘边线粗细变化属轻微’的容差。",
+            "issue_ids": [
+              "shape-3f70e634fbfb-issue-1"
+            ],
+            "unassessed_ids": []
+          },
+          {
+            "id": "color",
+            "status": "not_applicable",
+            "rationale": "此维不在本次范围",
+            "issue_ids": [],
+            "unassessed_ids": []
+          },
+          {
+            "id": "surface",
+            "status": "not_applicable",
+            "rationale": "此维不在本次范围",
+            "issue_ids": [],
+            "unassessed_ids": []
+          },
+          {
+            "id": "relations",
+            "status": "major_gap",
+            "rationale": "主线路从左端到右端必须连续: 参考图中上方主线路从左端节点经斜升段连续延伸至右端向下弯折接圆点；候选图在上方水平段中部出现明显断口，线路中断，不满足连续性要求。",
+            "issue_ids": [
+              "relations-6762d478963c-issue-1"
+            ],
+            "unassessed_ids": []
+          }
+        ],
+        "issues": [
+          {
+            "id": "shape-3f70e634fbfb-issue-1",
+            "dimension": "shape",
+            "region": "右上角矩形框",
+            "reference_observation": "米黄色矩形框，边线较细，四角略圆",
+            "rendered_observation": "矩形框仍在原位，边线明显略粗，角部圆钝感更强",
+            "severity": "minor",
+            "impact": "矩形框存在且位置不变，仅线宽变粗，属任务允许的轻微变化",
+            "check": "右上矩形框存在且边线粗细符合参考"
+          },
+          {
+            "id": "relations-6762d478963c-issue-1",
+            "dimension": "relations",
+            "region": "上方主线路水平段中部（约图宽中点偏左）",
+            "reference_observation": "青绿色主线在此处连续无缺口",
+            "rendered_observation": "蓝色主线路在此处断开，留有一小段空白，左右两段不相连",
+            "severity": "major",
+            "impact": "主线路从左端到右端不再连续，直接违反本项必要要求",
+            "check": "主线路从左端到右端必须连续"
+          }
+        ],
+        "unassessed": [],
+        "limitations": [
+          "仅按要求检查形状与关系两项，其他维度不在本轮范围",
+          "静态图像仅支持当前时间点判断"
+        ]
+      }
+    },
+    {
+      "phase": "pairs",
+      "case": "ridges",
+      "protocol": "v2",
+      "run": "ridges-v2/run-g90d9zi8",
+      "calls": 1,
+      "verdict": "no_major_issue_observed",
+      "usage": {
+        "input_tokens": 3582,
+        "output_tokens": 655,
+        "total_tokens": 4237
+      },
+      "model": "z-ai/glm-5.3-flash",
+      "input_sha256": "322ebd0cf3aaa997a815afb442ab8e240c9f9ebdb5b1b3112a57f4930c381308",
+      "criteria_sha256": "801309850ff77acea981bc9e46408e817d80cf99181b0c48b28587c0f9490cac",
+      "image_sha256": {
+        "reference.png": "412587e11908c463ebfcba8db8cd24edba624a3b8c8e20e9f85eead7f4f92f3c",
+        "rendered.png": "9d00510dd6da020ea32c6d2e94c684a88fddf594c92fe7c1dbcf13f94e667dd2"
+      },
+      "issue_audit": [],
+      "case_audit": "三层、层次次序相同，允许换天空配色。无报告问题，结论正确。",
+      "submission": {
+        "summary": "候选图与参考图在两项必查内容上均相符：三个层叠山脊（浅灰蓝远脊、中蓝灰中脊、深藏青近脊）全部存在，位置与轮廓一致；遮挡顺序保持不变，均为近脊在前、中脊居中遮挡远脊，遮挡边界走向一致。唯一可见差异是整片天空由蓝灰渐变换为粉紫渐变，属本次明示允许且不评分的范围。",
+        "dimensions": [
+          {
+            "id": "content",
+            "status": "match",
+            "rationale": "三个层叠山脊均存在: 参考图自上而下可见三层山脊：最上层浅灰蓝脊（顶部约 y≈45 起，左低右高，右侧峰明显）、中层蓝灰脊、最下层深藏青近脊。候选图三层同样全部存在，各脊的轮廓走向和相对位置与参考一一对应，无山脊缺失、合并或被天空填充的情况。",
+            "issue_ids": [],
+            "unassessed_ids": []
+          },
+          {
+            "id": "layout",
+            "status": "not_applicable",
+            "rationale": "此维不在本次范围",
+            "issue_ids": [],
+            "unassessed_ids": []
+          },
+          {
+            "id": "shape",
+            "status": "not_applicable",
+            "rationale": "此维不在本次范围",
+            "issue_ids": [],
+            "unassessed_ids": []
+          },
+          {
+            "id": "color",
+            "status": "not_applicable",
+            "rationale": "此维不在本次范围",
+            "issue_ids": [],
+            "unassessed_ids": []
+          },
+          {
+            "id": "surface",
+            "status": "not_applicable",
+            "rationale": "此维不在本次范围",
+            "issue_ids": [],
+            "unassessed_ids": []
+          },
+          {
+            "id": "relations",
+            "status": "match",
+            "rationale": "山脊的遮挡顺序保持: 两图的遮挡关系一致：深色近脊在前，遮住中层蓝灰脊的下缘；中层脊遮住最远浅灰蓝脊的下缘，三层前后顺序（近→中→远）保持。遮挡交界线的位置和走向在两图中对应，未出现遮挡顺序颠倒或层间分离。天空整体由蓝灰渐变换为粉紫渐变，属允许范围且不影响山脊间遮挡关系。",
+            "issue_ids": [],
+            "unassessed_ids": []
+          }
+        ],
+        "issues": [],
+        "unassessed": [],
+        "limitations": [
+          "静态帧仅支持当前时间点判断。",
+          "天空颜色与纹理按任务说明不评分，未对天空渐变做进一步比对。",
+          "整图分辨率较低（216×144），山脊轮廓的细微曲率差异不在本次必查范围内，未逐点测量。"
+        ]
+      }
+    },
+    {
+      "phase": "pairs",
+      "case": "ridges",
+      "protocol": "v1",
+      "run": "ridges-v1/run-s5l4p7wm",
+      "calls": 1,
+      "verdict": "no_major_issue_observed",
+      "usage": {
+        "input_tokens": 2521,
+        "output_tokens": 570,
+        "total_tokens": 3091
+      },
+      "model": "z-ai/glm-5.3-flash",
+      "input_sha256": "7866068e7610b17a9bd143e08aea76bc1bd3a1cc71fafebb231bcddaab144551",
+      "criteria_sha256": "4bc7c65cb36c131606ff9ce51bc69197999ee6bcc61e7d4133820ecc614a9321",
+      "image_sha256": {
+        "reference.png": "412587e11908c463ebfcba8db8cd24edba624a3b8c8e20e9f85eead7f4f92f3c",
+        "rendered.png": "9d00510dd6da020ea32c6d2e94c684a88fddf594c92fe7c1dbcf13f94e667dd2"
+      },
+      "issue_audit": [],
+      "case_audit": "三层、层次次序相同，允许换天空配色。无报告问题，结论正确。",
+      "submission": {
+        "summary": "按固定范围检查三层山脊的存在与遮挡顺序。参考图中三层山脊自前向后层叠：深色前景山脊、中景偏蓝灰山脊、后景浅色山脊，渲染图中同样呈现三层山脊且轮廓、位置与遮挡顺序一致；天空整片由蓝色渐变换为粉红渐变，属于明确允许的配色更换，不评分。未见超出要求的偏差。",
+        "dimensions": [
+          {
+            "id": "content",
+            "status": "match",
+            "rationale": "必查项『三个层叠山脊均存在』成立：渲染图中前景深色山脊、中景偏蓝灰山脊、后景浅色山脊三层均可见，数量与参考一致，无缺失或多余对象。",
+            "issue_ids": [],
+            "unassessed_ids": []
+          },
+          {
+            "id": "layout",
+            "status": "not_applicable",
+            "rationale": "绑定范围排除此维：『此维不在本次范围』，故不做位置、比例、朝向与间距的比较。",
+            "issue_ids": [],
+            "unassessed_ids": []
+          },
+          {
+            "id": "shape",
+            "status": "not_applicable",
+            "rationale": "绑定范围排除此维：『此维不在本次范围』，不做轮廓与曲率比较。",
+            "issue_ids": [],
+            "unassessed_ids": []
+          },
+          {
+            "id": "color",
+            "status": "not_applicable",
+            "rationale": "绑定范围排除此维：『此维不在本次范围』；且天空整片配色更换（蓝渐变→粉红渐变）为明确允许项，不评分。",
+            "issue_ids": [],
+            "unassessed_ids": []
+          },
+          {
+            "id": "surface",
+            "status": "not_applicable",
+            "rationale": "绑定范围排除此维：『此维不在本次范围』，不做纹理与平滑度比较。",
+            "issue_ids": [],
+            "unassessed_ids": []
+          },
+          {
+            "id": "relations",
+            "status": "match",
+            "rationale": "必查项『山脊的遮挡顺序保持』成立：渲染图中后景浅色山脊被中景山脊遮挡下缘，中景山脊被前景深色山脊遮挡下缘，与参考图的从前到后遮挡先后一致，未出现透显或顺序颠倒。",
+            "issue_ids": [],
+            "unassessed_ids": []
+          }
+        ],
+        "issues": [],
+        "unassessed": [],
+        "limitations": [
+          "仅依据 216×144 低分辨率缩略图比较，山脊轮廓细节仅能到像素级可见程度；天空颜色与纹理按绑定要求不评分。"
+        ]
+      }
+    },
+    {
+      "phase": "pairs",
+      "case": "coast",
+      "protocol": "v1",
+      "run": "coast-v1/run-bu9hxahw",
+      "calls": 2,
+      "verdict": "needs_revision",
+      "usage": {
+        "input_tokens": 6359,
+        "output_tokens": 1362,
+        "total_tokens": 7721
+      },
+      "model": "z-ai/glm-5.3-flash",
+      "input_sha256": "c91808289858eea94f39b3942f21007d1ef1410d4fcf3ab0734f3027d3a2fc3f",
+      "criteria_sha256": "922d99f68a3cbffe174d04b06aaa1a97a38a6f251ecd615a5116c4e3941a42d0",
+      "image_sha256": {
+        "reference.png": "1606b6c6c7a6311386edc03462b1587c045c3ba28a7a8dc74f0533eb702cf48a",
+        "rendered.png": "5786fe2c68071fbdb0b8e00a688fe47a3681ca1e8ef3f980cdbc244dba63ee5e"
+      },
+      "issue_audit": [
+        {
+          "id": "content-1",
+          "truth": "塔身下方红带缺失",
+          "match": true,
+          "reason": "下带缺失及重大等级正确。V1 外推整体辨识度下降，并给出不精确的行坐标；画面只支持窗内条带减少。"
+        }
+      ],
+      "case_audit": "缺带须修改；唯一未评为灯室，由程序覆盖检查产生，并非模型额外发现的缺陷。",
+      "submission": {
+        "summary": "视图覆盖不足, 1 个必查项未评。已记录 1 个可见差异。",
+        "dimensions": [
+          {
+            "id": "content",
+            "status": "major_gap",
+            "rationale": "必查项「输入窗口内塔身保留两条分离的红色横带」未满足：参考窗口 (75,48)-(137,105) 内可见上、下两条分离的暗红色横带，带间与带下均为米白色塔身；渲染窗口同坐标仅剩上端一条暗红色横带，原下带区域整段变为米白色空白，无任何红带痕迹。两条红带均为必要组成，少一条即重大。塔顶灯室必查项不在本次窗口覆盖内，保留程序未评项。 参考和候选视图未完整覆盖「塔顶灯室保留完整」的必查区域, 需要提供包含该部位的完整视图。",
+            "issue_ids": [
+              "content-1"
+            ],
+            "unassessed_ids": [
+              "program-coverage-2"
+            ]
+          },
+          {
+            "id": "layout",
+            "status": "not_applicable",
+            "rationale": "绑定排除「此维不在本次范围」，无必查项，不评。",
+            "issue_ids": [],
+            "unassessed_ids": []
+          },
+          {
+            "id": "shape",
+            "status": "not_applicable",
+            "rationale": "绑定���除「此维不在本次范围」，无必查项，不评。",
+            "issue_ids": [],
+            "unassessed_ids": []
+          },
+          {
+            "id": "color",
+            "status": "not_applicable",
+            "rationale": "绑定排除「此维不在本次范围」，无必查项，不评；本次已允许色差。",
+            "issue_ids": [],
+            "unassessed_ids": []
+          },
+          {
+            "id": "surface",
+            "status": "not_applicable",
+            "rationale": "绑定排除「此维不在本次范围」，无必查项，不评；本次已允许锐度差。",
+            "issue_ids": [],
+            "unassessed_ids": []
+          },
+          {
+            "id": "relations",
+            "status": "not_applicable",
+            "rationale": "绑定排除「此维不在本次范围」，无必查项，不评。",
+            "issue_ids": [],
+            "unassessed_ids": []
+          }
+        ],
+        "issues": [
+          {
+            "id": "content-1",
+            "dimension": "content",
+            "region": "采集窗口 (75,48)-(137,105) 下半部塔身",
+            "reference_observation": "窗口内塔身有两条分离的暗红色横带：上带位于窗口上部约 y=55-62，下带位于窗口下部约 y=90-97，两带之间及下带以下均为米白色塔身。",
+            "rendered_observation": "窗口内仅保留上部一条暗红色横带（约 y=52-60），原下带位置整段为米白色空白，无红带或其残留痕迹。",
+            "severity": "major",
+            "impact": "塔身红色横带由两条减为一条，破坏灯塔的必要组成特征，整体辨识度明显下降。",
+            "check": "输入窗口内塔身保留两条分离的红色横带"
+          }
+        ],
+        "unassessed": [
+          {
+            "id": "program-coverage-2",
+            "dimension": "content",
+            "subject": "塔顶灯室保留完整",
+            "reason": "参考和候选视图未完整覆盖「塔顶灯室保留完整」的必查区域, 需要提供包含该部位的完整视图。"
+          }
+        ],
+        "limitations": [
+          "塔顶灯室必查区域 (65,5)-(147,29) 未被参考与候选视图完整覆盖，无法评价其是否保留完整（程序已登记）。",
+          "仅比较固定窗口内内容，窗口外的塔身与整体构图不在本次范围。"
+        ]
+      }
+    },
+    {
+      "phase": "pairs",
+      "case": "coast",
+      "protocol": "v2",
+      "run": "coast-v2/run-paqm9ed2",
+      "calls": 2,
+      "verdict": "needs_revision",
+      "usage": {
+        "input_tokens": 8093,
+        "output_tokens": 417,
+        "total_tokens": 8510
+      },
+      "model": "z-ai/glm-5.3-flash",
+      "input_sha256": "2d2d27c5c9d6e5879ea56b1229a999858566355bae96570172b1873b306cd80c",
+      "criteria_sha256": "87060de7bd71dd9f547548bbf79ccdc0c9850ce1fe9ef27154eb385929366561",
+      "image_sha256": {
+        "reference.png": "1606b6c6c7a6311386edc03462b1587c045c3ba28a7a8dc74f0533eb702cf48a",
+        "rendered.png": "5786fe2c68071fbdb0b8e00a688fe47a3681ca1e8ef3f980cdbc244dba63ee5e"
+      },
+      "issue_audit": [
+        {
+          "id": "content-c22c02a3f055-issue-1",
+          "truth": "塔身下方红带缺失",
+          "match": true,
+          "reason": "两条变为一条、上带保留、下带缺失，必要目标及影响成立。"
+        }
+      ],
+      "case_audit": "缺带须修改；唯一未评为灯室，由程序覆盖检查产生，并非模型额外发现的缺陷。",
+      "submission": {
+        "summary": "窗口 (75,48)-(137,105) 局部对比：参考塔身在窗口上部与下部各有一条暗红色横带，中间以浅米色塔身分隔，两带清晰分离；候选仅在上部保留一条暗红色横带，下部为连续米色，第二条红带缺失，属重大内容缺失。窗内其余米色塔身底色基本一致。塔顶灯室在本轮双图中均不可见，该必查项由程序登记为未评。",
+        "dimensions": [
+          {
+            "id": "content",
+            "status": "major_gap",
+            "rationale": "输入窗口内塔身保留两条分离的红色横带: 参考窗口内可见两条分离的暗红色横带，上带位于窗口上部、下带位于窗口下部，中间为浅米色塔身；候选窗口内仅在上部可见一条暗红色横带，其下方直到窗口底部均为浅米色，未出现第二条红带。\n塔顶灯室保留完整: 参考和候选视图未完整覆盖「塔顶灯室保留完整」的必查区域, 需要提供包含该部位的完整视图。",
+            "issue_ids": [
+              "content-c22c02a3f055-issue-1"
+            ],
+            "unassessed_ids": [
+              "program-coverage-2"
+            ]
+          },
+          {
+            "id": "layout",
+            "status": "not_applicable",
+            "rationale": "此维不在本次范围",
+            "issue_ids": [],
+            "unassessed_ids": []
+          },
+          {
+            "id": "shape",
+            "status": "not_applicable",
+            "rationale": "此维不在本次范围",
+            "issue_ids": [],
+            "unassessed_ids": []
+          },
+          {
+            "id": "color",
+            "status": "not_applicable",
+            "rationale": "此维不在本次范围",
+            "issue_ids": [],
+            "unassessed_ids": []
+          },
+          {
+            "id": "surface",
+            "status": "not_applicable",
+            "rationale": "此维不在本次范围",
+            "issue_ids": [],
+            "unassessed_ids": []
+          },
+          {
+            "id": "relations",
+            "status": "not_applicable",
+            "rationale": "此维不在本次范围",
+            "issue_ids": [],
+            "unassessed_ids": []
+          }
+        ],
+        "issues": [
+          {
+            "id": "content-c22c02a3f055-issue-1",
+            "dimension": "content",
+            "region": "窗口下半部 (75,75)-(137,105) 附近",
+            "reference_observation": "窗口下部有一条横向暗红色红带，与上部红带之间隔有米色塔身，两条红带清晰分离",
+            "rendered_observation": "窗口下部为纯米色塔身，无红带，仅上部保留一条红带",
+            "severity": "major",
+            "impact": "两条分离红带是必要组成，少一条即重大，本项必要要求未满足",
+            "check": "输入窗口内塔身保留两条分离的红色横带"
+          }
+        ],
+        "unassessed": [
+          {
+            "id": "program-coverage-2",
+            "dimension": "content",
+            "subject": "塔顶灯室保留完整",
+            "reason": "参考和候选视图未完整覆盖「塔顶灯室保留完整」的必查区域, 需要提供包含该部位的完整视图。"
+          }
+        ],
+        "limitations": [
+          "本轮两图均为 (75,48)-(137,105) 局部采集窗口，塔身与红带判断仅限该窗口范围。",
+          "塔顶灯室保留完整一必查项因双图均未覆盖 (65,5)-(147,29) 区域而未评，需补含该部位的完整视图。"
+        ]
+      }
+    },
+    {
+      "phase": "bloom/after",
+      "case": "a",
+      "protocol": "v2",
+      "run": "a/run-j_cpsrnj",
+      "calls": 1,
+      "verdict": "needs_revision",
+      "usage": {
+        "input_tokens": 4169,
+        "output_tokens": 516,
+        "total_tokens": 4685
+      },
+      "model": "z-ai/glm-5.3-flash",
+      "input_sha256": "803dd2c4f6eeca236a65c43978bc8224c675d8d86913f741c9857e5e4b3ca57a",
+      "criteria_sha256": "4eabdcdd5aac6ee0ffbfd11b1c7de036ebdc99c0fb9443c8e332b11d3ae1c9d6",
+      "image_sha256": {
+        "reference.png": "cc3b7292b6b8ed12c1aac90d4126dae2889601171fe695809ad05c904ed19658",
+        "rendered.png": "62c719635b68ae56a2751b4bc6973e2f29b697a009871a08fd63ab63b52a1be1"
+      },
+      "issue_audit": [
+        {
+          "id": "shape-49e22c908dd6-issue-1",
+          "assessment": "窗内缺少汇合属实。描述亮区延伸至 PNG 底边是可见的边界事实，未声称实际端点在窗外。impact 与 needs_revision 成立，完整轮廓未评。渐隐属于非必要外观描述。"
+        }
+      ],
+      "case_audit": "窗内缺少汇合属实。描述亮区延伸至 PNG 底边是可见的边界事实，未声称实际端点在窗外。impact 与 needs_revision 成立，完整轮廓未评。渐隐属于非必要外观描述。",
+      "submission": {
+        "summary": "在指定窗口内，参考图两侧亮边在下方汇合成一个圆角可辨端点；候选图窗口内亮区被底缘截断并渐隐，未形成汇合端点，违反本轮必要形状要求。主体完整轮廓因视图覆盖不足未评。",
+        "dimensions": [
+          {
+            "id": "content",
+            "status": "not_applicable",
+            "rationale": "本轮仅检查指定边界表现",
+            "issue_ids": [],
+            "unassessed_ids": []
+          },
+          {
+            "id": "layout",
+            "status": "not_applicable",
+            "rationale": "本轮仅检查指定边界表现",
+            "issue_ids": [],
+            "unassessed_ids": []
+          },
+          {
+            "id": "shape",
+            "status": "major_gap",
+            "rationale": "比较窗口内两侧亮边是否在下方汇合成一个可辨的端点（允许圆角）: 参考图窗口内可见两侧亮边向下收窄，在中下部汇合为一个圆角、可辨的端点，端点下方可见背景色。候选图同一窗口内，亮区一直延伸到底缘并被窗口截断，中央底部没有形成汇合的可辨端点，看不到两侧亮边闭合的顶点。\n比较整个暖色发光主体的完整轮廓与参考是否一致: 参考和候选视图未完整覆盖「比较整个暖色发光主体的完整轮廓与参考是否一致」的必查区域, 需要提供包含该部位的完整视图。",
+            "issue_ids": [
+              "shape-49e22c908dd6-issue-1"
+            ],
+            "unassessed_ids": [
+              "program-coverage-2"
+            ]
+          },
+          {
+            "id": "color",
+            "status": "not_applicable",
+            "rationale": "本轮仅检查指定边界表现",
+            "issue_ids": [],
+            "unassessed_ids": []
+          },
+          {
+            "id": "surface",
+            "status": "not_applicable",
+            "rationale": "本轮仅检查指定边界表现",
+            "issue_ids": [],
+            "unassessed_ids": []
+          },
+          {
+            "id": "relations",
+            "status": "not_applicable",
+            "rationale": "本轮仅检查指定边界表现",
+            "issue_ids": [],
+            "unassessed_ids": []
+          }
+        ],
+        "issues": [
+          {
+            "id": "shape-49e22c908dd6-issue-1",
+            "dimension": "shape",
+            "region": "窗口下部中央（约 x 45–60, y 50–71 采集窗口坐标）",
+            "reference_observation": "两侧亮边（左上、右上）向下延伸，在窗口中下部汇合成一个圆角、可辨的 V 形端点，端点以下为粉紫背景。",
+            "rendered_observation": "整个窗口几乎被亮黄色发光区占据，底部无汇合端点，两侧亮边没有在下方闭合，底缘呈截断并向下渐隐，无独立可辨的圆角顶点。",
+            "severity": "major",
+            "impact": "窗口内保留可辨的汇合端点是本轮必要目标；候选缺失该端点，形状要求未满足。",
+            "check": "比较窗口内两侧亮边是否在下方汇合成一个可辨的端点（允许圆角）"
+          }
+        ],
+        "unassessed": [
+          {
+            "id": "program-coverage-2",
+            "dimension": "shape",
+            "subject": "比较整个暖色发光主体的完整轮廓与参考是否一致",
+            "reason": "参考和候选视图未完整覆盖「比较整个暖色发光主体的完整轮廓与参考是否一致」的必查区域, 需要提供包含该部位的完整视图。"
+          }
+        ],
+        "limitations": [
+          "仅提供 101×71 局部窗口视图，整个发光主体完整轮廓的比对（required_regions 中第二个 shape 检查）无覆盖，无法判断。",
+          "无区域采样测量，端点位置、宽度、锐度等不评分项也未量化。"
+        ]
+      }
+    },
+    {
+      "phase": "bloom/after",
+      "case": "b",
+      "protocol": "v2",
+      "run": "b/run-wul1vroz",
+      "calls": 1,
+      "verdict": "inconclusive",
+      "usage": {
+        "input_tokens": 4169,
+        "output_tokens": 300,
+        "total_tokens": 4469
+      },
+      "model": "z-ai/glm-5.3-flash",
+      "input_sha256": "bc5bfea8a5b3538438454986c070b4763fb1fdfc0d318d8fe6f0ecc0e7f84fa7",
+      "criteria_sha256": "4eabdcdd5aac6ee0ffbfd11b1c7de036ebdc99c0fb9443c8e332b11d3ae1c9d6",
+      "image_sha256": {
+        "reference.png": "cc3b7292b6b8ed12c1aac90d4126dae2889601171fe695809ad05c904ed19658",
+        "rendered.png": "5c83246ecf9d5120f4a95b50fa38ca2dda3e7701c0b2e250a010a7ed35da070f"
+      },
+      "issue_audit": [],
+      "case_audit": "无问题，窗内可辨端点的理由成立，允许的圆角未计入问题。完整轮廓未评，inconclusive 成立。摘要“同一位置”至多可指同一采集区域；若按端点坐标相同理解则错误，不能作为定位依据。",
+      "submission": {
+        "summary": "窗口内两侧亮边在参考图中于下方汇合成一个清晰的 V 形端点，端点圆润可辨；候选图中同一位置也保留了朝下汇合的端点，形状为圆角汇合，端点可见性一致。主体完整轮廓的必查区域未被窗口完整覆盖，已由程序登记为未评。",
+        "dimensions": [
+          {
+            "id": "content",
+            "status": "not_applicable",
+            "rationale": "本轮仅检查指定边界表现",
+            "issue_ids": [],
+            "unassessed_ids": []
+          },
+          {
+            "id": "layout",
+            "status": "not_applicable",
+            "rationale": "本轮仅检查指定边界表现",
+            "issue_ids": [],
+            "unassessed_ids": []
+          },
+          {
+            "id": "shape",
+            "status": "uncertain",
+            "rationale": "比较窗口内两侧亮边是否在下方汇合成一个可辨的端点（允许圆角）: 参考窗口（716,139–817,210）中，暖色发光主体两侧亮边在窗口下方向中汇合，形成一个清晰的 V 形端点，端点略带圆角、可辨识。候选窗口同样显示两条亮边向下方汇合，形成圆角端点，端点同样可辨；两侧汇合形态在该属性上相符，端点允许圆角的要求满足。\n比较整个暖色发光主体的完整轮廓与参考是否一致: 参考和候选视图未完整覆盖「比较整个暖色发光主体的完整轮廓与参考是否一致」的必查区域, 需要提供包含该部位的完整视图。",
+            "issue_ids": [],
+            "unassessed_ids": [
+              "program-coverage-2"
+            ]
+          },
+          {
+            "id": "color",
+            "status": "not_applicable",
+            "rationale": "本轮仅检查指定边界表现",
+            "issue_ids": [],
+            "unassessed_ids": []
+          },
+          {
+            "id": "surface",
+            "status": "not_applicable",
+            "rationale": "本轮仅检查指定边界表现",
+            "issue_ids": [],
+            "unassessed_ids": []
+          },
+          {
+            "id": "relations",
+            "status": "not_applicable",
+            "rationale": "本轮仅检查指定边界表现",
+            "issue_ids": [],
+            "unassessed_ids": []
+          }
+        ],
+        "issues": [],
+        "unassessed": [
+          {
+            "id": "program-coverage-2",
+            "dimension": "shape",
+            "subject": "比较整个暖色发光主体的完整轮廓与参考是否一致",
+            "reason": "参考和候选视图未完整覆盖「比较整个暖色发光主体的完整轮廓与参考是否一致」的必查区域, 需要提供包含该部位的完整视图。"
+          }
+        ],
+        "limitations": [
+          "仅有一张局部窗口视图（716,139–817,210），主体完整轮廓（656,8–880,205）未覆盖，无法评价整体轮廓一致性",
+          "端点的精确位置、宽度、锐度、颜色和光晕强度按本轮条件不计入评分",
+          "无区域采样或测量数据，判断仅基于标记图像的可见表现"
+        ]
+      }
+    },
+    {
+      "phase": "confirm-pairs",
+      "case": "circuit",
+      "protocol": "v2",
+      "run": "circuit-v2/run-_n4tb4cg",
+      "calls": 2,
+      "verdict": "needs_revision",
+      "usage": {
+        "input_tokens": 7943,
+        "output_tokens": 519,
+        "total_tokens": 8462
+      },
+      "model": "z-ai/glm-5.3-flash",
+      "input_sha256": "b908c7fa390d17f88b90d81f1b50393ccc3101d90accaf48f88e38437bf8d7c8",
+      "criteria_sha256": "1a87a352b57527d3319d8a30b1165ea084a88f1f776c0be87c1b79c37863cde2",
+      "image_sha256": {
+        "reference.png": "fb9ac8db9be6c8ca2281014eb7a21419abad4cd64851e0eb53bcfd27001668b5",
+        "rendered.png": "143f9f34f99286b8d371962025962531ea68f5b68d055d51f494db76602f8203"
+      },
+      "issue_audit": [
+        {
+          "id": "shape-3f70e634fbfb-issue-1",
+          "truth": "右上框加粗",
+          "match": true,
+          "reason": "变粗方向和轻微等级正确。把它称作“允许的轻微变化”不够严谨：任务把粗细变化列为轻微，真正免评的是走线色相。"
+        },
+        {
+          "id": "relations-6762d478963c-issue-1",
+          "truth": "上路断口",
+          "match": true,
+          "reason": "对象、水平段位置、断开方向与重大等级均正确。"
+        }
+      ],
+      "case_audit": "真值两项，允许走线换色。两版主结论均正确。",
+      "submission": {
+        "summary": "按固定范围评审电路图案：右上矩形框在两图中均存在，形状、位置一致，但候选图边线明显比参考粗，属轻微差异；上方青绿色主线路在参考图中从左端连续贯通到右端，候选图中同一线路中段出现明显断口，主线路连续性的必要要求未满足，属重大问题。线路颜色由青绿变为蓝色属允许变化，不另计差异。",
+        "dimensions": [
+          {
+            "id": "content",
+            "status": "not_applicable",
+            "rationale": "此维不在本次范围",
+            "issue_ids": [],
+            "unassessed_ids": []
+          },
+          {
+            "id": "layout",
+            "status": "not_applicable",
+            "rationale": "此维不在本次范围",
+            "issue_ids": [],
+            "unassessed_ids": []
+          },
+          {
+            "id": "shape",
+            "status": "minor_gap",
+            "rationale": "右上矩形框存在且边线粗细符合参考: 右上矩形框在两图中均存在：参考图为细边线的橙色空心矩形，候选图位置、大小和矩形形状一致，但边线明显更粗。",
+            "issue_ids": [
+              "shape-3f70e634fbfb-issue-1"
+            ],
+            "unassessed_ids": []
+          },
+          {
+            "id": "color",
+            "status": "not_applicable",
+            "rationale": "此维不在本次范围",
+            "issue_ids": [],
+            "unassessed_ids": []
+          },
+          {
+            "id": "surface",
+            "status": "not_applicable",
+            "rationale": "此维不在本次范围",
+            "issue_ids": [],
+            "unassessed_ids": []
+          },
+          {
+            "id": "relations",
+            "status": "major_gap",
+            "rationale": "主线路从左端到右端必须连续: 参考图中最上方的水平主线路从左端折线到右端连续贯通；候选图同一线路中部出现明显断口，线路中断。",
+            "issue_ids": [
+              "relations-6762d478963c-issue-1"
+            ],
+            "unassessed_ids": []
+          }
+        ],
+        "issues": [
+          {
+            "id": "shape-3f70e634fbfb-issue-1",
+            "dimension": "shape",
+            "region": "右上角矩形框",
+            "reference_observation": "橙色空心矩形，边线较细。",
+            "rendered_observation": "同一位置同一大小的橙色空心矩形，边线显著更粗更重。",
+            "severity": "minor",
+            "impact": "矩形框仍存在且形状位置正确，仅边线粗细偏离参考，属题目允许的轻微差异。",
+            "check": "右上矩形框存在且边线粗细符合参考"
+          },
+          {
+            "id": "relations-6762d478963c-issue-1",
+            "dimension": "relations",
+            "region": "上半部主线路水平段中部",
+            "reference_observation": "青绿色水平主线路连续无缺口。",
+            "rendered_observation": "同一线路中段出现清晰的黑色断口，线路被截断为两段。",
+            "severity": "major",
+            "impact": "主线路从左端到右端必须连续的必要要求未满足，电路图案的连接关系被破坏。",
+            "check": "主线路从左端到右端必须连续"
+          }
+        ],
+        "unassessed": [],
+        "limitations": [
+          "仅检查指定的两项必查项，其余维度按要求排除",
+          "整体颜色由青绿变为蓝色属任务明确允许的差异，不另行记录"
+        ]
+      }
+    },
+    {
+      "phase": "confirm-pairs",
+      "case": "ridges",
+      "protocol": "v2",
+      "run": "ridges-v2/run-bjpt_b_3",
+      "calls": 1,
+      "verdict": "no_major_issue_observed",
+      "usage": {
+        "input_tokens": 3639,
+        "output_tokens": 350,
+        "total_tokens": 3989
+      },
+      "model": "z-ai/glm-5.3-flash",
+      "input_sha256": "630d4a474cd5163fc817f61a939c8925466a0a5a0239fbfaf358e46c1e000d4e",
+      "criteria_sha256": "68f2ad7204a8015b18301e5f5eddf79d456cc8db486a295138f290664dffeb15",
+      "image_sha256": {
+        "reference.png": "412587e11908c463ebfcba8db8cd24edba624a3b8c8e20e9f85eead7f4f92f3c",
+        "rendered.png": "9d00510dd6da020ea32c6d2e94c684a88fddf594c92fe7c1dbcf13f94e667dd2"
+      },
+      "issue_audit": [],
+      "case_audit": "三层、层次次序相同，允许换天空配色。无报告问题，结论正确。",
+      "submission": {
+        "summary": "参考图与候选图均可见三层由远及近的山脊：最上层浅灰蓝中脊、中层紫灰脊、前层深蓝黑脊，层叠遮挡顺序一致（前层完整覆盖其后山脊底部，中脊在前层之上，最远山脊位于其下）。天空颜色由蓝色渐变换为粉紫色渐变，属用户明确允许的整片换色，不评分。",
+        "dimensions": [
+          {
+            "id": "content",
+            "status": "match",
+            "rationale": "三个层叠山脊均存在: 两图中均可辨认三个层叠山脊：最远的中灰山脊、中层紫灰山脊、最近层深色山脊，三层在参考与候选中位置和形态对应。",
+            "issue_ids": [],
+            "unassessed_ids": []
+          },
+          {
+            "id": "layout",
+            "status": "not_applicable",
+            "rationale": "此维不在本次范围",
+            "issue_ids": [],
+            "unassessed_ids": []
+          },
+          {
+            "id": "shape",
+            "status": "not_applicable",
+            "rationale": "此维不在本次范围",
+            "issue_ids": [],
+            "unassessed_ids": []
+          },
+          {
+            "id": "color",
+            "status": "not_applicable",
+            "rationale": "此维不在本次范围",
+            "issue_ids": [],
+            "unassessed_ids": []
+          },
+          {
+            "id": "surface",
+            "status": "not_applicable",
+            "rationale": "此维不在本次范围",
+            "issue_ids": [],
+            "unassessed_ids": []
+          },
+          {
+            "id": "relations",
+            "status": "match",
+            "rationale": "山脊的遮挡顺序保持: 两图中遮挡顺序一致：前层深色山脊完整覆盖其后各层的底部，中层紫灰山脊遮挡最远山脊下部，最远山脊顶部可见于天空之下，前后关系保持不变。",
+            "issue_ids": [],
+            "unassessed_ids": []
+          }
+        ],
+        "issues": [],
+        "unassessed": [],
+        "limitations": [
+          "天空颜色及纹理按任务说明排除，不评分。",
+          "图像分辨率较低（216×144），山脊轮廓的微小形状差异难以分辨。"
+        ]
+      }
+    },
+    {
+      "phase": "confirm-pairs",
+      "case": "coast",
+      "protocol": "v2",
+      "run": "coast-v2/run-7ojahypt",
+      "calls": 2,
+      "verdict": "needs_revision",
+      "usage": {
+        "input_tokens": 8460,
+        "output_tokens": 779,
+        "total_tokens": 9239
+      },
+      "model": "z-ai/glm-5.3-flash",
+      "input_sha256": "10d3d38ea7650db883f7c657176630d6e9af7c99a1ba7d60845d7cef9571195d",
+      "criteria_sha256": "cd980d97d1213ce306b1d0de1bf9e3718aefa90abba781e2b54502e54566a52d",
+      "image_sha256": {
+        "reference.png": "1606b6c6c7a6311386edc03462b1587c045c3ba28a7a8dc74f0533eb702cf48a",
+        "rendered.png": "5786fe2c68071fbdb0b8e00a688fe47a3681ca1e8ef3f980cdbc244dba63ee5e"
+      },
+      "issue_audit": [
+        {
+          "id": "content-c22c02a3f055-issue-1",
+          "truth": "塔身下方红带缺失",
+          "match": true,
+          "reason": "两条变为一条、上带保留、下带缺失，必要目标及影响成立。"
+        }
+      ],
+      "case_audit": "缺带须修改；唯一未评为灯室，由程序覆盖检查产生，并非模型额外发现的缺陷。",
+      "submission": {
+        "summary": "按固定采集窗口 (75,48)-(137,105) 对照评审。参考图窗口内塔身可见两条水平红色横带，上下带之间有清晰米色间隔，两条带均横贯窗口宽度且保持分离。候选图同一窗口内仅顶部保留一条红色横带，其下直至窗口底缘均为均匀米色，第二条红带缺失。此差异直接违反「窗口内塔身保留两条分离红色横带」的必要组成要求（少一条即重大），已登记为重大差异 (content-c22c02a3f055)。允许的色差与锐度差方面未见显著问题，但本项的主要缺陷是组成缺失而非色彩。塔顶灯室保留完整的必查区域 (65,5-147,29) 超出本轮采集窗口覆盖，无法判断，由程序登记为未评项。",
+        "dimensions": [
+          {
+            "id": "content",
+            "status": "major_gap",
+            "rationale": "输入窗口内塔身保留两条分离的红色横带: 参考图窗口(left75,top48,right137,bottom105)内可见两条水平红色横带，上带位于窗口上部，下带位于窗口下部，两者之间有清晰的米色间隔，两条带均完整横贯窗口宽度、保持分离。候选图同一窗口内只在顶部可见一条红色横带，其下直至窗口底缘均为均匀米色，未见第二条红带。可见窗口内塔身仅保留一条红色横带。\n塔顶灯室保留完整: 参考和候选视图未完整覆盖「塔顶灯室保留完整」的必查区域, 需要提供包含该部位的完整视图。",
+            "issue_ids": [
+              "content-c22c02a3f055-issue-1"
+            ],
+            "unassessed_ids": [
+              "program-coverage-2"
+            ]
+          },
+          {
+            "id": "layout",
+            "status": "not_applicable",
+            "rationale": "此维不在本次范围",
+            "issue_ids": [],
+            "unassessed_ids": []
+          },
+          {
+            "id": "shape",
+            "status": "not_applicable",
+            "rationale": "此维不在本次范围",
+            "issue_ids": [],
+            "unassessed_ids": []
+          },
+          {
+            "id": "color",
+            "status": "not_applicable",
+            "rationale": "此维不在本次范围",
+            "issue_ids": [],
+            "unassessed_ids": []
+          },
+          {
+            "id": "surface",
+            "status": "not_applicable",
+            "rationale": "此维不在本次范围",
+            "issue_ids": [],
+            "unassessed_ids": []
+          },
+          {
+            "id": "relations",
+            "status": "not_applicable",
+            "rationale": "此维不在本次范围",
+            "issue_ids": [],
+            "unassessed_ids": []
+          }
+        ],
+        "issues": [
+          {
+            "id": "content-c22c02a3f055-issue-1",
+            "dimension": "content",
+            "region": "窗口下部 (约top 75至bottom 105的塔身区域)",
+            "reference_observation": "窗口下部存在第二条完整红色横带，与上部红带之间有米色间隔，两条带清晰分离",
+            "rendered_observation": "窗口下部仅有米色塔身，第二条红色横带完全缺失，仅顶部保留一条红带",
+            "severity": "major",
+            "impact": "输入窗口内塔身应保留两条分离红色横带的必要组成要求未满足：两条减为一条，必要组成缺失，按本轮要求判重大",
+            "check": "输入窗口内塔身保留两条分离的红色横带"
+          }
+        ],
+        "unassessed": [
+          {
+            "id": "program-coverage-2",
+            "dimension": "content",
+            "subject": "塔顶灯室保留完整",
+            "reason": "参考和候选视图未完整覆盖「塔顶灯室保留完整」的必查区域, 需要提供包含该部位的完整视图。"
+          }
+        ],
+        "limitations": [
+          "仅评估双图采集窗口 (75,48)-(137,105) 内的塔身条纹；窗口外塔身及场景状态未评。",
+          "「塔顶灯室保留完整」(区域 65,5-147,29) 因视图未覆盖该必查区域，由程序登记为未评项，需补包含灯室的完整视图。",
+          "本轮无区域采样数据，严重性判断基于视觉观察而非精确测量。"
+        ]
+      }
+    }
+  ],
+  "calls": 18,
+  "tokens": 75547
+}

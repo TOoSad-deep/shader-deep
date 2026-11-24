@@ -1,0 +1,69 @@
+{
+  "scope": "scene",
+  "target_kind": null,
+  "target": "电路图案",
+  "requirements": "上方主线路中断属重大；右上矩形框仍存在但边线粗细变化属轻微。允许线路由青绿变为蓝色。仅检查这两项。",
+  "dimensions": [
+    {
+      "id": "content",
+      "required_checks": [],
+      "excluded_checks": [
+        "此维不在本次范围"
+      ],
+      "tolerances": []
+    },
+    {
+      "id": "layout",
+      "required_checks": [],
+      "excluded_checks": [
+        "此维不在本次范围"
+      ],
+      "tolerances": []
+    },
+    {
+      "id": "shape",
+      "required_checks": [
+        "右上矩形框存在且边线粗细符合参考"
+      ],
+      "excluded_checks": [],
+      "tolerances": []
+    },
+    {
+      "id": "color",
+      "required_checks": [],
+      "excluded_checks": [
+        "此维不在本次范围"
+      ],
+      "tolerances": []
+    },
+    {
+      "id": "surface",
+      "required_checks": [],
+      "excluded_checks": [
+        "此维不在本次范围"
+      ],
+      "tolerances": []
+    },
+    {
+      "id": "relations",
+      "required_checks": [
+        "主线路从左端到右端必须连续"
+      ],
+      "excluded_checks": [],
+      "tolerances": []
+    }
+  ],
+  "reference_region": null,
+  "rendered_region": null,
+  "conditions": {
+    "reference_time": null,
+    "rendered_time": null,
+    "reference_background": null,
+    "rendered_background": null,
+    "comparison_notes": []
+  },
+  "source": {
+    "candidate_id": null,
+    "run_id": null
+  }
+}

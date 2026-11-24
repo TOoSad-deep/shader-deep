@@ -1,0 +1,72 @@
+{
+  "method": "New controlled procedural image pairs and mutation-based labels frozen before any comparison responses. No independent human raters. No candidate/expected labels sent to model.",
+  "matching": "One distinct target, location and direction per true issue. Count a repeated underlying defect once as a hit and its unsupported duplicate as a false issue. Log severity errors, unsupported free-text claims, missed truths and missing reports separately. Do not count a program coverage gap as a discovered visual defect.",
+  "cases": {
+    "circuit": {
+      "truth": {
+        "major": [
+          "主线路水平段中部有缺口，连通性中断"
+        ],
+        "minor": [
+          "右上矩形框边线变粗"
+        ],
+        "allowed": [
+          "走线色相变化"
+        ],
+        "unknown": []
+      },
+      "files": {
+        "circuit-cand.png": "143f9f34f99286b8d371962025962531ea68f5b68d055d51f494db76602f8203",
+        "circuit-ref.png": "fb9ac8db9be6c8ca2281014eb7a21419abad4cd64851e0eb53bcfd27001668b5",
+        "circuit.json": "6d61b7ccf2ae446e417e4528eaa2f0d63185912afe3c1ab13c38988d440a6be7"
+      }
+    },
+    "ridges": {
+      "truth": {
+        "major": [],
+        "minor": [],
+        "allowed": [
+          "天空色调变化"
+        ],
+        "unknown": []
+      },
+      "files": {
+        "ridges-cand.png": "9d00510dd6da020ea32c6d2e94c684a88fddf594c92fe7c1dbcf13f94e667dd2",
+        "ridges-ref.png": "412587e11908c463ebfcba8db8cd24edba624a3b8c8e20e9f85eead7f4f92f3c",
+        "ridges.json": "2e638b1874a363d26b4521b5c42a0c28c7efdd7de9709b60688cea7b41a51c5d"
+      }
+    },
+    "coast": {
+      "truth": {
+        "major": [
+          "窗内只保留上部红带，下部红带消失"
+        ],
+        "minor": [],
+        "allowed": [
+          "色差与锐度允许，实际无额外改动"
+        ],
+        "unknown": [
+          "塔顶灯室保留完整"
+        ]
+      },
+      "files": {
+        "coast-cand.png": "5786fe2c68071fbdb0b8e00a688fe47a3681ca1e8ef3f980cdbc244dba63ee5e",
+        "coast-ref.png": "1606b6c6c7a6311386edc03462b1587c045c3ba28a7a8dc74f0533eb702cf48a",
+        "coast.json": "217d967500584f2b666de61c5ef72f1272349383b558b420be458f02bcb38e11"
+      }
+    }
+  },
+  "model": "z-ai/glm-5.3-flash",
+  "max_model_calls": 2,
+  "max_request_retries": 0,
+  "max_output_tokens": 4096,
+  "reasoning_effort": "low",
+  "order": [
+    "circuit-v1",
+    "circuit-v2",
+    "ridges-v2",
+    "ridges-v1",
+    "coast-v1",
+    "coast-v2"
+  ]
+}
