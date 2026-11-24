@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import errno
 import json
 import shutil
 import tempfile
@@ -15,7 +16,7 @@ from PIL import Image
 from shader_deep.domain.visual_review import PixelRegion, RequiredRegion, ReviewCoverage
 from shader_deep.infrastructure.storage.review_package import read_review_package
 from shader_deep.workflows.review import ReviewOptions, run_review
-from shader_deep.workflows.review.publication import republish_review
+from shader_deep.workflows.review.publication import _atomic_json, publication_lock, republish_review
 from tests.unit_tests.fixtures._review_fixture import review_request
 
 
@@ -69,6 +70,22 @@ class ReviewPublicationTests(TestCase):
             republish_review(directory)
         self.assertEqual((directory / "result.json").read_bytes(), index)
         self.assertEqual(read_review_package(directory / "report").content_sha256, existing.content_sha256)
+
+    def test_first_publication_and_recovery_without_hard_links(self) -> None:
+        with patch("shader_deep.workflows.review.publication._save_receipt", side_effect=OSError("disk full")):
+            failed = run_review(self.image, self.image, self.request, options=self.options)
+        with patch("os.link", side_effect=OSError(errno.ENOTSUP, "hard links unavailable")):
+            first = run_review(self.image, self.image, self.request, options=self.options)
+            restored = republish_review(failed.run_dir)
+            for outcome in (first, restored):
+                with self.subTest(directory=outcome.run_dir):
+                    self.assertEqual(outcome.status, "completed", outcome.error)
+                    receipt = outcome.run_dir / "results/publication.json"
+                    original = receipt.read_bytes()
+                    with publication_lock(outcome.run_dir), self.assertRaises(FileExistsError):
+                        _atomic_json(receipt, {"unexpected": True}, create=True)
+                    self.assertEqual(republish_review(outcome.run_dir).verdict, "inconclusive")
+                    self.assertEqual(receipt.read_bytes(), original)
 
     def test_failure_to_save_first_receipt_can_recover_from_acceptance_alone(self) -> None:
         with patch("shader_deep.workflows.review.publication._save_receipt", side_effect=OSError("receipt disk full")):

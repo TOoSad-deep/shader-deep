@@ -56,9 +56,11 @@ def complete_coverage(submission: ReviewSubmission, criteria: BoundReviewCriteri
     if coverage is None or not coverage.unassessed:
         return submission
     missing = _missing(coverage)
-    required = {item.id: item.required_checks for item in criteria.request.dimensions}
+    required = {item.id: set(item.required_checks) for item in criteria.request.dimensions}
     dimensions = tuple(
-        _add_unknowns(item, missing[item.id], fully_missing=len(missing[item.id]) == len(required[item.id])) if item.id in missing else item
+        _add_unknowns(item, missing[item.id], fully_missing={gap.subject for gap in missing[item.id]} == required[item.id])
+        if item.id in missing
+        else item
         for item in submission.dimensions
     )
     summary = f"视图覆盖不足, {len(coverage.unassessed)} 个必查项未评。"
@@ -75,7 +77,10 @@ def complete_coverage(submission: ReviewSubmission, criteria: BoundReviewCriteri
 
 def coverage_only_submission(criteria: BoundReviewCriteria, coverage: CoverageEvidence | None) -> ReviewSubmission | None:
     """所有必查项都缺视图时, 构造仅含程序事实的提交."""
-    if coverage is None or len(coverage.unassessed) != sum(len(item.required_checks) for item in criteria.request.dimensions):
+    if coverage is None:
+        return None
+    required = {(item.id, check) for item in criteria.request.dimensions for check in item.required_checks}
+    if {(gap.dimension, gap.subject) for gap in coverage.unassessed} != required:
         return None
     return ReviewSubmission(
         summary="所有必查项均缺少完整视图。",

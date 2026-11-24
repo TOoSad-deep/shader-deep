@@ -396,6 +396,13 @@ def dimension_status(criteria: DimensionCriteria, issues: tuple[ReviewIssue, ...
 
 def _validate_states(submission: ReviewSubmission, criteria: BoundReviewCriteria) -> None:
     checks = {item.id: item for item in criteria.request.dimensions}
+    for issue in submission.issues:
+        _require(
+            issue.check is None or issue.check in checks[issue.dimension].required_checks,
+            "unknown_check",
+            f"/issues/{issue.id}/check",
+            "问题的 check 必须填写主维度的必查项原文。",
+        )
     for item in submission.dimensions:
         path = f"/dimensions/{item.id}"
         if not checks[item.id].required_checks:

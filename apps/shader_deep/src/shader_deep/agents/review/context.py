@@ -47,19 +47,17 @@ def review_message(session: ReviewSession) -> HumanMessage:
             }
     evidence = session.source.evidence
     if evidence is not None:
-        coverage_only = item_protocol and not evidence.samples
-        payload["evidence"] = evidence.model_dump(mode="json", exclude={"units", "alpha_background"} if coverage_only else set())
-        measures = (
-            "本轮没有区域采样。请依据标记的两张图描述视觉表现。"
-            if coverage_only
-            else "采样值由程序从固定 PNG 计算, 表示各自区域在白底合成后的编码 RGB 均值与加权亮度。"
-            "请结合图像解释差异及影响, 引用已有数值, 不要估造测量。"
+        payload["evidence"] = evidence.model_dump(mode="json", exclude=set() if evidence.samples else {"units", "alpha_background"})
+        notes = (
+            "采样值由程序从固定 PNG 计算, 表示各自区域在白底合成后的编码 RGB 均值与加权亮度。请结合图像解释差异及影响, 引用已有数值, 不要估造测量。"
+            if evidence.samples
+            else "本轮没有区域采样。请依据标记的两张图描述视觉表现。"
         )
-        coverage_note = "coverage.unassessed 由程序登记, 请不要在提交中重复。只评价有覆盖的必查项。"
-        notes = measures + (coverage_note if evidence.coverage is not None or not item_protocol else "")
-        payload["evidence_notes"] = (
-            notes if item_protocol else notes + "同一维度既有可查项又有程序未评项时, 有覆盖的问题须填写 check(对应必查项原文), 由该维度直接引用。"
-        )
+        if evidence.coverage is not None:
+            notes += "coverage.unassessed 由程序登记, 请不要在提交中重复。只评价有覆盖的必查项。"
+            if not item_protocol and evidence.coverage.unassessed:
+                notes += "同一维度既有可查项又有程序未评项时, 有覆盖的问题须填写 check(对应必查项原文), 由该维度直接引用。"
+        payload["evidence_notes"] = notes
     content: list[str | dict[str, object]] = [{"type": "text", "text": json.dumps(payload, ensure_ascii=False)}]
     for label, url in session.source.images:
         content.append({"type": "text", "text": label})

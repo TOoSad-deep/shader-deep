@@ -74,6 +74,8 @@ V2 正常交付后，Python 的 `outcome.action_summary`、CLI JSON 及运行目
 
 任务 JSON 可选填 `samples` 或 `coverage`，分别启用区域测量和必查部位覆盖检查。报告回读后，程序证据位于 `package.report.evidence`。
 
+V1 问题若填了 `check`，其值须与该问题主维度中的一条必查项原文一致。提交和正式报告回读都校验该字段。同一维度有程序确认的缺图项时，可见问题必须填写 `check`；其余情况下仍可省略。
+
 - `samples` 中每项给出 `label`、`reference_region` 和 `rendered_region`，两个矩形使用各自输入 PNG 的像素坐标。若任务指定了局部视图，采样须位于相应视图内。以磨砂叠圆为例，可以分别指定前圆内部和空背景两个样本。程序测量每侧的 RGB 均值、加权亮度和像素数，使用 0–255 编码 RGB 的单位及白底透明合成。区域测量接受最高 8 位 PNG，16 位输入可继续做视觉和覆盖评审。
 - `coverage` 中的 `reference_window` 和 `rendered_window` 描述整个输入 PNG 在共享坐标系中的 1:1 像素窗口。每个窗口的尺寸须与对应 PNG 一致。若任务另指定了局部视图，实际覆盖以该局部视图平移到共享坐标系后的矩形为准。每个 `required_regions` 条目提供 `dimension`、`check`（该维度必查项的原文）和共享坐标的 `region`。程序把任一侧未覆盖的必查项登记为未评。视图完整时，元素外观是否缺项仍以可见图像为依据。
 - Python 调用方可从 `shader_deep.api` 导入 `ReviewSample`、`PixelRegion`、`ReviewCoverage` 和 `RequiredRegion`。调用方负责提供可信的坐标对应关系；窗口尺寸校验适用于 1:1 平移。

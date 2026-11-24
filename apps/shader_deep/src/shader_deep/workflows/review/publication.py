@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import errno
 import hashlib
 import json
 import os
@@ -28,7 +29,6 @@ from shader_deep.infrastructure.storage.review_package import (
 from shader_deep.workflows.review.contracts import ReviewOutcome
 
 if sys.platform == "win32":
-    import errno
     import msvcrt
     import time
 else:
@@ -115,6 +115,24 @@ class _Receipt(ReviewModel):
     sha256: Digest
 
 
+def _install_receipt(temporary: Path, destination: Path) -> None:
+    """在运行的发布锁内安装新凭据, 兼容不提供硬链接的文件系统."""
+    try:
+        os.link(temporary, destination)
+    except OSError as error:
+        if error.errno not in {errno.ENOTSUP, errno.EOPNOTSUPP, errno.ENOSYS, errno.EPERM} and getattr(error, "winerror", None) not in {1, 50}:
+            raise
+    else:
+        return
+    # 首次发布与重放共用同一把锁. 仅当目标确实不存在时才发布写齐的临时文件.
+    try:
+        destination.lstat()
+    except FileNotFoundError:
+        temporary.replace(destination)
+        return
+    raise FileExistsError(errno.EEXIST, os.strerror(errno.EEXIST), destination)
+
+
 def _atomic_json(destination: Path, payload: object, *, create: bool = False) -> None:
     content = json.dumps(payload, ensure_ascii=False, indent=2, allow_nan=False).encode()
     if not create and destination.is_file() and _read_file(destination, MAX_TEXT_BYTES) == content:
@@ -125,7 +143,7 @@ def _atomic_json(destination: Path, payload: object, *, create: bool = False) ->
         with os.fdopen(descriptor, "wb") as output:
             output.write(content)
         if create:
-            os.link(temporary, destination)
+            _install_receipt(temporary, destination)
         else:
             temporary.replace(destination)
     finally:

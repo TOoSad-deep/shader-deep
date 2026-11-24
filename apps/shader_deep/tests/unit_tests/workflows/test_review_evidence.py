@@ -117,7 +117,9 @@ class ReviewEvidenceTests(unittest.TestCase):
         self.assertEqual(first.reference.mean_luma - second.reference.mean_luma, -10)
         self.assertEqual(first.rendered.mean_luma - second.rendered.mean_luma, 1)
         self.assertEqual(evidence.units, "encoded_RGB_0_255")
-        self.assertEqual(review_context(model.requests[0])["evidence"], evidence.model_dump(mode="json"))
+        context = review_context(model.requests[0])
+        self.assertEqual(context["evidence"], evidence.model_dump(mode="json"))
+        self.assertNotIn("coverage.unassessed", context["evidence_notes"])
         self.assertEqual(outcome.verdict, "needs_revision")
         self.assertEqual(package.report.verdict, outcome.verdict)
         self.assert_resealed_measurement_is_rejected(package.directory)
@@ -166,7 +168,11 @@ class ReviewEvidenceTests(unittest.TestCase):
         self.assertEqual(coverage.unassessed, package.report.submission.unassessed)
         self.assertEqual(coverage.unassessed[0].subject, RIM)
         self.assertIn("完整视图", coverage.unassessed[0].reason)
-        self.assertEqual(review_context(model.requests[0])["evidence"]["coverage"], coverage.model_dump(mode="json"))
+        context = review_context(model.requests[0])
+        self.assertEqual(context["evidence"]["coverage"], coverage.model_dump(mode="json"))
+        self.assertNotIn("units", context["evidence"])
+        self.assertNotIn("alpha_background", context["evidence"])
+        self.assertNotIn("均值", context["evidence_notes"])
 
         # 同一维度有已取证的中心孔时, 不因外缘未评而丢掉真正可见的差异.
         with Image.open(self.rendered) as crop, crop.copy() as painted:
@@ -190,14 +196,29 @@ class ReviewEvidenceTests(unittest.TestCase):
         self.assertFalse(package.report.evidence.coverage.unassessed)
         self.assertEqual(package.report.submission.issues[0].check, RIM)
 
+    def test_issue_bound_to_the_wrong_check_is_rejected_without_coverage(self) -> None:
+        request = task("feature", {"shape": (RIM,), "color": ("天空颜色",)})
+        with Image.new("RGB", (8, 8)) as image:
+            image.save(self.rendered)
+        model = issue_model(request, "shape", "天空颜色")
+        model.responses.extend(issue_model(request, "shape", RIM).responses)
+        outcome, package = self.invoke(self.rendered, request, model)
+        self.assertEqual(outcome.execution["validation_errors"], 1)
+        self.assertEqual([issue.check for issue in package.report.submission.issues], [RIM])
+
     def test_all_uncovered_has_formal_report_without_provider_and_bad_mapping_fails_early(self) -> None:
         window = rect(224, 374, 300, 440)
         with Image.open(GEAR) as original, original.crop((224, 374, 300, 440)) as rendered:
             rendered.save(self.rendered)
         with patch("shader_deep.workflows.review.entry.build_model") as build:
-            outcome = run_review(GEAR, self.rendered, self.gear_request(window, with_hole=False), options=self.options)
-            self.assertEqual(outcome.verdict, "inconclusive")
-            self.assertEqual(read_review_package(outcome.report_dir).report.submission.unassessed[0].subject, RIM)
+            coverage = self.gear_request(window, with_hole=False).coverage
+            for checks in ((RIM,), (RIM, RIM)):
+                with self.subTest(checks=checks):
+                    request = task("element", {"shape": checks}, coverage=coverage)
+                    outcome = run_review(GEAR, self.rendered, request, options=self.options)
+                    self.assertEqual(outcome.verdict, "inconclusive", outcome.error)
+                    report = read_review_package(outcome.report_dir).report
+                    self.assertEqual([gap.subject for gap in report.submission.unassessed], [RIM])
             with self.assertRaisesRegex(ValueError, "窗口尺寸"):
                 run_review(GEAR, self.rendered, self.gear_request(rect(0, 0, 1280, 720)), options=self.options)
         build.assert_not_called()
