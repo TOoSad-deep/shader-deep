@@ -92,6 +92,38 @@ class GenerationComparison:
             select_comparison_item(self, self.selected_item)
 
 
+@dataclass(frozen=True, kw_only=True)
+class PlanningComparisonItem(ComparisonItem):
+    """全图规划比较子项及其可选独立评审结果."""
+
+    review_run_dir: str | None = None
+    review_report_dir: str | None = None
+    review_status: str | None = None
+    review_verdict: str | None = None
+    review_error: str | None = None
+    render_record_path: str | None = None
+    baked_code_path: str | None = None
+    generation_calls: int | None = None
+    review_calls: int | None = None
+
+
+@dataclass(frozen=True, kw_only=True)
+class PlanningGenerationComparison:
+    """同一整图规划与固定条件的两项盲评索引, 供人工比较."""
+
+    directory: str
+    planning_sha256: str
+    reference_sha256: str
+    criteria_sha256: str | None
+    request: str
+    model_name: str
+    width: int
+    height: int
+    time: float
+    max_attempts: int
+    items: tuple[PlanningComparisonItem, PlanningComparisonItem]
+
+
 def validate_generation_plans(plans: tuple[GenerationPlan, ...]) -> None:
     """验证首版比较只接收两套显式方案.
 

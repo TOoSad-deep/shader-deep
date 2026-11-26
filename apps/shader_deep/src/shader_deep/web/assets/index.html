@@ -17,7 +17,7 @@
         <div class="section-title"><span class="step">01</span><h2>创建任务</h2></div>
         <form id="task-form">
           <label for="mode">工作方式</label>
-          <select id="mode"><option value="generate">图片 → 生成 Shader</option><option value="analyze">图片 → 全图观察</option><option value="report">分析方案 → 生成 Shader</option></select>
+          <select id="mode"><option value="workflow">图片 → 分阶段生成与验收</option><option value="generate" selected>图片 → 生成 Shader</option><option value="analyze">图片 → 全图观察</option><option value="report">分析方案 → 生成 Shader</option></select>
           <div id="upload-fields">
             <label class="upload" for="image"><span class="upload-icon">↥</span><strong id="upload-label">选择一张参考图</strong><span>PNG · 最大 12 MB · 边长 ≤ 4096</span><input id="image" type="file" accept="image/png"></label>
           </div>
@@ -28,9 +28,11 @@
             <label for="background">背景要求</label><input id="background" value="透明" maxlength="1000">
             <p class="hint">查看报告中的缺口与未知项后，再选择方案。</p>
           </div>
+          <figure id="draft-preview" hidden><figcaption>新任务参考图</figcaption><img id="draft-image" alt="待提交的参考图"></figure>
           <label for="prompt">这次想实现什么？</label><textarea id="prompt" rows="4" maxlength="8000" required placeholder="例如：复刻中央玻璃球，保留透明质感和粉色边缘光。"></textarea>
           <div id="generation-fields"><div class="field-row"><div><label for="width">宽度</label><input id="width" type="number" value="512" min="1" max="2048" required></div><span class="times">×</span><div><label for="height">高度</label><input id="height" type="number" value="512" min="1" max="2048" required></div></div><label for="attempts">最多渲染次数</label><input id="attempts" type="number" min="1" max="10" value="3" required><p class="hint">包括编译失败的尝试；固定渲染时间为 0 秒。</p></div>
           <div id="analysis-fields" hidden><p class="hint">单个 Agent 分析整张图的上下文与 E/F/R。主模型默认最多 8 轮，预算以分析配置为准。观察完成后仍需机制与草图规划。</p></div>
+          <div id="workflow-fields" hidden><p class="hint">沿用参考图像素尺寸。观察和规划完成后先确认方案与评审标准，生成后再决定接收、修订或归档。</p></div>
           <button id="submit" class="primary" type="submit">开始生成 <span>↗</span></button>
           <p class="hint footer-hint">运行会使用 .env 配置的模型服务和追踪设置。</p>
           <p id="error" class="error" role="alert" hidden></p>
@@ -38,9 +40,45 @@
       </aside>
       <section class="stage">
         <div class="panel preview-panel"><div class="panel-heading"><div class="section-title"><span class="step">02</span><h2>图像工作区</h2></div><span id="status" class="badge" role="status">准备就绪</span></div>
-          <div class="preview-grid"><figure><figcaption>REFERENCE <span>参考图</span></figcaption><div class="image-well"><img id="reference" alt="当前参考图" hidden><div id="reference-empty" class="empty"><span class="outline-icon">▧</span><p>从一张图片开始</p><small>上传后会在这里显示</small></div></div></figure><figure><figcaption>RENDER <span id="render-label">生成预览</span></figcaption><div class="image-well checker"><img id="preview" alt="生成的 Shader 渲染预览" hidden><div id="preview-empty" class="empty"><span class="outline-icon">◇</span><p>等待第一次渲染</p><small>每次成功渲染的候选都会保留</small></div></div></figure></div>
+          <div class="preview-grid"><figure><figcaption>REFERENCE <span>所选任务参考图</span></figcaption><div class="image-well"><img id="reference" alt="所选任务归档的参考图" hidden><div id="reference-empty" class="empty"><span class="outline-icon">▧</span><p>等待任务参考图</p></div></div></figure><figure><figcaption>RENDER <span id="render-label">生成预览</span></figcaption><div class="image-well checker"><img id="preview" alt="生成的 Shader 渲染预览" hidden><div id="preview-empty" class="empty"><span class="outline-icon">◇</span><p>等待第一次渲染</p><small>每次成功渲染的候选都会保留</small></div></div></figure></div>
           <div id="candidates" class="candidates"></div><p class="preview-note">预览来自实际渲染文件。模型选择结果后，仍需你确认视觉效果。</p>
         </div>
+        <section id="workflow-panel" class="panel results" hidden aria-labelledby="gate-title">
+          <div class="panel-heading"><h2 id="gate-title"></h2><span id="gate-budget" class="badge"></span></div>
+          <p id="gate-summary" class="task-prompt"></p>
+          <p id="gate-regressions" class="error" hidden></p>
+          <div id="gate-review" class="file-links"></div>
+          <div id="gate-evidence"></div>
+          <div id="gate-comparison"></div>
+          <pre id="gate-diagnosis" hidden></pre>
+          <form id="gate-form">
+            <label for="gate-action">本轮决定</label><select id="gate-action"></select>
+            <div id="gate-plan-fields">
+              <label for="gate-sketch">整图方案</label><select id="gate-sketch"></select>
+              <label for="gate-alternative">局部备选</label><select id="gate-alternative"></select>
+              <div id="gate-rival-fields" hidden><label for="gate-rival">对照路线</label><select id="gate-rival"></select></div>
+              <details><summary>核对和微调冻结前的评审标准</summary><textarea id="gate-criteria" aria-label="评审标准 JSON" rows="12" spellcheck="false"></textarea></details>
+            </div>
+            <div id="gate-selection-field" hidden><label for="gate-selection">采用哪项对照结果</label><select id="gate-selection"></select></div>
+            <div id="gate-revision-fields" hidden>
+              <div id="gate-route-field"><label for="gate-route">改派路线</label><select id="gate-route"><option value="">请选择改派路线</option><option value="observation_error">复核上游观察</option><option value="planning_limit">更换方法或方案</option><option value="code_structure">修订 GLSL 结构</option><option id="gate-route-numeric" value="numeric_tuning" disabled>只调诊断指定的外置参数</option><option value="evidence_gap">补上下文或重新渲染</option></select></div>
+              <div id="gate-time-field" hidden><label for="gate-time">重新渲染的时间（秒）</label><input id="gate-time" type="number" step="any"></div>
+              <div id="gate-dispute-field" hidden><label for="gate-disputed">待复核的观察 ID</label><input id="gate-disputed" placeholder="例如 F2, R1"></div>
+            </div>
+            <div id="gate-probe-fields" hidden>
+              <label for="gate-probe">高风险点</label><select id="gate-probe"></select>
+              <label for="gate-probe-context">试验区域与上下文</label>
+              <textarea id="gate-probe-context" rows="4" spellcheck="false" placeholder='{"target_region":{"left":0,"top":0,"right":128,"bottom":128}}'></textarea>
+              <div id="gate-second-fields" hidden>
+                <label for="gate-second">第二个高风险点（可选）</label><select id="gate-second"></select>
+                <label for="gate-second-context">第二项试验区域与上下文</label><textarea id="gate-second-context" rows="3" spellcheck="false" placeholder='{"target_region":{"left":0,"top":0,"right":128,"bottom":128}}'></textarea>
+              </div>
+            </div>
+            <div id="gate-reason-field"><label id="gate-reason-label" for="gate-reason">备注</label><input id="gate-reason" maxlength="3000"></div>
+            <button id="gate-submit" class="primary" type="submit">提交决定</button>
+            <p id="gate-error" class="error" role="alert" hidden></p>
+          </form>
+        </section>
         <div class="panel results"><div class="panel-heading"><div class="section-title"><span class="step">03</span><h2>任务与结果</h2></div><button id="stop" class="danger" type="button" hidden>停止运行</button></div><label class="sr-only" for="history">本次会话任务</label><select id="history"><option value="">尚未开始任务</option></select><p id="task-prompt" class="task-prompt">选择工作方式并提交，进度与结果将在这里显示。</p><p id="directory" class="directory"></p><div id="file-links" class="file-links"></div><div id="report-result" hidden><div class="report-heading"><h3>分析报告</h3><button id="use-report" type="button" class="secondary">选择方案并生成 ↗</button></div><pre id="report-text"></pre></div><details id="log-details" open><summary>运行日志 <span>自动刷新 · 最近 24 KB</span></summary><pre id="log">等待任务开始…</pre></details></div>
       </section>
     </div>

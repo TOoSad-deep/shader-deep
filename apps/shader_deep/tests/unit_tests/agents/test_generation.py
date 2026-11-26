@@ -111,6 +111,22 @@ class GenerationTests(GenerationFixture):
         names = {item["function"]["name"] for item in self.requests[0]["tools"]}
         self.assertEqual(names, {"render_shader", "finish_shader", "stop_generation"})
 
+    def test_parameter_mode_reports_missing_spec_then_accepts_plain_shader(self) -> None:
+        def respond(request: dict[str, object]) -> dict[str, object]:
+            if not tool_results(request):
+                shader = "uniform float uGain;\nvoid mainImage(out vec4 c, in vec2 p) { c = vec4(uGain); }"
+                return self.call("render_shader", {"glsl_code": shader})
+            return self.render_then_finish(request)
+
+        self.response = respond
+        outcome = run_generation(self.state, "G1", asset_root=self.root, options=replace(self.options, optimize_parameters=True))
+        rejected = tool_results(self.requests[1])[0]
+        self.assertEqual(rejected["status"], "render_error")
+        self.assertIn("matching ParameterSpec", rejected["error"])
+        self.assertIsNone(rejected["preview_path"])
+        self.assertEqual(outcome.stop_reason, "completed")
+        self.assertEqual(Path(outcome.selected_candidate.code_path).read_text(), BASE_CODE)
+
     def test_active_stop_preserves_reason_without_candidate_or_extra_model_call(self) -> None:
         self.response = lambda _request: self.call("stop_generation", {"reason": "需要明确背景", "next_action": "provide_input"})
         outcome = run_generation(self.state, "G1", asset_root=self.root, options=self.options)

@@ -15,20 +15,31 @@ from shader_deep.domain.scene_observations import SceneObservationSubmission, bu
 from shader_deep.infrastructure.storage.observation_draft import DraftError, DraftStore
 from shader_deep.infrastructure.storage.snapshots import write_snapshot
 from shader_deep.workflows.analysis.contracts import SceneAnalysisResult
+from shader_deep.workflows.analysis.measurements import ObservationMeasurements
 
 if TYPE_CHECKING:
     from pathlib import Path
 
     from pydantic import JsonValue
 
-    from shader_deep.domain.scene_observations import SceneObservations
+    from shader_deep.domain.evidence import ImageRegion
+    from shader_deep.domain.scene_observations import ReferenceMeasurement, SceneObservations
     from shader_deep.workflows.options import AnalysisOptions
 
 
 class AnalysisSession:
     """会话锁串行保护草稿操作和接受, 模型与网络请求在锁外执行."""
 
-    def __init__(self, request: str, reference_url: str, directory: Path, options: AnalysisOptions) -> None:
+    def __init__(
+        self,
+        request: str,
+        reference_url: str,
+        directory: Path,
+        options: AnalysisOptions,
+        *,
+        revision_context: dict[str, JsonValue] | None = None,
+        inherited_measurements: tuple[ReferenceMeasurement, ...] = (),
+    ) -> None:
         """固定图像与要求, 拒绝复用已有运行目录."""
         if not request.strip() or not reference_url.startswith("data:image/png;base64,"):
             msg = "观察分析需要非空要求与固定 PNG"
@@ -41,6 +52,8 @@ class AnalysisSession:
             self.width, self.height = image.size
         self.request, self.reference_url, self.directory, self.options = request, reference_url, directory, options
         self.reference_sha256 = hashlib.sha256(reference).hexdigest()
+        self._measurements = ObservationMeasurements(reference, directory, self.reference_sha256, inherited=inherited_measurements)
+        self._revision_context = revision_context
         self.submission: SceneObservationSubmission | None = None
         self.observations: SceneObservations | None = None
         self.state: Literal["running", "accepted", "stopped"] = "running"
@@ -81,7 +94,19 @@ class AnalysisSession:
                 "image_size": {"width": self.width, "height": self.height},
                 "state": self.state,
                 "model_calls_remaining": max(0, self.options.max_model_calls - self.model_calls),
+                **({"observation_revision": self._revision_context} if self._revision_context is not None else {}),
             }
+
+    def measure_reference(self, kind: Literal["crop", "region_stats"], region: ImageRegion, question: str) -> dict[str, JsonValue]:
+        """允许在本轮活动期间读取固定原图的局部像素."""
+        with self._lock:
+            self._require_running()
+            return self._measurements.measure(kind, region, question)
+
+    def crop_images(self) -> tuple[tuple[str, str], ...]:
+        """提供已采集裁图及对应锚点 ID, 供请求级注入."""
+        with self._lock:
+            return self._measurements.crop_images
 
     def execution(self) -> dict[str, JsonValue]:
         """生成可保存的运行事实, 不把弃用角色参数当成实际执行数量."""
@@ -208,11 +233,16 @@ class AnalysisSession:
         """验证完整观察并在快照成功写入后接受, 保留原短 ID."""
         frozen = report.model_copy(deep=True)
         observations = build_scene_observations(frozen)
+        anchors = self._measurements.anchors
         self._reserve()
         try:
             write_snapshot(
                 self.directory / "results" / "observations.json",
-                {"submission": frozen.model_dump(mode="json"), "observations": observations.model_dump(mode="json")},
+                {
+                    "submission": frozen.model_dump(mode="json"),
+                    "observations": observations.model_dump(mode="json"),
+                    **({"reference_measurements": [item.model_dump(mode="json") for item in anchors]} if anchors else {}),
+                },
             )
             self._accept(frozen, observations)
         except OSError:
@@ -252,7 +282,12 @@ class AnalysisSession:
                 self.state, self.reason = "stopped", error or "Agent 结束时未提交合法观察"
             status = "failed" if self.submission is None else "partial" if self.submission.gaps else "completed"
             return SceneAnalysisResult(
-                status=status, submission=self.submission, observations=self.observations, error=error or self.reason, task_state=self.execution()
+                status=status,
+                submission=self.submission,
+                observations=self.observations,
+                error=error or self.reason,
+                task_state=self.execution(),
+                reference_measurements=self._measurements.anchors,
             )
 
     def save_result(self, result: SceneAnalysisResult) -> None:

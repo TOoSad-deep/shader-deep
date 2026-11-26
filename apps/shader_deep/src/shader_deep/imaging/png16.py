@@ -10,6 +10,8 @@ import struct
 import zlib
 from dataclasses import dataclass
 
+from PIL import Image
+
 from shader_deep.imaging.png_chunks import IHDR_LENGTH, PNG_SIGNATURE, png_chunks
 
 MAX_PIXELS = 16_777_216
@@ -166,6 +168,32 @@ def decode_png16(content: bytes) -> Png16Samples:
         ValueError: 输入结构、容量、过滤或压缩数据无效.
     """
     return _decode_region(content, None)
+
+
+def display_png16(content: bytes, box: tuple[int, int, int, int] | None = None) -> Image.Image:
+    """将固定图像的原始 16 位样本投影到评审与测量使用的 8 位 RGBA.
+
+    Args:
+        content: 16 位静态 PNG 字节.
+        box: 可选的左闭右开裁剪框, 采用原图像素坐标.
+
+    Returns:
+        各通道取高 8 位的 RGBA 图像, 由调用方关闭.
+    """
+    decoded = _decode_region(content, box)
+    mode = {0: "L", 2: "RGB", 4: "LA", 6: "RGBA"}[decoded.color_type]
+    size = (decoded.width, decoded.height)
+    with Image.frombytes(mode, size, decoded.samples[::2]) as channels:
+        rgba = channels.convert("RGBA")
+    key = decoded.transparency
+    if key is not None:
+        # 完整色键区分高字节相同、低字节不同的透明及不透明像素.
+        data = decoded.samples
+        stride = len(key)
+        alpha = bytes(0 if data[index : index + stride] == key else 255 for index in range(0, len(data), stride))
+        with Image.frombytes("L", size, alpha) as mask:
+            rgba.putalpha(mask)
+    return rgba
 
 
 def _decode_region(content: bytes, box: tuple[int, int, int, int] | None) -> Png16Samples:

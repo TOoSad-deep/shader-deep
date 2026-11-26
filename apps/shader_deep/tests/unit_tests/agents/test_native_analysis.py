@@ -121,7 +121,9 @@ class NativeAnalysisTests(unittest.TestCase):
         self.invoke(model, session)
         self.assertEqual(session.finalize().status, "completed")
         self.assertEqual(len(model.requests), 3)
-        self.assertEqual(set(model.offered_tools), {"read_file", "edit_file", "save_observation_draft", "finish_analysis", "stop_analysis"})
+        self.assertEqual(
+            set(model.offered_tools), {"read_file", "edit_file", "save_observation_draft", "finish_analysis", "stop_analysis", "crop", "region_stats"}
+        )
         images = [
             block
             for message in model.requests[0]
@@ -132,6 +134,39 @@ class NativeAnalysisTests(unittest.TestCase):
         self.assertEqual([block["image_url"]["url"] for block in images], [session.reference_url])
         self.assertEqual(context(model.requests[0])["scope"], "whole_scene")
         self.assertEqual([item.id for item in session.observations.features], ["F8", "F11"])
+
+    def test_measurements_inject_real_crop_and_preserve_only_unique_in_bounds_anchors(self) -> None:
+        session = self.make_session()
+        region = {"left": 0, "top": 0, "right": 2, "bottom": 2}
+        args = {"region": region, "question": "核对颜色"}
+        model = NativeRoutingModel(
+            responses=[
+                call("crop", args, 1),
+                call("region_stats", args, 2),
+                call("region_stats", {**args, "question": "再次核对"}, 3),
+                call("region_stats", {**args, "region": {**region, "right": 6}}, 4),
+            ]
+        )
+        self.invoke(model, session)
+        result = session.finalize()
+        self.assertEqual(result.status, "completed")
+        self.assertEqual([item.kind for item in result.reference_measurements], ["crop", "region_stats"])
+        self.assertEqual(result.reference_measurements[1].mean_rgb, (240.0, 80.0, 140.0))
+        images = [
+            block
+            for message in model.requests[1]
+            if isinstance(message.content, list)
+            for block in message.content
+            if isinstance(block, dict) and block.get("type") == "image_url"
+        ]
+        self.assertEqual(len(images), 2)
+        data = base64.b64decode(images[1]["image_url"]["url"].split(",", 1)[1])
+        with Image.open(io.BytesIO(data)) as crop:
+            self.assertEqual(crop.size, (2, 2))
+            self.assertEqual(crop.getpixel((0, 0)), (240, 80, 140, 255))
+        receipts = {message.tool_call_id: message for message in model.requests[4] if isinstance(message, ToolMessage)}
+        self.assertTrue(json.loads(str(receipts["call-3"].content))["cached"])
+        self.assertEqual(receipts["call-4"].status, "error")
 
     def test_reference_errors_are_repaired_locally_in_the_same_graph(self) -> None:
         session = self.make_session()

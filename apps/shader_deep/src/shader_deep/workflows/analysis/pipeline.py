@@ -20,7 +20,9 @@ if TYPE_CHECKING:
     from pathlib import Path
 
     from langchain_core.language_models import BaseChatModel
+    from pydantic import JsonValue
 
+    from shader_deep.domain.scene_observations import ReferenceMeasurement
     from shader_deep.workflows.analysis.contracts import SceneAnalysisResult
     from shader_deep.workflows.options import AnalysisOptions
 
@@ -69,6 +71,8 @@ def execute_scene_analysis(
     *,
     model: BaseChatModel | None = None,
     on_delivery: Callable[[SceneAnalysisResult, AnalysisSession], SceneAnalysisResult | None] | None = None,
+    revision_context: dict[str, JsonValue] | None = None,
+    inherited_measurements: tuple[ReferenceMeasurement, ...] = (),
 ) -> SceneAnalysisResult:
     """运行一次观察图并交付已有合法结果, 中断保存后继续传播.
 
@@ -79,13 +83,17 @@ def execute_scene_analysis(
         directory: 独立运行目录.
         model: 可注入的无网络测试模型.
         on_delivery: 发布和索引回调, 可返回包含发布失败的最终结果.
+        revision_context: 定向复核时由入口捕获的只读旧观察及争议.
+        inherited_measurements: 来自同一固定原图的已校验旧锚点.
 
     Returns:
         实际合法观察或明确失败状态.
     """
     started = perf_counter()
     usage = UsageMetadataCallbackHandler()
-    session = AnalysisSession(user_request, reference_url, directory, options)
+    session = AnalysisSession(
+        user_request, reference_url, directory, options, revision_context=revision_context, inherited_measurements=inherited_measurements
+    )
     selected_model = model if model is not None else build_model()
     interrupted: KeyboardInterrupt | None = None
     failure: str | None = None

@@ -7,12 +7,16 @@ import io
 import json
 import sys
 import threading
+from dataclasses import replace
 from pathlib import Path
 from typing import TYPE_CHECKING
 from unittest.mock import patch
 
 from shader_deep.api import run_generation_from_report
 from shader_deep.cli.generation import main
+from shader_deep.domain.blackboard import add_candidate
+from shader_deep.domain.shader_parameters import ParameterSpec
+from shader_deep.infrastructure.storage.parameterized_candidate import CandidateParameters, read_candidate_parameters
 from tests.unit_tests.agents.test_context import BASE_CODE
 from tests.unit_tests.agents.test_generation import ThreadBoundRenderer
 from tests.unit_tests.fixtures._generation_fixture import GenerationFixture, generation_report, task_payloads
@@ -80,6 +84,48 @@ class ReportGenerationTests(GenerationFixture):
         self.assertEqual((status, stdout), (1, ""))
         self.assertIn("Generation incomplete: blocked", stderr)
         self.assertIn(str(outcome.run_dir), stderr)
+
+    def test_parameterized_baseline_is_fixed_and_reaches_both_context_modes(self) -> None:
+        for memory in (False, True):
+            with self.subTest(visual_memory=memory):
+                self._verify_captured_parameters(memory=memory)
+
+    def _verify_captured_parameters(self, *, memory: bool) -> None:
+        code, preview, settings = (self.root / filename for filename in ("source.glsl", "source.png", "source.parameters.json"))
+        code.write_text("uniform float uX;\n" + BASE_CODE, encoding="utf-8")
+        preview.write_bytes((self.root / "baseline.png").read_bytes())
+        spec = ParameterSpec.model_validate({"name": "uX", "type": "float", "default": 0.2, "min": 0.1, "max": 0.9})
+        params = CandidateParameters(specs=(spec,), uniforms={"uX": 0.4})
+        params.save(settings, code, preview, time=0.75)
+        baseline = replace(self.state["candidates"]["B7"], id="B8", code_path=code.name, preview_path=preview.name, render_record_path=settings.name)
+
+        def respond(request: dict[str, object]) -> dict[str, object]:
+            if settings.exists():
+                for source in (code, preview, settings):
+                    source.unlink()
+                if memory:
+                    blocks = [block for message in request["messages"] if isinstance(message["content"], list) for block in message["content"]]
+                    self.assertTrue(any('"uX": 0.4' in block.get("text", "") for block in blocks))
+            if not memory:
+                render = task_payloads(request)[0]["candidates"][0]["parameterized_render"]["render"]
+                self.assertEqual(render, {"time": 0.75, "uniforms": {"uX": 0.4}})
+            return self.render_then_finish(request)
+
+        self.response = respond
+        outcome = run_generation_from_report(
+            self.report,
+            "S1",
+            "保留已知参数",
+            background="透明",
+            state=add_candidate(self.state, baseline),
+            baseline_id="B8",
+            asset_root=self.root,
+            visual_memory=memory,
+            output_dir=self.options.output_dir,
+        )
+        self.assertEqual(outcome.stop_reason, "completed")
+        fixed = json.loads((outcome.run_dir / "run.json").read_text())["inputs"]["baseline"]
+        self.assertEqual(read_candidate_parameters(Path(fixed["render_record_path"]), Path(fixed["code_path"]), Path(fixed["preview_path"])), params)
 
     def test_report_memory_and_model_budget_reach_prepared_session(self) -> None:
         def inspect_session(session: RenderSession) -> None:

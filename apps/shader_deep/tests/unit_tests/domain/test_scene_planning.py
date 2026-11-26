@@ -9,12 +9,16 @@ from pydantic import ValidationError, create_model
 
 from shader_deep.domain.scene_observations import ObservationIssue, SceneObservations
 from shader_deep.domain.scene_planning import (
+    PlanningAlternative,
+    PlanningGap,
+    RiskProbe,
     ScenePlanningSubmission,
     build_candidate_index,
     diagnose_scene_planning,
     effective_planning_sketch,
     validate_scene_planning,
 )
+from shader_deep.workflows.planning.cascade import PlanningRevision
 
 
 def planning_observations() -> SceneObservations:
@@ -82,6 +86,39 @@ class ScenePlanningTests(TestCase):
         self.assertNotIn("M5", {item.id for item in selected.mechanisms})
         self.assertEqual(selected.conditions, ("底层可解析求值。",))
         self.assertTrue(selected.complete)
+
+    def test_revision_can_remove_affected_alternative_and_fix_surviving_composition(self) -> None:
+        base = self.report.sketches[0]
+        only_removed = PlanningAlternative(choices={"F2": ("M1",)}, reason="轮廓代替填色")
+        retained = base.alternatives[0].model_copy(update={"composition": "[[M4]] 柔化 [[F2]] 后混合前圆。"})
+        previous = self.report.model_copy(update={"sketches": (base.model_copy(update={"alternatives": (only_removed, retained)}),)})
+        validate_scene_planning(previous, self.observations)
+        first, second = self.observations.elements
+        observed = self.observations.model_copy(
+            update={"elements": (first.model_copy(update={"feature_ids": ("F1",)}), second), "features": self.observations.features[::2]}
+        )
+        default = {key: value for key, value in base.default.items() if key != "F2"}
+        rewritten = retained.model_copy(update={"composition": "[[M4]] 柔化后圆 [[F1]], 然后混合前圆。"})
+        revised = base.model_copy(update={"default": default, "alternatives": (rewritten,)})
+        updated = self.report.model_copy(update={"sketches": (revised,)})
+        validate_scene_planning(updated, observed)
+        revision = PlanningRevision(previous, ("F2",))
+        revision.validate(updated)
+        invalid = revised.model_copy(update={"alternatives": (rewritten.model_copy(update={"choices": {"R2": ("M4",)}}),)})
+        with self.assertRaisesRegex(ValueError, "无关目标"):
+            revision.validate(updated.model_copy(update={"sketches": (invalid,)}))
+
+    def test_element_probe_requires_bound_feature_in_its_own_sketch(self) -> None:
+        base = self.report.sketches[0]
+        probe = RiskProbe(target_ids=("E2",), reason="核对前圆", context_mode="isolated_solid")
+        selected = base.model_copy(update={"risk_probes": (probe,)})
+        validate_scene_planning(self.report.model_copy(update={"sketches": (selected,)}), self.observations)
+        default = {key: value for key, value in base.default.items() if key != "F3"}
+        with_gap = selected.model_copy(update={"default": default, "gaps": (PlanningGap(refs=("F3",), description="前圆尚无机制"),)})
+        report = self.report.model_copy(update={"sketches": (with_gap,)})
+        with self.assertRaisesRegex(ValueError, "试验目标在当前方案中须绑定至少一个机制"):
+            validate_scene_planning(report, self.observations)
+        validate_scene_planning(report, self.observations, require_probe_mechanisms=False)
 
     def test_candidate_combinations_retain_full_effective_origins(self) -> None:
         rows = build_candidate_index(self.report)

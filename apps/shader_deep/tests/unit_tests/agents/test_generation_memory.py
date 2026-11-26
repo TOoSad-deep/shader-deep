@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import base64
+import io
 import json
 from dataclasses import replace
 from pathlib import Path
@@ -10,10 +11,14 @@ from typing import TYPE_CHECKING, cast
 from unittest.mock import patch
 
 from langchain_core.exceptions import ModelConnectionError
+from PIL import Image
 
 from shader_deep.agents.generation.agent import _execute
 from shader_deep.domain.blackboard import add_result, add_target, add_task
 from shader_deep.domain.tasks import ResultRecord, TargetRecord
+from shader_deep.domain.visual_review import PixelRegion
+from shader_deep.optimization import OptimizationResult
+from shader_deep.optimization.uniforms import TurningPoint
 from shader_deep.workflows.generation import run_generation
 from shader_deep.workflows.generation_from_report import run_generation_from_report
 from tests.unit_tests.agents.test_context import BASE_CODE, PNG
@@ -27,6 +32,17 @@ CODE_A = BASE_CODE + "\n// memory-candidate-a"
 CODE_B = BASE_CODE + "\n// memory-candidate-b"
 BAD_CODE = "void mainImage(out vec4 c, in vec2 p) { c = vec4(unknown_symbol); } // memory-failed-code"
 ERROR_TEXT = "unknown_symbol is not declared"
+
+
+class _ParameterRenderer(ThreadBoundRenderer):
+    def render(self, code: str, width: int, height: int, time: float, **_kwargs: object) -> bytes:
+        return super().render(code, width, height, time)
+
+
+def _preview(color: str) -> bytes:
+    with io.BytesIO() as output, Image.new("RGB", (32, 24), color) as image:
+        image.save(output, format="PNG")
+        return output.getvalue()
 
 
 def memory_receipts(request: dict[str, object]) -> list[dict[str, object]]:
@@ -202,6 +218,69 @@ class GenerationMemoryTests(GenerationFixture):
             output_dir=self.options.output_dir,
         )
         self.assertEqual(outcome.stop_reason, "completed")
+
+    def test_optimizer_turning_point_can_be_recalled_and_then_selected(self) -> None:
+        self.options = replace(self.options, optimize_parameters=True)
+        turning_png = _preview("gray")
+        winner_png = _preview("pink")
+        result = OptimizationResult(
+            status="improved",
+            uniforms={"uX": 0.8},
+            start_error=0.7,
+            end_error=0.1,
+            best_observed_error=0.1,
+            evaluations=75,
+            boundary_parameters=(),
+            rejected_trials=0,
+            baseline_render=PNG,
+            best_render=winner_png,
+            turning_points=(TurningPoint(evaluation=3, error=0.25, uniforms={"uX": 0.5}, png=turning_png),),
+        )
+
+        def respond(request: dict[str, object]) -> dict[str, object]:
+            step = ("render", "optimize", "recall", "finish")[len(self.requests) - 1]
+            if step == "render":
+                return self.call(
+                    "render_shader",
+                    {
+                        "glsl_code": "uniform float uX;\nvoid mainImage(out vec4 c, in vec2 p) {c=vec4(uX);}",
+                        "parameter_specs": [{"name": "uX", "type": "float", "default": 0.2, "min": 0.1, "max": 0.9}],
+                    },
+                )
+            if step == "optimize":
+                baseline = self.remember("baseline", request)
+                return self.call("optimize_uniforms", {"baseline_id": baseline["candidate_id"], "anchors": [], "max_evaluations": 75})
+            if step == "recall":
+                winner = self.remember("winner", request)
+                self.assertIn("data:image/png;base64," + base64.b64encode(winner_png).decode(), memory_images(request))
+                self.assertEqual(winner["optimization"]["anchors"], [])
+                point = self.references["point"] = winner["optimization"]["turning_points"][0]
+                self.assertNotIn(point["candidate_id"], finishable(request))
+                return self.call("read_materials", {"items": [{"id": point["preview_material_id"]}]})
+            self.assertIn("data:image/png;base64," + base64.b64encode(turning_png).decode(), memory_images(request))
+            self.assertIn(self.references["point"]["candidate_id"], finishable(request))
+            return self.finish(self.references["point"])
+
+        def set_anchors(session: RenderSession) -> None:
+            session.reference_anchors = (PixelRegion(left=0, top=0, right=1, bottom=1),)
+            _execute(session)
+
+        self.response = respond
+        with (
+            patch("shader_deep.agents.generation.tools.render.WebGL2Renderer", _ParameterRenderer),
+            patch("shader_deep.agents.generation.tools.optimize.optimize_uniforms", return_value=result) as optimize,
+            patch("shader_deep.workflows.generation._execute", side_effect=set_anchors),
+        ):
+            outcome = run_generation(self.state, "G1", asset_root=self.root, options=self.options)
+        self.assertEqual(outcome.stop_reason, "completed")
+        self.assertEqual(optimize.call_args.kwargs["anchors"], ())
+        self.assertEqual(optimize.call_args.kwargs["max_evaluations"], 75)
+        index = json.loads((outcome.run_dir / "memory" / "index.json").read_text())["materials"]
+        self.assertEqual(index[self.references["baseline"]["code_material_id"]]["source"]["operation"], "render_shader")
+        for name in ("point", "winner"):
+            material = self.references[name]
+            for key in ("code_material_id", "preview_material_id", "result_material_id"):
+                self.assertEqual(index[material[key]]["source"]["operation"], "optimize_uniforms")
 
     def test_read_allowance_is_shared_between_tools_in_the_same_batch(self) -> None:
         def respond(request: dict[str, object]) -> dict[str, object]:

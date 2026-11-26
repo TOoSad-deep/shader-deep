@@ -2,14 +2,19 @@
 
 from __future__ import annotations
 
-from typing import Annotated
+from typing import Annotated, Literal, Self
 
-from pydantic import BaseModel, ConfigDict, Field, StringConstraints
+from pydantic import BaseModel, ConfigDict, Field, StringConstraints, model_validator
+
+from shader_deep.domain.evidence import ImageRegion  # noqa: TC001  # 观察包读取时校验嵌套区域.
 
 Text = Annotated[str, StringConstraints(strict=True, min_length=1, pattern=r"\S")]
 ElementId = Annotated[str, StringConstraints(strict=True, pattern=r"^E[1-9][0-9]*$")]
 FeatureId = Annotated[str, StringConstraints(strict=True, pattern=r"^F[1-9][0-9]*$")]
 RelationId = Annotated[str, StringConstraints(strict=True, pattern=r"^R[1-9][0-9]*$")]
+ObservationId = Annotated[str, StringConstraints(strict=True, pattern=r"^[EFR][1-9][0-9]*$")]
+REFERENCE_MEASUREMENT_LIMIT = 6
+REFERENCE_MEASUREMENT_ARCHIVE_LIMIT = 2 * REFERENCE_MEASUREMENT_LIMIT
 
 
 class ObservationModel(BaseModel):
@@ -74,6 +79,41 @@ class SceneObservations(ObservationModel):
     elements: tuple[ObservationElement, ...]
     features: tuple[ObservationFeature, ...]
     relations: tuple[ObservationRelation, ...]
+
+    @property
+    def identities(self) -> frozenset[str]:
+        """返回当前观察版本中可跨阶段引用的短 ID."""
+        return frozenset(item.id for group in (self.elements, self.features, self.relations) for item in group)
+
+    def target_refs(self, targets: tuple[str, ...]) -> frozenset[str]:
+        """展开元素目标以包含其特征, 保留直接选中的特征和关系."""
+        refs = frozenset(targets)
+        return refs | {feature for item in self.elements if item.id in refs for feature in item.feature_ids}
+
+
+class ReferenceMeasurement(ObservationModel):
+    """程序采集的固定参考图锚点, 坐标从左上角起且右下边界不包含."""
+
+    id: Text
+    kind: Literal["crop", "region_stats"]
+    region: ImageRegion
+    question: Text
+    image_sha256: Annotated[str, StringConstraints(strict=True, pattern=r"^[0-9a-f]{64}$")]
+    mean_rgb: tuple[Annotated[float, Field(ge=0, le=255)], Annotated[float, Field(ge=0, le=255)], Annotated[float, Field(ge=0, le=255)]] | None = None
+    mean_luma: Annotated[float, Field(ge=0, le=255)] | None = None
+
+    def semantic_key(self) -> tuple[Literal["crop", "region_stats"], ImageRegion, str, tuple[float, float, float] | None, float | None]:
+        """按固定图像、测量规格和结果比较锚点, 忽略运行标识与提问文本."""
+        return self.kind, self.region, self.image_sha256, self.mean_rgb, self.mean_luma
+
+    @model_validator(mode="after")
+    def _values(self) -> Self:
+        has_statistics = self.mean_rgb is not None and self.mean_luma is not None
+        crop_has_values = self.kind == "crop" and (self.mean_rgb is not None or self.mean_luma is not None)
+        if (self.kind == "region_stats" and not has_statistics) or crop_has_values:
+            msg = "只有 region_stats 包含经白底合成的 RGB 与编码亮度均值"
+            raise ValueError(msg)
+        return self
 
 
 def _require(condition: bool, field: str, reason: str) -> None:  # noqa: FBT001  # 内部断言接收校验谓词, 并非切换行为的布尔选项.

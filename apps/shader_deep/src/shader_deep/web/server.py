@@ -11,6 +11,7 @@ from urllib.parse import unquote, urlsplit
 
 from pydantic import ValidationError
 
+from shader_deep.domain.visual_review import ReviewValidationError
 from shader_deep.web.jobs import ANALYSIS_PERSPECTIVES_MIGRATION, Jobs, Submission
 
 ASSETS = Path(__file__).parent / "assets"
@@ -18,8 +19,20 @@ MAX_BODY = 17 * 1024 * 1024
 
 
 def _validation_message(error: ValidationError) -> str:
-    """只展开已知迁移错误, 不向页面暴露任意校验输入或异常."""
-    for issue in error.errors(include_url=False):
+    """门禁校验显示有限字段错误, 不回传填写的值或完整异常."""
+    issues = error.errors(include_input=False, include_url=False)
+    if error.title in {"GateADecision", "GateBDecision"}:
+        messages = []
+        for issue in issues[:3]:
+            location = issue["loc"][:-1] if issue["type"] == "extra_forbidden" else issue["loc"]
+            path = ".".join(map(str, location)) or "决定"
+            cause = issue.get("ctx", {}).get("error")
+            message = issue["msg"]
+            if isinstance(cause, ReviewValidationError) and cause.code == "conflicting_check":
+                message = f"{cause.path} 同一检查项不能同时列为必查和排除"
+            messages.append(f"{path} · {message}")
+        return "门禁参数无效。 " + " / ".join(messages)
+    for issue in issues:
         if issue["loc"] == () and issue["type"] == "value_error" and str(issue.get("ctx", {}).get("error", "")) == ANALYSIS_PERSPECTIVES_MIGRATION:
             return ANALYSIS_PERSPECTIVES_MIGRATION
     return "参数无效, 请检查图片、要求和数值范围"
@@ -125,5 +138,8 @@ class Handler(BaseHTTPRequestHandler):
             with self.server.jobs.lock:
                 self.server.jobs.items[self.path.removeprefix("/api/stop/")].stop()
             self._json(200, {"ok": True})
+        elif self.path.startswith("/api/advance/"):
+            self.server.jobs.advance(self.path.removeprefix("/api/advance/"), body)
+            self._json(202, {"ok": True})
         else:
             self._json(404, {"error": "操作不存在"})

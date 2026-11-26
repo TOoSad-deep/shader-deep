@@ -209,6 +209,17 @@ input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-vis
   outline:2px solid var(--accent);
   outline-offset:3px;
 }
+#draft-preview {
+  margin-top:12px;
+}
+#draft-image {
+  display:block;
+  width:100%;
+  max-height:140px;
+  object-fit:contain;
+  border-radius:7px;
+  background:var(--input);
+}
 .field-row {
   display:flex;
   gap:10px;
@@ -584,3 +595,6 @@ footer p {
     display:none;
   }
 }
+#gate-comparison figure { display: inline-grid; max-width: 46%; gap: .4rem; margin: .25rem; vertical-align: top; }
+#gate-comparison img { width: 100%; max-height: 12rem; object-fit: contain; }
+#gate-evidence p { overflow-wrap: anywhere; margin-block: .4rem; }

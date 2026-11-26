@@ -74,9 +74,6 @@ def _register_task(state: BlackboardState, inputs: CapturedGenerationInputs, req
 def _save_prepared(prepared: PreparedGeneration) -> None:
     baseline = prepared.inputs.baseline
     # 文件映射随 run.json 保存, 源候选仍保持原路径, 不将内存中的代码或 data URL 重复写入快照.
-    paths = (
-        None if baseline is None else {"candidate_id": baseline.candidate_id, "code_path": baseline.code_path, "preview_path": baseline.preview_path}
-    )
     save_run(
         prepared.run_dir,
         prepared.state,
@@ -84,7 +81,7 @@ def _save_prepared(prepared: PreparedGeneration) -> None:
             "task_id": prepared.task_id,
             "asset_root": str(prepared.asset_root),
             "phase": "prepared",
-            "inputs": {"baseline": paths},
+            "inputs": {"baseline": baseline.paths() if baseline is not None else None},
             "render": {"width": prepared.options.width, "height": prepared.options.height, "time": prepared.options.time},
             "max_attempts": prepared.options.max_attempts,
         },
@@ -148,6 +145,7 @@ def run_generation_from_report(
     output_dir: Path | None = None,
     visual_memory: bool = False,
     max_model_calls: int | None = None,
+    optimize_parameters: bool = False,
 ) -> GenerationOutcome:
     """固定明确选择的五库方案, 执行生成、渲染和预览自检.
 
@@ -170,6 +168,7 @@ def run_generation_from_report(
         output_dir: 独立运行目录的父目录.
         visual_memory: 显式启用本轮视觉材料索引与按需回看.
         max_model_calls: 独立模型轮次上限, 未指定时按记忆开关解析.
+        optimize_parameters: 启用参数化 GLSL 与受限数值优化.
 
     Returns:
         含实际候选、唯一运行目录和结束原因的结果; 受阻或预算耗尽时没有选定候选.
@@ -187,6 +186,7 @@ def run_generation_from_report(
         output_dir=output_dir,
         visual_memory=visual_memory,
         max_model_calls=max_model_calls,
+        optimize_parameters=optimize_parameters,
     )
     prepared = _prepare_generation(
         report_dir,

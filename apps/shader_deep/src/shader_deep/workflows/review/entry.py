@@ -13,10 +13,11 @@ from langchain_core.callbacks import UsageMetadataCallbackHandler
 from shader_deep.agents.review.native import build_review_agent, review_input
 from shader_deep.domain.review_coverage import coverage_only_submission
 from shader_deep.domain.visual_review import derive_verdict
+from shader_deep.imaging.review_evidence import WorkflowEvidence
 from shader_deep.infrastructure.analysis_logging import log_analysis
 from shader_deep.infrastructure.llm.client import build_model
 from shader_deep.infrastructure.storage.artifacts import create_run_directory
-from shader_deep.infrastructure.storage.review_package import capture_review_source, write_review_package
+from shader_deep.infrastructure.storage.review_package import capture_review_source, capture_workflow_review_source, write_review_package
 from shader_deep.infrastructure.storage.snapshots import write_snapshot
 from shader_deep.workflows.review.contracts import ReviewOutcome, ReviewResult
 from shader_deep.workflows.review.options import ReviewOptions
@@ -24,9 +25,12 @@ from shader_deep.workflows.review.publication import deliver_accepted_review, pu
 from shader_deep.workflows.review.session import ReviewSession
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
     from pathlib import Path
 
-    from shader_deep.domain.visual_review import ReviewRequest
+    from shader_deep.domain.scene_observations import ReferenceMeasurement
+    from shader_deep.domain.visual_review import BoundReviewCriteria, PixelRegion, ReviewRequest, ReviewSource
+    from shader_deep.infrastructure.storage.review_package import CapturedReviewSource
 
 
 def _record_metrics(session: ReviewSession, usage: UsageMetadataCallbackHandler, started: float) -> None:
@@ -165,8 +169,63 @@ def run_review(reference_path: Path, rendered_path: Path, request: ReviewRequest
     except (TypeError, ValueError) as error:
         msg = f"评审输入准备失败: {error}"
         raise ValueError(msg) from error
-    session = ReviewSession(source, selected)
+    return _run_captured(source, selected)
+
+
+def run_workflow_review(
+    reference_path: Path,
+    rendered_path: Path,
+    criteria: BoundReviewCriteria,
+    *,
+    options: ReviewOptions | None = None,
+    reference_measurements: Sequence[ReferenceMeasurement] = (),
+    optimization_regions: Sequence[PixelRegion] = (),
+    source: ReviewSource | None = None,
+    expand_views: bool = False,
+    resample_regions: Sequence[PixelRegion] = (),
+    rendered_time: float | None = None,
+) -> ReviewOutcome:
+    """执行门禁 A 已冻结的工作流 V2 盲评, 按需装配采样与角色栏.
+
+    Args:
+        reference_path: 本轮相同坐标系中的固定参考 PNG.
+        rendered_path: 候选的渲染 PNG.
+        criteria: 人工批准并冻结的 V2 标准.
+        options: 评审运行预算、传输配置和输出父目录.
+        reference_measurements: 本参考 PNG 的上游像素锚点, 使用参考原图坐标.
+        optimization_regions: 优化器中目标或保护区, 共享画布坐标.
+        source: 本次候选和运行的来源标签.
+        resample_regions: 本次复评在共享画布上新增的成对采样区.
+        expand_views: 补采时展开至输入 PNG 的既有范围, 保留共享坐标映射.
+        rendered_time: 经人工选择重渲染时, 候选实际使用的固定时间.
+
+    Returns:
+        按 V2 逐项提交或程序短路派生的运行状态与结论.
+
+    Raises:
+        ValueError: 冻结材料或采样身份不匹配.
+        OSError: 固定材料或报告无法保存.
+    """
+    selected = options or ReviewOptions()
+    directory = create_run_directory(selected.output_dir)
+    evidence = WorkflowEvidence(
+        reference_measurements=tuple(reference_measurements),
+        optimization_regions=tuple(optimization_regions),
+        expand_views=expand_views,
+        resample_regions=tuple(resample_regions),
+        rendered_time=rendered_time,
+    )
+    try:
+        captured = capture_workflow_review_source(reference_path, rendered_path, directory, criteria, evidence, source=source)
+    except (TypeError, ValueError) as error:
+        msg = f"评审输入准备失败: {error}"
+        raise ValueError(msg) from error
+    return _run_captured(captured, selected)
+
+
+def _run_captured(source: CapturedReviewSource, options: ReviewOptions) -> ReviewOutcome:
+    session = ReviewSession(source, options)
     if source.request.protocol == "visual_review_v2":
-        with publication_lock(directory):
+        with publication_lock(source.directory):
             return _execute(session)
     return _execute(session)

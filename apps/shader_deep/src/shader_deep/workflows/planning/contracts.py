@@ -10,7 +10,7 @@ if TYPE_CHECKING:
 
     from pydantic import JsonValue
 
-    from shader_deep.domain.scene_planning import ScenePlanningSubmission
+    from shader_deep.domain.scene_planning import ObservationRevisionRequest, ScenePlanningSubmission
 
 PlanningStatus = Literal["completed", "partial", "failed"]
 
@@ -23,6 +23,7 @@ class ScenePlanningResult:
     submission: ScenePlanningSubmission | None = None
     error: str | None = None
     execution: dict[str, JsonValue] = field(default_factory=dict)
+    observation_revision_request: ObservationRevisionRequest | None = None
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -35,6 +36,7 @@ class PlanningOutcome:
         status: 实际完成、部分完成或失败状态.
         error: 受阻、模型或发布错误.
         execution: 调用计数、固定输入及接受版本等运行事实.
+        observation_revision_request: 规划受阻时的可选定向复核申请.
     """
 
     run_dir: Path
@@ -42,6 +44,7 @@ class PlanningOutcome:
     status: PlanningStatus
     error: str | None = None
     execution: dict[str, JsonValue] = field(default_factory=dict)
+    observation_revision_request: ObservationRevisionRequest | None = None
 
     @property
     def stop_reason(self) -> PlanningStatus:

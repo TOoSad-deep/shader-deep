@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING
 from shader_deep.domain.generation import GenerationBinding
 from shader_deep.domain.tasks import CandidateRecord
 from shader_deep.infrastructure.storage.generation_inputs import CapturedGenerationInputs, _png_url, _preview_bytes, capture_generation_inputs
+from shader_deep.infrastructure.storage.parameterized_candidate import read_baked_candidate
 
 if TYPE_CHECKING:
     from shader_deep.domain.scene import SceneElementSource, ScenePlan
@@ -41,7 +42,7 @@ class CapturedSceneInputs:
     files: tuple[str, ...]
 
 
-def _read_source(source: SceneElementSource) -> tuple[SceneElementSource, CandidateRecord, GenerationBinding]:
+def _read_source(source: SceneElementSource) -> tuple[SceneElementSource, CandidateRecord, GenerationBinding, str | None]:
     directory = Path(source.run_dir).resolve()
     snapshot = json.loads((directory / "run.json").read_text(encoding="utf-8"))
     try:
@@ -56,27 +57,50 @@ def _read_source(source: SceneElementSource) -> tuple[SceneElementSource, Candid
             and task["generation_binding"].get("schema_version") != "scene_planning_v1"
         )
         if matches:
-            candidate = CandidateRecord(id=data["id"], task_id=data["task_id"], code_path=data["code_path"], preview_path=data.get("preview_path"))
-            return replace(source, run_dir=str(directory)), candidate, GenerationBinding(**task["generation_binding"])
+            candidate = CandidateRecord(
+                id=data["id"],
+                task_id=data["task_id"],
+                code_path=data["code_path"],
+                preview_path=data.get("preview_path"),
+                render_record_path=data.get("render_record_path"),
+            )
+            return (
+                replace(source, run_dir=str(directory)),
+                candidate,
+                GenerationBinding(**task["generation_binding"]),
+                snapshot.get("baked_code_path"),
+            )
     except (KeyError, TypeError):
         pass
     msg = f"Scene source must identify the selected candidate of a completed report generation: {directory}"
     raise ValueError(msg)
 
 
+def _element_material(root: Path, candidate: CandidateRecord, baked_path: str | None) -> tuple[str, bytes | None]:
+    code = root / candidate.code_path
+    if candidate.render_record_path is None and baked_path is None:
+        return code.read_bytes().decode("utf-8"), _preview_bytes(candidate.preview_path, root)
+    if candidate.render_record_path is None or candidate.preview_path is None or Path(candidate.preview_path).suffix.lower() != ".png":
+        msg = "Parameterized scene element requires its render record and PNG preview"
+        raise ValueError(msg)
+    baked, png = read_baked_candidate(root / candidate.render_record_path, code, root / candidate.preview_path)
+    if baked_path is not None and (root / baked_path).read_text(encoding="utf-8") != baked:
+        msg = "Selected baked shader differs from the effective render parameters"
+        raise ValueError(msg)
+    return baked, png
+
+
 def _capture_element(source: SceneElementSource, directory: Path) -> CapturedSceneElement:
-    source, candidate, binding = _read_source(source)
+    source, candidate, binding, baked_path = _read_source(source)
     root = Path(source.run_dir)
     inputs = capture_generation_inputs(root / binding.report_path, directory, binding.sketch_id, alternative=binding.alternative)
     # 仅副本路径允许改变; 原报告正文、原图或选定来源变化不能沿用旧绑定身份.
     if replace(inputs.binding, report_path=binding.report_path) != binding:
         msg = f"Scene source report no longer matches its generation binding: {source.run_dir}"
         raise ValueError(msg)
-    code = (root / candidate.code_path).read_bytes()
-    text = code.decode("utf-8")
-    preview = _preview_bytes(candidate.preview_path, root)
+    text, preview = _element_material(root, candidate, baked_path)
     code_path = directory / "selected.glsl"
-    code_path.write_bytes(code)
+    code_path.write_bytes(text.encode("utf-8"))
     preview_path = directory / "selected.png" if preview is not None else None
     if preview_path is not None and preview is not None:
         preview_path.write_bytes(preview)

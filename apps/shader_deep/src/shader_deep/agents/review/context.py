@@ -28,10 +28,13 @@ def review_message(session: ReviewSession) -> HumanMessage:
                 "每张 PNG 对应标签所示的采集窗口。请按各自实际入画的范围描述参考和候选。"
                 "局部差异可以说明该项要求未满足; 窗口外的对象外形或场景状态仍须相应视图才能判断。"
             )
-        payload["answerable_checks"] = [
-            {"check_id": item.check_id, "dimension": item.dimension, "check": item.check} for item in session.checks if not item.unassessed
-        ]
+        payload["answerable_checks"] = [item.model_dump(mode="json", exclude={"unassessed"}) for item in session.checks if not item.unassessed]
         payload["answered_check_ids"] = [answer.check_id for answer in session.check_answers]
+        payload["evidence_gap_notes"] = (
+            "单项证据不足时填写 unassessed_reason 和 evidence_gap。"
+            "现有双图可通过扩窗或精确采样补证时选 insufficient_crop_or_sample。需要补测具体位置时在 sample_region 填共享像素区域。"
+            "当前 PNG 缺可比时间帧或背景上下文时选 missing_context_or_frame。"
+        )
         answered = session.answer_revisions
         payload["answer_revisions"] = answered
         if session.model_calls == session.options.max_model_calls:
@@ -42,7 +45,7 @@ def review_message(session: ReviewSession) -> HumanMessage:
                 "instructions": (
                     "这是最后一次模型调用。调用 finish_review 时, 把 answer_id_fields 中每个对象的 check_id 字段和值原样复制到对应答案,"
                     "补齐判断后放入 answers 数组, 同时提交 summary 和 limitations。仅有一项时也要填写 check_id。已登记齐全时传 answers=[]。"
-                    "单项证据不足时填写 unassessed_reason。整次评审无法继续时调用 stop_review。"
+                    "单项未评按 evidence_gap_notes 提交。整次评审无法继续时调用 stop_review。"
                 ),
             }
     evidence = session.source.evidence
@@ -58,8 +61,13 @@ def review_message(session: ReviewSession) -> HumanMessage:
             if not item_protocol and evidence.coverage.unassessed:
                 notes += "同一维度既有可查项又有程序未评项时, 有覆盖的问题须填写 check(对应必查项原文), 由该维度直接引用。"
         payload["evidence_notes"] = notes
+    if session.source.workflow_criteria is not None:
+        payload["view_notes"] = (
+            str(payload["view_notes"])
+            + " 图外顶部角色栏 REFERENCE 对应参考, CANDIDATE 对应候选。角色栏和小图右侧留白均为展示标注, 不属于作品或测量区域。"
+        )
     content: list[str | dict[str, object]] = [{"type": "text", "text": json.dumps(payload, ensure_ascii=False)}]
-    for label, url in session.source.images:
+    for label, url in session.source.model_images:
         content.append({"type": "text", "text": label})
         content.append({"type": "image_url", "image_url": {"url": url}})
     return HumanMessage(content=content)

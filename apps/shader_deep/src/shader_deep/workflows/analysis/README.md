@@ -6,6 +6,8 @@
 
 [session.py](session.py) 的 AnalysisSession 仅保存固定要求、图像身份、有限调用预算、接受快照和终态. 返回合同为 [SceneAnalysisResult](contracts.py), 模型消息及 SDK 文件状态不复制到业务记录中.
 
+[measurements.py](measurements.py) 将程序采集的原图区域与结果存为锚点。接受时的 `reference_measurements` 进入观察包 manifest，正式读取会核对图像身份与区域。没有测量的包省略该字段。定向复核使用 `AnalysisRevision` 捕获只读旧观察与争议区域，绑定同一原图，以新运行和新包保存结果。旧锚点随新包保留，同规格同结果沿用已有标识。每轮最多执行 6 个独立测量，包内累计最多保存 12 个锚点。
+
 ## 状态与交付
 
 | 状态 | 含义 |

@@ -76,7 +76,7 @@ V2 正常交付后，Python 的 `outcome.action_summary`、CLI JSON 及运行目
 
 V1 问题若填了 `check`，其值须与该问题主维度中的一条必查项原文一致。提交和正式报告回读都校验该字段。同一维度有程序确认的缺图项时，可见问题必须填写 `check`；其余情况下仍可省略。
 
-- `samples` 中每项给出 `label`、`reference_region` 和 `rendered_region`，两个矩形使用各自输入 PNG 的像素坐标。若任务指定了局部视图，采样须位于相应视图内。以磨砂叠圆为例，可以分别指定前圆内部和空背景两个样本。程序测量每侧的 RGB 均值、加权亮度和像素数，使用 0–255 编码 RGB 的单位及白底透明合成。区域测量接受最高 8 位 PNG，16 位输入可继续做视觉和覆盖评审。
+- `samples` 中每项给出 `label`、`reference_region` 和 `rendered_region`，两个矩形使用各自输入 PNG 的像素坐标。若任务指定了局部视图，采样须位于相应视图内。以磨砂叠圆为例，可以分别指定前圆内部和空背景两个样本。程序测量每侧的 RGB 均值、加权亮度和像素数，使用 0–255 编码 RGB 的单位及白底透明合成。16 位 PNG 先以完整样本匹配透明键，再取各通道高 8 位，保持与显示及参数搜索相同的数值口径。
 - `coverage` 中的 `reference_window` 和 `rendered_window` 描述整个输入 PNG 在共享坐标系中的 1:1 像素窗口。每个窗口的尺寸须与对应 PNG 一致。若任务另指定了局部视图，实际覆盖以该局部视图平移到共享坐标系后的矩形为准。每个 `required_regions` 条目提供 `dimension`、`check`（该维度必查项的原文）和共享坐标的 `region`。程序把任一侧未覆盖的必查项登记为未评。视图完整时，元素外观是否缺项仍以可见图像为依据。
 - Python 调用方可从 `shader_deep.api` 导入 `ReviewSample`、`PixelRegion`、`ReviewCoverage` 和 `RequiredRegion`。调用方负责提供可信的坐标对应关系；窗口尺寸校验适用于 1:1 平移。
 
@@ -139,6 +139,26 @@ LANGSMITH_PROJECT=shader-deep
 
 ## 运行
 
+### 分阶段生成与验收
+
+从 PNG 启动带两道人工作业门禁的流程。第一次运行保存观察、方案及评审标准草案，并返回运行目录。
+
+```sh
+uv run --no-sync --env-file .env python -m shader_deep.cli.workflow \
+  start reference.png "复现玻璃的层叠与边缘光"
+```
+
+在第一道门禁核对观察和标准，明确选定一套方案。最小决策文件内容为 `{"action":"generate_scene","sketch_id":"S1"}`。可以提供 `criteria` 替换草案，也可以用 `run_probe` 批准一至两个局部试验，或用 `compare_plans` 并行比较两条路线。运行 `panel /path/to/run-directory` 可查看当前决策所需材料。
+
+```sh
+uv run --no-sync --env-file .env python -m shader_deep.cli.workflow \
+  advance /path/to/run-directory decision.json
+```
+
+生成后查看本轮候选、历史最佳候选、V2 评审及诊断。用 `status /path/to/run-directory` 查看最新状态。第二道门禁接受 `accept`、`revise`、`reroute`、`rollback` 和 `archive`。整图 `accept` 交付最终文件。参数化候选同时交付基线 GLSL、实参记录及可直接运行的单文件 GLSL。局部 `accept` 把通过评审的片段送回整图。网页可通过「图片 → 分阶段生成与验收」执行同一流程。
+
+流程默认最多 4 个大轮次、100 次逻辑调用和 256,000 个累计输出 token。可用 `--max-output-tokens` 调整额度。若要限制输入与输出总和，同时指定 `--max-total-tokens` 和部署中所有参与模型的最大单请求上下文容量 `--model-context-tokens`。像素误差用于参数搜索和回归保护，最终整图仍由人工确认。实现及验证记录见[流程优化实施](docs/work-items/workflow-optimization-implementation-20261125.md)。
+
 ### 本地可视化界面
 
 在本目录运行:
@@ -149,11 +169,13 @@ make web
 
 然后打开 <http://127.0.0.1:8765>. 已有 `.env` 会由启动命令加载, 无需在网页填写密钥. 首次使用仍需先执行 `make sync`, 生成预览还需 `make browsers`.
 
-界面支持上传 PNG、直接生成、单 Agent 全图观察, 以及从旧完整五库报告中显式选草图/局部备选再生成. 页面显示日志、候选预览、真实状态和下载链接. 点击开始才调用模型; 分析默认最多 20 次主模型判断, 可沿用 YAML 修改预算, 页面可停止运行. 新观察结果展示 E/F/R, 不提供尚未规划的草图选择. 生成默认 512 × 512、时间 0 秒、最多渲染 3 次; 报告模式也使用页面显式设置的尺寸.
+界面支持上传 PNG、分阶段生成与验收、直接生成、单 Agent 全图观察，以及从旧完整五库报告选择草图或备选。页面显示日志、候选预览和下载链接。独立分析默认最多 20 次主模型判断。直接生成默认 512 × 512、时间 0 秒、最多渲染 3 次。分阶段流程使用原图尺寸。
+
+首次标准草拟因模型输出校验失败而受阻时，可在原任务重试。门禁 A 冻结前也可填写理由重新草拟，均消耗原任务的剩余额度。门禁 B 展示所选候选的重大问题、待补证项和像素测量。有诊断指定的外置参数时，可以改派到数值调整。
 
 同一服务同时只运行一个任务. 文件保存在 `runs/web/web-*/`, 原 CLI 产物位于各任务的 `output/run-*/`. 关闭或刷新浏览器不会取消任务; 终端 Ctrl+C 关闭服务并停止未完成任务. 页面历史只保留在本次服务会话, 重启后不自动恢复旧任务, 已落盘文件保留. 停止会终止本地任务, 不保证撤回模型提供方已接收的请求.
 
-仅监听 `127.0.0.1`, 不提供远程部署或账号系统. 页面不读取任意本地报告路径, 不自动选择分析方案, 不接入多方案比较和整图组合. 本地服务可用不代表模型连接或视觉效果已通过验收. 实现与验证见[本地界面记录](docs/work-items/local-web-ui.md).
+服务仅监听 `127.0.0.1`，报告和下载范围限于本次服务会话的任务目录。实现与验证见[本地界面记录](docs/work-items/local-web-ui.md)。
 
 需要改端口或输出目录时:
 

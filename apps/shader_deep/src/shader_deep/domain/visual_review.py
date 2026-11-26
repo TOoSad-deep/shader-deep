@@ -18,6 +18,7 @@ DimensionStatus = Literal["match", "minor_gap", "major_gap", "uncertain", "not_a
 ReviewVerdict = Literal["needs_revision", "no_major_issue_observed", "inconclusive"]
 DIMENSION_IDS: tuple[DimensionId, ...] = ("content", "layout", "shape", "color", "surface", "relations")
 PROFILE_VERSION = "1"
+CheckSource = Annotated[str, StringConstraints(strict=True, pattern=r"^(?:[EFR][1-9][0-9]*|user_requirement)$")]
 
 
 class ReviewModel(BaseModel):
@@ -106,10 +107,17 @@ class DimensionCriteria(ReviewModel):
     required_checks: tuple[Text, ...] = ()
     excluded_checks: tuple[Text, ...] = ()
     tolerances: tuple[Text, ...] = ()
+    source_refs: tuple[CheckSource, ...] = Field(default=(), exclude_if=lambda value: not value)
 
     @model_validator(mode="after")
     def _explained(self) -> Self:
         _require(bool(self.required_checks or self.excluded_checks), "unexplained_dimension", f"/dimensions/{self.id}", "无必查项时必须说明排除依据")
+        _require(
+            not self.source_refs or len(self.source_refs) == len(self.required_checks),
+            "invalid_check_sources",
+            f"/dimensions/{self.id}/source_refs",
+            "提供上游来源时必须与必查项一一对应",
+        )
         return self
 
 
@@ -179,6 +187,7 @@ class FrozenReviewCheck(ReviewModel):
     check_id: Text
     dimension: DimensionId
     check: Text
+    source_ref: CheckSource | None = Field(default=None, exclude_if=lambda value: value is None)
 
 
 class BoundReviewCriteria(ReviewModel):
@@ -216,9 +225,14 @@ def _freeze_checks(request: ReviewRequest) -> tuple[FrozenReviewCheck, ...]:
     if request.protocol == "visual_review_v1":
         return ()
     checks = tuple(
-        FrozenReviewCheck(check_id=f"{dimension.id}-{_digest(check)[:12]}", dimension=dimension.id, check=check)
+        FrozenReviewCheck(
+            check_id=f"{dimension.id}-{_digest(check)[:12]}",
+            dimension=dimension.id,
+            check=check,
+            source_ref=dimension.source_refs[index] if dimension.source_refs else None,
+        )
         for dimension in request.dimensions
-        for check in dimension.required_checks
+        for index, check in enumerate(dimension.required_checks)
     )
     _require(len({check.check_id for check in checks}) == len(checks), "ambiguous_check_id", "/dimensions", "不同必查项不能共用标识")
     return checks
@@ -298,6 +312,17 @@ class ReviewIssue(ReviewModel):
     check: Text | None = Field(
         default=None, exclude_if=lambda value: value is None, description="必查项原文。同一维度既有可查项又有程序未评项时必填。"
     )
+    source_ref: CheckSource | None = Field(default=None, exclude_if=lambda value: value is None)
+
+
+EvidenceGapKind = Literal["insufficient_crop_or_sample", "missing_context_or_frame"]
+
+
+class EvidenceGap(ReviewModel):
+    """缺证类型及需要补测的共享画布区域, 取证前由程序核对两幅原图."""
+
+    kind: EvidenceGapKind
+    sample_region: PixelRegion | None = Field(default=None, exclude_if=lambda value: value is None)
 
 
 class UnassessedItem(ReviewModel):
@@ -307,6 +332,7 @@ class UnassessedItem(ReviewModel):
     dimension: DimensionId
     subject: Text
     reason: Text
+    evidence_gap: EvidenceGap | None = Field(default=None, exclude_if=lambda value: value is None)
 
 
 class RegionStatistics(ReviewModel):

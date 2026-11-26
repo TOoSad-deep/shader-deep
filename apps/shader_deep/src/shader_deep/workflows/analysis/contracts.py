@@ -6,9 +6,20 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Literal
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
     from pydantic import JsonValue
 
-    from shader_deep.domain.scene_observations import SceneObservations, SceneObservationSubmission
+    from shader_deep.domain.scene_observations import ReferenceMeasurement, SceneObservations, SceneObservationSubmission
+    from shader_deep.domain.scene_planning import ObservationRevisionRequest
+
+
+@dataclass(frozen=True, kw_only=True)
+class AnalysisRevision:
+    """从同一参考图的旧观察包定向复核, 每次生成新包."""
+
+    observation_dir: Path
+    request: ObservationRevisionRequest
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -20,3 +31,4 @@ class SceneAnalysisResult:
     observations: SceneObservations | None = None
     error: str | None = None
     task_state: dict[str, JsonValue] | None = None
+    reference_measurements: tuple[ReferenceMeasurement, ...] = ()

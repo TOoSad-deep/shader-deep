@@ -16,6 +16,7 @@ from pydantic import JsonValue, TypeAdapter
 from shader_deep.domain.five_libraries import object_index, parse_references
 from shader_deep.domain.generation import GenerationBinding
 from shader_deep.infrastructure.storage.observation_package import read_observation_package
+from shader_deep.infrastructure.storage.parameterized_candidate import _read_parameters
 from shader_deep.infrastructure.storage.report_evidence import read_evidence
 from shader_deep.infrastructure.storage.report_package import (
     LIBRARIES,
@@ -43,6 +44,15 @@ class CapturedBaseline:
     code_path: str
     preview_url: str | None
     preview_path: str | None
+    render_record_path: str | None = None
+    parameterized_render: str | None = None
+
+    def paths(self) -> dict[str, str | None]:
+        """返回运行快照中的固定副本路径."""
+        result = {"candidate_id": self.candidate_id, "code_path": self.code_path, "preview_path": self.preview_path}
+        if self.render_record_path is not None:
+            result["render_record_path"] = self.render_record_path
+        return result
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -200,13 +210,22 @@ def _preview_bytes(path: str | None, root: Path) -> bytes | None:
 def _capture_baseline(baseline: CandidateRecord | None, directory: Path, root: Path) -> CapturedBaseline | None:
     if baseline is None:
         return None
-    code = (root / baseline.code_path).read_bytes()
+    code_path = root / baseline.code_path
+    code = code_path.read_bytes()
     preview = _preview_bytes(baseline.preview_path, root)
     # 先读取必需材料, 预览缺失不会被默默当作未提供; 原本没有预览仍是合法基线.
-    return _write_baseline(baseline.id, code, preview, directory)
+    settings = None
+    if baseline.render_record_path is not None:
+        if baseline.preview_path is None or preview is None:
+            msg = "参数化基线需要成功渲染的预览"
+            raise ValueError(msg)
+        record = (root / baseline.render_record_path).read_bytes()
+        _read_parameters(record, code_path, code, root / baseline.preview_path, preview)
+        settings = record.decode("utf-8")
+    return _write_baseline(baseline.id, code, preview, directory, settings=settings)
 
 
-def _write_baseline(candidate_id: str, code: bytes, preview: bytes | None, directory: Path) -> CapturedBaseline:
+def _write_baseline(candidate_id: str, code: bytes, preview: bytes | None, directory: Path, *, settings: str | None = None) -> CapturedBaseline:
     text = code.decode("utf-8")
     directory.mkdir(parents=True)
     code_path = directory / "baseline.glsl"
@@ -214,13 +233,28 @@ def _write_baseline(candidate_id: str, code: bytes, preview: bytes | None, direc
     preview_path = directory / "baseline.png" if preview is not None else None
     if preview_path is not None and preview is not None:
         preview_path.write_bytes(preview)
+    record_path, record = _write_baseline_render(directory, code_path, preview_path, settings)
     return CapturedBaseline(
         candidate_id=candidate_id,
         code=text,
         code_path=str(code_path),
         preview_url=_png_url(preview) if preview is not None else None,
         preview_path=str(preview_path) if preview_path is not None else None,
+        render_record_path=record_path,
+        parameterized_render=record,
     )
+
+
+def _write_baseline_render(directory: Path, code: Path, preview: Path | None, settings: str | None) -> tuple[str | None, str | None]:
+    if settings is None or preview is None:
+        return None, None
+    # 固定记录继续绑定实际复制的制品和原始摘要, 文件名改用本次运行中的副本名.
+    value = json.loads(settings)
+    value.update(glsl=code.name, png=preview.name)
+    data = json.dumps(value, ensure_ascii=False, indent=2)
+    path = directory / "render.json"
+    path.write_text(data, encoding="utf-8")
+    return str(path), data
 
 
 def _reuse_generation_inputs(
@@ -236,8 +270,14 @@ def _reuse_generation_inputs(
     files = [str(report_path / name) for name in contents]
     if baseline is not None:
         preview = base64.b64decode(baseline.preview_url.split(",", 1)[1]) if baseline.preview_url is not None else None
-        captured = _write_baseline(baseline.candidate_id, baseline.code.encode("utf-8"), preview, (run_dir / "inputs" / "baseline").resolve())
-        files.extend(path for path in (captured.code_path, captured.preview_path) if path is not None)
+        captured = _write_baseline(
+            baseline.candidate_id,
+            baseline.code.encode("utf-8"),
+            preview,
+            (run_dir / "inputs" / "baseline").resolve(),
+            settings=baseline.parameterized_render,
+        )
+        files.extend(path for path in (captured.code_path, captured.preview_path, captured.render_record_path) if path is not None)
     return replace(
         source,
         binding=replace(source.binding, report_path=str(report_path), sketch_id=sketch_id, alternative=alternative),
@@ -288,7 +328,7 @@ def capture_generation_inputs(
     captured = _capture_baseline(baseline, (run_dir / "inputs" / "baseline").resolve(), root)
     files = [str(report_path / name) for name in contents]
     if captured is not None:
-        files.extend(path for path in (captured.code_path, captured.preview_path) if path is not None)
+        files.extend(path for path in (captured.code_path, captured.preview_path, captured.render_record_path) if path is not None)
     return CapturedGenerationInputs(
         binding=GenerationBinding(
             report_path=str(report_path),

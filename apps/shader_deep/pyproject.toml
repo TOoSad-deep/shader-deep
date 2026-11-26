@@ -27,6 +27,7 @@ shader-deep = "shader_deep.cli.generation:main"
 shader-deep-analyze = "shader_deep.cli.analysis:main"
 shader-deep-plan = "shader_deep.cli.planning:main"
 shader-deep-review = "shader_deep.cli.review:main"
+shader-deep-workflow = "shader_deep.cli.workflow:main"
 
 [build-system]
 requires = ["setuptools>=83.0.0", "wheel"]

@@ -14,9 +14,12 @@ from shader_deep.infrastructure.storage.generation_planning_inputs import Captur
 from shader_deep.workflows.generation import _run_session
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
+
     from shader_deep.agents.generation.contracts import GenerationOutcome
     from shader_deep.agents.generation.options import GenerationOptions
-    from shader_deep.domain.tasks import BlackboardState
+    from shader_deep.domain.local_probe import LocalProbeBinding, VerifiedSnippet
+    from shader_deep.domain.tasks import BlackboardState, CandidateRecord
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -34,7 +37,11 @@ def _planning_state(inputs: CapturedPlanningInputs) -> BlackboardState:
         id="G1",
         role="generation",
         target_version=target.version,
-        objective=f"按固定整图方案 {inputs.binding.sketch_id} 实现完整 E/F/R",
+        objective=(
+            f"按固定整图方案 {inputs.binding.sketch_id} 实现完整 E/F/R"
+            if inputs.local_probe is None
+            else f"在固定试验上下文验证 {', '.join(inputs.local_probe.target_ids)}"
+        ),
         generation_binding=inputs.binding,
         allowed_changes=("实现生效 choices 与 composition, 保持跨元素关系", "依据原图调节方案内数值, 保留已知必要缺口"),
         stop_conditions=("选择已渲染并实际回读预览的候选, 如实记录差异及两类缺口",),
@@ -43,11 +50,29 @@ def _planning_state(inputs: CapturedPlanningInputs) -> BlackboardState:
 
 
 def _prepare_planning_generation(
-    planning_dir: Path, sketch_id: str, *, alternative_index: int | None = None, options: GenerationOptions | None = None
+    planning_dir: Path,
+    sketch_id: str,
+    *,
+    alternative_index: int | None = None,
+    options: GenerationOptions | None = None,
+    verified_snippets: Sequence[VerifiedSnippet] = (),
+    local_probe: LocalProbeBinding | None = None,
+    revision_candidate: CandidateRecord | None = None,
+    revision_guidance: str | None = None,
 ) -> PreparedPlanningGeneration:
     directory = create_run_directory(options.output_dir if options is not None else None)
     try:
-        inputs = capture_planning_generation_inputs(planning_dir, directory, sketch_id, alternative_index=alternative_index, options=options)
+        inputs = capture_planning_generation_inputs(
+            planning_dir,
+            directory,
+            sketch_id,
+            alternative_index=alternative_index,
+            options=options,
+            verified_snippets=verified_snippets,
+            local_probe=local_probe,
+            revision_candidate=revision_candidate,
+            revision_guidance=revision_guidance,
+        )
         state = _planning_state(inputs)
         save_run(directory, state, {"task_id": "G1", "phase": "prepared", "inputs": {"planning": inputs.metadata()}})
         return PreparedPlanningGeneration(run_dir=directory, state=state, inputs=inputs)
@@ -57,7 +82,15 @@ def _prepare_planning_generation(
 
 
 def run_generation_from_planning(
-    planning_dir: Path, *, sketch_id: str, alternative_index: int | None = None, options: GenerationOptions | None = None
+    planning_dir: Path,
+    *,
+    sketch_id: str,
+    alternative_index: int | None = None,
+    options: GenerationOptions | None = None,
+    verified_snippets: Sequence[VerifiedSnippet] = (),
+    local_probe: LocalProbeBinding | None = None,
+    revision_candidate: CandidateRecord | None = None,
+    revision_guidance: str | None = None,
 ) -> GenerationOutcome:
     """从正式规划包显式选择整图方案并执行有预算的生成.
 
@@ -66,6 +99,10 @@ def run_generation_from_planning(
         sketch_id: 明确采用的一套整图 S.
         alternative_index: 相对默认方案的一项零基局部备选.
         options: 完整执行条件和预算, 省略时继承规划尺寸与时间.
+        verified_snippets: 已通过局部评审且经人工晋升的片段, 随整图输入注入.
+        local_probe: 可选的局部试验绑定, 省略时运行整图.
+        revision_candidate: 作为本次修改起点的历史已渲染候选.
+        revision_guidance: 人工批准的修订靶点和保护要求.
 
     Returns:
         实际候选、预览、来源及结束状态.
@@ -74,7 +111,16 @@ def run_generation_from_planning(
         ValueError: 正式包、选择、约束或模型配置无效.
         OSError: 输入捕获、输出或渲染材料无法访问.
     """
-    prepared = _prepare_planning_generation(planning_dir, sketch_id, alternative_index=alternative_index, options=options)
+    prepared = _prepare_planning_generation(
+        planning_dir,
+        sketch_id,
+        alternative_index=alternative_index,
+        options=options,
+        verified_snippets=verified_snippets,
+        local_probe=local_probe,
+        revision_candidate=revision_candidate,
+        revision_guidance=revision_guidance,
+    )
     return _run_session(
         prepared.state,
         "G1",

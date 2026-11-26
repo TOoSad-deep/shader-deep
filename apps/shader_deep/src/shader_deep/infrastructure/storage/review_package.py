@@ -10,6 +10,7 @@ import shutil
 import tempfile
 import warnings
 from dataclasses import dataclass
+from functools import cached_property
 from importlib.resources import files
 from pathlib import Path
 from typing import TYPE_CHECKING, Annotated, Literal
@@ -22,6 +23,7 @@ from shader_deep.domain.review_coverage import validate_coverage
 from shader_deep.domain.review_items import CheckAnswer, summarize_checks, validate_check_revisions
 from shader_deep.domain.visual_review import (
     BoundReviewCriteria,
+    EvidenceGap,
     PixelRegion,
     ReviewEvidence,
     ReviewModel,
@@ -35,20 +37,20 @@ from shader_deep.domain.visual_review import (
     validate_review_submission,
 )
 from shader_deep.imaging.png16 import BIT_DEPTH, crop_png16, decode_png16
-from shader_deep.imaging.png_chunks import png_chunks
-from shader_deep.imaging.review_evidence import measure_review_evidence
+from shader_deep.imaging.png_chunks import copy_png_color_chunks, expand_low_depth_gray, is_low_depth_gray, png_chunks, png_color_chunks
+from shader_deep.imaging.review_evidence import classify_review_gaps, inherit_workflow_samples, label_review_png, measure_review_evidence
 from shader_deep.infrastructure.storage.planning_inputs import content_sha256, parse_json
 
 if TYPE_CHECKING:
-    from shader_deep.domain.visual_review import CoverageEvidence
+    from shader_deep.domain.visual_review import CoverageEvidence, ReviewSource
+    from shader_deep.imaging.review_evidence import WorkflowEvidence
 
 MAX_IMAGE_BYTES = 32 * 1024 * 1024
 MAX_IMAGE_PIXELS = 16_777_216
 MAX_TEXT_BYTES = 8 * 1024 * 1024
 INPUT_FILES = frozenset({"reference.png", "rendered.png", "task.json", "criteria.json", "rules/SKILL.md", "rules/profile.md"})
 VIEW_FILES = frozenset({"views/reference.png", "views/rendered.png"})
-# 裁剪不改变颜色编码, 保留 PNG 中影响显示解释的颜色和 HDR 元数据原块.
-COLOR_CHUNKS = frozenset({b"gAMA", b"cHRM", b"sRGB", b"iCCP", b"cICP", b"sBIT", b"cLLI", b"mDCV"})
+GATE_CRITERIA_FILE = "gate-a-criteria.json"
 Digest = Annotated[str, Field(strict=True, pattern=r"^[0-9a-f]{64}$")]
 
 
@@ -72,6 +74,7 @@ class ReviewReport(ReviewModel):
     metadata: dict[str, JsonValue] = Field(default_factory=dict)
     evidence: ReviewEvidence | None = Field(default=None, exclude_if=lambda value: value is None)
     check_answers: tuple[CheckAnswer, ...] | None = Field(default=None, exclude_if=lambda value: value is None)
+    evidence_gaps: dict[str, EvidenceGap] = Field(default_factory=dict, exclude_if=lambda value: not value)
 
     @property
     def action_summary(self) -> ReviewActionSummary:
@@ -93,6 +96,7 @@ class CapturedReviewSource:
     reference_size: tuple[int, int]
     rendered_size: tuple[int, int]
     evidence: ReviewEvidence | None = None
+    workflow_criteria: BoundReviewCriteria | None = None
 
     @property
     def coverage(self) -> CoverageEvidence | None:
@@ -114,6 +118,13 @@ class CapturedReviewSource:
         """返回固定完整候选图的实际图像载荷."""
         return self.images[1][1]
 
+    @cached_property
+    def model_images(self) -> tuple[tuple[str, str], ...]:
+        """工作流盲评使用图外角色栏, 正式包继续使用原始图像字节."""
+        if self.workflow_criteria is None:
+            return self.images
+        return _images(dict(self.contents), self.request, role_bars=True)
+
 
 @dataclass(frozen=True, kw_only=True)
 class ReviewPackage:
@@ -123,6 +134,11 @@ class ReviewPackage:
     manifest: ReviewManifest
     source: CapturedReviewSource
     report: ReviewReport
+
+    @property
+    def evidence_gaps(self) -> dict[str, EvidenceGap]:
+        """返回经实际画布验证的 A/B 分类, 旧报告在回读时派生."""
+        return self.report.evidence_gaps or _evidence_gaps(self.source, self.report.submission)
 
     @property
     def content_sha256(self) -> str:
@@ -167,48 +183,23 @@ def _crop(content: bytes, region: PixelRegion, size: tuple[int, int]) -> bytes:
         msg = "评审区域超出对应原图边界"
         raise ValueError(msg)
     if content[24] == BIT_DEPTH:
-        return _preserve_color_chunks(content, crop_png16(content, (region.left, region.top, region.right, region.bottom)))
+        return copy_png_color_chunks(content, crop_png16(content, (region.left, region.top, region.right, region.bottom)))
     output = io.BytesIO()
     with Image.open(io.BytesIO(content)) as image, image.crop((region.left, region.top, region.right, region.bottom)) as cropped:
-        if _low_depth_gray(content):
-            with _expand_gray(cropped, content) as expanded:
+        if is_low_depth_gray(content):
+            with expand_low_depth_gray(cropped, content) as expanded:
                 expanded.save(output, format="PNG")
         else:
             cropped.save(output, format="PNG")
-    return _preserve_color_chunks(content, output.getvalue())
-
-
-def _low_depth_gray(content: bytes) -> bool:
-    return content[25] == 0 and content[24] in (1, 2, 4)
-
-
-def _expand_gray(image: Image.Image, content: bytes) -> Image.Image:
-    # Pillow 将低位深样本扩展到 0..255, 透明键需从原始 tRNS 以相同比例扩展.
-    gray = image.convert("L")
-    for chunk in png_chunks(content):
-        if chunk[4:8] == b"tRNS":
-            key = int.from_bytes(chunk[8:-4], "big")
-            gray.info["transparency"] = key * 255 // ((1 << content[24]) - 1)
-            break
-    return gray
+    return copy_png_color_chunks(content, output.getvalue())
 
 
 def _rgba_pixels(content: bytes) -> bytes:
     with Image.open(io.BytesIO(content)) as image:
-        if _low_depth_gray(content):
-            with _expand_gray(image, content) as gray:
+        if is_low_depth_gray(content):
+            with expand_low_depth_gray(image, content) as gray:
                 return gray.convert("RGBA").tobytes()
         return image.convert("RGBA").tobytes()
-
-
-def _color_chunks(content: bytes) -> tuple[bytes, ...]:
-    return tuple(chunk for chunk in png_chunks(content) if chunk[4:8] in COLOR_CHUNKS)
-
-
-def _preserve_color_chunks(original: bytes, cropped: bytes) -> bytes:
-    # Pillow 默认保存只继承部分元数据. 原样复制颜色块及 CRC, 避免经浮点重编码改变其含义.
-    chunks = tuple(png_chunks(cropped))
-    return cropped[:8] + chunks[0] + b"".join(_color_chunks(original)) + b"".join(chunk for chunk in chunks[1:] if chunk[4:8] not in COLOR_CHUNKS)
 
 
 def _read_file(path: Path, limit: int) -> bytes:
@@ -249,7 +240,7 @@ def _verify_view(expected: bytes, actual: bytes, role: str, region: PixelRegion)
     if _png_size(actual) != (region.right - region.left, region.bottom - region.top):
         msg = f"评审局部视图尺寸与固定区域不一致: {role}"
         raise ValueError(msg)
-    if _color_chunks(expected) != _color_chunks(actual):
+    if png_color_chunks(expected) != png_color_chunks(actual):
         msg = f"评审局部视图的颜色元数据与固定原图不一致: {role}"
         raise ValueError(msg)
     if expected[24] == BIT_DEPTH or actual[24] == BIT_DEPTH:
@@ -275,26 +266,35 @@ def _prepare_image(contents: dict[str, bytes], role: str, region: PixelRegion | 
     return size
 
 
-def _images(contents: dict[str, bytes], request: ReviewRequest) -> tuple[tuple[str, str], ...]:
+def _image_url(content: bytes, role: Literal["reference", "rendered"], *, role_bars: bool) -> str:
+    return _url(label_review_png(content, role) if role_bars else content)
+
+
+def _images(contents: dict[str, bytes], request: ReviewRequest, *, role_bars: bool = False) -> tuple[tuple[str, str], ...]:
+    coverage = request.coverage
+    reference = "参考整图 reference (局部任务用于定位与上下文)"
+    rendered = "候选整图 rendered (实际渲染结果)"
+    if coverage is not None:
+        reference = f"参考输入 reference 采集窗口={coverage.reference_window.model_dump_json()}"
+        rendered = f"候选输入 rendered 采集窗口={coverage.rendered_window.model_dump_json()}"
     images = [
-        ("参考整图 reference (局部任务用于定位与上下文)", _url(contents["reference.png"])),
-        ("候选整图 rendered (实际渲染结果)", _url(contents["rendered.png"])),
+        (reference, _image_url(contents["reference.png"], "reference", role_bars=role_bars)),
+        (rendered, _image_url(contents["rendered.png"], "rendered", role_bars=role_bars)),
     ]
-    if request.coverage is not None:
-        images[0] = (f"参考输入 reference 采集窗口={request.coverage.reference_window.model_dump_json()}", images[0][1])
-        images[1] = (f"候选输入 rendered 采集窗口={request.coverage.rendered_window.model_dump_json()}", images[1][1])
-    for role, region in (("reference", request.reference_region), ("rendered", request.rendered_region)):
+    crops: tuple[tuple[Literal["reference", "rendered"], PixelRegion | None], ...] = (
+        ("reference", request.reference_region),
+        ("rendered", request.rendered_region),
+    )
+    for role, region in crops:
         if region is not None:
             label = "参考局部" if role == "reference" else "候选局部"
-            images.append((f"{label} {role} 区域={region.model_dump_json()}", _url(contents[f"views/{role}.png"])))
+            url = _image_url(contents[f"views/{role}.png"], role, role_bars=role_bars)
+            images.append((f"{label} {role} 区域={region.model_dump_json()}", url))
     return tuple(images)
 
 
 def _measurement_input(content: bytes, size: tuple[int, int]) -> bytes:
-    if content[24] == BIT_DEPTH:
-        msg = "region_stats 以 8 位编码 RGB 为单位, 16 位 PNG 暂不支持区域测量"
-        raise ValueError(msg)
-    if _low_depth_gray(content):
+    if is_low_depth_gray(content):
         # 与局部视图使用同样的灰度扩展和透明键换算, 保持 PNG 坐标不变.
         return _crop(content, PixelRegion(left=0, top=0, right=size[0], bottom=size[1]), size)
     return content
@@ -316,6 +316,38 @@ def _validate_rule_protocol(request: ReviewRequest, rule_text: str) -> None:
         raise ValueError(msg)
 
 
+def _check_workflow_criteria(criteria: BoundReviewCriteria) -> None:
+    if criteria.request.protocol != "visual_review_v2" or not criteria.checks or any(item.source_ref is None for item in criteria.checks):
+        msg = "工作流评审必须冻结 V2 标准并为每条必查项填写 source_ref"
+        raise ValueError(msg)
+
+
+def _workflow_criteria(contents: dict[str, bytes], current: ReviewRequest, rule: str, profile: str) -> BoundReviewCriteria | None:
+    if GATE_CRITERIA_FILE not in contents:
+        return None
+    initial = BoundReviewCriteria.model_validate(parse_json(contents[GATE_CRITERIA_FILE]))
+    validate_bound_criteria(initial, rule, profile)
+    _check_workflow_criteria(initial)
+    original = initial.request
+    regions = (current.reference_region, current.rendered_region)
+    if regions not in ((original.reference_region, original.rendered_region), (None, None)):
+        msg = "工作流补证仅允许沿用门禁 A 视图或扩至原始 PNG"
+        raise ValueError(msg)
+    stable = current.model_copy(
+        update={
+            "reference_region": original.reference_region,
+            "rendered_region": original.rendered_region,
+            "samples": original.samples,
+            "source": original.source,
+            "conditions": current.conditions.model_copy(update={"rendered_time": original.conditions.rendered_time}),
+        }
+    )
+    if stable != original or current.samples[: len(original.samples)] != original.samples:
+        msg = "工作流本轮评审改变了门禁 A 冻结标准"
+        raise ValueError(msg)
+    return initial
+
+
 def _source(directory: Path, contents: dict[str, bytes], *, capturing: bool = False) -> CapturedReviewSource:
     request = ReviewRequest.model_validate(parse_json(contents["task.json"]))
     criteria = BoundReviewCriteria.model_validate(parse_json(contents["criteria.json"]))
@@ -325,7 +357,10 @@ def _source(directory: Path, contents: dict[str, bytes], *, capturing: bool = Fa
     if request != criteria.request:
         msg = "评审任务与冻结标准不一致"
         raise ValueError(msg)
-    if set(contents) != (INPUT_FILES if capturing else _expected_files(request)):
+    workflow_criteria = _workflow_criteria(contents, request, rule_text, profile_text)
+    base = INPUT_FILES if capturing else _expected_files(request)
+    expected = base if workflow_criteria is None else base | {GATE_CRITERIA_FILE}
+    if set(contents) != expected:
         msg = "评审输入文件与固定任务的区域声明不一致"
         raise ValueError(msg)
     reference_size = _prepare_image(contents, "reference", request.reference_region, capturing=capturing)
@@ -345,6 +380,7 @@ def _source(directory: Path, contents: dict[str, bytes], *, capturing: bool = Fa
         reference_size=reference_size,
         rendered_size=rendered_size,
         evidence=measure_review_evidence(request, images, sizes, directory),
+        workflow_criteria=workflow_criteria,
     )
 
 
@@ -368,7 +404,10 @@ def read_captured_review_source(directory: Path) -> CapturedReviewSource:
     task = _read_file(_asset(inputs, "task.json"), MAX_TEXT_BYTES)
     request = ReviewRequest.model_validate(parse_json(task))
     contents = {"task.json": task}
-    for name in _expected_files(request) - contents.keys():
+    names = _expected_files(request)
+    if (inputs / GATE_CRITERIA_FILE).exists() or (inputs / GATE_CRITERIA_FILE).is_symlink():
+        names |= {GATE_CRITERIA_FILE}
+    for name in names - contents.keys():
         limit = MAX_IMAGE_BYTES if name.endswith(".png") else MAX_TEXT_BYTES
         contents[name] = _read_file(_asset(inputs, name), limit)
     return _source(directory, contents)
@@ -390,12 +429,92 @@ def capture_review_source(reference_path: Path, rendered_path: Path, directory: 
         ValueError: 图像、区域或任务无效, 或捕获目标已经存在.
         OSError: 读取或保存输入失败.
     """
+    rule_text, profile_text = _rule_material(request)
+    criteria = bind_review_criteria(request, rule_text, profile_text)
+    contents = _capture_contents(reference_path, rendered_path, criteria, rule_text, profile_text)
+    return _save_capture(directory, contents)
+
+
+def _rule_material(request: ReviewRequest) -> tuple[str, str]:
     resource = files("shader_deep.resources").joinpath("skills", "visual-review")
     rule_name = "items.md" if request.protocol == "visual_review_v2" else "SKILL.md"
     rule_text = resource.joinpath(rule_name).read_text(encoding="utf-8")
     profile_text = resource.joinpath("profiles", f"{review_profile(request)}.md").read_text(encoding="utf-8")
-    criteria = bind_review_criteria(request, rule_text, profile_text)
-    contents = _capture_contents(reference_path, rendered_path, criteria, rule_text, profile_text)
+    return rule_text, profile_text
+
+
+def freeze_workflow_review(request: ReviewRequest) -> BoundReviewCriteria:
+    """在浏览候选前冻结门禁 A 审定的 V2 检查标准.
+
+    Args:
+        request: 人在门禁 A 选定的范围、上游引用和必查标准.
+
+    Returns:
+        与 V2 规则和本轮模板绑定的固定标准.
+
+    Raises:
+        ValueError: V2 标准无效或存在缺少来源的必查项.
+    """
+    prepared = request.model_copy(update={"protocol": "visual_review_v2"})
+    criteria = bind_review_criteria(prepared, *_rule_material(prepared))
+    _check_workflow_criteria(criteria)
+    return criteria
+
+
+def _effective_request(
+    contents: dict[str, bytes], criteria: BoundReviewCriteria, evidence: WorkflowEvidence, source: ReviewSource | None
+) -> ReviewRequest:
+    request = criteria.request
+    changes: dict[str, object] = {"reference_region": None, "rendered_region": None} if evidence.expand_views else {}
+    if source is not None:
+        changes["source"] = source
+    if evidence.rendered_time is not None:
+        changes["conditions"] = request.conditions.model_copy(update={"rendered_time": evidence.rendered_time})
+    request = request.model_copy(update=changes)
+    if evidence.reference_measurements or evidence.optimization_regions or evidence.resample_regions:
+        reference, rendered = contents["reference.png"], contents["rendered.png"]
+        samples = inherit_workflow_samples(request, (_png_size(reference), _png_size(rendered)), hashlib.sha256(reference).hexdigest(), evidence)
+        request = request.model_copy(update={"samples": samples})
+    return request
+
+
+def capture_workflow_review_source(
+    reference_path: Path,
+    rendered_path: Path,
+    directory: Path,
+    criteria: BoundReviewCriteria,
+    evidence: WorkflowEvidence,
+    *,
+    source: ReviewSource | None,
+) -> CapturedReviewSource:
+    """保留实际审批版本, 仅溯源、扩大视图或从同坐标画布补采.
+
+    Args:
+        reference_path: 固定参考 PNG 文件.
+        rendered_path: 实际候选 PNG 文件.
+        directory: 新运行目录.
+        criteria: 门禁 A 审批后的冻结标准.
+        evidence: 要补充的像素证据与视图选择.
+        source: 本次候选的实际运行来源, 可保持门禁 A 的来源字段.
+
+    Returns:
+        保留用户批准的规则和本轮实际证据的固定图像包.
+
+    Raises:
+        ValueError: 原始标准或本轮证据不合法.
+        OSError: 固定输入无法捕获或保存.
+    """
+    rule, profile = _rule_material(criteria.request)
+    validate_bound_criteria(criteria, rule, profile)
+    _check_workflow_criteria(criteria)
+    contents = _capture_contents(reference_path, rendered_path, criteria, rule, profile)
+    effective = bind_review_criteria(_effective_request(contents, criteria, evidence, source), rule, profile)
+    contents[GATE_CRITERIA_FILE] = contents["criteria.json"]
+    contents.update(_criteria_contents(effective))
+    return _save_capture(directory, contents)
+
+
+def _save_capture(directory: Path, contents: dict[str, bytes]) -> CapturedReviewSource:
     source = _source(directory, contents, capturing=True)
     _new_destination(directory / "inputs")
     _write_contents(directory / "inputs", contents)
@@ -410,11 +529,14 @@ def _capture_contents(reference: Path, rendered: Path, criteria: BoundReviewCrit
         raise ValueError(msg) from error
     return {
         **images,
-        "task.json": _json_bytes(criteria.request.model_dump(mode="json")),
-        "criteria.json": _json_bytes(criteria.model_dump(mode="json")),
+        **_criteria_contents(criteria),
         "rules/SKILL.md": rule.encode("utf-8"),
         "rules/profile.md": profile.encode("utf-8"),
     }
+
+
+def _criteria_contents(criteria: BoundReviewCriteria) -> dict[str, bytes]:
+    return {"task.json": _json_bytes(criteria.request.model_dump(mode="json")), "criteria.json": _json_bytes(criteria.model_dump(mode="json"))}
 
 
 def _new_destination(directory: Path) -> None:
@@ -438,6 +560,12 @@ def _validate_submission(source: CapturedReviewSource, submission: ReviewSubmiss
     if submission != expected:
         msg = "逐项答案及程序覆盖证据与报告汇总不一致"
         raise ValueError(msg)
+
+
+def _evidence_gaps(source: CapturedReviewSource, submission: ReviewSubmission) -> dict[str, EvidenceGap]:
+    if source.request.protocol != "visual_review_v2":
+        return {}
+    return classify_review_gaps(source.request, (source.reference_size, source.rendered_size), submission.unassessed, source.coverage)
 
 
 def write_review_package(
@@ -480,6 +608,7 @@ def write_review_package(
         metadata=metadata or {},
         evidence=source.evidence,
         check_answers=check_answers,
+        evidence_gaps=_evidence_gaps(source, submission),
     )
     contents["review.json"] = _json_bytes(report.model_dump(mode="json"))
     manifest = ReviewManifest(
@@ -508,7 +637,7 @@ def _publish(directory: Path, contents: dict[str, bytes], manifest: ReviewManife
 
 def _verified_contents(directory: Path, manifest: ReviewManifest) -> dict[str, bytes]:
     names = set(manifest.files)
-    if not INPUT_FILES | {"review.json"} <= names or not names <= INPUT_FILES | VIEW_FILES | {"review.json"}:
+    if not INPUT_FILES | {"review.json"} <= names or not names <= INPUT_FILES | VIEW_FILES | {"review.json", GATE_CRITERIA_FILE}:
         msg = "评审 manifest.files 与协议文件集合不一致"
         raise ValueError(msg)
     contents = {name: _read_file(_asset(directory, name), MAX_IMAGE_BYTES if name.endswith(".png") else MAX_TEXT_BYTES) for name in names}
@@ -546,6 +675,9 @@ def read_review_package(directory: Path) -> ReviewPackage:
         raise ValueError(msg)
     _validate_submission(source, report.submission, report.check_answers)
     validate_check_revisions(source.criteria, source.coverage, report.check_answers, report.metadata)
+    if report.evidence_gaps and report.evidence_gaps != _evidence_gaps(source, report.submission):
+        msg = "缺证分类与固定双图、逐项回答或采集区域不一致"
+        raise ValueError(msg)
     if report.evidence != source.evidence:
         msg = "评审报告证据与固定双图及任务不一致"
         raise ValueError(msg)

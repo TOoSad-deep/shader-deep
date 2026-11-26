@@ -1,6 +1,6 @@
 (() => {
     // 立即执行的函数为这一个页面建立画布与 WebGL2 上下文.
-    // canvas/gl 留在闭包内供多次调用复用, 只公开 window.renderShader 作为 Python 入口.
+    // canvas/gl 留在闭包内供多次调用复用, 只公开 window.shaderRenderer 作为 Python 入口.
     const canvas = document.createElement("canvas");
     document.body.replaceChildren(canvas);
     const gl = canvas.getContext("webgl2", {
@@ -27,7 +27,7 @@ void main() {
 `;
 
     function fail(stage, message) {
-        // 把失败阶段附在异常上; renderShader 的 catch 将其转换成 Python 能读取的对象.
+        // 把失败阶段附在异常上, 由浏览器入口转换成 Python 能读取的对象.
         const error = new Error(message);
         error.stage = stage;
         throw error;
@@ -89,7 +89,35 @@ void main() {
         gl.viewport(0, 0, width, height);
     }
 
-    function draw(program, width, height, time) {
+    const uniformTypes = [gl.FLOAT, gl.FLOAT_VEC2, gl.FLOAT_VEC3, gl.FLOAT_VEC4];
+    const uniformSetters = [gl.uniform1fv, gl.uniform2fv, gl.uniform3fv, gl.uniform4fv];
+
+    function bindUniforms(program, uniforms) {
+        const locations = new Map();
+        if (!uniforms.length) return locations;
+
+        const active = new Map();
+        const count = gl.getProgramParameter(program, gl.ACTIVE_UNIFORMS);
+        for (let index = 0; index < count; index++) {
+            const info = gl.getActiveUniform(program, index);
+            if (info) active.set(info.name, info);
+        }
+        for (const [name, components] of uniforms) {
+            const info = active.get(name);
+            const location = gl.getUniformLocation(program, name);
+            if (!info || location === null) {
+                fail("uniforms", `Uniform '${name}' is absent or inactive in the linked program`);
+            }
+            if (info.size !== 1 || info.type !== uniformTypes[components.length - 1]) {
+                fail("uniforms", `Uniform '${name}' does not match the supplied float or vector type`);
+            }
+            locations.set(name, location);
+        }
+        return locations;
+    }
+
+    function draw(state, uniforms) {
+        const { program, resolution, timeLocation, locations, width, height, time } = state;
         // 每个候选先清成透明色, 防止 discard 的像素沿用上一帧内容.
         // 关闭混合与抖动, 使写出的颜色尽量直接对应片段 Shader 的输出.
         gl.disable(gl.BLEND);
@@ -99,12 +127,22 @@ void main() {
         gl.useProgram(program);
         // uniform 是本次绘制共享的输入: 分辨率和固定时间.
         // Shader 未使用某个 uniform 时其位置可为 null, WebGL 会忽略对应赋值.
-        gl.uniform3f(gl.getUniformLocation(program, "iResolution"), width, height, 1);
-        gl.uniform1f(gl.getUniformLocation(program, "iTime"), time);
+        gl.uniform3f(resolution, width, height, 1);
+        gl.uniform1f(timeLocation, time);
+        for (const [name, components] of uniforms) {
+            uniformSetters[components.length - 1].call(gl, locations.get(name), components);
+        }
         gl.drawArrays(gl.TRIANGLES, 0, 3);
-        const error = gl.getError();
-        if (error !== gl.NO_ERROR || gl.isContextLost()) {
-            fail("draw", "WebGL2 draw failed, error code: " + error);
+        checkGlError("draw");
+    }
+
+    function checkGlError(stage) {
+        const codes = [];
+        for (let code = gl.getError(); code !== gl.NO_ERROR; code = gl.getError()) {
+            codes.push(code);
+        }
+        if (codes.length || gl.isContextLost()) {
+            fail(stage, `WebGL2 ${stage} failed, error codes: ${codes.join(", ") || "context lost"}`);
         }
     }
 
@@ -114,36 +152,99 @@ void main() {
         if (!png.startsWith("data:image/png;base64,")) {
             fail("export", "Canvas did not produce a PNG");
         }
-        return png;
+        return png.slice("data:image/png;base64,".length);
     }
 
-    window.renderShader = ({ glsl_code, width, height, time }) => {
-        // 每次调用拥有独立 program/shader, 画布与上下文跨调用复用.
-        // 成功与失败都返回可序列化对象, 由 Python 再统一转换成字节或 RenderError.
+    function readRegion([left, top, right, bottom], canvasHeight) {
+        const width = right - left;
+        const height = bottom - top;
+        const pixels = new Uint8Array(width * height * 4);
+        // WebGL 原点在左下角, 转换区域坐标后逐行反转, 输出与 PNG 区域坐标一致.
+        gl.readPixels(left, canvasHeight - bottom, width, height, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+        checkGlError("read_pixels");
+        const stride = width * 4;
+        const topDown = new Uint8Array(pixels.length);
+        for (let row = 0; row < height; row++) {
+            const start = (height - row - 1) * stride;
+            topDown.set(pixels.subarray(start, start + stride), row * stride);
+        }
+        // 只做跨进程传输编码, 不在试验路径调用画布 PNG 编码器.
+        let binary = "";
+        const chunk = 32768;
+        for (let start = 0; start < topDown.length; start += chunk) {
+            binary += String.fromCharCode(...topDown.subarray(start, start + chunk));
+        }
+        return btoa(binary);
+    }
+
+    function release(program) {
+        gl.useProgram(null);
+        gl.deleteProgram(program);
+    }
+
+    function start({ code, width, height, time, uniforms }) {
+        if (gl.isContextLost()) fail("context", "WebGL2 context was lost");
+        resize(width, height);
+        const program = gl.createProgram();
+        if (!program) fail("link", "Could not allocate program");
         const shaders = [];
-        let program = null;
         try {
-            if (gl.isContextLost()) {
-                fail("context", "WebGL2 context was lost");
+            prepareProgram(program, code, shaders);
+            for (const shader of shaders) gl.detachShader(program, shader);
+            const locations = bindUniforms(program, uniforms);
+            return {
+                program, width, height, time, locations,
+                resolution: gl.getUniformLocation(program, "iResolution"),
+                timeLocation: gl.getUniformLocation(program, "iTime"),
+            };
+        } catch (error) {
+            release(program);
+            throw error;
+        } finally {
+            shaders.forEach(shader => gl.deleteShader(shader));
+        }
+    }
+
+    let current = null;
+
+    function operate(operation, args) {
+        if (operation === "start" || operation === "render") {
+            if (current) fail("session", "Renderer already has an active optimization session");
+            const state = start(args);
+            if (operation === "start") {
+                current = state;
+                return null;
             }
-            resize(width, height);
-            program = gl.createProgram();
-            if (!program) {
-                fail("link", "Could not allocate program");
+            try {
+                draw(state, args.uniforms);
+                return exportPng();
+            } finally {
+                release(state.program);
             }
-            prepareProgram(program, glsl_code, shaders);
-            draw(program, width, height, time);
-            return { ok: true, png: exportPng() };
+        }
+        if (!current) fail("session", "No active optimization session");
+        if (operation === "end") {
+            const { program } = current;
+            current = null;
+            release(program);
+            return null;
+        }
+        if (operation === "png") {
+            draw(current, args);
+            return exportPng();
+        }
+        if (operation === "read") {
+            draw(current, args.uniforms);
+            return args.regions.map(region => readRegion(region, current.height));
+        }
+        fail("session", "Unknown renderer operation");
+    }
+
+    window.shaderRenderer = (operation, args) => {
+        try {
+            return { ok: true, value: operate(operation, args) };
         } catch (error) {
             return { ok: false, stage: error.stage || "render", message: error.message || String(error) };
-        } finally {
-            // 先解除当前 program 绑定, 再删除 program 和两段 Shader.
-            // finally 在成功导出或任何失败分支都会执行, 避免候选迭代积累 GPU 对象.
-            gl.useProgram(null);
-            if (program) {
-                gl.deleteProgram(program);
-            }
-            shaders.forEach(shader => gl.deleteShader(shader));
         }
     };
 })();

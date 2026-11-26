@@ -6,6 +6,9 @@ import os
 
 from langchain_openai import ChatOpenAI
 
+from shader_deep.infrastructure.llm.budget import BudgetChatOpenAI, budget_active
+from shader_deep.infrastructure.llm.openrouter import OpenRouterChatOpenAI, is_openrouter
+
 
 def require_env(name: str) -> str:
     """读取一个必填且不能为空的环境变量.
@@ -69,9 +72,16 @@ def build_model() -> ChatOpenAI:
     # 应用读取进程环境变量, .env 的加载由启动命令承担.
     prefix = _configuration_prefix()
     # 显式沿用 Chat Completions 协议, 与当前中转接口及工具调用测试保持一致.
-    return ChatOpenAI(
-        model=require_env(f"{prefix}_MODEL"),
-        base_url=require_env(f"{prefix}_BASE_URL"),
+    budgeted = budget_active()
+    model = require_env(f"{prefix}_MODEL")
+    base_url = require_env(f"{prefix}_BASE_URL")
+    client = OpenRouterChatOpenAI if is_openrouter(base_url) else ChatOpenAI
+    if budgeted:
+        client = BudgetChatOpenAI
+    return client(
+        max_retries=0 if budgeted else None,
+        model=model,
+        base_url=base_url,
         api_key=require_env(f"{prefix}_API_KEY"),
         use_responses_api=False,
         # OpenRouter 只路由到支持实际请求参数的提供方, 防止静默忽略工具配置.

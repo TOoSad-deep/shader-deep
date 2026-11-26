@@ -47,6 +47,20 @@ class MeasurementTests(TestCase):
         self.assertEqual(profile.profile, (20.0,) * 4 + (220.0,) * 4)
         self.assertEqual(profile.image_size, (8, 6))
 
+    def test_gray16_crop_and_statistics_match_transparency_before_quantization(self) -> None:
+        stream = io.BytesIO()
+        with Image.new("I;16", (2, 1), 32768) as image:
+            image.putpixel((1, 0), 32769)
+            image.save(stream, format="PNG", transparency=32769)
+        reader = ReferenceMeasurements(stream.getvalue(), self.root, "A1", "T1", 2)
+        region = {"left": 0, "top": 0, "right": 2, "bottom": 1}
+        crop, _ = reader.measure(self.request({"kind": "crop", "region": region}))
+        stats, _ = reader.measure(self.request({"kind": "region_stats", "region": region}))
+        with Image.open(crop.artifact_path) as result:
+            self.assertEqual(result.getpixel((0, 0)), (128, 128, 128, 255))
+            self.assertEqual(result.getpixel((1, 0)), (128, 128, 128, 0))
+        self.assertEqual(stats.mean_rgb, (191.5, 191.5, 191.5))
+
     def test_measurement_semantics_describe_actual_aggregation_and_legacy_absence(self) -> None:
         region, _ = self.reader.measure(self.request(measurement()))
         profile, _ = self.reader.measure(self.request(measurement("line_profile", right=8, axis="y")))

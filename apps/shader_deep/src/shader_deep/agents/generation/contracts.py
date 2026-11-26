@@ -24,6 +24,7 @@ class GenerationOutcome:
         stop_reason: completed、blocked、attempt_limit、model_limit 或 error.
         attempts: 已执行的候选尝试次数.
         model_calls: 普通逻辑模型请求轮数, 不包含每轮最多两次 SDK 网络重试; 自动模型摘要已关闭.
+        baked_code_path: 已选参数化候选的单文件 GLSL, 无参时为空.
     """
 
     # outcome 返回最新业务快照; selected_candidate=None 时也可查看失败尝试与停止原因.
@@ -34,6 +35,7 @@ class GenerationOutcome:
     stop_reason: str
     attempts: int
     model_calls: int
+    baked_code_path: Path | None = None
 
 
 class GenerationLimitError(RuntimeError):

@@ -19,6 +19,7 @@ from PIL.PngImagePlugin import PngInfo
 from shader_deep.domain.review_items import CheckAnswer, bound_checks, summarize_checks
 from shader_deep.domain.visual_review import PixelRegion, RequiredRegion, ReviewCoverage, ReviewRequest, ReviewSource, bind_review_criteria
 from shader_deep.imaging.png16 import decode_png16
+from shader_deep.imaging.review_evidence import label_review_png
 from shader_deep.infrastructure.storage.planning_inputs import content_sha256
 from shader_deep.infrastructure.storage.review_package import (
     CapturedReviewSource,
@@ -351,6 +352,8 @@ class ReviewPackageTests(TestCase):
             level = 255 // ((1 << depth) - 1)
             with self.subTest(depth=depth), Image.open(io.BytesIO(view)) as image:
                 self.assertEqual(list(image.convert("RGBA").get_flattened_data()), [(level, level, level, 0), (0, 0, 0, 255)])
+                with Image.open(io.BytesIO(label_review_png(self.reference.read_bytes(), "reference"))) as labelled:
+                    self.assertEqual(labelled.getpixel((1, labelled.height - 1)), (level, 0))
             # 同样的灰度像素但透明键已删除, 即使重封摘要, 正式读取仍应拒绝.
             with Image.new("L", (2, 1)) as opaque:
                 opaque.putpixel((0, 0), level)

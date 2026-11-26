@@ -9,15 +9,14 @@ import httpx2
 from langchain_core.exceptions import ModelAPIError, ModelError
 from langchain_core.messages import AIMessage, AIMessageChunk
 from langchain_core.messages.tool import tool_call
-from langchain_openai import ChatOpenAI
 
 # 本模块只适配请求/响应协议. 原生角色的 ModelRetryMiddleware 决定是否重试请求,
 # 业务工具是否接受结果仍由角色和领域层决定, 不在传输层重放任务.
+from shader_deep.infrastructure.llm.budget import BudgetChatOpenAI
 from shader_deep.infrastructure.llm.openrouter import (
     RAW_REASONING,
     ReasoningBuffer,
     StreamTerminal,
-    _tool_parameters,
     is_openrouter,
     restore_reasoning,
 )
@@ -29,6 +28,7 @@ if TYPE_CHECKING:
     from langchain_core.language_models import LanguageModelInput
     from langchain_core.messages import BaseMessage
     from langchain_core.outputs import ChatGenerationChunk, ChatResult
+    from langchain_openai import ChatOpenAI
     from openai import BaseModel
 
     from shader_deep.infrastructure.llm.options import ModelOptions
@@ -86,8 +86,10 @@ def _explicit_required(schema: object) -> object:
     return result
 
 
-class AnalysisChatOpenAI(ChatOpenAI):
+class AnalysisChatOpenAI(BudgetChatOpenAI):
     """保留原始参数供执行前审查, 防止流式解析器补齐非法 JSON 后丢失原文."""
+
+    _force_strict_tools = True
 
     def _get_request_payload(self, input_: LanguageModelInput, *, stop: list[str] | None = None, **kwargs: object) -> dict:
         """保留本地契约, 在请求边界适配 required 和 OpenRouter 非空白正则."""
@@ -95,13 +97,6 @@ class AnalysisChatOpenAI(ChatOpenAI):
         if "tools" in payload:
             payload["tools"] = _explicit_required(payload["tools"])
         if is_openrouter(self.openai_api_base):
-            for entry in payload.get("tools", []):
-                if entry.get("type") == "function":
-                    # 保留动态 F/R 选择键的原 Schema, 不将字典的 additionalProperties 改为 false.
-                    strict_binding = entry["function"].get("strict") is True
-                    entry["function"]["strict"] = True
-                    if "parameters" in entry["function"]:
-                        entry["function"]["parameters"] = _tool_parameters(entry["function"]["parameters"], strict_binding=strict_binding)
             restore_reasoning(payload, self._convert_input(input_).to_messages())
         return payload
 
@@ -243,7 +238,8 @@ def configure_analysis_model(model: ChatOpenAI, options: ModelOptions) -> ChatOp
         extra_body["max_tokens"] = options.max_output_tokens
     # 从已校验实例复制字段与共享客户端, 不重新构造网络资源或改动用户配置.
     guarded = AnalysisChatOpenAI.model_construct(**model.__dict__)
-    guarded.__pydantic_private__ = model.__pydantic_private__
+    # 普通客户端可能没有私有字段, 保留预算适配器自己的逐请求回执槽.
+    guarded.__pydantic_private__ = {**(guarded.__pydantic_private__ or {}), **(model.__pydantic_private__ or {})}
     return guarded.model_copy(
         update={
             "root_client": client,

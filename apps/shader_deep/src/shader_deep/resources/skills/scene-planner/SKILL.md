@@ -13,6 +13,10 @@ description: 基于固定整图 E/F/R、原图、要求和生成约束, 组织�
 
 观察短 ID 沿用固定输入。发现必要观察仍不可靠时，保留上游 gaps 的影响，说明需要补充的观察。观察修订由后续新版本承载。
 
+只有阻断实际规划的事实矛盾或关键对象、关系遗漏，才以 `stop_planning` 附 `observation_revision_request`。填现有且不重复的 `disputed_ids`、对照原图的 `contradiction` 和左闭右开的 `suggested_region`。旧观察完全没有 E/F/R 时，填空 `disputed_ids` 并在建议区域中定位疑似漏检。必要小缺口仍写在暂定方案中，勿修改只读观察。
+
+如果本轮提供 `revision_feedback`，把它当成前轮方法和局部试验的已知限制。用固定观察与用户原要求重新组织可行方案，说明怎样避开已证伪的情况。
+
 ## 2. 组织方法与整图方案
 
 M 描述一项可复用构造方法。method 交代构造动作、必要输入、输出和主要可调因素，conditions 保留其内在前提。具体位置、应用次数及本图参数安排写在 S.composition。
@@ -22,6 +26,8 @@ M 使用自包含概念描述输入，例如“可重复求值的底层颜色”
 每套 S 对完整观察给出实现安排。default 的键为 F/R，值为共同采用的 M 数组。数组表示共同作用，执行顺序、共享结果、依赖、混合与裁切写在 composition。
 
 先组织一套明确方案。具有实质整体路线差异时增加完整 S。局部替换已有选择时，使用 alternatives，每次至多选择一个备选。备选 choices 替换对应目标的整组 M，省略的目标继承默认选择。省略 composition 时沿用默认全文。提供时写出替换后的完整整图组织说明，包含仍然有效的安排。
+
+确有高风险成因或路线分歧时，可在 S 的 `risk_probes` 中提示局部试验。填单个 E 或一组 F/R 的 `target_ids`、需要验证的 `reason`，及一种 `context_mode`。试验目标须至少在方案中绑定一个机制，E 通过其特征绑定。可独立隔离的现象用 `isolated_solid`，必须看底色或相邻物的现象用 `proxy_context`，须在当前整图局部替换时用 `scene_baseline_patch`。普通方案可省略。
 
 候选索引由程序派生。extra_candidates 仅保留尚未由方案表达的必要组合，reason 说明价值、未入选原因及组合限制。候选采用到方案后，将有效限制落实到 composition 或具体 gaps，再移除重复补充项。
 

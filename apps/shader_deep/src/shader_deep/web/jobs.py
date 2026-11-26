@@ -22,13 +22,18 @@ from pydantic import BaseModel, ConfigDict, Field, JsonValue, TypeAdapter, model
 
 from shader_deep.infrastructure.storage.observation_package import read_observation_package
 from shader_deep.infrastructure.storage.report_package import read_report_package, read_sketch
+from shader_deep.workflows.optimization_workflow import GateADecision, GateBDecision, WorkflowState
+from shader_deep.workflows.optimization_workflow.stages import _criteria_retry_available
 
 MAX_IMAGE_BYTES = 12 * 1024 * 1024
 MAX_DIMENSION = 4096
 TEXT_LIMIT = 24_000
 LEGACY_PERSPECTIVES = 3
+WORKFLOW_DECISION_ERROR = 2
 ANALYSIS_PERSPECTIVES_MIGRATION = "分析已迁移为单 Agent 全图观察, 请移除 perspectives; 不再支持双视角."
 JSON_OBJECT = TypeAdapter(dict[str, JsonValue])
+JSON_ARRAY = TypeAdapter(list[JsonValue])
+MAX_WORKFLOW_DETAIL_BYTES = 512 * 1024
 SUFFIXES = {".png", ".glsl", ".json", ".md", ".log", ".txt", ".jsonl"}
 
 
@@ -36,7 +41,7 @@ class Submission(BaseModel):
     """界面提交的有限参数, 不接受命令或任意本地路径."""
 
     model_config = ConfigDict(extra="forbid", strict=True, str_strip_whitespace=True)
-    mode: Literal["generate", "analyze", "report"]
+    mode: Literal["generate", "analyze", "report", "workflow"]
     prompt: str = Field(min_length=1, max_length=8000)
     image: str = Field(default="", max_length=MAX_IMAGE_BYTES * 4 // 3)
     width: int = Field(default=512, ge=1, le=2048)
@@ -77,12 +82,13 @@ def _verify_png(data: bytes) -> None:
         image.verify()
 
 
-def _tail(path: Path) -> str:
-    if not path.is_file():
+def _tail(path: Path, offset: int = 0) -> str:
+    try:
+        with path.open("rb") as stream:
+            stream.seek(max(offset, os.fstat(stream.fileno()).st_size - TEXT_LIMIT))
+            return stream.read(TEXT_LIMIT).decode("utf-8", errors="replace")
+    except OSError:
         return ""
-    with path.open("rb") as stream:
-        stream.seek(max(0, path.stat().st_size - TEXT_LIMIT))
-        return stream.read(TEXT_LIMIT).decode("utf-8", errors="replace")
 
 
 def _object(path: Path) -> dict[str, JsonValue]:
@@ -90,6 +96,28 @@ def _object(path: Path) -> dict[str, JsonValue]:
         return JSON_OBJECT.validate_json(path.read_bytes())
     except (OSError, ValueError):
         return {}
+
+
+def _workflow_artifact(directory: Path, relative: str, asset: str | None) -> JsonValue:
+    path = directory / relative
+    try:
+        path = (path / asset if asset is not None else path).resolve()
+        if path.is_relative_to(directory) and path.is_file() and path.stat().st_size <= MAX_WORKFLOW_DETAIL_BYTES:
+            parser = JSON_ARRAY if asset is not None else JSON_OBJECT
+            return parser.validate_json(path.read_bytes())
+    except (OSError, ValueError):
+        return None
+    return None
+
+
+def _can_retry_criteria(directory: Path, raw: dict[str, JsonValue]) -> bool:
+    if raw.get("phase") not in ("gate_a", "blocked"):
+        return False
+    try:
+        state = WorkflowState.model_validate(raw)
+        return Path(state.directory) == directory and _criteria_retry_available(state)
+    except (OSError, ValueError):
+        return False
 
 
 @dataclass
@@ -101,6 +129,7 @@ class Job:
     request: Submission
     process: subprocess.Popen[bytes]
     cancelled: bool = False
+    decision_log_offset: int | None = None
 
     def status(self) -> str:
         """读取进程和业务终态, 保留部分完成与预算耗尽状态."""
@@ -109,13 +138,44 @@ class Job:
             return "cancelled"
         if code is None:
             return "running"
+        if self.request.mode == "workflow":
+            state = self.details()
+            return str(state["phase"]) if "phase" in state else "error"
         result = _object(self.root / "stdout.txt").get("status") if self.request.mode == "analyze" else self.details().get("stop_reason")
         return str(result) if result and code in (0, 1) else "completed" if code == 0 else "error"
 
     def details(self) -> dict[str, JsonValue]:
         """读取既有运行快照, 不把候选存在当作已选中."""
+        if self.request.mode == "workflow":
+            directory = self.workflow_directory()
+            return _object(directory / "workflow.json") if directory is not None else {}
         paths = list((self.root / "output").glob("run-*/run.json"))
         return _object(paths[0]) if paths else {}
+
+    def workflow_directory(self) -> Path | None:
+        """从本任务独占输出目录定位流程快照."""
+        matches = tuple((self.root / "output").glob("run-*/workflow.json"))
+        return matches[0].parent if len(matches) == 1 and matches[0].resolve().is_relative_to(self.root) else None
+
+    def _workflow_details(self, state: dict[str, JsonValue]) -> dict[str, JsonValue]:
+        directory = self.workflow_directory()
+        if directory is None:
+            return {}
+        details: dict[str, JsonValue] = {}
+        code = self.process.poll()
+        if code is not None:
+            details["criteria_retry_available"] = _can_retry_criteria(directory, state)
+        if code == WORKFLOW_DECISION_ERROR and self.decision_log_offset is not None:
+            failure = _tail(self.root / "stderr.log", self.decision_log_offset).strip().splitlines()
+            details["decision_error"] = failure[-1] if failure else "决定未生效, 请核对当前门禁条件"
+        for key, asset in (("planning_path", "sketches.json"), ("criteria_path", None)):
+            value = state.get(key)
+            if not isinstance(value, str):
+                continue
+            artifact = _workflow_artifact(directory, value, asset)
+            if artifact is not None:
+                details["sketches" if asset is not None else "criteria"] = artifact
+        return details
 
     def report(self) -> Path | None:
         """仅返回本任务内已结束分析发布的报告目录."""
@@ -146,7 +206,8 @@ class Job:
             for path in sorted(self.root.rglob("*"))
             if path.is_file() and path.suffix in SUFFIXES and path.resolve().is_relative_to(self.root)
         ]
-        report = self.report()
+        details = self.details()
+        workflow = self._workflow_details(details) if self.request.mode == "workflow" else {}
         return {
             "id": self.identity,
             "mode": self.request.mode,
@@ -155,10 +216,9 @@ class Job:
             "directory": str(self.root),
             "files": files,
             "log": _tail(self.root / "stderr.log"),
-            "details": self.details(),
-            "report": (report / "README.md").read_text(encoding="utf-8") if report else "",
-            "sketches": _report_sketches(report) if report else [],
-            "analysis_protocol": _object(report / "manifest.json").get("schema_version") if report else None,
+            "details": details,
+            "workflow": workflow,
+            **_report_details(self.report()),
         }
 
     def stop(self) -> None:
@@ -189,19 +249,50 @@ def _report_sketches(report: Path) -> list[JsonValue]:
     raise ValueError(msg)
 
 
+def _report_details(report: Path | None) -> dict[str, JsonValue]:
+    if report is None:
+        return {"report": "", "sketches": [], "analysis_protocol": None}
+    protocol = _object(report / "manifest.json").get("schema_version")
+    try:
+        sketches = _report_sketches(report)
+        summary = (report / "README.md").read_text(encoding="utf-8")
+    except (OSError, ValueError):
+        return {"report": "分析报告不完整或无法读取。请查看该任务的归档文件。", "sketches": [], "analysis_protocol": protocol}
+    return {"report": summary, "sketches": sketches, "analysis_protocol": protocol}
+
+
 def _command(request: Submission, root: Path, report: Path | None) -> list[str]:
+    if request.mode == "workflow":
+        return [
+            sys.executable,
+            "-u",
+            "-m",
+            "shader_deep.cli.workflow",
+            "start",
+            "--output-dir",
+            str(root / "output"),
+            "--",
+            str(root / "reference.png"),
+            request.prompt,
+        ]
     module = "analysis" if request.mode == "analyze" else "generation"
-    command = [sys.executable, "-u", "-m", f"shader_deep.cli.{module}"]
+    command = [sys.executable, "-u", "-m", f"shader_deep.cli.{module}", "--output-dir", str(root / "output")]
+    positionals = [str(root / "reference.png"), request.prompt]
     if report is not None:
-        command += [request.prompt, "--report", str(report), "--sketch", request.sketch, "--background", request.background]
+        positionals = [request.prompt]
+        command.extend(["--report", str(report), "--sketch", request.sketch, f"--background={request.background}"])
         if request.alternative is not None:
-            command += ["--alternative", str(request.alternative)]
-    else:
-        command += [str(root / "reference.png"), request.prompt]
-    command += ["--output-dir", str(root / "output")]
-    if request.mode == "analyze":
-        return command
-    return [*command, "--width", str(request.width), "--height", str(request.height), "--max-attempts", str(request.attempts)]
+            command.extend(["--alternative", str(request.alternative)])
+    if request.mode != "analyze":
+        command.extend(["--width", str(request.width), "--height", str(request.height), "--max-attempts", str(request.attempts)])
+    return [*command, "--", *positionals]
+
+
+def _launch(root: Path, args: list[str]) -> subprocess.Popen[bytes]:
+    with (root / "stdout.txt").open("wb") as output, (root / "stderr.log").open("ab") as errors:
+        return subprocess.Popen(  # noqa: S603  # 固定 Python 模块与参数, 不通过 shell.
+            args, stdout=output, stderr=errors, stdin=subprocess.DEVNULL, start_new_session=True
+        )
 
 
 class Jobs:
@@ -238,17 +329,46 @@ class Jobs:
             self.root.mkdir(parents=True, exist_ok=True)
             root = Path(tempfile.mkdtemp(prefix="web-", dir=self.root))
             (root / "reference.png").write_bytes(data)
-            with (root / "stdout.txt").open("wb") as output, (root / "stderr.log").open("wb") as errors:
-                process = subprocess.Popen(  # noqa: S603  # 固定 Python 模块和参数列表, 不经 shell 执行页面输入.
-                    _command(request, root, report),
-                    stdout=output,
-                    stderr=errors,
-                    stdin=subprocess.DEVNULL,
-                    start_new_session=True,
-                )
+            process = _launch(root, _command(request, root, report))
             job = Job(root.name, root, request.model_copy(update={"image": ""}), process)
             self.items[job.identity] = job
             return job
+
+    def advance(self, identity: str, decision: bytes) -> None:
+        """在当前流程目录提交一次明确门禁动作."""
+        with self.lock:
+            job = self.items[identity]
+            directory = job.workflow_directory()
+            phase = job.status()
+            if self.closed or job.request.mode != "workflow" or directory is None or phase not in {"gate_a", "gate_b", "blocked"}:
+                msg = "当前任务未在人工门禁等待决策"
+                raise ValueError(msg)
+            if any(item.process.poll() is None for item in self.items.values()):
+                msg = "请等待当前运行完成"
+                raise ValueError(msg)
+            if len(decision) > 256 * 1024:
+                msg = "门禁决策超出大小限制"
+                raise ValueError(msg)
+            state = job.details()
+            schema = GateBDecision if phase == "gate_b" else GateADecision
+            selected = schema.model_validate_json(decision)
+            if selected.expected_revision != state.get("revision"):
+                msg = "门禁状态已变化, 请刷新后重新确认"
+                raise ValueError(msg)
+            if phase == "blocked" and (selected.action != "retry_criteria" or selected.reason is not None):
+                msg = "受阻任务仅支持原样重试可恢复的首次标准草拟"
+                raise ValueError(msg)
+            if selected.action == "retry_criteria" and not _can_retry_criteria(directory, state):
+                msg = "当前任务无法重试标准草拟, 请检查运行状态与剩余额度"
+                raise ValueError(msg)
+            if selected.action == "retry_criteria" and phase == "gate_a" and selected.reason is None:
+                msg = "门禁 A 重新草拟评审标准需要填写原因"
+                raise ValueError(msg)
+            with tempfile.NamedTemporaryFile(dir=job.root, suffix=".json", prefix="decision-", delete=False) as record:
+                record.write(decision)
+            job.decision_log_offset = (job.root / "stderr.log").stat().st_size
+            job.process = _launch(job.root, [sys.executable, "-u", "-m", "shader_deep.cli.workflow", "advance", str(directory), record.name])
+            job.cancelled = False
 
     def _source(self, request: Submission) -> Path | None:
         if request.mode != "report":

@@ -4,6 +4,8 @@
 
 工具为 save_planning_draft、read_file、edit_file、finish_planning 和 stop_planning。模型首次保存 M/S 草稿，随后只编辑 /draft/planning.json。可见工具和执行白名单由角色及[共享草稿运行辅助](../draft_runtime.py)同时约束。
 
+`stop_planning` 可附带阻断性 `observation_revision_request`，引用固定观察版本中待核查的条目及原图区域。`S.risk_probes` 描述需要人工判断的局部试验范围和上下文。模型交付这两项后，执行试验及复核由调用方调度。
+
 [scene-planner/SKILL.md](../../resources/skills/scene-planner/SKILL.md) 直接进入专用角色 system prompt。复杂方法拆合、备选迁移和条件缺口通过条件参考读取。只读观察与约束也预置在 /inputs/ 虚拟文件中。
 
 每次实际主请求注入固定材料与原图，持久消息和摘要由 SDK 管理。草稿回读版本的完整正文实际进入后续请求后，工作流才允许接受。状态与发布见[规划工作流](../../workflows/planning/README.md)。

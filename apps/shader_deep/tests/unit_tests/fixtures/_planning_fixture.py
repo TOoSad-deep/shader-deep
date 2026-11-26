@@ -19,11 +19,11 @@ if TYPE_CHECKING:
     from pathlib import Path
 
 
-def planning_report(root: Path, *, gaps: bool = False) -> Path:
+def planning_report(root: Path, *, gaps: bool = False, color: tuple[int, int, int, int] = (160, 180, 210, 255)) -> Path:
     """保存真实 PNG、两元素观察及含局部备选的正式规划包."""
     root.mkdir(parents=True, exist_ok=True)
     image_path = root / "planning-reference.png"
-    with Image.new("RGBA", (32, 24), (160, 180, 210, 255)) as image:
+    with Image.new("RGBA", (32, 24), color) as image:
         image.save(image_path)
     reference = image_path.read_bytes()
     observation = scene_submission()

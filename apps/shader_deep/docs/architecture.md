@@ -26,7 +26,7 @@ Python 消费者从 [api.py](../src/shader_deep/api.py) 进入。`resources/skil
 
 ## 跨模块流程
 
-[PNG 转 Shader 交互流程图（2026-11-20 设计快照）](../../../.archify/workflow-png-shader-agents-artifacts-20261120-171119/agents-and-artifacts.html)展示各角色如何交接、传递产物和处理评审反馈。当前运行行为见下文。
+[PNG 转 Shader 交互流程图（2026-11-20 设计快照）](../../../.archify/workflow-png-shader-agents-artifacts-20261120-171119/agents-and-artifacts.html)展示旧版角色交接设想；2026-11-25 评审后确认的新一版整体流程优化设计（含整图主干+局部隔离试验、`uniforms` 受控数值优化器、跨制品诊断与两道人工门禁）见[整体流程优化设计方案](work-items/workflow-optimization-design-20261125.md)。运行入口及门禁见[整体优化工作流](../src/shader_deep/workflows/optimization_workflow/README.md)，本地验证和真实模型校准进度见[实施记录](work-items/workflow-optimization-implementation-20261125.md)。
 
 分析:
 

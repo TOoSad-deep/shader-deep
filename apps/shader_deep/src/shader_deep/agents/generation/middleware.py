@@ -42,6 +42,7 @@ class GenerationContextMiddleware(AgentMiddleware[AgentState[object], None, obje
         asset_root: Path | None = None,
         inputs: CapturedGenerationInputs | CapturedSceneInputs | CapturedPlanningInputs | None = None,
         memory: GenerationMemory | None = None,
+        reference_copy: Path | None = None,
     ) -> None:
         """绑定任务和黑板读取入口.
 
@@ -51,19 +52,23 @@ class GenerationContextMiddleware(AgentMiddleware[AgentState[object], None, obje
             asset_root: 相对制品路径的根目录, 未提供时固定使用构造实例时的工作目录.
             inputs: 单方案或整图任务已捕获的固定材料; 未提供时沿用原文件加载方式.
             memory: 可选的本轮视觉记忆, 负责按需选材与请求历史投影.
+            reference_copy: 普通参数化任务固定的参考副本.
         """
         self.get_state = get_state
         self.task_id = task_id
         self.asset_root = (asset_root if asset_root is not None else Path.cwd()).resolve()
         self.inputs = inputs
         self.memory = memory
+        self.reference_copy = reference_copy
 
     def _prepare(self, request: ModelRequest) -> ModelRequest:
         if self.memory is not None:
             # 投影仅复制 SDK 已支持的消息类型并补充 HumanMessage.
             return request.override(messages=cast("list[AnyMessage]", self.memory.prepare(list(request.messages))))
         # 每次调用 getter 取最新黑板, 包含上一轮工具刚登记的候选与错误.
-        context = _build_generation_context(self.get_state(), self.task_id, asset_root=self.asset_root, inputs=self.inputs)
+        context = _build_generation_context(
+            self.get_state(), self.task_id, asset_root=self.asset_root, inputs=self.inputs, reference_copy=self.reference_copy
+        )
         # override 仅修改本次请求, 材料消息不写入会话历史, 避免每轮重复累积.
         return request.override(messages=[context.message, *request.messages])
 
@@ -137,7 +142,8 @@ class GenerationLoopMiddleware(AgentMiddleware[AgentState[object], None, object]
             )
         )
         # 向模型公开的工具定义只保留本轮三个工具; 执行时还会再检查一次名字.
-        return request.override(messages=[*request.messages, conditions], tools=list(self.allowed_tools))
+        recalled = session.vista.pending if session.vista is not None else ()
+        return request.override(messages=[*request.messages, *recalled, conditions], tools=list(self.allowed_tools))
 
     def wrap_model_call(self, request: ModelRequest, handler: Callable[[ModelRequest], ModelResponse[object]]) -> ModelResponse[object]:
         """会话结束后直接返回结果, 否则在预算内调用模型.
@@ -152,9 +158,15 @@ class GenerationLoopMiddleware(AgentMiddleware[AgentState[object], None, object]
         if self.session.is_finished:
             # 结束工具之后图可能再次走到模型节点; 主动受阻时没有已选代码.
             selected = self.session.selected
-            content = Path(selected.code_path).read_text(encoding="utf-8") if selected is not None else self.session.stop_reason
+            content = (
+                (self.session.baked_code_path or Path(selected.code_path)).read_text(encoding="utf-8")
+                if selected is not None
+                else self.session.stop_reason
+            )
             return ModelResponse(result=[AIMessage(content=content)])
         response = handler(self._prepare(request))
+        if self.session.vista is not None:
+            self.session.vista.pending.clear()
         if self.session.memory is not None:
             self.session.presented.update(self.session.successful & self.session.memory.full_candidates)
             self.session.memory.consumed()

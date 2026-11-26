@@ -64,9 +64,14 @@ def _candidate_data(state: BlackboardState, candidate: CandidateRecord, root: Pa
         data["code"] = baseline.code
         data["captured_code_path"] = baseline.code_path
         data["captured_preview_path"] = baseline.preview_path
+        if baseline.parameterized_render is not None:
+            data["captured_render_record_path"] = baseline.render_record_path
+            data["parameterized_render"] = json.loads(baseline.parameterized_render)
     else:
         # 模型不能仅凭本地路径知道代码内容; 新候选仍按当前文件全文装配.
         data["code"] = (root / candidate.code_path).read_text(encoding="utf-8")
+        if candidate.render_record_path is not None:
+            data["parameterized_render"] = json.loads((root / candidate.render_record_path).read_text(encoding="utf-8"))
     return data
 
 
@@ -107,7 +112,21 @@ def _metadata(
     }
     if isinstance(inputs, CapturedPlanningInputs):
         payload["planning_scheme"] = json.loads(inputs.scheme_json)
-        payload["scheme_instruction"] = "按整图 selected 方案实现完整 E/F/R, 核对方法条件与两类 gaps, 在固定执行条件下渲染自检."
+        if inputs.local_probe is None:
+            payload["scheme_instruction"] = "按整图 selected 方案实现完整 E/F/R, 核对方法条件与两类 gaps, 结合已验证局部片段后渲染自检."
+        elif inputs.local_probe.context_mode == "scene_baseline_patch":
+            payload["scheme_instruction"] = "glsl_code 只提交用于替换 patch_source 的代码片段. 程序会保持基线其余源码原样并渲染完整上下文."
+        else:
+            payload["scheme_instruction"] = "只验证绑定的局部目标和指定试验上下文; 保留原图像素坐标, 依固定局部标准渲染自检."
+        if inputs.verified_snippets:
+            payload["verified_snippets"] = [{"source": json.loads(item.metadata_json), "code": item.code} for item in inputs.verified_snippets]
+        if inputs.revision is not None:
+            settings = inputs.revision.parameterized_render
+            payload["approved_revision"] = {
+                "guidance": inputs.revision.guidance,
+                "baseline_glsl": inputs.revision.code,
+                "parameterized_render": json.loads(settings) if settings is not None else None,
+            }
     elif isinstance(inputs, CapturedSceneInputs):
         payload["scene_plan"] = asdict(inputs.plan)
         payload["scene_elements"] = [_scene_element_data(slot, element) for slot, element in enumerate(inputs.elements, start=1)]
@@ -244,6 +263,9 @@ def _image_materials(
     if isinstance(inputs, CapturedPlanningInputs):
         reference = Path(inputs.reference_path)
         images = [(f"完整参考图: 目标 {records.target.version}", reference)]
+        images.extend((f"已验证局部片段 {index} 的真实预览", Path(item.preview_path)) for index, item in enumerate(inputs.verified_snippets, start=1))
+        if inputs.revision is not None and inputs.revision.preview_path is not None:
+            images.append(("本轮固定修订基线预览", Path(inputs.revision.preview_path)))
         images.extend(
             (f"整图候选预览: {candidate.id}", (root / candidate.preview_path).resolve())
             for candidate in candidates
@@ -261,18 +283,26 @@ def _build_generation_context(
     *,
     asset_root: Path | None = None,
     inputs: CapturedGenerationInputs | CapturedSceneInputs | CapturedPlanningInputs | None = None,
+    reference_copy: Path | None = None,
 ) -> GenerationContext:
     records = read_task(state, task_id)
     _validate_inputs(records, inputs)
     root = (asset_root if asset_root is not None else Path.cwd()).resolve()
     candidates = _candidates(records)
     images, cached = _image_materials(records, candidates, root, inputs)
+    if reference_copy is not None:
+        images = ((images[0][0], reference_copy), *images[1:])
     metadata = _metadata(state, records, candidates, root, inputs)
     baseline = inputs.baseline if inputs is not None and not isinstance(inputs, (CapturedSceneInputs, CapturedPlanningInputs)) else None
     files = [*(inputs.files if inputs is not None else ()), *(str(path) for _, path in images)]
     files.extend(
         baseline.code_path if baseline is not None and candidate.id == baseline.candidate_id else str((root / candidate.code_path).resolve())
         for candidate in candidates
+    )
+    files.extend(
+        str((root / candidate.render_record_path).resolve())
+        for candidate in candidates
+        if candidate.render_record_path is not None and (baseline is None or candidate.id != baseline.candidate_id)
     )
     return GenerationContext(
         message=_message(metadata, images, task_id, cached),

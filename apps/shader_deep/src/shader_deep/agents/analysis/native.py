@@ -18,6 +18,7 @@ from langchain_openai import ChatOpenAI
 
 from shader_deep.agents.analysis.draft_backend import DraftBackend
 from shader_deep.agents.draft_runtime import DraftToolGuard
+from shader_deep.domain.evidence import ImageRegion, Text  # noqa: TC001  # 工具 schema 在运行时解析类型.
 from shader_deep.domain.scene_observations import SceneObservationSubmission  # noqa: TC001  # 工具 schema 在运行时解析类型.
 from shader_deep.infrastructure.llm.messages import _message
 from shader_deep.infrastructure.llm.options import ResolvedModelOptions
@@ -34,7 +35,7 @@ if TYPE_CHECKING:
     from shader_deep.workflows.analysis.session import AnalysisSession
     from shader_deep.workflows.options import AnalysisOptions
 
-ALLOWED_TOOLS = frozenset({"read_file", "edit_file", "save_observation_draft", "finish_analysis", "stop_analysis"})
+ALLOWED_TOOLS = frozenset({"read_file", "edit_file", "save_observation_draft", "finish_analysis", "stop_analysis", "crop", "region_stats"})
 TERMINAL_TOOLS = frozenset({"finish_analysis", "stop_analysis"})
 WRITE_TOOLS = TERMINAL_TOOLS | {"save_observation_draft", "edit_file"}
 SKILL_PATH = "/skills/scene-observer/"
@@ -75,7 +76,17 @@ def _tools(session: AnalysisSession) -> list[BaseTool]:
         """无法提交可靠观察时以非空原因结束, 不登记成功报告."""
         return _encoded(session.stop(reason))
 
-    return [save_observation_draft, finish_analysis, stop_analysis]
+    @tool
+    def crop(region: ImageRegion, question: Text) -> str:
+        """裁剪固定原图中以像素表示的左闭右开区域, 裁图随下一次请求提供."""
+        return _encoded(session.measure_reference("crop", region, question))
+
+    @tool
+    def region_stats(region: ImageRegion, question: Text) -> str:
+        """测量原图区域在白底合成后的编码 RGB 与亮度均值, 可对照相邻区域."""
+        return _encoded(session.measure_reference("region_stats", region, question))
+
+    return [save_observation_draft, finish_analysis, stop_analysis, crop, region_stats]
 
 
 class ObservationGuard(DraftToolGuard):
@@ -103,7 +114,13 @@ class FixedInput(AgentMiddleware[AgentState[object], None]):
     def _prepare(self, request: ModelRequest) -> ModelRequest:
         self.session.bind_request()
         payload: dict[str, object] = dict(self.session.context())
-        messages = [*request.messages, _message(payload, self.session.reference_url)]
+        fixed = _message(payload, self.session.reference_url)
+        if isinstance(fixed.content, list):
+            for identity, url in self.session.crop_images():
+                fixed.content.extend(
+                    [{"type": "text", "text": _encoded({"reference_crop_id": identity})}, {"type": "image_url", "image_url": {"url": url}}]
+                )
+        messages = [*request.messages, fixed]
         tools = [entry for entry in request.tools if getattr(entry, "name", None) in ALLOWED_TOOLS]
         return request.override(messages=messages, tools=tools)
 

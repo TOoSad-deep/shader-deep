@@ -98,6 +98,7 @@ class CandidateRecord:
         code_path: 本候选的代码路径.
         preview_path: 已有预览的路径, 尚未渲染时为空.
         limitations: 实现限制或尚未验证的内容.
+        render_record_path: 参数化候选的生效值与渲染记录, 无参候选省略.
     """
 
     id: str
@@ -106,6 +107,7 @@ class CandidateRecord:
     code_path: str
     preview_path: str | None = None
     limitations: tuple[str, ...] = ()
+    render_record_path: str | None = None
 
 
 @dataclass(frozen=True, kw_only=True)

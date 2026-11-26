@@ -6,7 +6,7 @@ import base64
 import json
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal
 
 from langchain.messages import HumanMessage
 from pydantic import BaseModel, ConfigDict, StrictInt
@@ -14,6 +14,7 @@ from pydantic import BaseModel, ConfigDict, StrictInt
 from shader_deep.agents.generation.context import _candidates, _metadata, _validate_inputs
 from shader_deep.agents.generation.history import RenderHistoryReference, project_history
 from shader_deep.domain.blackboard import read_task
+from shader_deep.infrastructure.storage.vista import list_images, read_image
 from shader_deep.infrastructure.storage.visual_memory import MaterialOrigin, MaterialRegion, MaterialSource, VisualMemory
 
 if TYPE_CHECKING:
@@ -24,6 +25,38 @@ if TYPE_CHECKING:
     from shader_deep.infrastructure.storage.visual_memory import MaterialContent, MaterialKind
 
 MAX_READ_ITEMS = 4
+
+
+class WorkflowRecall:
+    """绑定本次工作流的 VISTA 图库, 按需展开历史图片与源码."""
+
+    def __init__(self, root: Path) -> None:
+        """固定唯一可回看的图库目录."""
+        self.root = root
+        self.read_count = 0
+        self.pending: list[HumanMessage] = []
+
+    def list_records(self) -> str:
+        """列出本次工作流已归档的参考和候选, 包含可回读的 record 文件名."""
+        return json.dumps({"records": list_images(self.root)}, ensure_ascii=False)
+
+    def read_record(self, record: str, content: Literal["image", "code", "both"] = "image") -> str:
+        """按目录中的 record 回看图、代码或两者, 所选内容随下一次模型调用展开."""
+        if self.read_count >= MAX_READ_ITEMS:
+            return json.dumps({"status": "read_limit", "limit": MAX_READ_ITEMS})
+        self.read_count += 1
+        try:
+            png, code, render = read_image(self.root, record)
+        except (ValueError, OSError) as exc:
+            return json.dumps({"status": "error", "message": str(exc)})
+        summary = {"record": record, "render": render, "content": content, "has_glsl": code is not None}
+        blocks: list[str | dict[str, object]] = [{"type": "text", "text": json.dumps(summary, ensure_ascii=False)}]
+        if content in {"image", "both"}:
+            blocks.append({"type": "image_url", "image_url": {"url": "data:image/png;base64," + base64.b64encode(png).decode("ascii")}})
+        if content in {"code", "both"} and code is not None:
+            blocks.append({"type": "text", "text": code.decode("utf-8")})
+        self.pending.append(HumanMessage(content=blocks))
+        return json.dumps({"status": "read", **summary}, ensure_ascii=False)
 
 
 class ReadRegion(BaseModel):
@@ -51,6 +84,7 @@ class CandidateMaterials:
     code: str
     preview: str | None = None
     result: str | None = None
+    render_record: str | None = None
 
 
 def _blocks(content: MaterialContent) -> list[str | dict[str, object]]:
@@ -134,20 +168,32 @@ class GenerationMemory:
             self.store.read(baseline.code)
             if baseline.preview is not None:
                 self.store.read(baseline.preview)
+            if baseline.render_record is not None:
+                self.store.read(baseline.render_record)
         return reference_id
 
     def _candidate_input(self, candidate: CandidateRecord, root: Path, inputs: CapturedGenerationInputs | None) -> None:
         baseline = inputs.baseline if inputs is not None else None
-        code = Path(baseline.code_path) if baseline is not None and baseline.candidate_id == candidate.id else root / candidate.code_path
-        preview = baseline.preview_path if baseline is not None and baseline.candidate_id == candidate.id else candidate.preview_path
+        if baseline is not None and baseline.candidate_id == candidate.id:
+            code, preview, parameters = baseline.code_path, baseline.preview_path, baseline.render_record_path
+        else:
+            code, preview, parameters = candidate.code_path, candidate.preview_path, candidate.render_record_path
         origin = MaterialOrigin(candidate_id=candidate.id, task_id=candidate.task_id)
-        code_id = self._input(code, "code", f"输入候选 {candidate.id} 的代码", origin=origin)
+        code_id = self._input(root / code, "code", f"输入候选 {candidate.id} 的代码", origin=origin)
         preview_id = self._input(root / preview, "image", f"输入候选 {candidate.id} 的预览", origin=origin) if preview is not None else None
-        self.candidates[candidate.id] = CandidateMaterials(code=code_id, preview=preview_id)
+        record_id = (
+            self._input(root / parameters, "json", f"输入候选 {candidate.id} 的实际渲染参数", origin=origin) if parameters is not None else None
+        )
+        self.candidates[candidate.id] = CandidateMaterials(code=code_id, preview=preview_id, render_record=record_id)
 
     def _report_inputs(self, inputs: CapturedGenerationInputs, reference: Path) -> None:
         origin = MaterialOrigin(**asdict(inputs.binding))
-        known = {self.store.get(identity).path for item in self.candidates.values() for identity in (item.code, item.preview) if identity is not None}
+        known = {
+            self.store.get(identity).path
+            for item in self.candidates.values()
+            for identity in (item.code, item.preview, item.render_record)
+            if identity is not None
+        }
         for filename in inputs.files:
             path = Path(filename)
             if path == reference or path.relative_to(self.run_dir).as_posix() in known:
@@ -155,17 +201,19 @@ class GenerationMemory:
             kind: MaterialKind = "image" if path.suffix == ".png" else "json" if path.suffix == ".json" else "text"
             self._input(path, kind, f"报告资料 {path.name}", origin=origin)
 
-    def register_code(self, candidate_id: str, path: Path) -> str:
+    def register_code(self, candidate_id: str, path: Path, *, operation: Literal["render_shader", "optimize_uniforms"] = "render_shader") -> str:
         """源码写入成功后登记, 渲染失败也保留引用."""
-        source = MaterialSource(type="output", task_id=self.task_id, operation="render_shader", candidate_id=candidate_id)
+        source = MaterialSource(type="output", task_id=self.task_id, operation=operation, candidate_id=candidate_id)
         record = self.store.register(path, kind="code", label=f"候选 {candidate_id} 的代码", source=source)
         self.candidates[candidate_id] = CandidateMaterials(code=record.id)
         return record.id
 
-    def record_render(self, candidate_id: str, code: Path, preview: Path | None, error: str | None) -> dict[str, str | None]:
+    def record_render(
+        self, candidate_id: str, code: Path, preview: Path | None, error: str | None, *, parameter_path: Path | None = None
+    ) -> dict[str, str | None]:
         """由生成侧发布单次结果快照, 返回代码、结果和可选预览引用."""
-        source = MaterialSource(type="output", task_id=self.task_id, operation="render_shader", candidate_id=candidate_id)
         code_id = self.candidates[candidate_id].code
+        source = self.store.get(code_id).source
         preview_id = None if preview is None else self.store.register(preview, kind="image", label=f"候选 {candidate_id} 的预览", source=source).id
         payload = {
             "candidate_id": candidate_id,
@@ -175,7 +223,10 @@ class GenerationMemory:
             "status": "rendered" if error is None else "render_error",
             "error": error,
         }
-        result_path = code.with_name(f"{code.stem}-render.json")
+        if parameter_path is not None:
+            payload["parameterized_render"] = json.loads(parameter_path.read_text(encoding="utf-8"))
+        stem = preview.stem if preview is not None else code.stem
+        result_path = code.with_name(f"{stem}-render.json")
         result_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
         result_id = self.store.register(result_path, kind="json", label=f"候选 {candidate_id} 的渲染结果", source=source).id
         self.candidates[candidate_id] = CandidateMaterials(code=code_id, preview=preview_id, result=result_id)
@@ -233,7 +284,7 @@ class GenerationMemory:
         current = self.latest or self.baseline
         if current is not None:
             material = self.candidates[current]
-            identities.extend(identity for identity in (material.code, material.preview) if identity is not None)
+            identities.extend(identity for identity in (material.code, material.preview, material.render_record) if identity is not None)
         if self.failure is not None:
             failed = self.candidates[self.failure]
             identities.extend(identity for identity in (failed.code, failed.result) if identity is not None)

@@ -17,7 +17,7 @@ from langchain_core.messages import AIMessage, HumanMessage
 from langchain_openai import ChatOpenAI
 
 from shader_deep.agents.draft_runtime import DraftBackend, DraftToolGuard
-from shader_deep.domain.scene_planning import ScenePlanningSubmission  # noqa: TC001  # 工具 schema 在运行时解析类型.
+from shader_deep.domain.scene_planning import ObservationRevisionRequest, ScenePlanningSubmission  # noqa: TC001  # 工具 schema 在运行时解析类型.
 from shader_deep.infrastructure.llm.messages import _message
 from shader_deep.infrastructure.llm.options import ResolvedModelOptions
 from shader_deep.infrastructure.llm.transport import _retryable, configure_analysis_model, validate_analysis_message
@@ -71,9 +71,9 @@ def _tools(session: PlanningSession) -> list[BaseTool]:
         return json.dumps(session.finish_draft(), ensure_ascii=False)
 
     @tool
-    def stop_planning(reason: str) -> str:
-        """用非空原因结束受阻规划, 保存当前草稿."""
-        return json.dumps(session.stop(reason), ensure_ascii=False)
+    def stop_planning(reason: str, observation_revision_request: ObservationRevisionRequest | None = None) -> str:
+        """结束受阻规划; 阻断性观察矛盾可附 E/F/R ID、矛盾描述和建议核实像素区域."""
+        return json.dumps(session.stop(reason, observation_revision_request=observation_revision_request), ensure_ascii=False)
 
     return [save_planning_draft, finish_planning, stop_planning]
 

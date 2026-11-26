@@ -9,29 +9,42 @@ from shader_deep.agents.draft_runtime import DraftReadTracker
 from shader_deep.domain.scene_planning import ScenePlanningSubmission, validate_scene_planning
 from shader_deep.infrastructure.storage.json_draft import DraftError
 from shader_deep.infrastructure.storage.planning_draft import DRAFT_PATH, PlanningDraftStore
+from shader_deep.infrastructure.storage.planning_inputs import reference_size
 from shader_deep.infrastructure.storage.snapshots import write_snapshot
 from shader_deep.workflows.planning.contracts import ScenePlanningResult
 
 if TYPE_CHECKING:
     from pydantic import JsonValue
 
+    from shader_deep.domain.scene_planning import ObservationRevisionRequest
     from shader_deep.infrastructure.storage.planning_inputs import CapturedPlanningSource
+    from shader_deep.workflows.planning.cascade import PlanningRevision
     from shader_deep.workflows.planning.options import PlanningOptions
 
 
 class PlanningSession:
     """会话锁串行保护版本、接受和终态, SDK 持有模型历史."""
 
-    def __init__(self, source: CapturedPlanningSource, options: PlanningOptions) -> None:
+    def __init__(
+        self,
+        source: CapturedPlanningSource,
+        options: PlanningOptions,
+        *,
+        revision_feedback: tuple[str, ...] = (),
+        revision: PlanningRevision | None = None,
+    ) -> None:
         """绑定本次独立运行捕获的输入."""
         self.source, self.options, self.directory = source, options, source.directory
         if (self.directory / "manifest.json").exists():
             msg = "规划不续跑已有目录, 请创建新运行"
             raise ValueError(msg)
         self.reference_url = source.reference_url
+        self.revision_feedback = revision_feedback
+        self.revision = revision
         self.submission: ScenePlanningSubmission | None = None
         self.state: Literal["running", "accepted", "stopped"] = "running"
         self.reason: str | None = None
+        self.observation_revision_request: ObservationRevisionRequest | None = None
         self.model_calls = 0
         self.validation_errors = 0
         self.tool_refusals = 0
@@ -39,6 +52,8 @@ class PlanningSession:
         self.resource_read_results: list[dict[str, str]] = []
         self._lock = RLock()
         self.draft = PlanningDraftStore(self.directory, source.observations, lock=self._lock)
+        if revision is not None:
+            self.draft.create(revision.previous)
         self._reads = DraftReadTracker(self.draft, finish_tool="finish_planning")
         self.request_revision: str | None = None
         self.accepted_revision: str | None = None
@@ -60,6 +75,7 @@ class PlanningSession:
     def context(self) -> dict[str, JsonValue]:
         """构造同一固定输入及本轮预算, 由请求级中间件注入."""
         with self._lock:
+            anchors = self.source.observation_manifest.reference_measurements
             return {
                 "user_request": self.source.request,
                 "scope": "whole_scene",
@@ -68,6 +84,16 @@ class PlanningSession:
                 "context_notes": list(self.source.observation_manifest.context_notes),
                 "open_questions": [item.model_dump(mode="json") for item in self.source.observation_manifest.open_questions],
                 "observation_gaps": [item.model_dump(mode="json") for item in self.source.observation_manifest.gaps],
+                "reference_measurements": [item.model_dump(mode="json", exclude_none=True) for item in anchors],
+                **({"revision_feedback": list(self.revision_feedback)} if self.revision_feedback else {}),
+                **(
+                    {
+                        "affected_observation_ids": list(self.revision.affected),
+                        "revision_instruction": "已预填旧稿, 回读并仅 edit_file 修订受影响的目标与组合。保留其余目标和共享机制。",
+                    }
+                    if self.revision
+                    else {}
+                ),
                 "generation_constraints": self.source.constraints.model_dump(mode="json"),
                 "draft_revision": self.draft.revision,
                 "state": self.state,
@@ -82,6 +108,7 @@ class PlanningSession:
                 "execution": "deep_agents_single_planner",
                 "state": self.state,
                 "reason": self.reason,
+                **self._revision_details(),
                 "model_calls": self.model_calls,
                 "max_model_calls": self.options.max_model_calls,
                 "validation_errors": self.validation_errors,
@@ -178,6 +205,8 @@ class PlanningSession:
             report = self.draft.report(expected_revision=revision)
             try:
                 validate_scene_planning(report, self.source.observations)
+                if self.revision is not None:
+                    self.revision.validate(report)
             except ValueError as error:
                 code = "invalid_planning"
                 raise DraftError(code, str(error), path=DRAFT_PATH) from error
@@ -197,16 +226,24 @@ class PlanningSession:
         self.submission, self.accepted_revision, self.state = frozen, revision, "accepted"
         self.save_manifest()
 
-    def stop(self, reason: str) -> dict[str, JsonValue]:
+    def _revision_details(self) -> dict[str, JsonValue]:
+        if self.observation_revision_request is None:
+            return {}
+        return {"observation_revision_request": self.observation_revision_request.model_dump(mode="json")}
+
+    def stop(self, reason: str, *, observation_revision_request: ObservationRevisionRequest | None = None) -> dict[str, JsonValue]:
         """保存明确受阻原因, 草稿留在本轮目录."""
         if not reason.strip():
             msg = "停止原因不能为空"
             raise ValueError(msg)
         with self._lock:
             self._require_running()
+            if observation_revision_request is not None:
+                observation_revision_request.validate_against(self.source.observations, reference_size(self.source.reference_bytes))
+            self.observation_revision_request = observation_revision_request
             self.state, self.reason = "stopped", reason
             self.save_manifest()
-            return {"stopped": True, "reason": reason}
+            return {"stopped": True, "reason": reason, **self._revision_details()}
 
     def finalize(self, error: str | None = None) -> ScenePlanningResult:
         """根据接受事实和两类必要缺口生成最终核查结果."""
@@ -217,4 +254,10 @@ class PlanningSession:
                 self.submission is not None and not self.source.observation_manifest.gaps and any(not item.gaps for item in self.submission.sketches)
             )
             status = "failed" if self.submission is None else "completed" if complete else "partial"
-            return ScenePlanningResult(status=status, submission=self.submission, error=error or self.reason, execution=self.execution())
+            return ScenePlanningResult(
+                status=status,
+                submission=self.submission,
+                error=error or self.reason,
+                execution=self.execution(),
+                observation_revision_request=self.observation_revision_request,
+            )

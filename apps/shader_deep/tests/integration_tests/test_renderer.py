@@ -11,6 +11,9 @@ from PIL import Image
 from shader_deep.rendering import RenderError, WebGL2Renderer
 
 RED = "void mainImage(out vec4 c, in vec2 p) { c = vec4(1.0, 0.0, 0.0, 1.0); }"
+PARAMETRIC_GRADIENT = """uniform float u_red;
+void mainImage(out vec4 c, in vec2 p) { c = vec4(u_red, p.y / iResolution.y, iTime, 1.0); }
+"""
 
 
 class WebGL2RenderTests(TestCase):
@@ -96,8 +99,77 @@ class WebGL2RenderTests(TestCase):
         self.assertEqual(caught.exception.stage, "size")
         self.assertEqual(self.image(RED, 7, 9).size, (7, 9))
 
+    def test_uniform_scalar_and_all_vector_types_reach_the_shader(self) -> None:
+        code = """uniform float u_r;
+uniform vec2 u_g;
+uniform vec3 u_b;
+uniform vec4 u_a;
+void mainImage(out vec4 c, in vec2 p) { c = vec4(u_r, u_g.y, u_b.z, u_a.w); }
+"""
+        uniforms = {"u_r": 1.0, "u_g": [1.0, 0.0], "u_b": [0.0, 0.0, 1.0], "u_a": [0.0, 0.0, 0.0, 1.0]}
+        png = self.renderer.render(code, 5, 3, 0.0, uniforms=uniforms)
+        with Image.open(BytesIO(png)) as image:
+            self.assertEqual(image.getpixel((2, 1)), (255, 0, 255, 255))
+
+    def test_only_active_linked_uniforms_of_the_matching_type_are_accepted(self) -> None:
+        for uniforms, message in (({"u_typo": 0.0}, "inactive"), ({"u_red": [0.0, 0.0]}, "type")):
+            with self.subTest(uniforms=uniforms), self.assertRaises(RenderError) as caught:
+                self.renderer.render(PARAMETRIC_GRADIENT, 7, 5, 0.0, uniforms=uniforms)
+            self.assertEqual(caught.exception.stage, "uniforms")
+            self.assertIn(message, caught.exception.log)
+        self.assertEqual(self.image(RED, 7, 5).getpixel((0, 0)), (255, 0, 0, 255))
+
+    def test_optimization_roi_readback_matches_png_and_reuses_fixed_canvas(self) -> None:
+        width, height = 9, 7
+        with self.renderer.optimization_session(PARAMETRIC_GRADIENT, width, height, 1.0, uniforms={"u_red": 0}) as session:
+            start = session.read_pixels({"u_red": 0})
+            regions = [(2, 1, 7, 4), (0, 6, 2, 7)]
+            samples = session.read_regions({"u_red": 1}, regions)
+            with Image.open(BytesIO(session.render({"u_red": 1}))) as image:
+                self.assertEqual(image.size, (width, height))
+                for sample, region in zip(samples, regions, strict=True):
+                    with image.crop(region) as crop:
+                        self.assertEqual(sample, crop.tobytes())
+            self.assertEqual(start[0], 0)
+            self.assertEqual(samples[0][0], 255)
+            self.assertGreater(start[1], start[-3])
+        with self.assertRaisesRegex(RenderError, "session is closed"):
+            session.read_pixels({"u_red": 0})
+
+    def test_rejected_optimization_trials_leave_the_session_usable(self) -> None:
+        with self.renderer.optimization_session(PARAMETRIC_GRADIENT, 7, 5, 0.0, uniforms={"u_red": 0}) as session:
+            with self.assertRaisesRegex(ValueError, "names and component counts"):
+                session.read_pixels({})
+            with self.assertRaisesRegex(ValueError, "rectangle inside the canvas"):
+                session.read_regions({"u_red": 1}, [(0, 0, 8, 5)])
+            with self.assertRaisesRegex(RenderError, "active optimization session"):
+                self.renderer.render(RED, 1, 1, 0.0)
+            self.assertEqual(len(session.read_pixels({"u_red": 1})), 7 * 5 * 4)
+        self.assertEqual(self.image(RED, 1, 1).getpixel((0, 0)), (255, 0, 0, 255))
+
 
 class RendererLifecycleTests(TestCase):
+    def test_draw_reports_all_queued_errors_then_recovers(self) -> None:
+        with WebGL2Renderer() as renderer:
+            # 两个确定性错误注入同一次检查; 取尽后恢复真实 WebGL2 API.
+            renderer._open_page().evaluate(
+                """() => {
+                    const prototype = WebGL2RenderingContext.prototype;
+                    const original = prototype.getError;
+                    const pending = [prototype.INVALID_ENUM, prototype.INVALID_VALUE];
+                    prototype.getError = function () {
+                        if (pending.length) return pending.shift();
+                        prototype.getError = original;
+                        return original.call(this);
+                    };
+                }"""
+            )
+            with self.assertRaisesRegex(RenderError, "1280, 1281") as caught:
+                renderer.render(RED, 1, 1, 0.0)
+            self.assertEqual(caught.exception.stage, "draw")
+            with Image.open(BytesIO(renderer.render(RED, 1, 1, 0.0))) as image:
+                self.assertEqual(image.getpixel((0, 0)), (255, 0, 0, 255))
+
     def test_context_manager_closes_and_can_be_reopened(self) -> None:
         renderer = WebGL2Renderer()
         for _ in range(2):

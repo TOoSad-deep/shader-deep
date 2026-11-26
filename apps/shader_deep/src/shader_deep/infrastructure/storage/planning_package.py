@@ -221,7 +221,7 @@ def read_planning_package(directory: Path) -> PlanningPackage:
         {name: parse_json(contents[f"{name}.json"]) for name in ("mechanisms", "sketches", "extra_candidates")}
     )
     source = planning_source_from_contents(directory, contents)
-    validate_scene_planning(report, source.observations)
+    validate_scene_planning(report, source.observations, require_probe_mechanisms=False)
     _check_derived(manifest, source, report, parse_json(contents["candidates.json"]))
     return PlanningPackage(directory=directory, manifest=manifest, source=source, report=report)
 

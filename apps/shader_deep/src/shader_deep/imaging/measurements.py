@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING
 from PIL import Image, ImageStat
 
 from shader_deep.domain.evidence import MeasurementRecord, MeasurementRequest, MeasurementSpec
+from shader_deep.imaging.png16 import BIT_DEPTH, display_png16
 from shader_deep.imaging.profiles import summarize_profile
 
 if TYPE_CHECKING:
@@ -59,8 +60,12 @@ class ReferenceMeasurements:
     def _pixels(self, spec: MeasurementSpec) -> Image.Image:
         """从固定字节读取区域, 返回由调用方负责关闭的独立 RGBA 图像."""
         region = spec.region
-        with Image.open(io.BytesIO(self.data)) as source, source.crop((region.left, region.top, region.right, region.bottom)) as cropped:
-            return cropped.convert("RGBA")
+        box = (region.left, region.top, region.right, region.bottom)
+        with Image.open(io.BytesIO(self.data)) as source:
+            if source.format == "PNG" and self.data[24] == BIT_DEPTH:
+                return display_png16(self.data, box)
+            with source.crop(box) as cropped:
+                return cropped.convert("RGBA")
 
     def _execute(self, spec: MeasurementSpec, question: str) -> MeasurementRecord:
         """执行一次新测量, 绑定原图哈希、任务归属和坐标规格以便追溯."""

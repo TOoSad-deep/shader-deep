@@ -3,9 +3,14 @@
 from __future__ import annotations
 
 from copy import deepcopy
+from typing import TYPE_CHECKING, ClassVar
 from urllib.parse import urlsplit
 
 from langchain_core.messages import AIMessage, BaseMessage
+from langchain_openai import ChatOpenAI
+
+if TYPE_CHECKING:
+    from langchain_core.language_models import LanguageModelInput
 
 RAW_REASONING = "openrouter_reasoning_delta"
 _SCHEMA_MAPS = {"properties", "patternProperties", "$defs", "definitions", "dependentSchemas"}
@@ -56,6 +61,42 @@ def _tool_parameters(schema: object, *, strict_binding: bool = False) -> object:
 def is_openrouter(base_url: str | None) -> bool:
     """仅对 OpenRouter 域名启用网关特定载荷规则."""
     return urlsplit(base_url or "").hostname == "openrouter.ai"
+
+
+def adapt_tool_schemas(tools: list[dict], *, force_strict: bool = False) -> list[dict]:
+    """复制外发函数工具并适配网关约束, 保留调用方绑定的原始 Schema.
+
+    Args:
+        tools: 当前 Chat Completions 请求绑定的工具.
+        force_strict: 沿用分析传输要求严格绑定所有函数工具的策略.
+
+    Returns:
+        本次请求外发的工具声明.
+    """
+    adapted = []
+    for entry in tools:
+        if entry.get("type") != "function":
+            adapted.append(entry)
+            continue
+        function = dict(entry["function"])
+        if "parameters" in function:
+            function["parameters"] = _tool_parameters(function["parameters"], strict_binding=force_strict and function.get("strict") is True)
+        if force_strict:
+            function["strict"] = True
+        adapted.append({**entry, "function": function})
+    return adapted
+
+
+class OpenRouterChatOpenAI(ChatOpenAI):
+    """在实际请求边界统一处理 OpenRouter 的工具 Schema 约束."""
+
+    _force_strict_tools: ClassVar[bool] = False
+
+    def _get_request_payload(self, input_: LanguageModelInput, *, stop: list[str] | None = None, **kwargs: object) -> dict:
+        payload = super()._get_request_payload(input_, stop=stop, **kwargs)
+        if payload.get("tools") and is_openrouter(self.openai_api_base):
+            payload["tools"] = adapt_tool_schemas(payload["tools"], force_strict=self._force_strict_tools)
+        return payload
 
 
 def restore_reasoning(payload: dict, messages: list[BaseMessage]) -> None:

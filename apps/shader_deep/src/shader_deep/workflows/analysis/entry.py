@@ -14,15 +14,25 @@ from shader_deep.infrastructure.analysis_logging import log_analysis
 from shader_deep.infrastructure.llm.client import build_model
 from shader_deep.infrastructure.llm.messages import png_data_url
 from shader_deep.infrastructure.storage.artifacts import create_run_directory, save_run
-from shader_deep.infrastructure.storage.observation_package import ObservationManifest, ObservationReference, write_observation_package
+from shader_deep.infrastructure.storage.observation_package import (
+    ObservationManifest,
+    ObservationReference,
+    read_observation_package,
+    write_observation_package,
+)
+from shader_deep.infrastructure.storage.planning_inputs import reference_size
 from shader_deep.infrastructure.storage.snapshots import write_snapshot
 from shader_deep.workflows.analysis.pipeline import execute_scene_analysis
 from shader_deep.workflows.options import AnalysisOptions, observation_option_diagnostics, validate_observation_options
 from shader_deep.workflows.outcomes import AnalysisOutcome
 
 if TYPE_CHECKING:
+    from langchain_core.language_models import BaseChatModel
+    from pydantic import JsonValue
+
+    from shader_deep.domain.scene_observations import ReferenceMeasurement
     from shader_deep.domain.tasks import BlackboardState
-    from shader_deep.workflows.analysis.contracts import SceneAnalysisResult
+    from shader_deep.workflows.analysis.contracts import AnalysisRevision, SceneAnalysisResult
     from shader_deep.workflows.analysis.session import AnalysisSession
 
 PROTOCOL = "scene_observations_v1"
@@ -62,6 +72,7 @@ def _delivery(directory: Path, reference: bytes, result: SceneAnalysisResult) ->
         context_notes=result.submission.context_notes,
         open_questions=result.submission.open_questions,
         gaps=result.submission.gaps,
+        reference_measurements=result.reference_measurements,
     )
     write_observation_package(directory / "report", result.observations, manifest, reference)
     log_analysis(
@@ -115,8 +126,29 @@ def _outcome(state: BlackboardState, task_id: str, directory: Path, result: Scen
     return AnalysisOutcome(state=state, task_id=task_id, summary_result=summary, run_dir=directory, stop_reason=result.status, report_dir=package)
 
 
+def _capture_revision(revision: AnalysisRevision, reference: bytes) -> tuple[dict[str, JsonValue], tuple[ReferenceMeasurement, ...]]:
+    manifest, observations = read_observation_package(revision.observation_dir)
+    if manifest.reference.sha256 != hashlib.sha256(reference).hexdigest():
+        msg = "定向复核必须使用旧观察绑定的同一参考 PNG"
+        raise ValueError(msg)
+    request = type(revision.request).model_validate(revision.request.model_dump(mode="json"))
+    request.validate_against(observations, reference_size(reference))
+    context = {
+        "request": request.model_dump(mode="json"),
+        "previous_observations": observations.model_dump(mode="json"),
+        "previous_manifest": manifest.model_dump(mode="json"),
+    }
+    return context, manifest.reference_measurements
+
+
 def run_analysis_task(
-    state: BlackboardState, task_id: str, *, asset_root: Path | None = None, options: AnalysisOptions | None = None
+    state: BlackboardState,
+    task_id: str,
+    *,
+    asset_root: Path | None = None,
+    options: AnalysisOptions | None = None,
+    revision: AnalysisRevision | None = None,
+    model: BaseChatModel | None = None,
 ) -> AnalysisOutcome:
     """执行单 Agent 全图 E/F/R 观察并交付可回读文件包.
 
@@ -128,6 +160,8 @@ def run_analysis_task(
         task_id: 本轮新的根分析任务标识.
         asset_root: 相对参考图路径的根目录.
         options: 单角色调用、输出和传输预算.
+        revision: 从同一原图的旧观察包开展定向复核.
+        model: 可注入模型, 省略时加载应用配置.
 
     Returns:
         本轮终态与文件包索引, 无合法交付时 report_dir 为空.
@@ -142,9 +176,12 @@ def run_analysis_task(
     root = asset_root if asset_root is not None else Path.cwd()
     reference_url = png_data_url(root / target.reference_path)
     reference = base64.b64decode(reference_url.split(",", 1)[1])
-    model = build_model()
+    revision_context, inherited_measurements = _capture_revision(revision, reference) if revision is not None else (None, ())
+    selected_model = model if model is not None else build_model()
     directory = create_run_directory(options.output_dir)
     (directory / "reference.png").write_bytes(reference)
+    if revision_context is not None:
+        write_snapshot(directory / "observation_revision_input.json", revision_context)
     outcomes: list[AnalysisOutcome] = []
 
     def deliver(final: SceneAnalysisResult, _session: AnalysisSession) -> SceneAnalysisResult:
@@ -152,17 +189,30 @@ def run_analysis_task(
         outcomes.append(_outcome(state, task_id, directory, published, options))
         return published
 
-    result = execute_scene_analysis(_analysis_request(target, task), reference_url, options, directory, model=model, on_delivery=deliver)
+    result = execute_scene_analysis(
+        _analysis_request(target, task),
+        reference_url,
+        options,
+        directory,
+        model=selected_model,
+        on_delivery=deliver,
+        revision_context=revision_context,
+        inherited_measurements=inherited_measurements,
+    )
     return outcomes[-1] if outcomes else _outcome(state, task_id, directory, result, options)
 
 
-def run_analysis(path: Path, prompt: str, *, options: AnalysisOptions | None = None) -> AnalysisOutcome:
+def run_analysis(
+    path: Path, prompt: str, *, options: AnalysisOptions | None = None, revision: AnalysisRevision | None = None, model: BaseChatModel | None = None
+) -> AnalysisOutcome:
     """从固定 PNG 与要求启动一次全图观察.
 
     Args:
         path: 本地 PNG 参考图.
         prompt: 用户要求与观察目标.
         options: 可选的单角色运行参数.
+        revision: 可选的只读旧观察和结构化复核请求.
+        model: 可注入模型, 省略时加载应用配置.
 
     Returns:
         状态、黑板结果索引与可选观察报告目录.
@@ -175,4 +225,4 @@ def run_analysis(path: Path, prompt: str, *, options: AnalysisOptions | None = N
         raise ValueError(msg)
     state = add_target(new_blackboard(), TargetRecord(version="T1", request=prompt, reference_path=str(path.resolve())))
     state = add_task(state, TaskRecord(id="A1", role="analysis", target_version="T1", objective=prompt))
-    return run_analysis_task(state, "A1", options=options)
+    return run_analysis_task(state, "A1", options=options, revision=revision, model=model)

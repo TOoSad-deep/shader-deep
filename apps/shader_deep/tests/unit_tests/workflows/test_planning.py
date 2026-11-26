@@ -14,16 +14,25 @@ from unittest.mock import patch
 
 from shader_deep.agents.generation.options import GenerationOptions
 from shader_deep.cli.planning import main
-from shader_deep.domain.scene_observations import ObservationIssue
+from shader_deep.domain.scene_observations import REFERENCE_MEASUREMENT_LIMIT, ObservationIssue, SceneObservations
+from shader_deep.domain.scene_planning import ObservationRevisionRequest
+from shader_deep.domain.visual_review import PixelRegion
+from shader_deep.infrastructure.storage.observation_package import read_observation_package, write_observation_package
 from shader_deep.infrastructure.storage.planning_package import read_planning_package
+from shader_deep.workflows.analysis.contracts import AnalysisRevision
+from shader_deep.workflows.analysis.entry import run_analysis
+from shader_deep.workflows.options import AnalysisOptions
 from shader_deep.workflows.planning import PlanningOptions, run_planning
+from shader_deep.workflows.planning.cascade import observation_impact
 from shader_deep.workflows.planning.configuration import apply_planning_overrides, load_planning_options
+from tests.unit_tests.agents.test_native_analysis import NativeRoutingModel, call as observation_call, context
 from tests.unit_tests.agents.test_native_planning import PlanningModel, call, fixed_context, observation_package, planning
 from tests.unit_tests.infrastructure.test_config import OPENROUTER
 from tests.unit_tests.infrastructure.test_openrouter_transport import _response
 
 if TYPE_CHECKING:
     import httpx2
+    from langchain_core.messages import AIMessage
 
     from shader_deep.workflows.planning.contracts import PlanningOutcome
 
@@ -90,6 +99,88 @@ class PlanningWorkflowTests(unittest.TestCase):
             stopped = run_planning(source, "规划", options=PlanningOptions(output_dir=self.directory / "runs"))
         self.assertEqual(stopped.status, "failed")
         self.assertEqual(stopped.error, "需要补充观察")
+
+    def test_planning_revision_uses_fixed_prior_observations_and_publishes_new_package(self) -> None:
+        source = observation_package(self.directory / "old-observation")
+        old_manifest = (source / "manifest.json").read_bytes()
+        revision = {"disputed_ids": ["R1"], "contradiction": "覆盖的方向可能反了", "suggested_region": {"left": 0, "top": 1, "right": 3, "bottom": 4}}
+        model = PlanningModel(responses=[call("stop_planning", {"reason": "需核对覆盖方向", "observation_revision_request": revision})])
+        stopped = run_planning(source, "规划", options=PlanningOptions(output_dir=self.directory / "runs"), model=model)
+        self.assertEqual(stopped.status, "failed")
+        self.assertEqual(stopped.execution["observation_revision_request"], revision)
+        self.assertIsNone(stopped.report_dir)
+        observer = NativeRoutingModel()
+        outcome = run_analysis(
+            source / "reference.png",
+            "核实环节",
+            options=AnalysisOptions(output_dir=self.directory / "runs"),
+            revision=AnalysisRevision(observation_dir=source, request=stopped.observation_revision_request),
+            model=observer,
+        )
+        self.assertEqual(outcome.stop_reason, "completed")
+        previous = context(observer.requests[0])["observation_revision"]
+        self.assertEqual(previous["previous_observations"]["relations"][0]["id"], "R1")
+        self.assertEqual(previous["request"], revision)
+        self.assertEqual((source / "manifest.json").read_bytes(), old_manifest)
+        self.assertEqual(read_observation_package(outcome.report_dir)[1].relations[0].id, "R2")
+
+    def test_risk_probe_is_round_tripped_by_normal_planning_entry(self) -> None:
+        body = planning()
+        body["sketches"][0]["risk_probes"] = [{"target_ids": ["R1"], "reason": "需要对照交叠", "context_mode": "proxy_context"}]
+        model = PlanningModel(responses=[call("save_planning_draft", {"report": body})])
+        result = self.run_case(model=model)
+        self.assertEqual(result.status, "completed")
+        probe = read_planning_package(result.report_dir).report.sketches[0].risk_probes[0]
+        self.assertEqual(probe.target_ids, ("R1",))
+        self.assertEqual(probe.context_mode, "proxy_context")
+
+    def test_revision_inherits_full_anchor_budget_and_diffs_only_new_evidence(self) -> None:
+        reference = observation_package(self.directory / "fixture") / "reference.png"
+        options = AnalysisOptions(output_dir=self.directory / "runs")
+
+        def measure(left: int, ordinal: int, question: str) -> AIMessage:
+            region = {"left": left, "top": 0, "right": left + 1, "bottom": 1}
+            return observation_call("region_stats", {"region": region, "question": question}, ordinal)
+
+        old_model = NativeRoutingModel(responses=[measure(i, i + 1, "首轮验证色场") for i in range(REFERENCE_MEASUREMENT_LIMIT)])
+        before = run_analysis(reference, "分析全图", options=options, model=old_model)
+        old = read_observation_package(before.report_dir)
+        anchors = old[0].reference_measurements
+        self.assertEqual(len(anchors), REFERENCE_MEASUREMENT_LIMIT)
+        request = ObservationRevisionRequest(
+            disputed_ids=("F8",), contradiction="核实局部色场", suggested_region=PixelRegion(left=6, top=0, right=8, bottom=2)
+        )
+        model = NativeRoutingModel(responses=[measure(0, 1, "旧测量重查"), measure(6, 2, "新区域补测")])
+        revision = AnalysisRevision(observation_dir=before.report_dir, request=request)
+        after = run_analysis(reference, "分析全图", options=options, revision=revision, model=model)
+        current = read_observation_package(after.report_dir)
+        self.assertEqual(current[0].reference_measurements[:-1], anchors)
+        self.assertEqual(current[0].reference_measurements[-1].region.left, 6)
+        self.assertEqual(read_observation_package(before.report_dir), old)
+        impact = observation_impact(old, current, request)
+        self.assertEqual(impact.changed_metadata, ("reference_measurements",))
+        self.assertEqual(set(impact.planning), {"E1", "F8", "R2"})
+        self.assertFalse(impact.criteria)
+
+    def test_empty_scene_can_request_revision_for_an_omitted_object(self) -> None:
+        source = observation_package(self.directory / "fixture")
+        manifest, observed = read_observation_package(source)
+        empty = SceneObservations(elements=(), features=(), relations=())
+        write_observation_package(self.directory / "empty", empty, manifest, (source / "reference.png").read_bytes())
+        request = {"disputed_ids": [], "contradiction": "疑似漏掉圆形前景", "suggested_region": {"left": 0, "top": 0, "right": 4, "bottom": 4}}
+        planner = PlanningModel(responses=[call("stop_planning", {"reason": "需核对漏检", "observation_revision_request": request})])
+        stopped = run_planning(self.directory / "empty", "规划", options=PlanningOptions(output_dir=self.directory / "runs"), model=planner)
+        self.assertEqual(stopped.execution["observation_revision_request"], request)
+        with self.assertRaisesRegex(ValueError, "关联的现有"):
+            stopped.observation_revision_request.validate_against(observed, (8, 5))
+        outcome = run_analysis(
+            source / "reference.png",
+            "分析全图",
+            options=AnalysisOptions(output_dir=self.directory / "runs"),
+            revision=AnalysisRevision(observation_dir=self.directory / "empty", request=stopped.observation_revision_request),
+            model=NativeRoutingModel(),
+        )
+        self.assertIn("F8", read_observation_package(outcome.report_dir)[1].identities)
 
     def test_interrupt_is_preserved_after_result_index(self) -> None:
         source = observation_package(self.directory / "observation")

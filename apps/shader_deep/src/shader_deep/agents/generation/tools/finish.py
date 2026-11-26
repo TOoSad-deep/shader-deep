@@ -3,10 +3,12 @@
 from __future__ import annotations
 
 import json
+from pathlib import Path
 from typing import TYPE_CHECKING, Literal
 
 from shader_deep.domain.blackboard import add_result
 from shader_deep.domain.tasks import ResultRecord
+from shader_deep.infrastructure.storage.parameterized_candidate import save_baked_candidate
 
 if TYPE_CHECKING:
     from shader_deep.agents.generation.tools.session import RenderSession
@@ -37,6 +39,9 @@ def select_candidate(session: RenderSession, candidate_id: str, assessment: str)
         return json.dumps({"status": "invalid_selection", "message": "请说明与参考图的差异"})
     if session.memory is not None:
         session.memory.verified_code(candidate_id)
+    candidate = session.state["candidates"][candidate_id]
+    if candidate.render_record_path is not None and candidate.preview_path is not None:
+        session.baked_code_path = save_baked_candidate(Path(candidate.render_record_path), Path(candidate.code_path), Path(candidate.preview_path))
     # 选择只改变运行状态, 不改任务原始 baseline_id; 后续任务需显式绑定新基线.
     session.state = add_result(
         session.state,
@@ -50,7 +55,7 @@ def select_candidate(session: RenderSession, candidate_id: str, assessment: str)
             recommendation="本轮生成自检完成, 待用户验收",
         ),
     )
-    session.selected = session.state["candidates"][candidate_id]
+    session.selected = candidate
     session.stop_reason = "completed"
     session.save()
     return json.dumps({"status": "completed", "candidate_id": candidate_id})

@@ -10,6 +10,7 @@ from pydantic import Field
 from shader_deep.domain.review_coverage import validate_coverage
 from shader_deep.domain.visual_review import (
     DimensionReview,
+    EvidenceGap,
     FrozenReviewCheck,
     ReviewIssue,
     ReviewModel,
@@ -57,6 +58,14 @@ class CheckAnswer(ReviewModel):
         default=(), description="只登记直接违反当前必查项的可见差异。本项自身未见差异时填 []。其他项的缺陷归入其对应项。"
     )
     unassessed_reason: Text | None = None
+    evidence_gap: EvidenceGap | None = Field(
+        default=None,
+        exclude_if=lambda value: value is None,
+        description=(
+            "附在未评原因旁。现有双图可通过扩窗或追加像素取样取得证据时填 insufficient_crop_or_sample。需要补测具体位置时提供共享画布坐标。"
+            "缺少可比时间帧或背景上下文时填 missing_context_or_frame。"
+        ),
+    )
 
 
 class CheckRevision(ReviewModel):
@@ -142,7 +151,13 @@ def bound_checks(criteria: BoundReviewCriteria, coverage: CoverageEvidence | Non
     _require(criteria.request.protocol == "visual_review_v2", "invalid_protocol", "/protocol", "逐项提交需要 V2 评审绑定")
     gaps = {(gap.dimension, gap.subject): gap for gap in coverage.unassessed} if coverage else {}
     return tuple(
-        BoundCheck(check_id=item.check_id, dimension=item.dimension, check=item.check, unassessed=gaps.get((item.dimension, item.check)))
+        BoundCheck(
+            check_id=item.check_id,
+            dimension=item.dimension,
+            check=item.check,
+            source_ref=item.source_ref,
+            unassessed=gaps.get((item.dimension, item.check)),
+        )
         for item in criteria.checks
     )
 
@@ -162,6 +177,7 @@ def validate_check_answer(answer: CheckAnswer, checks: tuple[BoundCheck, ...]) -
 
 def _validate_answer_id(answer: CheckAnswer, by_id: dict[str, BoundCheck]) -> None:
     path = f"/answers/{answer.check_id}"
+    _require(answer.evidence_gap is None or answer.unassessed_reason is not None, "missing_reason", path, "缺证分类须附未评原因")
     _require(answer.check_id in by_id, "unknown_check", path, f"检查项 {answer.check_id} 不在本轮必查范围内")
     _require(by_id[answer.check_id].unassessed is None, "locked_check", path, f"检查项 {answer.check_id} 已由程序登记未评")
 
@@ -188,11 +204,23 @@ class _DimensionEvidence:
         self.notes.append(f"{check.check}: {answer.rationale}")
         for index, finding in enumerate(answer.findings, start=1):
             self.issues.append(
-                ReviewIssue(id=f"{check.check_id}-issue-{index}", dimension=check.dimension, check=check.check, **finding.model_dump())
+                ReviewIssue(
+                    id=f"{check.check_id}-issue-{index}",
+                    dimension=check.dimension,
+                    check=check.check,
+                    source_ref=check.source_ref,
+                    **finding.model_dump(),
+                )
             )
         if answer.unassessed_reason is not None:
             self.unassessed.append(
-                UnassessedItem(id=f"{check.check_id}-unassessed", dimension=check.dimension, subject=check.check, reason=answer.unassessed_reason)
+                UnassessedItem(
+                    id=f"{check.check_id}-unassessed",
+                    dimension=check.dimension,
+                    subject=check.check,
+                    reason=answer.unassessed_reason,
+                    evidence_gap=answer.evidence_gap,
+                )
             )
 
     def review(self, criteria: DimensionCriteria) -> DimensionReview:

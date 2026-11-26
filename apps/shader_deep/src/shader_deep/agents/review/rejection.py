@@ -15,7 +15,7 @@ if TYPE_CHECKING:
     from shader_deep.workflows.review.session import ReviewSession
 
 _TOOL_FIELDS = ("answer", "answers", "summary", "limitations", "reason", "evidence", "expected_revision")
-_ANSWER_FIELDS = ("check_id", "rationale", "findings", "unassessed_reason")
+_ANSWER_FIELDS = ("check_id", "rationale", "findings", "unassessed_reason", "evidence_gap")
 _PATH_FIELDS = frozenset((*_TOOL_FIELDS, *_ANSWER_FIELDS, "region", "severity", "impact", "reference_observation", "rendered_observation"))
 _MAX_PENDING_IDS = 8
 _SCHEMA_ERROR_TYPES = frozenset(get_args(ErrorType))

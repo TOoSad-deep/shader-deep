@@ -10,7 +10,7 @@ from urllib.parse import quote
 
 from pydantic import TypeAdapter
 
-from shader_deep.domain.generation_comparison import ComparisonItem, GenerationComparison, select_comparison_item
+from shader_deep.domain.generation_comparison import ComparisonItem, GenerationComparison, PlanningGenerationComparison, select_comparison_item
 from shader_deep.infrastructure.storage.snapshots import write_snapshot
 
 
@@ -104,6 +104,31 @@ def read_generation_comparison(directory: Path) -> GenerationComparison:
     directory = directory.resolve()
     record = TypeAdapter(GenerationComparison).validate_json((directory / "comparison.json").read_bytes(), strict=True)
     return replace(record, directory=str(directory))
+
+
+def write_planning_generation_comparison(record: PlanningGenerationComparison) -> Path:
+    """发布固定整图规划并行对照的索引、预览及评审链接."""
+    directory = Path(record.directory).resolve()
+    lines = [
+        "# 整图规划方案对照",
+        "",
+        record.request,
+        "",
+        f"模型 `{record.model_name}`。画布 {record.width} x {record.height}。iTime={record.time}。每项最多 {record.max_attempts} 次渲染。",
+        f"规划 `{record.planning_sha256}`。原图 `{record.reference_sha256}`。评审标准 `{record.criteria_sha256}`。",
+        "",
+    ]
+    for index, item in enumerate(record.items):
+        lines.extend(_item_lines(directory, index, item))
+        if item.review_report_dir is not None:
+            review = str(Path(item.review_report_dir) / "README.md")
+            lines.extend([f"[独立评审]({_link(directory, review)})。视觉结论 `{item.review_verdict}`。", ""])
+        elif item.review_error is not None:
+            lines.extend([f"独立评审受阻。{' '.join(item.review_error.split())}", ""])
+    (directory / "README.md").write_text("\n".join(lines), encoding="utf-8")
+    destination = directory / "comparison.json"
+    write_snapshot(destination, asdict(record))
+    return destination
 
 
 def _verify_child_selection(item: ComparisonItem, candidate_id: str) -> None:

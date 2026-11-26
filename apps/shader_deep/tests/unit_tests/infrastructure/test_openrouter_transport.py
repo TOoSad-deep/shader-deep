@@ -86,7 +86,7 @@ class OpenRouterTransportTests(TestCase):
                 submit_exploration.invoke({"report": invalid})
 
     def _schema_request(
-        self, tool_: object, message: dict, *, streaming: bool = False, base_url: str = "https://openrouter.ai/api/v1"
+        self, tool_: object, message: dict, *, streaming: bool = False, base_url: str = "https://openrouter.ai/api/v1", analysis: bool = True
     ) -> tuple[dict, AIMessage]:
         requests = []
 
@@ -98,9 +98,25 @@ class OpenRouterTransportTests(TestCase):
             patch.dict(os.environ, {**OPENROUTER, "OPENROUTER_BASE_URL": base_url}, clear=True),
             patch("httpx2.Client.send", autospec=True, side_effect=respond),
         ):
-            model = configure_analysis_model(build_model(), AnalysisOptions(stream_model_responses=streaming)).bind_tools([tool_])
-            response = model.invoke([HumanMessage(content="提交完整报告")])
+            model = build_model()
+            if analysis:
+                model = configure_analysis_model(model, AnalysisOptions(stream_model_responses=streaming))
+            response = model.bind_tools([tool_]).invoke([HumanMessage(content="提交完整报告")])
         return requests[0], response
+
+    def test_plain_client_preserves_function_strictness_defaults_and_other_providers(self) -> None:
+        field = {"type": "string", "minLength": 1, "pattern": r"\S", "default": "完整文本"}
+        parameters = {"type": "object", "properties": {"label": field}}
+        for binding in ({}, {"strict": False}, {"strict": True}):
+            function = {"name": "sample", "parameters": parameters, **binding}
+            tool = {"type": "function", "function": function}
+            for url, router in (("https://openrouter.ai/api/v1", True), ("https://other-provider.invalid/v1", False)):
+                with self.subTest(binding=binding, url=url):
+                    payload, _ = self._schema_request(tool, {"role": "assistant", "content": "ok"}, base_url=url, analysis=False)
+                    outgoing = payload["tools"][0]["function"]
+                    self.assertEqual({key: outgoing[key] for key in ("strict",) if key in outgoing}, binding)
+                    outgoing_field = outgoing["parameters"]["properties"]["label"]
+                    self.assertEqual(outgoing_field, {key: value for key, value in field.items() if key != "pattern" or not router})
 
     def test_schema_adaptation_preserves_other_patterns_literals_and_provider_boundaries(self) -> None:
         text = {"type": "string", "minLength": 1, "pattern": r"\S"}

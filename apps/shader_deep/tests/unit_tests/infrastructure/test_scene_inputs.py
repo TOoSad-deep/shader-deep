@@ -14,7 +14,9 @@ from unittest import TestCase
 from PIL import Image
 
 from shader_deep.domain.scene import SceneElementSource, ScenePlan
+from shader_deep.domain.shader_parameters import ParameterSpec
 from shader_deep.infrastructure.storage.generation_inputs import capture_generation_inputs
+from shader_deep.infrastructure.storage.parameterized_candidate import CandidateParameters
 from shader_deep.infrastructure.storage.scene_inputs import capture_scene_inputs, scene_input_records
 from tests.unit_tests.fixtures._scene_fixture import CIRCLE_CODE, RECTANGLE_CODE, scene_sources
 
@@ -95,6 +97,33 @@ class SceneInputsTests(TestCase):
                     sources = (sources[0], same_element_alternative(sources[0], root))
                 with self.assertRaises((ValueError, OSError)):
                     capture_scene_inputs(self.plan(sources), root / "scene")
+
+    def test_parameterized_element_captures_selected_values_with_its_original_preview(self) -> None:
+        sources = scene_sources(self.root)
+        root = Path(sources[0].run_dir)
+        code, png, record = root / "selected.glsl", root / "selected.png", root / "selected.parameters.json"
+        shader = "uniform float uRadius;\n" + CIRCLE_CODE.replace(" < 0.3", " < uRadius")
+        code.write_text(shader, encoding="utf-8")
+        spec = ParameterSpec(name="uRadius", type="float", default=0.1, min=0.0, max=1.0)
+        CandidateParameters(specs=(spec,), uniforms={"uRadius": 0.7}).save(record, code, png, time=0.0)
+        baked = root / "selected.baked.glsl"
+        baked.write_text(shader.replace("uniform float uRadius;", "const float uRadius = 0.7;"), encoding="utf-8")
+        snapshot = source_record(sources[0])
+        snapshot["blackboard"]["candidates"][sources[0].candidate_id]["render_record_path"] = record.name
+        snapshot["baked_code_path"] = baked.name
+        (root / "run.json").write_text(json.dumps(snapshot))
+
+        element = capture_scene_inputs(self.plan(sources), self.root / "combined").elements[0]
+        self.assertEqual(element.code, baked.read_text())
+        self.assertEqual(Path(element.code_path).read_text(), element.code)
+        self.assertEqual(Path(element.preview_path).read_bytes(), png.read_bytes())
+        self.assertEqual(code.read_text(), shader)
+
+        settings = json.loads(record.read_bytes())
+        settings["render"]["uniforms"]["uRadius"] = 0.2
+        record.write_text(json.dumps(settings))
+        with self.assertRaisesRegex(ValueError, "baked shader differs"):
+            capture_scene_inputs(self.plan(sources), self.root / "conflicting")
 
     def test_changed_report_body_cannot_keep_the_original_binding_identity(self) -> None:
         sources = scene_sources(self.root / "changed")

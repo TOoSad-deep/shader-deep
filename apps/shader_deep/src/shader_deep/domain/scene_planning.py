@@ -3,12 +3,22 @@
 from __future__ import annotations
 
 import re
-from typing import TYPE_CHECKING, Annotated, cast
+from typing import TYPE_CHECKING, Annotated, Literal, Self, cast
 
-from pydantic import BaseModel, ConfigDict, Field, SerializerFunctionWrapHandler, StringConstraints, field_validator, model_serializer
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    SerializerFunctionWrapHandler,
+    StringConstraints,
+    field_validator,
+    model_serializer,
+    model_validator,
+)
 from pydantic.json_schema import SkipJsonSchema  # noqa: TC002  # Pydantic 在运行时生成非空工具 schema.
 
-from shader_deep.domain.scene_observations import ObservationIssue, Text  # noqa: TC001  # Pydantic 运行时解析嵌套字段.
+from shader_deep.domain.scene_observations import ObservationId, ObservationIssue, Text  # noqa: TC001  # Pydantic 运行时解析嵌套字段.
+from shader_deep.domain.visual_review import PixelRegion  # noqa: TC001  # Pydantic 运行时解析区域 schema.
 
 if TYPE_CHECKING:
     from shader_deep.domain.scene_observations import SceneObservations
@@ -17,6 +27,7 @@ MechanismId = Annotated[str, StringConstraints(strict=True, pattern=r"^M[1-9][0-
 SketchId = Annotated[str, StringConstraints(strict=True, pattern=r"^S[1-9][0-9]*$")]
 TargetId = Annotated[str, StringConstraints(strict=True, pattern=r"^[FR][1-9][0-9]*$")]
 MechanismIds = Annotated[tuple[MechanismId, ...], Field(min_length=1)]
+ProbeContextMode = Literal["isolated_solid", "proxy_context", "scene_baseline_patch"]
 MARKERS = re.compile(r"\[\[([^\[\]]+)\]\]")
 
 
@@ -67,6 +78,43 @@ class PlanningAlternative(PlanningModel):
         return value
 
 
+class RiskProbe(PlanningModel):
+    """一项由规划提出、等待人工决定是否执行的局部试验."""
+
+    target_ids: Annotated[tuple[ObservationId, ...], Field(min_length=1)]
+    reason: Text
+    context_mode: ProbeContextMode
+
+    @model_validator(mode="after")
+    def _targets(self) -> Self:
+        if len(set(self.target_ids)) != len(self.target_ids) or (len(self.target_ids) > 1 and any(ref.startswith("E") for ref in self.target_ids)):
+            msg = "局部试验目标须为不重复的 F/R 或一个单独的 E"
+            raise ValueError(msg)
+        return self
+
+
+class ObservationRevisionRequest(PlanningModel):
+    """规划受阻时要求分析复核的具体矛盾、关联 ID 和建议像素区域."""
+
+    disputed_ids: tuple[ObservationId, ...]
+    contradiction: Text
+    suggested_region: PixelRegion
+
+    def validate_against(self, observations: SceneObservations, size: tuple[int, int]) -> None:
+        """校验争议引用属于本次旧观察且核实区域在原始画布内."""
+        known = observations.identities
+        disputed = set(self.disputed_ids)
+        if len(disputed) != len(self.disputed_ids) or not disputed <= known:
+            msg = "复核争议 ID 须唯一且属于固定观察版本"
+            raise ValueError(msg)
+        if not disputed and known:
+            msg = "旧观察已有条目时, 复核必须列出关联的现有 E/F/R ID"
+            raise ValueError(msg)
+        if self.suggested_region.right > size[0] or self.suggested_region.bottom > size[1]:
+            msg = "复核区域须位于原图像素范围内"
+            raise ValueError(msg)
+
+
 class PlanningSketch(PlanningModel):
     """同一完整观察范围内的一套构造方案."""
 
@@ -76,6 +124,7 @@ class PlanningSketch(PlanningModel):
     composition: Text
     gaps: tuple[PlanningGap, ...] = ()
     alternatives: tuple[PlanningAlternative, ...] = ()
+    risk_probes: tuple[RiskProbe, ...] = Field(default=(), exclude_if=lambda value: not value)
 
 
 class ExtraCandidate(PlanningModel):
@@ -117,6 +166,7 @@ class EffectivePlanningSketch(PlanningModel):
     gaps: tuple[PlanningGap, ...]
     observation_gaps: tuple[ObservationIssue, ...]
     complete: bool
+    risk_probes: tuple[RiskProbe, ...] = Field(default=(), exclude_if=lambda value: not value)
 
 
 class PlanningCandidateOrigin(PlanningModel):
@@ -204,6 +254,23 @@ def _effective_choices(sketch: PlanningSketch, alternative_index: int | None) ->
     return choices, alternative.composition if alternative.composition is not None else sketch.composition
 
 
+def _probe_diagnostics(
+    sketch: PlanningSketch, path: str, observations: SceneObservations, *, require_probe_mechanisms: bool
+) -> list[PlanningDiagnostic]:
+    issues: list[PlanningDiagnostic] = []
+    identities = observations.identities
+    for index, probe in enumerate(sketch.risk_probes):
+        current = f"{path}/risk_probes/{index}/target_ids"
+        missing = [(position, identity) for position, identity in enumerate(probe.target_ids) if identity not in identities]
+        issues.extend(
+            _issue("invalid_probe_target", f"{current}/{position}", f"试验目标 {identity} 不在当前观察版本") for position, identity in missing
+        )
+        # 默认与备选具有相同目标集合, 每项备选只替换对应机制组合.
+        if require_probe_mechanisms and not missing and observations.target_refs(probe.target_ids).isdisjoint(sketch.default):
+            issues.append(_issue("unbound_probe_target", current, "试验目标在当前方案中须绑定至少一个机制"))
+    return issues
+
+
 def _sketch_diagnostics(
     sketch: PlanningSketch, path: str, targets: set[str], methods: set[str], identities: set[str], observation_ids: set[str]
 ) -> list[PlanningDiagnostic]:
@@ -247,12 +314,15 @@ def _candidate_diagnostics(report: ScenePlanningSubmission, targets: set[str], m
     return issues
 
 
-def diagnose_scene_planning(report: ScenePlanningSubmission, observations: SceneObservations) -> tuple[PlanningDiagnostic, ...]:
+def diagnose_scene_planning(
+    report: ScenePlanningSubmission, observations: SceneObservations, *, require_probe_mechanisms: bool = True
+) -> tuple[PlanningDiagnostic, ...]:
     """汇总绑定整图上的字段合法草稿的业务问题.
 
     Args:
         report: 模型维护的 M/S 草稿.
         observations: 固定版本的整图 E/F/R.
+        require_probe_mechanisms: 新规划要求试验目标绑定机制, 旧包仍可回读.
 
     Returns:
         可定位的身份、引用、覆盖与组合问题.
@@ -265,7 +335,9 @@ def diagnose_scene_planning(report: ScenePlanningSubmission, observations: Scene
     targets = {item.id for group in (observations.features, observations.relations) for item in group}
     issues.extend(_method_diagnostics(current))
     for offset, sketch in enumerate(current.sketches):
-        issues.extend(_sketch_diagnostics(sketch, f"/sketches/{offset}", targets, methods, set(index), observation_ids))
+        path = f"/sketches/{offset}"
+        issues.extend(_sketch_diagnostics(sketch, path, targets, methods, set(index), observation_ids))
+        issues.extend(_probe_diagnostics(sketch, path, observations, require_probe_mechanisms=require_probe_mechanisms))
     issues.extend(_candidate_diagnostics(current, targets, methods, set(index)))
     used = {identity for row in build_candidate_index(current) for identity in row.mechanisms}
     issues.extend(
@@ -276,17 +348,18 @@ def diagnose_scene_planning(report: ScenePlanningSubmission, observations: Scene
     return tuple(issues)
 
 
-def validate_scene_planning(report: ScenePlanningSubmission, observations: SceneObservations) -> None:
+def validate_scene_planning(report: ScenePlanningSubmission, observations: SceneObservations, *, require_probe_mechanisms: bool = True) -> None:
     """正式校验全部默认及备选视图.
 
     Args:
         report: 需要接受或读取的规划正文.
         observations: 同一固定观察版本.
+        require_probe_mechanisms: 新规划要求试验目标绑定机制, 旧包仍可回读.
 
     Raises:
         ValueError: 规划存在可定位业务问题.
     """
-    issues = diagnose_scene_planning(report, observations)
+    issues = diagnose_scene_planning(report, observations, require_probe_mechanisms=require_probe_mechanisms)
     if issues:
         msg = "; ".join(f"{issue.path}: {issue.message}" for issue in issues)
         raise ValueError(msg)
@@ -345,7 +418,7 @@ def effective_planning_sketch(
     Raises:
         ValueError: 规划非法或显式选择不存在.
     """
-    validate_scene_planning(report, observations)
+    validate_scene_planning(report, observations, require_probe_mechanisms=False)
     sketch = next((item for item in report.sketches if item.id == sketch_id), None)
     if sketch is None:
         msg = f"规划中不存在草图 {sketch_id!r}"
@@ -376,4 +449,5 @@ def _selected_sketch(
         gaps=sketch.gaps,
         observation_gaps=upstream_gaps,
         complete=not (sketch.gaps or upstream_gaps),
+        risk_probes=sketch.risk_probes,
     )

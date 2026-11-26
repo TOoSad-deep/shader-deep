@@ -3,17 +3,21 @@
 from __future__ import annotations
 
 import hashlib
+import io
 import json
 import shutil
 import tempfile
 from pathlib import Path
 from typing import Literal
 
+from PIL import Image
 from pydantic import Field, JsonValue
 
 from shader_deep.domain.scene_observations import (
+    REFERENCE_MEASUREMENT_ARCHIVE_LIMIT,
     ObservationIssue,
     ObservationModel,
+    ReferenceMeasurement,
     SceneObservations,
     Text,
     validate_scene_observations,
@@ -38,6 +42,27 @@ class ObservationManifest(ObservationModel):
     context_notes: tuple[Text, ...] = ()
     open_questions: tuple[ObservationIssue, ...] = ()
     gaps: tuple[ObservationIssue, ...] = ()
+    reference_measurements: tuple[ReferenceMeasurement, ...] = Field(
+        default=(), max_length=REFERENCE_MEASUREMENT_ARCHIVE_LIMIT, exclude_if=lambda value: not value
+    )
+
+
+def _check_measurements(manifest: ObservationManifest, reference: bytes) -> None:
+    records = manifest.reference_measurements
+    if not records:
+        return
+    with Image.open(io.BytesIO(reference)) as image:
+        if image.format != "PNG":
+            msg = "reference_measurements 需要原始 PNG"
+            raise ValueError(msg)
+        size = image.size
+    if len({item.id for item in records}) != len(records) or len({(item.kind, item.region) for item in records}) != len(records):
+        msg = "reference_measurements 不能重复登记标识或测量规格"
+        raise ValueError(msg)
+    for record in records:
+        if record.image_sha256 != manifest.reference.sha256 or record.region.right > size[0] or record.region.bottom > size[1]:
+            msg = f"reference_measurements: {record.id} 的来源或区域与固定原图不匹配"
+            raise ValueError(msg)
 
 
 def _check(manifest: ObservationManifest, observations: SceneObservations, reference: bytes) -> None:
@@ -48,6 +73,7 @@ def _check(manifest: ObservationManifest, observations: SceneObservations, refer
     if hashlib.sha256(reference).hexdigest() != manifest.reference.sha256:
         msg = "reference.sha256: 固定参考图哈希校验失败"
         raise ValueError(msg)
+    _check_measurements(manifest, reference)
 
 
 def _asset(directory: Path, name: str) -> Path:

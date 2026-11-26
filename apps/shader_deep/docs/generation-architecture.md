@@ -46,6 +46,14 @@
 
 渲染预算与模型预算分别控制. 显式 `max_model_calls` 优先; 省略时原模式保持 `max_attempts + 2`, 记忆模式为 12. 图步数、反馈、追踪及 `run.json` 使用同一解析值, 自动摘要保持关闭, SDK 网络重试不另外计入逻辑模型轮次.
 
+## 参数化候选与局部试验
+
+整图规划入口默认允许参数化 GLSL，PNG 和旧报告入口可通过 `--optimize-parameters` 开启。参数声明与实际赋值由[参数合同](../src/shader_deep/domain/shader_parameters.py)校验。生成工具在浏览器工作线程执行，`optimize_uniforms` 占用一次渲染尝试，内部默认进行最多 48 次像素评估。模型可将 `max_evaluations` 设为 1–128 次，含起点评估。省略 `anchors` 时继承参考图测量锚点，传入 `[]` 时关闭继承。优化前后 PNG 对应同一基线 GLSL。记忆模式可通过 `read_materials` 回看优化回执里的拐点预览。选择胜出候选或拐点前，模型须收到相应的完整预览。
+
+`WebGL2Renderer.render(..., uniforms=...)` 在链接后核对参数名称与类型。`optimization_session` 在一次编译后接受多次参数赋值，每次绘制可以读取多个区域的原始 RGBA。正式 PNG 经同一程序导出。优化器维护目标采样、边缘与保护区域三层证据，搜索缺乏有效下降时返回 `structure_bottleneck`。起点已满足数值目标时返回 `baseline_satisfied`，保留原候选供视觉判断。
+
+`run_generation_from_planning` 可接收 `verified_snippets`、`local_probe` 或已批准修订材料。每份片段保存局部条件、实际 GLSL、预览和报告指纹。整图请求读取本轮固定副本。局部基线补丁的 `glsl_code` 工具参数是用于替换固定片段的源码。整图和局部的选择仍由人工作业门禁确认，详见[流程优化实施](work-items/workflow-optimization-implementation-20261125.md)。
+
 ## 整体流程与职责
 
 ```mermaid

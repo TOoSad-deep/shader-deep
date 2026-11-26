@@ -7,6 +7,8 @@ import sys
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from PIL import Image
+
 from shader_deep.agents.generation.options import GenerationOptions
 from shader_deep.api import read_planning_package, run_generation_from_planning, run_generation_from_report, run_shader
 
@@ -31,8 +33,6 @@ def _input_mode(parser: argparse.ArgumentParser, args: argparse.Namespace) -> ar
         if len(args.inputs) != PNG_POSITIONAL_COUNT or args.sketch is not None or args.background is not None or args.alternative is not None:
             parser.error("PNG mode requires PNG PROMPT; report selection flags require --report")
         args.png, args.prompt = Path(args.inputs[0]), args.inputs[1]
-        args.width = 512 if args.width is None else args.width
-        args.height = 512 if args.height is None else args.height
     if args.planning_report is None and args.time is None:
         args.time = 0.0
     return args
@@ -60,6 +60,9 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--max-attempts", type=int, default=3, help="Maximum render attempts, including failures")
     parser.add_argument("--max-model-calls", type=int, help="模型调用上限; 记忆模式默认 12, 原模式默认渲染上限加 2")
     parser.add_argument("--visual-memory", action="store_true", help="启用材料索引及按需回看")
+    parser.add_argument(
+        "--optimize-parameters", action=argparse.BooleanOptionalAction, default=None, help="启用外置参数与定量搜索, 整图规划模式默认启用"
+    )
     parser.add_argument("--output-dir", type=Path, help="Parent directory for a unique run folder (default: runs)")
     return _input_mode(parser, parser.parse_intermixed_args())
 
@@ -83,15 +86,21 @@ def _run(args: argparse.Namespace) -> GenerationOutcome:
             output_dir=args.output_dir,
             visual_memory=args.visual_memory,
             max_model_calls=args.max_model_calls,
+            optimize_parameters=bool(args.optimize_parameters),
         )
+    default_width, default_height = 512, 512
+    if args.optimize_parameters and (args.width is None or args.height is None):
+        with Image.open(args.png) as reference:
+            default_width, default_height = reference.size
     options = GenerationOptions(
-        width=args.width,
-        height=args.height,
+        width=default_width if args.width is None else args.width,
+        height=default_height if args.height is None else args.height,
         time=args.time,
         max_attempts=args.max_attempts,
         output_dir=args.output_dir,
         visual_memory=args.visual_memory,
         max_model_calls=args.max_model_calls,
+        optimize_parameters=bool(args.optimize_parameters),
     )
     return run_shader(args.png, args.prompt, options=options)
 
@@ -105,6 +114,7 @@ def _planning_options(args: argparse.Namespace) -> GenerationOptions:
         max_attempts=args.max_attempts,
         output_dir=args.output_dir,
         max_model_calls=args.max_model_calls,
+        optimize_parameters=args.optimize_parameters is not False,
     )
 
 
@@ -123,8 +133,12 @@ def main() -> int:
             sys.stderr.write(f"Generation incomplete: {outcome.stop_reason}\n")
             return 1
         # 交付选定候选的落盘代码, 保持最终输出与实际渲染的版本一致.
-        sys.stdout.write(f"{Path(outcome.selected_candidate.code_path).read_text(encoding='utf-8')}\n")
+        code = outcome.baked_code_path or Path(outcome.selected_candidate.code_path)
+        sys.stdout.write(f"{code.read_text(encoding='utf-8')}\n")
         sys.stderr.write(f"Preview: {outcome.selected_candidate.preview_path}\n")
+        if outcome.selected_candidate.render_record_path is not None:
+            sys.stderr.write(f"Parameterized GLSL: {outcome.selected_candidate.code_path}\n")
+            sys.stderr.write(f"Render parameters: {outcome.selected_candidate.render_record_path}\n")
     except (OSError, TypeError, ValueError) as exc:
         # 输入和本地文件错误统一返回 2; 未列出的异常仍向上抛出, 保留诊断信息.
         sys.stderr.write(f"Error: {exc}\n")

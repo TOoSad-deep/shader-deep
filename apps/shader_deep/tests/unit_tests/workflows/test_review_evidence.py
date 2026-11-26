@@ -2,15 +2,19 @@
 
 from __future__ import annotations
 
+import base64
 import hashlib
 import json
+import struct
 import tempfile
 import unittest
+from io import BytesIO
 from pathlib import Path
 from typing import TYPE_CHECKING, Literal
 from unittest.mock import patch
 
 from PIL import Image, ImageDraw
+from PIL.PngImagePlugin import PngInfo
 
 from shader_deep.api import (
     DimensionCriteria,
@@ -23,13 +27,16 @@ from shader_deep.api import (
     read_review_package,
     run_review,
 )
+from shader_deep.domain.evidence import ImageRegion
+from shader_deep.domain.scene_observations import ReferenceMeasurement
 from shader_deep.domain.visual_review import DIMENSION_IDS, ReviewIssue
 from shader_deep.infrastructure.storage.planning_inputs import content_sha256
-from tests.unit_tests.fixtures._review_fixture import matched_review, review_criteria
+from shader_deep.workflows.review import freeze_workflow_review, run_workflow_review
+from tests.unit_tests.fixtures._review_fixture import matched_review, review_criteria, review_request
 from tests.unit_tests.fixtures._review_model import ReviewModel, review_call, review_context
 
 if TYPE_CHECKING:
-    from shader_deep.domain.visual_review import DimensionId
+    from shader_deep.domain.visual_review import BoundReviewCriteria, DimensionId
     from shader_deep.infrastructure.storage.review_package import ReviewPackage
     from shader_deep.workflows.review.contracts import ReviewOutcome
 
@@ -222,3 +229,190 @@ class ReviewEvidenceTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "窗口尺寸"):
                 run_review(GEAR, self.rendered, self.gear_request(rect(0, 0, 1280, 720)), options=self.options)
         build.assert_not_called()
+
+
+class WorkflowReviewEvidenceTests(unittest.TestCase):
+    def setUp(self) -> None:
+        directory = Path(self.enterContext(tempfile.TemporaryDirectory()))
+        self.reference, self.candidate = directory / "reference.png", directory / "candidate.png"
+        self.options = ReviewOptions(output_dir=directory / "runs", max_request_retries=0)
+        for path, color in ((self.reference, "red"), (self.candidate, "blue")):
+            with Image.new("RGB", (96, 64), color) as image:
+                image.save(path)
+        request = review_request()
+        self.request = request.model_copy(
+            update={
+                "dimensions": tuple(item.model_copy(update={"source_refs": ("E1",)}) if item.required_checks else item for item in request.dimensions)
+            }
+        )
+
+    def anchor(self, path: Path, rgb: tuple[int, int, int] | None = None) -> ReferenceMeasurement:
+        return ReferenceMeasurement(
+            id="obs-1",
+            kind="region_stats" if rgb else "crop",
+            region=ImageRegion(left=24, top=18, right=30, bottom=22),
+            question="测量目标位置",
+            image_sha256=hashlib.sha256(path.read_bytes()).hexdigest(),
+            mean_rgb=rgb,
+            mean_luma=(rgb[0] * 0.2126 + rgb[1] * 0.7152 + rgb[2] * 0.0722) if rgb else None,
+        )
+
+    def finish_model(self, criteria: BoundReviewCriteria) -> ReviewModel:
+        return ReviewModel(
+            responses=[
+                review_call(
+                    "finish_review",
+                    {
+                        "summary": "本轮已核对",
+                        "answers": [{"check_id": item.check_id, "rationale": "已核对指定部位", "findings": []} for item in criteria.checks],
+                        "limitations": [],
+                    },
+                )
+            ]
+        )
+
+    def model_view(self, model: ReviewModel, index: int) -> Image.Image:
+        blocks = [
+            block
+            for message in model.requests[0]
+            if isinstance(message.content, list)
+            for block in message.content
+            if isinstance(block, dict) and block.get("type") == "image_url"
+        ]
+        url = blocks[index]["image_url"]["url"]
+        return Image.open(BytesIO(base64.b64decode(url.split(",", 1)[1])))
+
+    def test_same_and_swapped_images_keep_role_bars_and_raw_pairing(self) -> None:
+        criteria = freeze_workflow_review(self.request)
+        for reference, candidate, first_color, second_color in (
+            (self.reference, self.reference, (255, 0, 0), (255, 0, 0)),
+            (self.reference, self.candidate, (255, 0, 0), (0, 0, 255)),
+            (self.candidate, self.reference, (0, 0, 255), (255, 0, 0)),
+        ):
+            with self.subTest(reference=reference.name, candidate=candidate.name):
+                model = self.finish_model(criteria)
+                with patch("shader_deep.workflows.review.entry.build_model", return_value=model):
+                    outcome = run_workflow_review(
+                        reference,
+                        candidate,
+                        criteria,
+                        options=self.options,
+                        reference_measurements=(self.anchor(reference, first_color),),
+                        optimization_regions=(rect(35, 27, 43, 34),),
+                    )
+                self.assertEqual(outcome.status, "completed", outcome.error)
+                package = read_review_package(outcome.report_dir)
+                self.assertEqual(package.source.workflow_criteria, criteria)
+                self.assertEqual(package.report.criteria.checks, criteria.checks)
+                self.assertEqual((package.directory / "reference.png").read_bytes(), reference.read_bytes())
+                self.assertEqual((package.directory / "rendered.png").read_bytes(), candidate.read_bytes())
+                with self.model_view(model, 0) as left, self.model_view(model, 1) as right:
+                    self.assertNotEqual(left.getpixel((0, 0)), right.getpixel((0, 0)))
+                    self.assertEqual(left.getpixel((0, left.height - 64)), (*first_color, 255))
+                    self.assertEqual(right.getpixel((0, right.height - 64)), (*second_color, 255))
+                evidence = package.report.evidence
+                self.assertEqual(len(evidence.samples), 2)
+                self.assertEqual(evidence.samples[0].reference.mean_rgb, first_color)
+                self.assertEqual(evidence.samples[0].rendered.mean_rgb, second_color)
+                context = review_context(model.requests[0])
+                self.assertEqual(context["answerable_checks"][0]["source_ref"], "E1")
+                self.assertEqual(context["evidence"], evidence.model_dump(mode="json"))
+
+    def test_model_role_bars_keep_color_metadata_in_full_and_cropped_views(self) -> None:
+        info = PngInfo()
+        info.add(b"gAMA", struct.pack(">I", 100000))
+        info.add(b"cHRM", struct.pack(">8I", 31270, 32900, 64000, 33000, 30000, 60000, 15000, 6000))
+        with Image.new("RGBA", (96, 64), (128, 100, 90, 170)) as reference, Image.new("LA", (96, 64), (85, 190)) as candidate:
+            reference.save(self.reference, pnginfo=info)
+            candidate.save(self.candidate, icc_profile=b"fixed grayscale ICC profile bytes")
+        crop = rect(24, 18, 32, 24)
+        request = self.request.model_copy(update={"scope": "local", "target_kind": "feature", "reference_region": crop, "rendered_region": crop})
+        criteria = freeze_workflow_review(request)
+        model = self.finish_model(criteria)
+        with patch("shader_deep.workflows.review.entry.build_model", return_value=model):
+            outcome = run_workflow_review(self.reference, self.candidate, criteria, options=self.options)
+        self.assertEqual(outcome.status, "completed", outcome.error)
+        if outcome.report_dir is None:
+            self.fail("评审完成后应发布正式报告")
+        package = read_review_package(outcome.report_dir)
+        for role, path, mode, indexes in (
+            ("reference", self.reference, "RGBA", (0, 2)),
+            ("rendered", self.candidate, "LA", (1, 3)),
+        ):
+            self.assertEqual((package.directory / f"{role}.png").read_bytes(), path.read_bytes())
+            with Image.open(path) as raw:
+                for index, height in zip(indexes, (64, 6), strict=True):
+                    with self.model_view(model, index) as labelled:
+                        self.assertEqual(labelled.mode, mode)
+                        self.assertEqual(labelled.info, raw.info)
+                        self.assertEqual(labelled.getpixel((0, labelled.height - height)), raw.getpixel((0, 0)))
+
+    def test_same_png_expansion_preserves_frozen_checks_and_recovers_sampling(self) -> None:
+        window = rect(0, 0, 96, 64)
+        crop = rect(0, 0, 12, 12)
+        required = RequiredRegion(dimension="shape", check="符合参考表现", region=rect(24, 18, 30, 22))
+        criteria = freeze_workflow_review(
+            self.request.model_copy(
+                update={
+                    "scope": "local",
+                    "target_kind": "feature",
+                    "reference_region": crop,
+                    "rendered_region": crop,
+                    "coverage": ReviewCoverage(reference_window=window, rendered_window=window, required_regions=(required,)),
+                }
+            )
+        )
+        args = (self.reference, self.candidate, criteria)
+        model = self.finish_model(criteria)
+        with patch("shader_deep.workflows.review.entry.build_model", return_value=model) as build:
+            anchors = (self.anchor(self.reference, (255, 0, 0)),)
+            missing = run_workflow_review(*args, options=self.options, reference_measurements=anchors)
+            build.assert_not_called()
+            recovered = run_workflow_review(*args, options=self.options, reference_measurements=anchors, expand_views=True)
+            build.assert_called_once()
+        self.assertEqual(missing.verdict, "inconclusive")
+        missing_report = read_review_package(missing.report_dir).report
+        self.assertEqual(missing_report.submission.unassessed[0].id, "program-coverage-1")
+        self.assertFalse(missing_report.evidence.samples)
+        self.assertEqual(recovered.verdict, "no_major_issue_observed")
+        recovered_package = read_review_package(recovered.report_dir)
+        self.assertEqual(recovered_package.source.workflow_criteria, criteria)
+        self.assertEqual(recovered_package.report.criteria.checks, criteria.checks)
+        self.assertEqual(recovered_package.report.evidence.samples[0].reference.region, required.region)
+
+    def test_gray16_crop_only_keeps_visual_review_and_explicit_sampling_uses_midgray(self) -> None:
+        info = PngInfo()
+        info.add(b"gAMA", struct.pack(">I", 100000))
+        with Image.new("I;16", (96, 64), 32768) as image:
+            image.save(self.reference, pnginfo=info)
+        criteria = freeze_workflow_review(self.request)
+        anchor = self.anchor(self.reference)
+        for regions in ((), (rect(24, 18, 30, 22),)):
+            model = self.finish_model(criteria)
+            with self.subTest(regions=regions), patch("shader_deep.workflows.review.entry.build_model", return_value=model):
+                outcome = run_workflow_review(
+                    self.reference, self.candidate, criteria, options=self.options, reference_measurements=(anchor,), optimization_regions=regions
+                )
+                self.assertEqual(outcome.status, "completed", outcome.error)
+                with self.model_view(model, 0) as labelled:
+                    self.assertEqual(labelled.info["gamma"], 1.0)
+                    self.assertEqual(labelled.getpixel((0, labelled.height - 64)), (128, 255))
+                report = read_review_package(outcome.report_dir).report
+                if regions:
+                    self.assertEqual(report.evidence.samples[0].reference.mean_rgb, (128.0, 128.0, 128.0))
+                else:
+                    self.assertIsNone(report.evidence)
+
+    def test_invalid_gate_criteria_and_misbound_anchors_fail_before_model_request(self) -> None:
+        with self.assertRaisesRegex(ValueError, "source_ref"):
+            freeze_workflow_review(review_request())
+        criteria = freeze_workflow_review(self.request)
+        tampered = criteria.model_copy(update={"request": criteria.request.model_copy(update={"requirements": "候选发布后修改"})})
+        with patch("shader_deep.workflows.review.entry.build_model") as build:
+            with self.assertRaisesRegex(ValueError, "绑定内容"):
+                run_workflow_review(self.reference, self.candidate, tampered, options=self.options)
+            with self.assertRaisesRegex(ValueError, "图像身份"):
+                run_workflow_review(
+                    self.reference, self.candidate, criteria, options=self.options, reference_measurements=(self.anchor(self.candidate),)
+                )
+            build.assert_not_called()

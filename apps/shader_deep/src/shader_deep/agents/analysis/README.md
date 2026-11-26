@@ -23,8 +23,11 @@
 | 草稿与产物 | save_observation_draft 首次保存; read_file/edit_file 修订; finish_analysis 冻结接受 |
 | 受阻结束 | stop_analysis 记录非空原因, 无伪造成功报告 |
 | 材料读取 | SDK read_file 只读本角色资源及本图 conversation_history / large_tool_results |
+| 像素证据 | `crop` 和 `region_stats` 按需读取固定原图，六个独立规格，同规格复用 |
 
 原始图像实际字节进入模型请求, 路径占位不代表已看图. 仅开放固定草稿文件的局部编辑, 其余资源只读. 原图和规则在当前图中固定; 不把历次报告或模型自由文字自动写为长期记忆.
+
+`crop` 生成保留透明度的局部 PNG。程序将带锚点 ID 的图像放入后续主请求。`region_stats` 返回原图区域在白底合成后的编码 RGB 与亮度均值。像素工具使用左上原点和左闭右开矩形。
 
 ## 执行边界
 

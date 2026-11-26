@@ -22,6 +22,8 @@ class GenerationOptions:
         output_dir: 运行目录的父目录, 未提供时使用当前目录下的 runs.
         visual_memory: 显式启用单任务视觉材料索引与按需回看.
         max_model_calls: 独立模型轮次上限, 未指定时按是否启用记忆解析.
+        optimize_parameters: 启用参数化候选和受限数值优化工具.
+        vista_root: 调用方绑定的本工作流 VISTA 图库, 供生成按记录名回看历史结果.
     """
 
     width: int = 512
@@ -31,6 +33,8 @@ class GenerationOptions:
     output_dir: Path | None = None
     visual_memory: bool = False
     max_model_calls: int | None = None
+    optimize_parameters: bool = False
+    vista_root: Path | None = None
 
     @property
     def resolved_max_model_calls(self) -> int:
@@ -51,9 +55,10 @@ class GenerationOptions:
         if isinstance(self.time, bool) or not isinstance(self.time, (int, float)) or not math.isfinite(self.time):
             msg = "time must be a finite number of seconds"
             raise ValueError(msg)
-        if not isinstance(self.visual_memory, bool):
-            msg = "visual_memory must be a boolean"
-            raise TypeError(msg)
+        for name in ("visual_memory", "optimize_parameters"):
+            if not isinstance(getattr(self, name), bool):
+                msg = f"{name} must be a boolean"
+                raise TypeError(msg)
         value = self.max_model_calls
         if value is not None and (isinstance(value, bool) or not isinstance(value, int) or value <= 0):
             msg = "max_model_calls must be a positive integer"

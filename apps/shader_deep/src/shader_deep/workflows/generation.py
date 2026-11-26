@@ -121,7 +121,7 @@ def _completed_code(outcome: GenerationOutcome) -> str:
     if outcome.selected_candidate is None:
         raise GenerationIncompleteError(outcome)
     # 读取已选版本的制品, 不采用模型另外回复的一段未经渲染的代码.
-    return Path(outcome.selected_candidate.code_path).read_text(encoding="utf-8")
+    return (outcome.baked_code_path or Path(outcome.selected_candidate.code_path)).read_text(encoding="utf-8")
 
 
 def generate_task(state: BlackboardState, task_id: str, *, asset_root: Path | None = None, options: GenerationOptions | None = None) -> str:
