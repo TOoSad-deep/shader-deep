@@ -7,7 +7,8 @@ from typing import TYPE_CHECKING
 from langchain.tools import tool
 from langchain_core.tools import ToolException
 
-from shader_deep.experiments.tools._common import configure_tool, image_content
+from shader_deep.experiments._parameter_state import ParameterObservation  # noqa: TC001  # @tool 解析返回类型.
+from shader_deep.experiments.tools._common import configure_tool, observation_result
 from shader_deep.imaging.comparison import side_by_side_png
 
 if TYPE_CHECKING:
@@ -29,8 +30,8 @@ def build_tool(preview: ShaderPreview, *, reference: bytes, history: PreviewHist
         返回并排图、截图编号与当前参数的工具.
     """
 
-    @tool
-    def compare_preview() -> list[dict[str, object]]:
+    @tool(response_format="content_and_artifact")
+    def compare_preview() -> tuple[list[dict[str, object]], ParameterObservation]:
         """取当前截图并与参考图原尺度并排, 左参考右当前, 返回截图编号和参数.
 
         不提供误差、排名或变好/变差结论, 请根据图片自行判断差异.
@@ -38,7 +39,7 @@ def build_tool(preview: ShaderPreview, *, reference: bytes, history: PreviewHist
         try:
             snapshot = preview.capture()
             comparison = side_by_side_png(reference, snapshot.png)
-            return image_content(snapshot, trial_id=history.record(snapshot), comparison=comparison)
+            return observation_result(snapshot, trial_id=history.record(snapshot), comparison=comparison)
         except ValueError as exc:
             raise ToolException(str(exc)) from exc
 

@@ -18,12 +18,13 @@ def _decode_png(png: bytes) -> Image.Image:
         raise ValueError(msg) from exc
 
 
-def side_by_side_png(reference: bytes, current: bytes) -> bytes:
+def side_by_side_png(reference: bytes, current: bytes, *, right_label: str = "Current") -> bytes:
     """将等尺寸 PNG 原尺度并排放置, 标题位于图像区域之外.
 
     Args:
         reference: 左侧只读参考图的 PNG 内容.
         current: 右侧当前渲染图的 PNG 内容.
+        right_label: 右侧图像标题, 历史回读时明确标注截图编号和参数版本.
 
     Returns:
         带 24 像素标题栏的 RGBA PNG, 不裁剪、缩放或修改源图.
@@ -35,10 +36,10 @@ def side_by_side_png(reference: bytes, current: bytes) -> bytes:
         if left.size != right.size:
             msg = "Reference and current PNG dimensions must match; images are not resized"
             raise ValueError(msg)
-        return _compose(left, right)
+        return _compose(left, right, right_label)
 
 
-def _compose(left: Image.Image, right: Image.Image) -> bytes:
+def _compose(left: Image.Image, right: Image.Image, right_label: str) -> bytes:
     width, height = left.size
     with Image.new("RGBA", (width * 2, height + 24), "white") as comparison:
         # 不传 alpha mask, 逐像素保留两张源图的 RGBA, 包括透明区域.
@@ -46,7 +47,7 @@ def _compose(left: Image.Image, right: Image.Image) -> bytes:
         comparison.paste(right, (width, 24))
         draw = ImageDraw.Draw(comparison)
         draw.text((4, 4), "Reference", fill="black")
-        draw.text((width + 4, 4), "Current", fill="black")
+        draw.text((width + 4, 4), right_label, fill="black")
         with BytesIO() as output:
             comparison.save(output, format="PNG")
             return output.getvalue()

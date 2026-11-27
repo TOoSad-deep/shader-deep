@@ -2,11 +2,13 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal
 
 from deepagents import create_deep_agent
 
 from shader_deep.experiments._parameter_model import CompleteParameterResponse, configure_parameter_model, connection_retry
+from shader_deep.experiments._parameter_policy import ParameterPolicy
+from shader_deep.experiments.parameter_reference import freeze_parameter_reference
 from shader_deep.experiments.tools import build_parameter_tools
 from shader_deep.infrastructure.llm.client import build_model
 
@@ -17,6 +19,7 @@ if TYPE_CHECKING:
     from langchain_core.tools import BaseTool
     from langgraph.graph.state import CompiledStateGraph
 
+    from shader_deep.experiments.parameter_reference import ParameterReference
     from shader_deep.rendering import ShaderPreview
 
 
@@ -25,7 +28,8 @@ def build_parameter_agent(
     preview: ShaderPreview | None = None,
     model: BaseChatModel | None = None,
     render_tool: BaseTool | None = None,
-    reference_path: Path | None = None,
+    reference_path: Path | ParameterReference | None = None,
+    history_mode: Literal["original", "paired"] = "original",
 ) -> CompiledStateGraph:
     """构建独立调参 Agent, 模型沿用项目环境变量配置.
 
@@ -34,7 +38,8 @@ def build_parameter_agent(
         model: 可选的聊天模型, 未提供时沿用项目环境变量配置.
         render_tool: 绑定固定模板、参数白名单和渲染条件的调参工具.
             仅保留旧单工具调用兼容, 不能和 preview 同时提供.
-        reference_path: 可选只读参考 PNG, 配合 preview 启用并排对比和截图历史.
+        reference_path: 可选只读参考 PNG 路径或共享冻结对象, 启用对比和历史.
+        history_mode: 历史截图展示方式; original 保留原始截图, paired 与固定参考图并排.
 
     Returns:
         可直接通过 invoke 或 ainvoke 调用的 Agent 图.
@@ -49,14 +54,21 @@ def build_parameter_agent(
     if reference_path is not None and preview is None:
         msg = "reference_path requires preview"
         raise ValueError(msg)
-    tools = build_parameter_tools(preview, reference_path=reference_path) if preview is not None else []
+    if history_mode not in {"original", "paired"}:
+        msg = "history_mode must be original or paired"
+        raise ValueError(msg)
+    if history_mode == "paired" and reference_path is None:
+        msg = "Paired history requires reference_path"
+        raise ValueError(msg)
+    reference = None if reference_path is None else freeze_parameter_reference(reference_path)
+    tools = build_parameter_tools(preview, reference_path=reference, history_mode=history_mode) if preview is not None else []
     if render_tool is not None:
         tools.append(render_tool)
     return create_deep_agent(
         name="shader-parameter-tuner",
         model=configure_parameter_model(build_model() if model is None else model),
         tools=tools,
-        middleware=[connection_retry(), CompleteParameterResponse()],
+        middleware=[connection_retry(), ParameterPolicy(tools, preview, reference), CompleteParameterResponse()],
         system_prompt=(
             "你负责调整已有 Shader 的 uniform float 参数, 根据用户目标提出参数修改. "
             "只调整用户指定且工具允许的参数, 保持算法和结构不变. "
@@ -74,6 +86,8 @@ def build_parameter_agent(
             "针对本轮要解决的差异, 判断已改善、无明显变化、变差或无法判断, 并说明剩余差异或新问题. "
             "完成这一步后才决定下一次调整, 不把参数更新成功当成视觉改善. "
             "更新和取图应分轮调用, 不在同一轮并行发出.\n"
+            "只使用本次提供的业务工具, 不调用文件、命令或子任务工具. "
+            "剩余额度不足时 set_parameters 将不可用, 不再尝试修改, 依据当前证据收尾.\n"
             "结束前检查: 必须已经读取并检查最后一次成功修改后的最新截图, 包括恢复旧参数后的新截图. "
             "用该图逐项复查基线发现的主要差异, 报告各项是否仍存在或无法判断, "
             "给出最终参数、所依据截图的 revision 和剩余差异. "

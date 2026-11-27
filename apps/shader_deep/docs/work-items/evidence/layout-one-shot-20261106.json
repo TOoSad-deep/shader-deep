@@ -1,0 +1,231 @@
+{
+  "date": "2026-11-06",
+  "run_dir": "/Users/douwen/.codex/worktrees/bb55/shader-deep/apps/shader_deep/runs/run-layout-one-shot-20261106",
+  "question": "Does native-scale horizontal packing vs separate image blocks change a single visual comparison?",
+  "model_requests": 2,
+  "source_sha256": {
+    "R.png": "4165cb213409072975e50d47f8ad6b049b0e30b23a24303fd2b63fd9491e63bb",
+    "H1.png": "918e64f248515eb145bc2e43de1d4d1035db5b3e5b36ecbaee49903aa5f7c1e8",
+    "H2.png": "d4b66f19a7f26ea15a39c81b8b8ecb68681538a3542ff3b5c12044756cb6ec8d",
+    "paired.png": "9759a74489d78d56bcf431e1d9e161ba56b1d247ce9a60e856dc0d33e4a65cd4",
+    "prompt.txt": "f9b1b72546582719d25f8a347455ded741423cce815406c5cd57c649261da5e9"
+  },
+  "same_source_pixels_verified": true,
+  "same_prompt_verified": true,
+  "no_repeated_reference": true,
+  "parameters_and_metrics_withheld": true,
+  "tools_used_by_model": false,
+  "conditions": [
+    {
+      "condition": "separate",
+      "model": "z-ai/glm-5.3-flash",
+      "provider": "CoreWeave",
+      "temperature": 0,
+      "usage": {
+        "prompt_tokens": 2642,
+        "completion_tokens": 8912,
+        "total_tokens": 11554,
+        "cost": 0.0037036,
+        "is_byok": false,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "cache_write_tokens": 0,
+          "audio_tokens": 0,
+          "video_tokens": 0
+        },
+        "cost_details": {
+          "upstream_inference_cost": 0.0037036,
+          "upstream_inference_prompt_cost": 0.00031704,
+          "upstream_inference_completions_cost": 0.00338656
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 8681,
+          "image_tokens": 0,
+          "audio_tokens": 0
+        }
+      },
+      "raw_output": "1. 最明显的可见变化在浅灰前圆外缘：H2 的灰色渐变带比 H1 略窄、略收拢，右侧与右下弧最清楚，圆形轮廓稍更可辨；蓝圆本身与紫蓝模糊团的位置、色相基本未动。\n\n2. 前圆非重叠外轮廓：H1→H2 模糊略减，方向朝清晰，但两者仍远软于 R 的硬边。前圆内部蓝色后圆边界：两图均为很宽的蓝→紫→灰渐变，位置与宽度几乎看不出差别，判为无明显可见变化，方向无法判断。\n\n3. H2 略更接近 R，主要依据是前圆外轮廓与内部模糊团均略微收紧，变化方向与 R 一致。但需说明：两图前圆边缘都明显过软，内部紫蓝团都比 R 更大更散、蓝成分偏重，R 顶部偏品红；在内部过渡上两图差距相当，不构成明显取舍，整体结论置信度偏低。",
+      "assessment_by_root": {
+        "outer_right": "错误: 声称 H2 右侧及右下外轮廓更清晰/收拢, 但预定右侧 ROI 像素完全一致",
+        "internal_transition": "未识别: 报告宽度几乎无差别/无法判断方向, 未识别 H2 过渡收窄",
+        "reported_preference": "H2, 低置信度"
+      },
+      "trace_id": "a70c9e21-a661-411e-b754-c17db97bfbeb"
+    },
+    {
+      "condition": "paired",
+      "model": "z-ai/glm-5.3-flash",
+      "provider": "CoreWeave",
+      "temperature": 0,
+      "usage": {
+        "prompt_tokens": 2616,
+        "completion_tokens": 2131,
+        "total_tokens": 4747,
+        "cost": 0.0011237,
+        "is_byok": false,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "cache_write_tokens": 0,
+          "audio_tokens": 0,
+          "video_tokens": 0
+        },
+        "cost_details": {
+          "upstream_inference_cost": 0.0011237,
+          "upstream_inference_prompt_cost": 0.00031392,
+          "upstream_inference_completions_cost": 0.00080978
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 1884,
+          "image_tokens": 0,
+          "audio_tokens": 0
+        }
+      },
+      "raw_output": "1. 最明确变化：浅灰前圆整体进一步弱化。H2 中前圆非重叠区灰度更浅、边缘更散，几乎融入背景；重叠处紫色减弱，蓝→灰过渡带向右扩展、变宽。\n\n2. 前圆非重叠外轮廓：变化明确。H1 已明显发虚，H2 更淡更散，接近消失；两者都偏离 R 中仍清晰可辨的边缘。前圆内部的蓝色后圆边界：也在变，H1 为较集中的蓝紫渐变，H2 渐变带更宽、紫色调变淡，但仍可辨。两者方向相同(变软)，程度不同：外轮廓近乎消失，内部边界是扩散加去色，并非同一变化。\n\n3. H1 更接近 R。依据：R 中前圆形体可辨、重叠区紫色明显，H1 虽已偏软仍保留这两点；H2 基本丢失前圆轮廓与紫色。蓝圆本体的青蓝渐变三图相近，不构成取舍；差距集中在右侧前圆区域，H1 各处均更接近，无需分区取舍。",
+      "assessment_by_root": {
+        "outer_right": "错误: 声称 H2 外轮廓更淡更散, 但预定右侧 ROI 像素完全一致",
+        "internal_transition": "方向错误: 报告 H2 过渡变宽, 与受控变量和实际画面相反",
+        "reported_preference": "H1"
+      },
+      "trace_id": "e5ef9a69-a1ac-4e1a-b225-ea1b23f7357f"
+    }
+  ],
+  "pixel_oracle": {
+    "front_right_outer": {
+      "rectangle": [
+        670,
+        175,
+        745,
+        365
+      ],
+      "identical_pixels": true,
+      "mean_rgb_absolute_difference": 0.0
+    },
+    "internal_transition": {
+      "rectangle": [
+        540,
+        220,
+        630,
+        370
+      ],
+      "identical_pixels": false,
+      "mean_rgb_absolute_difference": 11.025580246913579
+    }
+  },
+  "source_mechanism": {
+    "shader_sha256": "4d9f1d8dd1b8c5dfc8508a9c174dc217a1b0c08fee5dd59bb0bc49a9833f92cb",
+    "u_blur_H1": 1.2,
+    "u_blur_H2": 0.4,
+    "internal_mask_smoothstep_width_H1": 0.12,
+    "internal_mask_smoothstep_width_H2": 0.04,
+    "basis": "sBlur = 1 - smoothstep(-0.045*u_blur,0.055*u_blur,d1); other parameters identical",
+    "scope": "Analytic mask support width; not a calibrated measurement of perceptual blur or all image regions"
+  },
+  "totals": {
+    "input_tokens": 5258,
+    "output_tokens": 11043,
+    "total_tokens": 16301,
+    "reported_cost_usd": 0.0048273
+  },
+  "conclusion": "Both single-call outputs miss the controlled distinction: right non-overlap outer contour unchanged, inner transition narrows. No evidence that paired presentation is superior in this one pair.",
+  "limitations": [
+    "One request per condition, fixed order, no replicated reliability estimate",
+    "Provider-side resize/tiling is unknown despite equal client pixel content",
+    "Overall H1/H2 preference has no human-label ground truth and was not graded",
+    "No parameter update or downstream optimization was performed",
+    "Assessment is local code/pixel checking and root review, no additional model judge"
+  ],
+  "trace_verification": {
+    "checks": [
+      {
+        "id": "separate",
+        "kind": "judge",
+        "run_id": "a70c9e21-a661-411e-b754-c17db97bfbeb",
+        "local_status": "completed",
+        "http_attempts": 1,
+        "reported_http_attempts": null,
+        "verification_status": "terminal",
+        "root_found": true,
+        "root": {
+          "id": "a70c9e21-a661-411e-b754-c17db97bfbeb",
+          "name": "history-layout.single-call",
+          "run_type": "llm",
+          "trace_id": "a70c9e21-a661-411e-b754-c17db97bfbeb",
+          "parent_run_id": null,
+          "start_time": "2026-11-06T03:55:43.714936+00:00",
+          "end_time": "2026-11-06T03:56:39.546933+00:00",
+          "has_error": false
+        },
+        "url": "https://smith.langchain.com/o/fcb09333-f0ce-45e7-9ea2-c4750cdfbd16/projects/p/2e0945b1-fc78-4930-96bb-3085745b703a/r/a70c9e21-a661-411e-b754-c17db97bfbeb?poll=true",
+        "llm_runs": 1,
+        "llm_ended": 1,
+        "llm_pending": 0,
+        "llm_error_runs": 0,
+        "llm_runs_minus_http_attempts": 0,
+        "llm_runs_match_http_attempts": true,
+        "llm_runs_match_callback_starts": null,
+        "judge_single_llm_root": true,
+        "llm_metadata": [
+          {
+            "id": "a70c9e21-a661-411e-b754-c17db97bfbeb",
+            "name": "history-layout.single-call",
+            "run_type": "llm",
+            "trace_id": "a70c9e21-a661-411e-b754-c17db97bfbeb",
+            "parent_run_id": null,
+            "start_time": "2026-11-06T03:55:43.714936+00:00",
+            "end_time": "2026-11-06T03:56:39.546933+00:00",
+            "has_error": false
+          }
+        ]
+      },
+      {
+        "id": "paired",
+        "kind": "judge",
+        "run_id": "e5ef9a69-a1ac-4e1a-b225-ea1b23f7357f",
+        "local_status": "completed",
+        "http_attempts": 1,
+        "reported_http_attempts": null,
+        "verification_status": "terminal",
+        "root_found": true,
+        "root": {
+          "id": "e5ef9a69-a1ac-4e1a-b225-ea1b23f7357f",
+          "name": "history-layout.single-call",
+          "run_type": "llm",
+          "trace_id": "e5ef9a69-a1ac-4e1a-b225-ea1b23f7357f",
+          "parent_run_id": null,
+          "start_time": "2026-11-06T03:56:41.746997+00:00",
+          "end_time": "2026-11-06T03:56:57.287399+00:00",
+          "has_error": false
+        },
+        "url": "https://smith.langchain.com/o/fcb09333-f0ce-45e7-9ea2-c4750cdfbd16/projects/p/2e0945b1-fc78-4930-96bb-3085745b703a/r/e5ef9a69-a1ac-4e1a-b225-ea1b23f7357f?poll=true",
+        "llm_runs": 1,
+        "llm_ended": 1,
+        "llm_pending": 0,
+        "llm_error_runs": 0,
+        "llm_runs_minus_http_attempts": 0,
+        "llm_runs_match_http_attempts": true,
+        "llm_runs_match_callback_starts": null,
+        "judge_single_llm_root": true,
+        "llm_metadata": [
+          {
+            "id": "e5ef9a69-a1ac-4e1a-b225-ea1b23f7357f",
+            "name": "history-layout.single-call",
+            "run_type": "llm",
+            "trace_id": "e5ef9a69-a1ac-4e1a-b225-ea1b23f7357f",
+            "parent_run_id": null,
+            "start_time": "2026-11-06T03:56:41.746997+00:00",
+            "end_time": "2026-11-06T03:56:57.287399+00:00",
+            "has_error": false
+          }
+        ]
+      }
+    ]
+  },
+  "validation": {
+    "source_and_composite_pixels": "identical by panel",
+    "actual_http_image_order_and_hashes": "match prepared conditions",
+    "actual_requests": 2,
+    "both_finish_reasons": "stop",
+    "both_remote_traces": "terminal",
+    "no_production_code_changed_this_turn": true
+  }
+}

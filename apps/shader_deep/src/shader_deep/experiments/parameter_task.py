@@ -6,17 +6,19 @@ from typing import TYPE_CHECKING
 
 from langchain_core.messages import HumanMessage
 
-from shader_deep.infrastructure.llm.messages import png_data_url
+from shader_deep.experiments.parameter_reference import freeze_parameter_reference
 
 if TYPE_CHECKING:
     from pathlib import Path
 
+    from shader_deep.experiments.parameter_reference import ParameterReference
 
-def build_reference_task(reference_path: Path, *, requirement: str = "") -> HumanMessage:
+
+def build_reference_task(reference_path: Path | ParameterReference, *, requirement: str = "") -> HumanMessage:
     """把目标 PNG 的原始内容装入用户消息, 用于直接调用调参 Agent.
 
     Args:
-        reference_path: 本地目标 PNG, 构建消息时读取并固定内容, 不缩放或裁剪.
+        reference_path: 本地目标 PNG 或共享冻结对象, 不缩放或裁剪.
         requirement: 可选补充要求, 例如优先匹配轮廓; 不应包含隐藏目标参数.
 
     Returns:
@@ -27,7 +29,7 @@ def build_reference_task(reference_path: Path, *, requirement: str = "") -> Huma
         OSError: 无法读取图片文件.
     """
     # 路径只在调用方进程内使用; 不把可能含参数答案的文件名发给模型.
-    reference_url = png_data_url(reference_path)
+    reference_url = freeze_parameter_reference(reference_path).data_url
     instruction = (
         "下面的图片是只读的目标参考图, 不是当前渲染图. "
         "任务是调整工具允许的 uniform 参数, 使当前渲染尽量与参考图一致. "

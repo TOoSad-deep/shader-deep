@@ -44,7 +44,11 @@ Python 常驻入口为 `rendering/preview.py` 的 `ShaderPreview`, 从渲染包�
 
 新代码统一从 `shader_deep.experiments.tools` 导入工厂. 目录中的 `set_parameters.py`、`capture_preview.py`、`compare_preview.py`、`get_trial_history.py` 分别定义单个模型工具, `_common.py` 共用消息适配与错误处理设置. 拼图和历史存储继续留在图像模块及实验历史模块, 不混入工具定义. 详细职责见[工具 README](../src/shader_deep/experiments/tools/README.md).
 
-参考图匹配任务由 `experiments/parameter_task.py` 的 `build_reference_task` 构建: 本地 PNG 经现有图片消息适配器读成固定 data URL, 随 HumanMessage 传给模型, 不传路径或目标参数. 另用 `build_parameter_agent(preview=..., reference_path=...)` 给工具绑定同一参考图. 消息和工具分别固定参考字节, 构建之间不得修改文件, 换目标时需新建 Agent.
+参考图匹配任务由 `experiments/parameter_task.py` 的 `build_reference_task` 构建. `parameter_reference.py` 一次读取并校验 PNG, 以 `ParameterReference` 供任务和工具共同使用; 仍接受旧 Path 调用, 但不一致的目标会在请求前拒绝. 模型只接收图像内容, 不接收路径或隐藏目标参数, 换目标时新建 Agent.
+
+`experiments/_parameter_policy.py` 在同步/异步图中限制可见及可执行工具, 拒绝同批修改与其他工具. 截图工具的私有 artifact 绑定快照与图片内容; 末次修改后, 实际图片必须进入后续模型请求, 才允许再次修改或正常结束. 自然语言视觉判断仍不由程序验真. 收尾重取画面并核对全部快照字段, 防止外部更新或时间变化后返回未经观察的状态. 渲染模块仍不依赖此策略.
+
+`parameter_run.py` 通过每次调用独立的上下文核对同一 preview 身份, 管理请求预算和部分证据. 更新前为取图/回读预留两次请求, 重试也占用预算; 耗尽时 `ParameterBudgetError.progress` 保留现有证据, 不在异常路径重绘. 直接图调用保留权限与完成校验, 总预算由调用方提供. 默认 task/文件工具被业务白名单拦截, 不再依赖实验脚本才获得此约束.
 
 参考图模式新增 `compare_preview` 与 `get_trial_history`: `imaging/comparison.py` 原尺度拼接左参考/右当前并加独立标题栏, 不计算误差; `experiments/_parameter_history.py` 只保存成功取图的原始快照, 工具最多返回三张所选原图与参数. 历史生命周期与本次工具绑定一致, 不跨目标共享, 不自动选优或恢复. 渲染模块不依赖参考图或比较逻辑, 仍只负责当前画布. 模型可见内容无 MAE、评分、排名或程序判断的改善结论; 评估指标仅由外层离线计算. 之前的真实模型实验未使用这些新工具, 新链路的实际精度收益待验证; 历史证据见[实验记录](work-items/parameter-agent-experiment.md).
 

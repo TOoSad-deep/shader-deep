@@ -1,0 +1,1290 @@
+{
+  "date": "2026-11-06",
+  "run_dir": "/Users/douwen/.codex/worktrees/bb55/shader-deep/apps/shader_deep/runs/run-history-display-20261106-v2-18calls",
+  "engineering_agents": {
+    "model": "gpt-6.1-sol",
+    "reasoning": "high",
+    "count": 3
+  },
+  "tuning_model": "z-ai/glm-5.3-flash",
+  "model_extra_body": {
+    "provider": {
+      "require_parameters": true,
+      "only": [
+        "coreweave/nvfp4"
+      ],
+      "allow_fallbacks": false
+    }
+  },
+  "limits": {
+    "actual_request_attempts": 18,
+    "output_tokens": 8192,
+    "timeout_seconds": 45,
+    "sdk_retries": 0,
+    "connection_retries": 1,
+    "graph_steps": 160
+  },
+  "judge_budget": {
+    "attempts_per_artifact": 1,
+    "controls": [
+      "reference_self",
+      "initial"
+    ],
+    "separate_from_tuning": true,
+    "output_tokens": 16384,
+    "timeout_seconds": 90,
+    "sdk_retries": 0
+  },
+  "evaluation_protocol": "circles-parameter-evaluation-v2",
+  "reference_sha256": "8431f0a97a9caae5bdd1ad7e0d6d82e94a604c5a53c49cb9abd659f3f761a41a",
+  "shader_sha256": "4d9f1d8dd1b8c5dfc8508a9c174dc217a1b0c08fee5dd59bb0bc49a9833f92cb",
+  "task_sha256": "f8a2719b8f61ca21b0e1c0eb56517f82d5f04f4480c5a48f19c546ede2765c59",
+  "execution_order": [
+    "R1-A",
+    "R1-B",
+    "R2-B",
+    "R2-A",
+    "R3-A",
+    "R3-B"
+  ],
+  "rows": [
+    {
+      "id": "R1-A",
+      "group": "A",
+      "history_mode": "original",
+      "execution_status": "failed",
+      "stop_reason": "ParameterBudgetError",
+      "artifact_kind": "terminal_replay",
+      "image": "R1-A/terminal_replay/terminal.png",
+      "image_sha256": "2119e149306299c7ccddae968191852aff5b96819bf6e62a9cad4e320b96bd4f",
+      "parameters": {
+        "u_scale": 1.08,
+        "u_bloom": 0.9,
+        "u_pink": 1,
+        "u_rim": 1.4,
+        "u_blur": 0.4
+      },
+      "updates": 9,
+      "history_calls": 0,
+      "history_successes": 0,
+      "usage": {
+        "requests": 18,
+        "known_usage": 18,
+        "missing_usage": 0,
+        "input_tokens": 199064,
+        "output_tokens": 12472,
+        "total_tokens": 211536,
+        "reported_cost_usd": 0.01608944,
+        "requests_with_reported_cost": 18
+      },
+      "providers": [
+        "CoreWeave"
+      ],
+      "metrics": {
+        "full": {
+          "rectangle": [
+            0,
+            0,
+            1024,
+            576
+          ],
+          "pixels": 589824,
+          "mae": 0.008866517753296343,
+          "rmse": 0.05471027732470024,
+          "ssim_luma": 0.9775610852847494
+        },
+        "foreground": {
+          "rectangle": [
+            330,
+            145,
+            695,
+            435
+          ],
+          "pixels": 105850,
+          "mae": 0.04554345926687476,
+          "rmse": 0.12184362654284285,
+          "ssim_luma": 0.8895253433024741
+        },
+        "overlap": {
+          "rectangle": [
+            450,
+            190,
+            580,
+            385
+          ],
+          "pixels": 25350,
+          "mae": 0.04453153884828093,
+          "rmse": 0.07018424109723254,
+          "ssim_luma": 0.8890639675073453
+        },
+        "background": {
+          "rectangles": [
+            [
+              0,
+              0,
+              1024,
+              145
+            ],
+            [
+              0,
+              435,
+              1024,
+              576
+            ],
+            [
+              0,
+              145,
+              330,
+              435
+            ],
+            [
+              695,
+              145,
+              1024,
+              435
+            ]
+          ],
+          "pixels": 483974,
+          "mae": 0.0008449003539891991,
+          "rmse": 0.02002296574964847,
+          "ssim_luma": null
+        }
+      },
+      "foreground_mae_255": 11.613582113053063,
+      "full_mae_255": 2.2609620270905673,
+      "best_observed_foreground_mae_255": 6.8087041410801445,
+      "best_observed_image": "R1-A/snapshot-09.png",
+      "final_image_delivered_before_end": false,
+      "judge": {
+        "pair_id": "c4e5894a2d88764d704b52a3230caf4063befe67b326ff6d5d0bfa0085501718",
+        "overall": "needs_work",
+        "criteria": {
+          "geometry_layout": {
+            "status": "pass",
+            "evidence": [
+              {
+                "rectangle": [
+                  330,
+                  140,
+                  720,
+                  445
+                ],
+                "observation": "两图中后圆位置尺寸基本一致（左缘约x340/331、下缘约y430/443），前圆中心约(570,262)与渲染模糊团中心约(590,260)接近，交叠相对位置与画布占据范围相当，渲染前圆仅因模糊外扩约15-20px，无明确几何错位"
+              }
+            ]
+          },
+          "overlap_transparency": {
+            "status": "needs_work",
+            "evidence": [
+              {
+                "rectangle": [
+                  540,
+                  210,
+                  670,
+                  340
+                ],
+                "observation": "参考中该区域为前圆独占的近白区仅带极淡紫灰，渲染中此处出现明显紫色浓团，透色紫越过两圆几何交叠延伸到后圆边界之外；参考中前圆边界在蓝底上可辨，渲染中覆盖边界弥散不清"
+              }
+            ]
+          },
+          "color_placement": {
+            "status": "needs_work",
+            "evidence": [
+              {
+                "rectangle": [
+                  470,
+                  190,
+                  660,
+                  360
+                ],
+                "observation": "参考最强紫集中在交叠区内约[480,230,575,340]，左上粉位于前圆上部[478,190,548,255]；渲染最强紫右移至约[570,230,655,330]即交叠区之外，粉色上移且明显变淡至约[515,135,595,200]"
+              }
+            ]
+          },
+          "edges_transitions": {
+            "status": "needs_work",
+            "evidence": [
+              {
+                "rectangle": [
+                  650,
+                  190,
+                  730,
+                  340
+                ],
+                "observation": "参考前圆右缘在x≈685处为清晰抗锯齿轮廓，过渡仅1-2px；渲染同一位置为约30-50px的渐变光晕，无明确外轮廓，属于过度模糊而非内部柔和过渡；后圆轮廓两图均清晰"
+              }
+            ]
+          }
+        },
+        "parse_error": null,
+        "acceptance": "uncalibrated"
+      },
+      "judge_receipt": "judges-native-schema-v3/outcome-01/summary.json",
+      "trace_url": "https://smith.langchain.com/o/fcb09333-f0ce-45e7-9ea2-c4750cdfbd16/projects/p/2e0945b1-fc78-4930-96bb-3085745b703a/r/27279444-e9de-4852-8b15-56be0c8fe7c8?poll=true",
+      "v2_original_judge": {
+        "overall": "unassessed",
+        "parse_error": "Model did not finish normally",
+        "acceptance": "uncalibrated"
+      },
+      "v2_original_judge_receipt": "judges/outcome-01/summary.json",
+      "baseline_sha256": "e93265be4e3a74857a8d742f659ee861c218e3f586a3d63299aa61497b61c617",
+      "replay_consistency": {
+        "original_file": "snapshot-09.png",
+        "original_sha256": "6cb0075388f6db6707e12677a36b79f0312c0ca890272617f5ea1b4dfd7658cb",
+        "replay_sha256": "6cb0075388f6db6707e12677a36b79f0312c0ca890272617f5ea1b4dfd7658cb",
+        "decoded_rgb_exact": true
+      },
+      "agent_verified": false
+    },
+    {
+      "id": "R1-B",
+      "group": "B",
+      "history_mode": "paired",
+      "execution_status": "failed",
+      "stop_reason": "ParameterBudgetError",
+      "artifact_kind": "terminal_replay",
+      "image": "R1-B/terminal_replay/terminal.png",
+      "image_sha256": "32c860e59f1afc7fc2e114e1daac7d79038977ff883fce74d5fba2785f742a0e",
+      "parameters": {
+        "u_scale": 1.05,
+        "u_bloom": 1.3,
+        "u_pink": 1.2,
+        "u_rim": 1.6,
+        "u_blur": 0.8
+      },
+      "updates": 8,
+      "history_calls": 1,
+      "history_successes": 1,
+      "usage": {
+        "requests": 18,
+        "known_usage": 18,
+        "missing_usage": 0,
+        "input_tokens": 208636,
+        "output_tokens": 12567,
+        "total_tokens": 221203,
+        "reported_cost_usd": 0.01660218,
+        "requests_with_reported_cost": 18
+      },
+      "providers": [
+        "CoreWeave"
+      ],
+      "metrics": {
+        "full": {
+          "rectangle": [
+            0,
+            0,
+            1024,
+            576
+          ],
+          "pixels": 589824,
+          "mae": 0.006755202216520289,
+          "rmse": 0.04280570073460534,
+          "ssim_luma": 0.9830602448903488
+        },
+        "foreground": {
+          "rectangle": [
+            330,
+            145,
+            695,
+            435
+          ],
+          "pixels": 105850,
+          "mae": 0.0364111379711702,
+          "rmse": 0.09871251433195005,
+          "ssim_luma": 0.9137213456896712
+        },
+        "overlap": {
+          "rectangle": [
+            450,
+            190,
+            580,
+            385
+          ],
+          "pixels": 25350,
+          "mae": 0.03720988513748695,
+          "rmse": 0.056198550784971796,
+          "ssim_luma": 0.9234532214603872
+        },
+        "background": {
+          "rectangles": [
+            [
+              0,
+              0,
+              1024,
+              145
+            ],
+            [
+              0,
+              435,
+              1024,
+              576
+            ],
+            [
+              0,
+              145,
+              330,
+              435
+            ],
+            [
+              695,
+              145,
+              1024,
+              435
+            ]
+          ],
+          "pixels": 483974,
+          "mae": 0.00026914966074313235,
+          "rmse": 0.010096057462096361,
+          "ssim_luma": null
+        }
+      },
+      "foreground_mae_255": 9.284840182648402,
+      "full_mae_255": 1.7225765652126737,
+      "best_observed_foreground_mae_255": 9.284840182648402,
+      "best_observed_image": "R1-B/snapshot-09.png",
+      "final_image_delivered_before_end": false,
+      "judge": {
+        "pair_id": "f1351e664a58d9590ac404a18571cf8f2b662122c2cb7f885223f9e4ef0caf70",
+        "overall": "needs_work",
+        "criteria": {
+          "geometry_layout": {
+            "status": "pass",
+            "evidence": [
+              {
+                "rectangle": [
+                  330,
+                  135,
+                  705,
+                  435
+                ],
+                "observation": "两图圆的占位一致：后圆约[337,196,556,425]、前圆约[455,145,690,392]，渲染图前圆右缘至x≈700、顶部y≈140，中心偏差约10px内，交叠范围与整体画布占据相符"
+              }
+            ]
+          },
+          "overlap_transparency": {
+            "status": "needs_work",
+            "evidence": [
+              {
+                "rectangle": [
+                  450,
+                  225,
+                  610,
+                  395
+                ],
+                "observation": "参考图交叠区内后圆青色透过前圆可见、前圆左弧边界可辨；渲染图交叠区被高饱和紫斑主导，青色透出明显减弱，且其左界接近竖直硬边而非沿前圆弧线"
+              }
+            ]
+          },
+          "color_placement": {
+            "status": "needs_work",
+            "evidence": [
+              {
+                "rectangle": [
+                  470,
+                  150,
+                  640,
+                  350
+                ],
+                "observation": "参考图交叠上部约[490,190,560,245]有明显粉色，紫色集中于交叠并在x≈590前衰减；渲染图粉色几乎不可见，紫色更深、外扩至x≈620并下移至y≈340"
+              },
+              {
+                "rectangle": [
+                  440,
+                  265,
+                  485,
+                  395
+                ],
+                "observation": "渲染图蓝圆内部x≈458-468出现竖向色带接缝、左右蓝色不连续，参考图同区域为平滑青到蓝渐变无接缝"
+              }
+            ]
+          },
+          "edges_transitions": {
+            "status": "needs_work",
+            "evidence": [
+              {
+                "rectangle": [
+                  590,
+                  135,
+                  710,
+                  400
+                ],
+                "observation": "参考图前圆右上外轮廓(x≈685、y≈145附近)清晰、抗锯齿约1-2px；渲染图同段轮廓模糊带超过15px，且底左紫斑约[560,330,640,390]处前圆外轮廓完全弥散成光晕、无清晰边界"
+              }
+            ]
+          }
+        },
+        "parse_error": null,
+        "acceptance": "uncalibrated"
+      },
+      "judge_receipt": "judges-native-schema-v3/outcome-02/summary.json",
+      "trace_url": "https://smith.langchain.com/o/fcb09333-f0ce-45e7-9ea2-c4750cdfbd16/projects/p/2e0945b1-fc78-4930-96bb-3085745b703a/r/54bf0dc3-f8b6-4e6f-aa18-c03c112a92d7?poll=true",
+      "v2_original_judge": {
+        "pair_id": "f1351e664a58d9590ac404a18571cf8f2b662122c2cb7f885223f9e4ef0caf70",
+        "overall": "unassessed",
+        "criteria": null,
+        "parse_error": "Extra data: line 1 column 983 (char 982)",
+        "acceptance": "uncalibrated"
+      },
+      "v2_original_judge_receipt": "judges/outcome-02/summary.json",
+      "baseline_sha256": "e93265be4e3a74857a8d742f659ee861c218e3f586a3d63299aa61497b61c617",
+      "replay_consistency": {
+        "original_file": "snapshot-09.png",
+        "original_sha256": "32c860e59f1afc7fc2e114e1daac7d79038977ff883fce74d5fba2785f742a0e",
+        "replay_sha256": "32c860e59f1afc7fc2e114e1daac7d79038977ff883fce74d5fba2785f742a0e",
+        "decoded_rgb_exact": true
+      },
+      "agent_verified": false
+    },
+    {
+      "id": "R2-B",
+      "group": "B",
+      "history_mode": "paired",
+      "execution_status": "completed",
+      "stop_reason": "normal_final_response",
+      "artifact_kind": "actual_final",
+      "image": "R2-B/snapshot-09.png",
+      "image_sha256": "a637d0089c5f3858b6a75c42acef53f88f52b936931314756c43b18f90f63644",
+      "parameters": {
+        "u_scale": 1.02,
+        "u_bloom": 1.5,
+        "u_pink": 1.5,
+        "u_rim": 1,
+        "u_blur": 0.4
+      },
+      "updates": 7,
+      "history_calls": 0,
+      "history_successes": 0,
+      "usage": {
+        "requests": 16,
+        "known_usage": 16,
+        "missing_usage": 0,
+        "input_tokens": 162618,
+        "output_tokens": 9536,
+        "total_tokens": 172154,
+        "reported_cost_usd": 0.01481784,
+        "requests_with_reported_cost": 16
+      },
+      "providers": [
+        "CoreWeave"
+      ],
+      "metrics": {
+        "full": {
+          "rectangle": [
+            0,
+            0,
+            1024,
+            576
+          ],
+          "pixels": 589824,
+          "mae": 0.005397342856413399,
+          "rmse": 0.03164982706858354,
+          "ssim_luma": 0.9848439158085404
+        },
+        "foreground": {
+          "rectangle": [
+            330,
+            145,
+            695,
+            435
+          ],
+          "pixels": 105850,
+          "mae": 0.02992172299560668,
+          "rmse": 0.07469051563075566,
+          "ssim_luma": 0.9179626410296521
+        },
+        "overlap": {
+          "rectangle": [
+            450,
+            190,
+            580,
+            385
+          ],
+          "pixels": 25350,
+          "mae": 0.042536824328679536,
+          "rmse": 0.06218237173685596,
+          "ssim_luma": 0.8876326549095763
+        },
+        "background": {
+          "rectangles": [
+            [
+              0,
+              0,
+              1024,
+              145
+            ],
+            [
+              0,
+              435,
+              1024,
+              576
+            ],
+            [
+              0,
+              145,
+              330,
+              435
+            ],
+            [
+              695,
+              145,
+              1024,
+              435
+            ]
+          ],
+          "pixels": 483974,
+          "mae": 3.361332190615436e-05,
+          "rmse": 0.000826951477990073,
+          "ssim_luma": null
+        }
+      },
+      "foreground_mae_255": 7.630039363879704,
+      "full_mae_255": 1.3763224283854167,
+      "best_observed_foreground_mae_255": 7.189869311919383,
+      "best_observed_image": "R2-B/snapshot-06.png",
+      "final_image_delivered_before_end": true,
+      "judge": {
+        "pair_id": "53f6d60ca8ed4bbd57ea8d560dee17bcdd6f86164721ce01b3b596a14b028c9d",
+        "overall": "needs_work",
+        "criteria": {
+          "geometry_layout": {
+            "status": "pass",
+            "evidence": [
+              {
+                "rectangle": [
+                  330,
+                  120,
+                  720,
+                  450
+                ],
+                "observation": "两图均为后圆(青蓝)居左下、前圆(白)居右上, 后圆左缘约 x≈340、前圆右缘约 x≈690, 直径与中心相对位置基本对应; 渲染图交叠透镜略宽(后圆右缘露出至 x≈585, 参考约 x≈555), 属轻微差异"
+              }
+            ]
+          },
+          "overlap_transparency": {
+            "status": "needs_work",
+            "evidence": [
+              {
+                "rectangle": [
+                  500,
+                  200,
+                  670,
+                  400
+                ],
+                "observation": "参考图前圆内后圆透见为淡紫, 约 x≈590 处已衰减、非交叠区保持中性浅灰; 渲染图透见紫色明显更强并延伸至 x≈640, 底部 y≈350-400 蓝色透见过强, 交叠与非交叠区的界线整体外扩"
+              }
+            ]
+          },
+          "color_placement": {
+            "status": "needs_work",
+            "evidence": [
+              {
+                "rectangle": [
+                  440,
+                  140,
+                  680,
+                  400
+                ],
+                "observation": "两图后圆左青右蓝的位置一致; 参考图前圆交叠区紫色柔和、左上粉色隐约, 紫雾约在 x≈590 消退; 渲染图紫色饱和度更高、中心右移并扩散至 x≈640, 顶部粉色仅余窄带"
+              }
+            ]
+          },
+          "edges_transitions": {
+            "status": "needs_work",
+            "evidence": [
+              {
+                "rectangle": [
+                  600,
+                  160,
+                  740,
+                  410
+                ],
+                "observation": "参考图前圆右/下外轮廓为可辨的窄过渡圆弧; 渲染图同区域轮廓弥散为宽渐变、无明确边界线, 顶部边界同样过度柔和"
+              }
+            ]
+          }
+        },
+        "parse_error": null,
+        "acceptance": "uncalibrated"
+      },
+      "judge_receipt": "judges-native-schema-v3/outcome-03/summary.json",
+      "trace_url": "https://smith.langchain.com/o/fcb09333-f0ce-45e7-9ea2-c4750cdfbd16/projects/p/2e0945b1-fc78-4930-96bb-3085745b703a/r/f6962dbf-0597-43e2-8f3c-ad56a94363bf?poll=true",
+      "v2_original_judge": {
+        "overall": "unassessed",
+        "parse_error": "Model did not finish normally",
+        "acceptance": "uncalibrated"
+      },
+      "v2_original_judge_receipt": "judges/outcome-03/summary.json",
+      "baseline_sha256": "e93265be4e3a74857a8d742f659ee861c218e3f586a3d63299aa61497b61c617"
+    },
+    {
+      "id": "R2-A",
+      "group": "A",
+      "history_mode": "original",
+      "execution_status": "failed",
+      "stop_reason": "ParameterBudgetError",
+      "artifact_kind": "terminal_replay",
+      "image": "R2-A/terminal_replay/terminal.png",
+      "image_sha256": "8777057f6feeb6f5e59c041d0481e3ba002bda9b6a4dfc1bb4250877900e324c",
+      "parameters": {
+        "u_scale": 1.05,
+        "u_bloom": 1.2,
+        "u_pink": 1.25,
+        "u_rim": 2,
+        "u_blur": 0.45
+      },
+      "updates": 9,
+      "history_calls": 0,
+      "history_successes": 0,
+      "usage": {
+        "requests": 18,
+        "known_usage": 18,
+        "missing_usage": 0,
+        "input_tokens": 198119,
+        "output_tokens": 8857,
+        "total_tokens": 206976,
+        "reported_cost_usd": 0.01624074,
+        "requests_with_reported_cost": 18
+      },
+      "providers": [
+        "CoreWeave"
+      ],
+      "metrics": {
+        "full": {
+          "rectangle": [
+            0,
+            0,
+            1024,
+            576
+          ],
+          "pixels": 589824,
+          "mae": 0.006786409044231118,
+          "rmse": 0.042997394184314995,
+          "ssim_luma": 0.9815600625663252
+        },
+        "foreground": {
+          "rectangle": [
+            330,
+            145,
+            695,
+            435
+          ],
+          "pixels": 105850,
+          "mae": 0.036583746268149836,
+          "rmse": 0.09917528228081225,
+          "ssim_luma": 0.9051977656354934
+        },
+        "overlap": {
+          "rectangle": [
+            450,
+            190,
+            580,
+            385
+          ],
+          "pixels": 25350,
+          "mae": 0.04054149102112903,
+          "rmse": 0.06161776026883411,
+          "ssim_luma": 0.8965946308909684
+        },
+        "background": {
+          "rectangles": [
+            [
+              0,
+              0,
+              1024,
+              145
+            ],
+            [
+              0,
+              435,
+              1024,
+              576
+            ],
+            [
+              0,
+              145,
+              330,
+              435
+            ],
+            [
+              695,
+              145,
+              1024,
+              435
+            ]
+          ],
+          "pixels": 483974,
+          "mae": 0.00026943055953608053,
+          "rmse": 0.010096878888454761,
+          "ssim_luma": null
+        }
+      },
+      "foreground_mae_255": 9.328855298378208,
+      "full_mae_255": 1.7305343062789351,
+      "best_observed_foreground_mae_255": 8.8847740513305,
+      "best_observed_image": "R2-A/snapshot-03.png",
+      "final_image_delivered_before_end": false,
+      "judge": {
+        "pair_id": "d548e859a11c1a9d7cd9d02bae1f8fe3b51994ff0961cae90c76cbe54d3ffb0a",
+        "overall": "needs_work",
+        "criteria": {
+          "geometry_layout": {
+            "status": "pass",
+            "evidence": [
+              {
+                "rectangle": [
+                  330,
+                  175,
+                  715,
+                  445
+                ],
+                "observation": "后圆参考约[337,193,555,430]、渲染约[335,186,558,440],位置尺寸基本一致;前圆中心约(568,265)对(580,264),交叠透镜同样位于后圆右上/前圆左下,前圆可见右缘仅因边缘弥散略宽(≈705 vs ≈686),中心与相对位置无明显偏移。"
+              }
+            ]
+          },
+          "overlap_transparency": {
+            "status": "needs_work",
+            "evidence": [
+              {
+                "rectangle": [
+                  555,
+                  190,
+                  660,
+                  390
+                ],
+                "observation": "参考中前圆非交叠区(透镜右界x≈590以外)为均匀浅灰白,紫色止于交叠范围内;渲染中紫色雾状延伸至x≈645进入前圆非交叠区,后圆透色范围明显过大,交叠与非交叠区的分界被晕开。"
+              }
+            ]
+          },
+          "color_placement": {
+            "status": "needs_work",
+            "evidence": [
+              {
+                "rectangle": [
+                  455,
+                  140,
+                  660,
+                  395
+                ],
+                "observation": "参考粉色块集中在前圆左上[470,185,545,240],紫色柔和集中于透镜[460,200,590,380];渲染粉色明显更淡且上移贴近顶缘[470,145,585,205],紫色更饱和并向右下扩散至x≈645,各色位置与扩散范围均偏离参考。"
+              }
+            ]
+          },
+          "edges_transitions": {
+            "status": "needs_work",
+            "evidence": [
+              {
+                "rectangle": [
+                  615,
+                  165,
+                  715,
+                  400
+                ],
+                "observation": "参考前圆右外轮廓在x≈660-686间柔和但可辨地过渡到背景;渲染同段外轮廓过度模糊,灰白晕拖尾至x≈710呈光晕状;另后圆底部x≈455、y≈365-440出现青/蓝垂直硬接缝,参考同处为平滑渐变。"
+              }
+            ]
+          }
+        },
+        "parse_error": null,
+        "acceptance": "uncalibrated"
+      },
+      "judge_receipt": "judges-native-schema-v3/outcome-04/summary.json",
+      "trace_url": "https://smith.langchain.com/o/fcb09333-f0ce-45e7-9ea2-c4750cdfbd16/projects/p/2e0945b1-fc78-4930-96bb-3085745b703a/r/b44b8119-4f14-4061-92c3-f4c9da0abfac?poll=true",
+      "v2_original_judge": {
+        "pair_id": "d548e859a11c1a9d7cd9d02bae1f8fe3b51994ff0961cae90c76cbe54d3ffb0a",
+        "overall": "unassessed",
+        "criteria": null,
+        "parse_error": "Expecting ',' delimiter: line 1 column 1028 (char 1027)",
+        "acceptance": "uncalibrated"
+      },
+      "v2_original_judge_receipt": "judges/outcome-04/summary.json",
+      "baseline_sha256": "e93265be4e3a74857a8d742f659ee861c218e3f586a3d63299aa61497b61c617",
+      "replay_consistency": {
+        "original_file": "snapshot-09.png",
+        "original_sha256": "7ed158548251c1224c8c70876c68290022f1400d6674b5f9490f790410459f10",
+        "replay_sha256": "7ed158548251c1224c8c70876c68290022f1400d6674b5f9490f790410459f10",
+        "decoded_rgb_exact": true
+      },
+      "agent_verified": false
+    },
+    {
+      "id": "R3-A",
+      "group": "A",
+      "history_mode": "original",
+      "execution_status": "completed",
+      "stop_reason": "normal_final_response",
+      "artifact_kind": "actual_final",
+      "image": "R3-A/snapshot-10.png",
+      "image_sha256": "770f51d5c0069ce6ecf3ee836abf4bd458c6fe12d6d779b8da0c3b4b3a8a6211",
+      "parameters": {
+        "u_scale": 1.05,
+        "u_bloom": 1.4,
+        "u_pink": 1.4,
+        "u_rim": 1,
+        "u_blur": 0.9
+      },
+      "updates": 8,
+      "history_calls": 0,
+      "history_successes": 0,
+      "usage": {
+        "requests": 18,
+        "known_usage": 18,
+        "missing_usage": 0,
+        "input_tokens": 199609,
+        "output_tokens": 8542,
+        "total_tokens": 208151,
+        "reported_cost_usd": 0.01869344,
+        "requests_with_reported_cost": 18
+      },
+      "providers": [
+        "CoreWeave"
+      ],
+      "metrics": {
+        "full": {
+          "rectangle": [
+            0,
+            0,
+            1024,
+            576
+          ],
+          "pixels": 589824,
+          "mae": 0.006909370283848493,
+          "rmse": 0.04296987529303324,
+          "ssim_luma": 0.9830803380546527
+        },
+        "foreground": {
+          "rectangle": [
+            330,
+            145,
+            695,
+            435
+          ],
+          "pixels": 105850,
+          "mae": 0.03726502851179836,
+          "rmse": 0.09910754607996335,
+          "ssim_luma": 0.9139028396390183
+        },
+        "overlap": {
+          "rectangle": [
+            450,
+            190,
+            580,
+            385
+          ],
+          "pixels": 25350,
+          "mae": 0.03779659924456305,
+          "rmse": 0.056117750829668446,
+          "ssim_luma": 0.9247245798623742
+        },
+        "background": {
+          "rectangles": [
+            [
+              0,
+              0,
+              1024,
+              145
+            ],
+            [
+              0,
+              435,
+              1024,
+              576
+            ],
+            [
+              0,
+              145,
+              330,
+              435
+            ],
+            [
+              695,
+              145,
+              1024,
+              435
+            ]
+          ],
+          "pixels": 483974,
+          "mae": 0.00027028135876472164,
+          "rmse": 0.01009956982438081,
+          "ssim_luma": null
+        }
+      },
+      "foreground_mae_255": 9.502582270508581,
+      "full_mae_255": 1.7618894223813657,
+      "best_observed_foreground_mae_255": 8.8847740513305,
+      "best_observed_image": "R3-A/snapshot-04.png",
+      "final_image_delivered_before_end": true,
+      "judge": {
+        "pair_id": "50c0f693b5fa079153d70c4460022eaa8e753963f666db91203fb001db44ea50",
+        "overall": "needs_work",
+        "criteria": {
+          "geometry_layout": {
+            "status": "pass",
+            "evidence": [
+              {
+                "rectangle": [
+                  330,
+                  140,
+                  690,
+                  440
+                ],
+                "observation": "两图后圆均在约 [333,195]-[551,437]、前圆约 [455,145]-[688,390],中心、直径与交叠范围(x≈455-552)一致,整体占画布中部位置相同。"
+              }
+            ]
+          },
+          "overlap_transparency": {
+            "status": "needs_work",
+            "evidence": [
+              {
+                "rectangle": [
+                  550,
+                  270,
+                  655,
+                  385
+                ],
+                "observation": "参考图中紫色止于后圆右缘 x≈552,此区(前圆非交叠内部)接近白色;渲染图中紫色雾状延伸至 x≈640,后圆在前圆内的可见范围明显超出真实交叠区,交叠与非交叠的区别被冲淡。"
+              }
+            ]
+          },
+          "color_placement": {
+            "status": "needs_work",
+            "evidence": [
+              {
+                "rectangle": [
+                  460,
+                  150,
+                  660,
+                  400
+                ],
+                "observation": "参考图交叠紫色集中且顶部 [470-570,165-245] 有明显粉色晕染;渲染图紫色中心下移、扩散更宽更糊(延伸至 x≈640),顶部粉色几乎不可见,强度与扩散范围不符。"
+              }
+            ]
+          },
+          "edges_transitions": {
+            "status": "needs_work",
+            "evidence": [
+              {
+                "rectangle": [
+                  480,
+                  130,
+                  670,
+                  200
+                ],
+                "observation": "参考图前圆上缘为较清晰的柔和白-灰过渡;渲染图同一位置外轮廓过度模糊成宽晕,底缘 [500-620,360-400] 紫色亦拖尾,后圆外缘两图则均清晰。"
+              }
+            ]
+          }
+        },
+        "parse_error": null,
+        "acceptance": "uncalibrated"
+      },
+      "judge_receipt": "judges-native-schema-v3/outcome-05/summary.json",
+      "trace_url": "https://smith.langchain.com/o/fcb09333-f0ce-45e7-9ea2-c4750cdfbd16/projects/p/2e0945b1-fc78-4930-96bb-3085745b703a/r/650a027c-7c07-42bf-a704-10ab11829aeb?poll=true",
+      "v2_original_judge": {
+        "pair_id": "50c0f693b5fa079153d70c4460022eaa8e753963f666db91203fb001db44ea50",
+        "overall": "unassessed",
+        "criteria": null,
+        "parse_error": "Expecting ',' delimiter: line 1 column 1080 (char 1079)",
+        "acceptance": "uncalibrated"
+      },
+      "v2_original_judge_receipt": "judges/outcome-05/summary.json",
+      "baseline_sha256": "e93265be4e3a74857a8d742f659ee861c218e3f586a3d63299aa61497b61c617"
+    },
+    {
+      "id": "R3-B",
+      "group": "B",
+      "history_mode": "paired",
+      "execution_status": "completed",
+      "stop_reason": "normal_final_response",
+      "artifact_kind": "actual_final",
+      "image": "R3-B/snapshot-10.png",
+      "image_sha256": "e83930dab7c9f18aa40b18cf493fdcc5e9a37ffe6015ace78f5450c26d228b00",
+      "parameters": {
+        "u_scale": 0.92,
+        "u_bloom": 1.6,
+        "u_pink": 1.5,
+        "u_rim": 2,
+        "u_blur": 0.4
+      },
+      "updates": 8,
+      "history_calls": 0,
+      "history_successes": 0,
+      "usage": {
+        "requests": 18,
+        "known_usage": 18,
+        "missing_usage": 0,
+        "input_tokens": 203340,
+        "output_tokens": 11009,
+        "total_tokens": 214349,
+        "reported_cost_usd": 0.01833782,
+        "requests_with_reported_cost": 18
+      },
+      "providers": [
+        "CoreWeave"
+      ],
+      "metrics": {
+        "full": {
+          "rectangle": [
+            0,
+            0,
+            1024,
+            576
+          ],
+          "pixels": 589824,
+          "mae": 0.007914488992573304,
+          "rmse": 0.0525372880126239,
+          "ssim_luma": 0.9791212162220713
+        },
+        "foreground": {
+          "rectangle": [
+            330,
+            145,
+            695,
+            435
+          ],
+          "pixels": 105850,
+          "mae": 0.04410161129480922,
+          "rmse": 0.12401763338549053,
+          "ssim_luma": 0.8812861132826607
+        },
+        "overlap": {
+          "rectangle": [
+            450,
+            190,
+            580,
+            385
+          ],
+          "pixels": 25350,
+          "mae": 0.05045911487540447,
+          "rmse": 0.08293568433236961,
+          "ssim_luma": 0.8662316991660742
+        },
+        "background": {
+          "rectangles": [
+            [
+              0,
+              0,
+              1024,
+              145
+            ],
+            [
+              0,
+              435,
+              1024,
+              576
+            ],
+            [
+              0,
+              145,
+              330,
+              435
+            ],
+            [
+              695,
+              145,
+              1024,
+              435
+            ]
+          ],
+          "pixels": 483974,
+          "mae": 0.0,
+          "rmse": 0.0,
+          "ssim_luma": null
+        }
+      },
+      "foreground_mae_255": 11.24591088017635,
+      "full_mae_255": 2.0181946931061923,
+      "best_observed_foreground_mae_255": 11.049507164226107,
+      "best_observed_image": "R3-B/snapshot-05.png",
+      "final_image_delivered_before_end": true,
+      "judge": {
+        "pair_id": "3df78bf80841ff3183da63c9af3674f7e856be3b4d3aeb148e9499adaf80d644",
+        "overall": "needs_work",
+        "criteria": {
+          "geometry_layout": {
+            "status": "pass",
+            "evidence": [
+              {
+                "rectangle": [
+                  335,
+                  140,
+                  700,
+                  435
+                ],
+                "observation": "两圆尺寸与位置基本一致: 前蓝圆参考约[343,185,556,428]、渲染约[350,205,560,420]; 后浅圆参考约[458,145,688,385]、渲染约[455,150,680,390]; 交叠范围与画布占比相近, 无明显错位"
+              }
+            ]
+          },
+          "overlap_transparency": {
+            "status": "needs_work",
+            "evidence": [
+              {
+                "rectangle": [
+                  455,
+                  195,
+                  645,
+                  390
+                ],
+                "observation": "参考中前蓝圆在交叠内的轮廓仍可辨认, 透出的紫色向右渐隐至约x600; 渲染中前蓝圆右上弧被灰白紫雾盖过、边界不可辨, 且饱和紫斑越过交叠延伸进后圆非交叠区至约x630, 前后覆盖关系失真"
+              }
+            ]
+          },
+          "color_placement": {
+            "status": "needs_work",
+            "evidence": [
+              {
+                "rectangle": [
+                  455,
+                  195,
+                  640,
+                  360
+                ],
+                "observation": "参考交叠区紫色较柔和且左上约[465,195,530,260]带粉调; 渲染该处粉调几乎被灰白雾替代, 紫色明显更深更饱和、中心下移至约[510,250,590,335]并向右扩散到约x630, 位置与强度均偏离参考"
+              }
+            ]
+          },
+          "edges_transitions": {
+            "status": "needs_work",
+            "evidence": [
+              {
+                "rectangle": [
+                  470,
+                  290,
+                  625,
+                  430
+                ],
+                "observation": "参考前蓝圆右下外轮廓(约[500,350,560,428]段)清晰、抗锯齿窄; 渲染同段轮廓明显模糊发虚, 紫色光晕向外渗使边界消散, 后浅圆左下边缘也较参考更朦胧"
+              }
+            ]
+          }
+        },
+        "parse_error": null,
+        "acceptance": "uncalibrated"
+      },
+      "judge_receipt": "judges-native-schema-v3/outcome-06/summary.json",
+      "trace_url": "https://smith.langchain.com/o/fcb09333-f0ce-45e7-9ea2-c4750cdfbd16/projects/p/2e0945b1-fc78-4930-96bb-3085745b703a/r/6e08d09a-bce5-4d76-a64e-0fc5ac1b4cf1?poll=true",
+      "v2_original_judge": {
+        "overall": "unassessed",
+        "parse_error": "Model did not finish normally",
+        "acceptance": "uncalibrated"
+      },
+      "v2_original_judge_receipt": "judges/outcome-06/summary.json",
+      "baseline_sha256": "e93265be4e3a74857a8d742f659ee861c218e3f586a3d63299aa61497b61c617"
+    }
+  ],
+  "groups": {
+    "A": {
+      "attempts": 3,
+      "completed": 1,
+      "history_calls": 0,
+      "foreground_mae_255_mean": 10.148339893979951,
+      "foreground_mae_255_population_sd": 1.0385073697787353,
+      "foreground_ssim_mean": 0.9028753161923286,
+      "judged_pass": 0
+    },
+    "B": {
+      "attempts": 3,
+      "completed": 2,
+      "history_calls": 1,
+      "foreground_mae_255_mean": 9.386930142234819,
+      "foreground_mae_255_population_sd": 1.4779374085703851,
+      "foreground_ssim_mean": 0.904323366667328,
+      "judged_pass": 0
+    }
+  },
+  "tuning_usage": {
+    "requests": 106,
+    "known_usage": 106,
+    "missing_usage": 0,
+    "input_tokens": 1171386,
+    "output_tokens": 62983,
+    "total_tokens": 1234369,
+    "reported_cost_usd": 0.10078146,
+    "requests_with_reported_cost": 106
+  },
+  "evaluation_v2_usage": {
+    "requests": 8,
+    "known_usage": 8,
+    "missing_usage": 0,
+    "input_tokens": 22147,
+    "output_tokens": 87766,
+    "total_tokens": 109913,
+    "reported_cost_usd": 0.03594472,
+    "requests_with_reported_cost": 8
+  },
+  "failed_preflight_v1_usage": {
+    "requests": 2,
+    "known_usage": 2,
+    "missing_usage": 0,
+    "input_tokens": 4864,
+    "output_tokens": 9617,
+    "total_tokens": 14481,
+    "reported_cost_usd": 0.00423814,
+    "requests_with_reported_cost": 2
+  },
+  "native_schema_v3_usage": {
+    "requests": 8,
+    "known_usage": 8,
+    "missing_usage": 0,
+    "input_tokens": 22147,
+    "output_tokens": 55839,
+    "total_tokens": 77986,
+    "reported_cost_usd": 0.02376126,
+    "requests_with_reported_cost": 8
+  },
+  "all_real_model_usage": {
+    "requests": 124,
+    "known_usage": 124,
+    "missing_usage": 0,
+    "input_tokens": 1220544,
+    "output_tokens": 216205,
+    "total_tokens": 1436749,
+    "reported_cost_usd": 0.16472558,
+    "requests_with_reported_cost": 124
+  },
+  "native_judge_protocol": "native-schema-posthoc-v3",
+  "v2_invalid_outcome_judgments": 6,
+  "acceptance": "uncalibrated_no_human_acceptance",
+  "trace_status_counts": {
+    "terminal": 14
+  },
+  "limitations": [
+    "Only one B attempt used history once; uncalled tools cannot explain A/B differences.",
+    "Three pairs on one case do not establish a general or statistically reliable effect.",
+    "Paired mode changes both layout and repeated reference content.",
+    "Terminal replay is a posthoc supplement introduced after the first budget failure, uniformly applied to every failed attempt with successful updates; execution failures remain failures.",
+    "The independent judge uses a separate context of the same configured model, has only two sanity controls and no human-label calibration.",
+    "Engineering subagent token usage is not included in OpenRouter experiment usage."
+  ],
+  "native_trace_verification": {
+    "roots": 8,
+    "terminal": 8,
+    "llm_runs": 8,
+    "llm_ended": 8
+  },
+  "validation": {
+    "unit_tests": 557,
+    "real_browser_integration_tests": 24,
+    "browser_readiness_tests": 1,
+    "repository_check": "passed",
+    "ruff": "passed",
+    "format": "passed",
+    "ty": "passed",
+    "delivery_builder_payloads_match_real_requests": 8,
+    "report_image_references": 18,
+    "report_links_and_image_refs_checked": 59,
+    "all_report_image_sources": "1024x576",
+    "html_layout_browser_reviewed": false,
+    "git_diff_check": "passed",
+    "doc_links_after_results": "passed"
+  },
+  "post_study_delivery_changes": [
+    "Canonical native response_format returned by judge request builder",
+    "Default experiment judge binds and checks native schema; new suite records native execution version/schema hash",
+    "No tuning prompts, parameters, shader, model, rendering or rubric changes after the six attempts"
+  ],
+  "delivery_source_sha256": {
+    "src/shader_deep/experiments/parameter_evaluation/_judge.py": "02346ad3ff09247aa676f0e8a38c97738dc98d5fc0f1b221f64f77d04ef6416f",
+    "scripts/history_display_ab.py": "eb4cde127ef6457dd4f3f9dcae8ca5364b1fe35c4fe0d518a5442bb054812c7a",
+    "tests/unit_tests/agents/test_parameter_judge_transport.py": "3298ebd7c1085224bd772661f6b7b3600c8d856c617710ba4892a36695c9ea2f"
+  }
+}

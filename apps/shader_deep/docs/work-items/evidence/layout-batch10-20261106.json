@@ -1,0 +1,1206 @@
+{
+  "date": "2026-11-06",
+  "run_dir": "/Users/douwen/.codex/worktrees/bb55/shader-deep/apps/shader_deep/runs/run-layout-batch10-20261106",
+  "model": "z-ai/glm-5.3-flash",
+  "model_extra_body": {
+    "provider": {
+      "require_parameters": true,
+      "only": [
+        "coreweave/nvfp4"
+      ],
+      "allow_fallbacks": false
+    }
+  },
+  "temperature": 0,
+  "output_tokens": 16384,
+  "timeout_seconds": 90,
+  "grading_protocol": {
+    "frozen_before_calls": true,
+    "internal_expected": "H2 has a narrower/sharper blue-to-gray internal transition than H1; equivalent H1 wider accepted",
+    "outer_expected": "No discernible change to right non-overlap outer contour; predeclared ROI pixels are identical",
+    "internal_labels": [
+      "correct",
+      "wrong_direction",
+      "missed_change",
+      "uncertain",
+      "contradictory",
+      "unassessed"
+    ],
+    "outer_labels": [
+      "correct",
+      "false_change_sharper",
+      "false_change_blurrier",
+      "uncertain",
+      "contradictory",
+      "unassessed"
+    ],
+    "rules": [
+      "Only explicit correct claims count; uncertainty/missing claims remain separate, never silently count as correct",
+      "Contradictory directional claims within one answer are contradictory",
+      "For outer claims confined to an unverified location, use uncertain rather than infer a false change in the right ROI",
+      "Failed/truncated responses remain unassessed and stay in denominator10",
+      "Preference H1/H2/mixed/uncertain is descriptive and not graded against a nonexistent overall visual gold label",
+      "Root reads anonymous outputs before joining groups; no additional model judge"
+    ],
+    "both_correct": "internal==correct AND outer==correct",
+    "scope": "Repeated observations of ONE image pair; not ten distinct cases and not downstream optimization rate"
+  },
+  "source_files": {
+    "R.png": "4165cb213409072975e50d47f8ad6b049b0e30b23a24303fd2b63fd9491e63bb",
+    "H1.png": "918e64f248515eb145bc2e43de1d4d1035db5b3e5b36ecbaee49903aa5f7c1e8",
+    "H2.png": "d4b66f19a7f26ea15a39c81b8b8ecb68681538a3542ff3b5c12044756cb6ec8d",
+    "paired.png": "9759a74489d78d56bcf431e1d9e161ba56b1d247ce9a60e856dc0d33e4a65cd4",
+    "prompt.txt": "f9b1b72546582719d25f8a347455ded741423cce815406c5cd57c649261da5e9",
+    "driver.py": "ce315faa49e8f5349bdb25b5cd671007e5841cafe7c26f370f12780d6f2965d2",
+    "batch.py": "f653675352df9706a36b54873df2f21ba0289e827bd47c373e131ddc9c3279da",
+    "grading-protocol.json": "8640270be693ffe26d63a2b4d267d5183a927236ab9c5442e6f2585c9559d46d"
+  },
+  "source_pilot": "/Users/douwen/.codex/worktrees/bb55/shader-deep/apps/shader_deep/runs/run-layout-one-shot-20261106",
+  "pixel_oracle": {
+    "front_right_outer": {
+      "rectangle": [
+        670,
+        175,
+        745,
+        365
+      ],
+      "identical_pixels": true,
+      "mean_rgb_absolute_difference": 0.0
+    },
+    "internal_transition": {
+      "rectangle": [
+        540,
+        220,
+        630,
+        370
+      ],
+      "identical_pixels": false,
+      "mean_rgb_absolute_difference": 11.025580246913579
+    }
+  },
+  "groups": {
+    "separate": {
+      "attempts": 10,
+      "completed": 10,
+      "internal": {
+        "uncertain": 1,
+        "correct": 5,
+        "wrong_direction": 1,
+        "missed_change": 3
+      },
+      "outer": {
+        "false_change_sharper": 5,
+        "uncertain": 3,
+        "false_change_blurrier": 2
+      },
+      "both_correct": 0,
+      "preference": {
+        "H2": 8,
+        "H1": 2
+      },
+      "unique_exact_outputs": 10,
+      "elapsed_seconds": {
+        "mean": 28.8748958,
+        "median": 28.1786035,
+        "min": 12.58999,
+        "max": 43.932456
+      },
+      "usage": {
+        "requests": 10,
+        "known_usage": 10,
+        "missing_usage": 0,
+        "input_tokens": 26420,
+        "output_tokens": 43102,
+        "total_tokens": 69522,
+        "reasoning_tokens": 40669,
+        "cached_input_tokens": 15744,
+        "reported_cost_usd": 0.01797476,
+        "cost_covered": 10,
+        "tokens_per_request": {
+          "mean": 6952.2,
+          "median": 6889.5,
+          "min": 4390,
+          "max": 8626
+        }
+      }
+    },
+    "paired": {
+      "attempts": 10,
+      "completed": 10,
+      "internal": {
+        "correct": 4,
+        "wrong_direction": 4,
+        "missed_change": 2
+      },
+      "outer": {
+        "false_change_blurrier": 7,
+        "correct": 2,
+        "false_change_sharper": 1
+      },
+      "both_correct": 2,
+      "preference": {
+        "H1": 8,
+        "mixed": 1,
+        "H2": 1
+      },
+      "unique_exact_outputs": 10,
+      "elapsed_seconds": {
+        "mean": 18.1839606,
+        "median": 13.919351500000001,
+        "min": 9.565844,
+        "max": 46.299366
+      },
+      "usage": {
+        "requests": 10,
+        "known_usage": 10,
+        "missing_usage": 0,
+        "input_tokens": 26160,
+        "output_tokens": 30252,
+        "total_tokens": 56412,
+        "reasoning_tokens": 27800,
+        "cached_input_tokens": 10624,
+        "reported_cost_usd": 0.013572560000000001,
+        "cost_covered": 10,
+        "tokens_per_request": {
+          "mean": 5641.2,
+          "median": 4864.5,
+          "min": 3981,
+          "max": 11288
+        }
+      }
+    }
+  },
+  "rows": [
+    {
+      "id": "R01-separate",
+      "mode": "separate",
+      "repeat": 1,
+      "blind_id": "O05",
+      "images": [
+        "R.png",
+        "H1.png",
+        "H2.png"
+      ],
+      "status": "completed",
+      "assessment": {
+        "blind_id": "O05",
+        "internal": "uncertain",
+        "outer": "false_change_sharper",
+        "preference": "H2",
+        "internal_quote": "两态之间看不出明确过渡变化，无法判断",
+        "outer_quote": "H2 仅极轻微收敛",
+        "preference_quote": "H2 略更接近 R",
+        "note": "明确无法判断内部过渡; 不将笼统雾团缩小当作边界方向识别."
+      },
+      "both_correct": false,
+      "usage": {
+        "requests": 1,
+        "known_usage": 1,
+        "missing_usage": 0,
+        "input_tokens": 2642,
+        "output_tokens": 5984,
+        "total_tokens": 8626,
+        "reasoning_tokens": 5757,
+        "cached_input_tokens": 0,
+        "reported_cost_usd": 0.00259096,
+        "cost_covered": 1,
+        "tokens_per_request": {
+          "mean": 8626,
+          "median": 8626,
+          "min": 8626,
+          "max": 8626
+        }
+      },
+      "provider": "CoreWeave",
+      "finish_reasons": [
+        "stop"
+      ],
+      "output": "1. 最明确变化是模糊程度略降：H2 中右侧浅灰圆的弥散边缘稍有收敛、隐约成弧，重叠区的蓝紫雾团范围比 H1 小，向右上方向回缩，蓝圆右上被雾罩住的区域略减，整体朝更清晰的方向移动，但幅度不大。\n\n2. 浅灰前圆非重叠外轮廓：R 中柔但可辨，H1 几乎完全弥散，H2 仅极轻微收敛，变化很小，仍远糊于 R。前圆内部蓝色后圆边界：R 中透过前圆尚可辨认，H1 与 H2 中均被雾团吞没，两态之间看不出明确过渡变化，无法判断。\n\n3. H2 略更接近 R，主要依据是雾团更紧凑、前圆轮廓稍近 R 的柔和边界；但两图在前圆外轮廓过度弥散、后圆边界不可见上均明显偏离 R；蓝圆非重叠部分的边缘与青蓝渐变三者基本一致，不构成取舍点。",
+      "output_sha256": "dafdabb9e4e08aeadd26e99f309a2d6bc0ad0a0429e319f6f87f83ea3f357e14",
+      "trace_id": "d12d03f7-d096-4793-8581-610045c9c9ed",
+      "trace_url": "https://smith.langchain.com/o/fcb09333-f0ce-45e7-9ea2-c4750cdfbd16/projects/p/2e0945b1-fc78-4930-96bb-3085745b703a/r/d12d03f7-d096-4793-8581-610045c9c9ed?poll=true",
+      "elapsed_seconds": 27.06164
+    },
+    {
+      "id": "R01-paired",
+      "mode": "paired",
+      "repeat": 1,
+      "blind_id": "O06",
+      "images": [
+        "paired.png"
+      ],
+      "status": "completed",
+      "assessment": {
+        "blind_id": "O06",
+        "internal": "correct",
+        "outer": "false_change_blurrier",
+        "preference": "H1",
+        "internal_quote": "H2 中重新可辨且较锐利",
+        "outer_quote": "H2 更淡、几乎融入背景",
+        "preference_quote": "整体略倾向 H1",
+        "note": "虽提到区域取舍, 最后仍明确整体略倾向H1."
+      },
+      "both_correct": false,
+      "usage": {
+        "requests": 1,
+        "known_usage": 1,
+        "missing_usage": 0,
+        "input_tokens": 2616,
+        "output_tokens": 2597,
+        "total_tokens": 5213,
+        "reasoning_tokens": 2353,
+        "cached_input_tokens": 0,
+        "reported_cost_usd": 0.00130078,
+        "cost_covered": 1,
+        "tokens_per_request": {
+          "mean": 5213,
+          "median": 5213,
+          "min": 5213,
+          "max": 5213
+        }
+      },
+      "provider": "CoreWeave",
+      "finish_reasons": [
+        "stop"
+      ],
+      "output": "1. 最明确变化：从 H1 到 H2，前圆浅灰盘明显变淡、接近透明，同时蓝紫色模糊晕向蓝圆方向收缩，蓝圆右缘由 H1 的大片外溢模糊变为较清晰的弧线，整体模糊程度下降。\n\n2. 两处轮廓变化方向相反。浅灰前圆非重叠外轮廓：R 中为可辨的浅灰软边；H1 已很弥散，H2 更淡、几乎融入背景，即持续变弱、偏离 R。前圆内部蓝色后圆边界：R 中透过前圆呈紫色渐变弧线；H1 中被晕开难以定位，H2 中重新可辨且较锐利，即由模糊变清晰、趋近 R。\n\n3. 存在取舍：H1 保留了前圆的存在感和紫蓝混合区，色彩构成更接近 R，但模糊过度、蓝色外溢；H2 的蓝圆形状与边界更准，但前圆几乎消失、紫色混合基本丢失。重色彩重叠则 H1 更近，重几何边界则 H2 更近，整体略倾向 H1。",
+      "output_sha256": "3885b5ae6c28664051cfcf8fbe6ee82976a36055f008714163573870d3220d8d",
+      "trace_id": "c1c8b3d8-1724-445d-a5d7-508c27d30cf7",
+      "trace_url": "https://smith.langchain.com/o/fcb09333-f0ce-45e7-9ea2-c4750cdfbd16/projects/p/2e0945b1-fc78-4930-96bb-3085745b703a/r/c1c8b3d8-1724-445d-a5d7-508c27d30cf7?poll=true",
+      "elapsed_seconds": 12.043433
+    },
+    {
+      "id": "R02-paired",
+      "mode": "paired",
+      "repeat": 2,
+      "blind_id": "O13",
+      "images": [
+        "paired.png"
+      ],
+      "status": "completed",
+      "assessment": {
+        "blind_id": "O13",
+        "internal": "wrong_direction",
+        "outer": "false_change_blurrier",
+        "preference": "H1",
+        "internal_quote": "蓝到灰的渐变更宽更浅",
+        "outer_quote": "由尚可辨的圆弧边缘变为近乎消失",
+        "preference_quote": "H1 更接近 R",
+        "note": "按第2项明确内部渐变宽度评分; 紫斑范围取舍不代替内部过渡宽度."
+      },
+      "both_correct": false,
+      "usage": {
+        "requests": 1,
+        "known_usage": 1,
+        "missing_usage": 0,
+        "input_tokens": 2616,
+        "output_tokens": 3221,
+        "total_tokens": 5837,
+        "reasoning_tokens": 2975,
+        "cached_input_tokens": 192,
+        "reported_cost_usd": 0.0015187,
+        "cost_covered": 1,
+        "tokens_per_request": {
+          "mean": 5837,
+          "median": 5837,
+          "min": 5837,
+          "max": 5837
+        }
+      },
+      "provider": "CoreWeave",
+      "finish_reasons": [
+        "stop"
+      ],
+      "output": "1. 最明确变化：右侧浅灰前圆整体继续变淡、边缘更散。H1 中仍可辨认的灰色圆体在 H2 几乎融入背景，重叠区的紫色调同时减淡、晕染范围更宽，总体方向是透明度与对比持续降低。\n\n2. 前圆非重叠外轮廓：H1→H2 变化明确，由尚可辨的圆弧边缘变为近乎消失，灰体对背景的对比大幅下降。前圆内部蓝色后圆边界：过渡带在两张中都在，但 H2 中紫色成分减淡、蓝到灰的渐变更宽更浅，变化相对缓和。两者可区分：前者是灰轮廓的消失，后者是彩色渐变的减淡。\n\n3. H1 更接近 R。依据：R 中前圆灰体与紫色叠加均清晰可辨，H1 虽然边缘过糊、紫斑偏散，仍保留了这两个要素；H2 前圆近乎消失，偏离更大。取舍：若只看重叠区紫斑的范围收敛程度，H2 反而略接近 R,属局部小优。",
+      "output_sha256": "718b2750577e259f167041f2e3a6d12cb997aa2b83b07824eb7fcddb5ea4e35c",
+      "trace_id": "960ba00e-57a7-451d-8332-0d3538fade4c",
+      "trace_url": "https://smith.langchain.com/o/fcb09333-f0ce-45e7-9ea2-c4750cdfbd16/projects/p/2e0945b1-fc78-4930-96bb-3085745b703a/r/960ba00e-57a7-451d-8332-0d3538fade4c?poll=true",
+      "elapsed_seconds": 17.582805
+    },
+    {
+      "id": "R02-separate",
+      "mode": "separate",
+      "repeat": 2,
+      "blind_id": "O19",
+      "images": [
+        "R.png",
+        "H1.png",
+        "H2.png"
+      ],
+      "status": "completed",
+      "assessment": {
+        "blind_id": "O19",
+        "internal": "correct",
+        "outer": "false_change_sharper",
+        "preference": "H2",
+        "internal_quote": "H2 明显回缩、紫带变窄、过渡略陡",
+        "outer_quote": "H2 略窄、光晕稍小",
+        "preference_quote": "H2 更接近 R",
+        "note": "内部方向明确正确; 外缘轻微变化仍是肯定变化."
+      },
+      "both_correct": false,
+      "usage": {
+        "requests": 1,
+        "known_usage": 1,
+        "missing_usage": 0,
+        "input_tokens": 2642,
+        "output_tokens": 3951,
+        "total_tokens": 6593,
+        "reasoning_tokens": 3695,
+        "cached_input_tokens": 2624,
+        "reported_cost_usd": 0.00155602,
+        "cost_covered": 1,
+        "tokens_per_request": {
+          "mean": 6593,
+          "median": 6593,
+          "min": 6593,
+          "max": 6593
+        }
+      },
+      "provider": "CoreWeave",
+      "finish_reasons": [
+        "stop"
+      ],
+      "output": "1. 最明确变化：H1→H2 前圆磨砂模糊整体略收紧。灰色外晕在右侧与下缘向内收，重叠区的紫色晕斑向左上回缩、外溢范围缩小，前圆轮廓稍更可辨，方向为模糊减弱。\n\n2. 浅灰前圆非重叠外轮廓：H1、H2 均为很宽的低对比软过渡，H2 略窄、光晕稍小，变化轻微，仍远软于 R。前圆内部蓝色后圆边界（紫色过渡）：变化更明显，H1 紫晕大幅外溢到蓝圆右缘之外的灰区，H2 明显回缩、紫带变窄、过渡略陡。两者均仍比 R 模糊得多。\n\n3. H2 更接近 R。主要依据是其模糊半径较小：前圆外轮廓与内部紫色边界更紧凑，较接近 R 中清晰可辨的磨砂边与紧凑紫区；H1 扩散过度。但两图相对 R 仍普遍过糊，R 紫区顶部的粉色调在两者中都偏弱，未见 H1 明显占优的区域。",
+      "output_sha256": "49033d3e4a59033546eef08ffb6b798b02f1d321c537b2155b9b122a20e1175c",
+      "trace_id": "6225a28e-2eb7-4f97-9ef8-8ac0482c71f6",
+      "trace_url": "https://smith.langchain.com/o/fcb09333-f0ce-45e7-9ea2-c4750cdfbd16/projects/p/2e0945b1-fc78-4930-96bb-3085745b703a/r/6225a28e-2eb7-4f97-9ef8-8ac0482c71f6?poll=true",
+      "elapsed_seconds": 26.227133
+    },
+    {
+      "id": "R03-separate",
+      "mode": "separate",
+      "repeat": 3,
+      "blind_id": "O10",
+      "images": [
+        "R.png",
+        "H1.png",
+        "H2.png"
+      ],
+      "status": "completed",
+      "assessment": {
+        "blind_id": "O10",
+        "internal": "correct",
+        "outer": "uncertain",
+        "preference": "H2",
+        "internal_quote": "此过渡有可察觉的收敛",
+        "outer_quote": "H2 仅极轻微收紧，接近无明显变化",
+        "preference_quote": "整体 H2 更接近 R",
+        "note": "外缘同时出现几乎未动与轻微收紧/难分优劣, 单列不明确."
+      },
+      "both_correct": false,
+      "usage": {
+        "requests": 1,
+        "known_usage": 1,
+        "missing_usage": 0,
+        "input_tokens": 2642,
+        "output_tokens": 4243,
+        "total_tokens": 6885,
+        "reasoning_tokens": 4010,
+        "cached_input_tokens": 0,
+        "reported_cost_usd": 0.00192938,
+        "cost_covered": 1,
+        "tokens_per_request": {
+          "mean": 6885,
+          "median": 6885,
+          "min": 6885,
+          "max": 6885
+        }
+      },
+      "provider": "CoreWeave",
+      "finish_reasons": [
+        "stop"
+      ],
+      "output": "1. 最明确变化：前圆内部的紫色晕团（被覆盖后圆的透出部分）从 H1 到 H2 略收紧、外扩范围缩小，右侧灰色区域更干净，整体雾化程度轻微下降，方向朝 R 靠拢；前圆外轮廓的柔边几乎未动。\n\n2. 外轮廓：R 为清晰硬边，H1、H2 均为宽柔边，H2 仅极轻微收紧，接近无明显变化，仍远比 R 模糊。内部蓝后圆边界：R 本身就是柔晕，H1 更弥散、紫色调外溢更宽，H2 略集中、范围更接近 R，此过渡有可察觉的收敛，变化比外轮廓明确。\n\n3. 整体 H2 更接近 R，主要依据内部紫晕收敛度与灰区纯净度更符合 R、模糊总量略低。但前圆外轮廓两者都明显过糊，该区域 H1 与 H2 差异微小、难分优劣，属共同短板，不影响整体判断。",
+      "output_sha256": "707bd6eb65a481bbf85fc91f40c7e507ff744bbca70bf82f6be88fb8edc568ff",
+      "trace_id": "43a0e8d9-a1a0-409d-9c53-70c4d9180110",
+      "trace_url": "https://smith.langchain.com/o/fcb09333-f0ce-45e7-9ea2-c4750cdfbd16/projects/p/2e0945b1-fc78-4930-96bb-3085745b703a/r/43a0e8d9-a1a0-409d-9c53-70c4d9180110?poll=true",
+      "elapsed_seconds": 30.6553
+    },
+    {
+      "id": "R03-paired",
+      "mode": "paired",
+      "repeat": 3,
+      "blind_id": "O20",
+      "images": [
+        "paired.png"
+      ],
+      "status": "completed",
+      "assessment": {
+        "blind_id": "O20",
+        "internal": "missed_change",
+        "outer": "false_change_blurrier",
+        "preference": "H1",
+        "internal_quote": "边界位置和过渡宽度看不出明显差别",
+        "outer_quote": "H2 更淡更散，过渡带加宽",
+        "preference_quote": "H1 更接近 R",
+        "note": "按第2项明确内部无变化评分; 第3项仅提出可能/似乎收窄的反向取舍, 不算稳定方向识别."
+      },
+      "both_correct": false,
+      "usage": {
+        "requests": 1,
+        "known_usage": 1,
+        "missing_usage": 0,
+        "input_tokens": 2616,
+        "output_tokens": 8672,
+        "total_tokens": 11288,
+        "reasoning_tokens": 8417,
+        "cached_input_tokens": 2560,
+        "reported_cost_usd": 0.00335328,
+        "cost_covered": 1,
+        "tokens_per_request": {
+          "mean": 11288,
+          "median": 11288,
+          "min": 11288,
+          "max": 11288
+        }
+      },
+      "provider": "CoreWeave",
+      "finish_reasons": [
+        "stop"
+      ],
+      "output": "1. 最明确变化：右上浅灰圆整体变淡、更扩散——H1 中尚能辨认出完整灰圆轮廓，到 H2 已明显变浅、边缘进一步散开，几乎向背景融合；同时重叠区顶部的紫红色调减弱，蓝灰交界整体对比下降。\n\n2. 浅灰前圆非重叠外轮廓：变化明确——H1 已是较宽的软边，H2 更淡更散，过渡带加宽、与背景对比更低。前圆内部蓝色后圆边界：H1 与 H2 均呈宽幅渐变，边界位置和过渡宽度看不出明显差别，几何上无明显变化；可见差异只是渐变中紫色成分减少、灰侧变浅，属色调变化而非过渡带宽变化。\n\n3. 两图都比 R 明显更模糊、圆也更大，但 H1 更接近 R：其重叠区保留较明显的紫红色调、灰圆仍清晰可辨，均与 R 一致；H2 灰圆过淡、紫调更弱。唯一可能的反向取舍是 H2 的蓝边晕染似乎略收窄，稍接近 R 的清晰边界，但不足以改变整体判断。",
+      "output_sha256": "a57d552396776d3c21155af771fb77b813e5e0cdf20c73b64c82bf36d6345617",
+      "trace_id": "a16a6ece-793b-48da-8d15-a5cd5f138830",
+      "trace_url": "https://smith.langchain.com/o/fcb09333-f0ce-45e7-9ea2-c4750cdfbd16/projects/p/2e0945b1-fc78-4930-96bb-3085745b703a/r/a16a6ece-793b-48da-8d15-a5cd5f138830?poll=true",
+      "elapsed_seconds": 46.299366
+    },
+    {
+      "id": "R04-paired",
+      "mode": "paired",
+      "repeat": 4,
+      "blind_id": "O11",
+      "images": [
+        "paired.png"
+      ],
+      "status": "completed",
+      "assessment": {
+        "blind_id": "O11",
+        "internal": "wrong_direction",
+        "outer": "false_change_blurrier",
+        "preference": "H1",
+        "internal_quote": "过渡更偏蓝灰且更平缓",
+        "outer_quote": "H2 更甚，边界持续变软、过渡带变宽",
+        "preference_quote": "H1 更接近 R",
+        "note": "明确将内部和外缘都归为弱化."
+      },
+      "both_correct": false,
+      "usage": {
+        "requests": 1,
+        "known_usage": 1,
+        "missing_usage": 0,
+        "input_tokens": 2616,
+        "output_tokens": 1860,
+        "total_tokens": 4476,
+        "reasoning_tokens": 1596,
+        "cached_input_tokens": 2560,
+        "reported_cost_usd": 0.00076472,
+        "cost_covered": 1,
+        "tokens_per_request": {
+          "mean": 4476,
+          "median": 4476,
+          "min": 4476,
+          "max": 4476
+        }
+      },
+      "provider": "CoreWeave",
+      "finish_reasons": [
+        "stop"
+      ],
+      "output": "1. 最明显变化：前圆浅灰部分从 H1 到 H2 进一步模糊扩散，轮廓向右上更加弥散，顶部残留的紫色调减弱，重叠区由紫蓝混合变得更偏蓝、更均匀。\n\n2. 前圆非重叠外轮廓：H1 已高度模糊，H2 更甚，边界持续变软、过渡带变宽，两者都明显偏离 R 中较清晰可辨的浅灰边缘，方向为继续弱化。前圆内部蓝色后圆边界：H1 呈较宽的紫蓝渐变带，H2 紫色成分减少、过渡更偏蓝灰且更平缓；与 R 中可辨认的紫色渐变边界相比两者均不符，此项变化同样是弱化。两者变化方向一致但位置不同，需分开看待。\n\n3. H1 更接近 R：主要依据是重叠区仍保留明显的紫色混合，且灰圆范围较收敛，更符合 R 的构图与色彩关系；H2 紫色几乎消失、灰圆更扩散，偏离更大。但两图的前圆边缘锐度都远低于 R，属共同缺陷；若仅看蓝圆本体，两图与 R 差距相近，无明显取舍。",
+      "output_sha256": "460dfe8b19c1e8760871a8043a93202f9a8d1b3bf0686d89dd7449fb0ebcc7ed",
+      "trace_id": "ec97f319-db14-4f40-b326-8da711eb66c7",
+      "trace_url": "https://smith.langchain.com/o/fcb09333-f0ce-45e7-9ea2-c4750cdfbd16/projects/p/2e0945b1-fc78-4930-96bb-3085745b703a/r/ec97f319-db14-4f40-b326-8da711eb66c7?poll=true",
+      "elapsed_seconds": 10.883971
+    },
+    {
+      "id": "R04-separate",
+      "mode": "separate",
+      "repeat": 4,
+      "blind_id": "O09",
+      "images": [
+        "R.png",
+        "H1.png",
+        "H2.png"
+      ],
+      "status": "completed",
+      "assessment": {
+        "blind_id": "O09",
+        "internal": "wrong_direction",
+        "outer": "false_change_blurrier",
+        "preference": "H1",
+        "internal_quote": "H2 仅略更宽更淡",
+        "outer_quote": "H2 更淡更散",
+        "preference_quote": "H1 更接近 R",
+        "note": "虽称变化轻微, 仍明确判定内部方向更弥散."
+      },
+      "both_correct": false,
+      "usage": {
+        "requests": 1,
+        "known_usage": 1,
+        "missing_usage": 0,
+        "input_tokens": 2642,
+        "output_tokens": 5036,
+        "total_tokens": 7678,
+        "reasoning_tokens": 4779,
+        "cached_input_tokens": 0,
+        "reported_cost_usd": 0.00223072,
+        "cost_covered": 1,
+        "tokens_per_request": {
+          "mean": 7678,
+          "median": 7678,
+          "min": 7678,
+          "max": 7678
+        }
+      },
+      "provider": "CoreWeave",
+      "finish_reasons": [
+        "stop"
+      ],
+      "output": "1. 最明确变化：H1→H2 浅灰前圆整体更弥散——其右侧非重叠外轮廓变得更淡、几乎融入背景，交叠处紫色晕染向左下略有扩散，蓝圆右上外露边缘被进一步模糊侵蚀。方向为模糊增强、边界消散。\n\n2. 前圆非重叠外轮廓：变化明确，H1 尚可辨认出圆形软边，H2 更淡更散，两者都远比 R 中清晰可辨的边缘模糊。前圆内部蓝色后圆边界的过渡：H1 已扩散成宽紫色晕，H2 仅略更宽更淡，变化轻微、接近难以分辨，但方向同为更弥散；两者均明显偏离 R 中较集中的紫色渐变。\n\n3. H1 更接近 R。主要依据：R 的前圆轮廓可辨、紫晕集中、蓝圆外露边缘锐利，H1 对这些特征保留更多；H2 外轮廓近乎消散、紫晕铺展更广。取舍：若单看灰圆边缘的柔和渐变程度，H2 略接近，但关键边界与晕染范围上 H1 整体占优。",
+      "output_sha256": "2243273810c8f90ca046b777628342995917bc440ae3cc93a8def753b28edef5",
+      "trace_id": "67c3bb7f-59a4-4b35-af28-49728ecc3e82",
+      "trace_url": "https://smith.langchain.com/o/fcb09333-f0ce-45e7-9ea2-c4750cdfbd16/projects/p/2e0945b1-fc78-4930-96bb-3085745b703a/r/67c3bb7f-59a4-4b35-af28-49728ecc3e82?poll=true",
+      "elapsed_seconds": 37.768599
+    },
+    {
+      "id": "R05-separate",
+      "mode": "separate",
+      "repeat": 5,
+      "blind_id": "O04",
+      "images": [
+        "R.png",
+        "H1.png",
+        "H2.png"
+      ],
+      "status": "completed",
+      "assessment": {
+        "blind_id": "O04",
+        "internal": "missed_change",
+        "outer": "false_change_sharper",
+        "preference": "H2",
+        "internal_quote": "位置与宽度基本一致",
+        "outer_quote": "可见轻微收紧、模糊扩散带变窄",
+        "preference_quote": "H2 更接近 R",
+        "note": "内部第2项明确宽度基本一致."
+      },
+      "both_correct": false,
+      "usage": {
+        "requests": 1,
+        "known_usage": 1,
+        "missing_usage": 0,
+        "input_tokens": 2642,
+        "output_tokens": 4971,
+        "total_tokens": 7613,
+        "reasoning_tokens": 4763,
+        "cached_input_tokens": 0,
+        "reported_cost_usd": 0.00220602,
+        "cost_covered": 1,
+        "tokens_per_request": {
+          "mean": 7613,
+          "median": 7613,
+          "min": 7613,
+          "max": 7613
+        }
+      },
+      "provider": "CoreWeave",
+      "finish_reasons": [
+        "stop"
+      ],
+      "output": "1. 最明确变化：浅灰前圆的弥散光晕整体向内收窄——H2 的外轮廓比 H1 略紧，右侧与上方模糊带变窄，内部紫色晕染也向左（重叠区方向）略有回缩；幅度不大但方向一致。\n\n2. 浅灰前圆非重叠外轮廓：H1→H2 可见轻微收紧、模糊扩散带变窄，但仍远软于 R，属小幅变化。前圆内部蓝色后圆边界的过渡（蓝→紫→灰）：H1 与 H2 均为宽缓弥散过渡，位置与宽度基本一致，看不出明确变化，无法判断有改动；两者都明显宽于 R 的较紧过渡。\n\n3. H2 更接近 R：外轮廓更聚拢、紫晕更收敛，边缘清晰度更符合 R；紫色浓淡两图相近且均略淡于 R，此项无明显取舍，整体倾向 H2。",
+      "output_sha256": "b0ac2c7c23531da4f6ccbb2e0156a6310bf9765321bd4b6b7ca07c2b95a56db2",
+      "trace_id": "47f720a4-2bbf-4a6a-9781-0dbfa3051b1f",
+      "trace_url": "https://smith.langchain.com/o/fcb09333-f0ce-45e7-9ea2-c4750cdfbd16/projects/p/2e0945b1-fc78-4930-96bb-3085745b703a/r/47f720a4-2bbf-4a6a-9781-0dbfa3051b1f?poll=true",
+      "elapsed_seconds": 28.504172
+    },
+    {
+      "id": "R05-paired",
+      "mode": "paired",
+      "repeat": 5,
+      "blind_id": "O17",
+      "images": [
+        "paired.png"
+      ],
+      "status": "completed",
+      "assessment": {
+        "blind_id": "O17",
+        "internal": "correct",
+        "outer": "correct",
+        "preference": "mixed",
+        "internal_quote": "该紫晕收窄、变淡，过渡范围显著缩小",
+        "outer_quote": "H1→H2 之间无明显可见变化",
+        "preference_quote": "不强行选出整体胜者",
+        "note": "外缘主判断明确无可见变化, 括号仅提出无法确认的更淡可能; 未肯定发生变化. 整体明确不强选."
+      },
+      "both_correct": true,
+      "usage": {
+        "requests": 1,
+        "known_usage": 1,
+        "missing_usage": 0,
+        "input_tokens": 2616,
+        "output_tokens": 2166,
+        "total_tokens": 4782,
+        "reasoning_tokens": 1910,
+        "cached_input_tokens": 2560,
+        "reported_cost_usd": 0.000881,
+        "cost_covered": 1,
+        "tokens_per_request": {
+          "mean": 4782,
+          "median": 4782,
+          "min": 4782,
+          "max": 4782
+        }
+      },
+      "provider": "CoreWeave",
+      "finish_reasons": [
+        "stop"
+      ],
+      "output": "1. 最明显变化在重叠区：H1 中大片紫红晕染向左下扩散、盖到蓝圆上，H2 中紫晕明显减弱并收缩，只剩重叠区上部一小片淡紫，整体转为蓝灰；同时前圆灰盘变更淡、存在感更弱。\n\n2. 前圆非重叠外轮廓（右侧弧线）：R 中清晰锐利，H1、H2 均高度模糊发虚，H1→H2 之间无明显可见变化（至多略更淡，难以判断）。前圆内部蓝色后圆边界的过渡：有明显变化——H1 呈宽大弥散的紫晕带，H2 中该紫晕收窄、变淡，过渡范围显著缩小。\n\n3. 各有取舍：H1 的前圆灰盘仍可辨认、紫色存在感与 R 更接近，但紫晕扩散过度、范围偏大；H2 的紫晕收缩后更接近 R 的紧凑分布，但前圆几乎消失、紫色偏弱。综合而言 H1 在前圆形态与布局上更接近 R，H2 仅在重叠配色范围上略优，不强行选出整体胜者。",
+      "output_sha256": "6002de3a30e8e998898e7df617ab76d217886cbc667510ae6eba7e5a458a8244",
+      "trace_id": "8ff60825-4f6b-4f24-b00c-513b3634fa4e",
+      "trace_url": "https://smith.langchain.com/o/fcb09333-f0ce-45e7-9ea2-c4750cdfbd16/projects/p/2e0945b1-fc78-4930-96bb-3085745b703a/r/8ff60825-4f6b-4f24-b00c-513b3634fa4e?poll=true",
+      "elapsed_seconds": 13.09159
+    },
+    {
+      "id": "R06-paired",
+      "mode": "paired",
+      "repeat": 6,
+      "blind_id": "O01",
+      "images": [
+        "paired.png"
+      ],
+      "status": "completed",
+      "assessment": {
+        "blind_id": "O01",
+        "internal": "correct",
+        "outer": "correct",
+        "preference": "H1",
+        "internal_quote": "过渡变淡变窄",
+        "outer_quote": "两者之间无明显变化",
+        "preference_quote": "H1 更接近 R",
+        "note": "仅按过渡宽度方向及明确外缘不变判定; 其他颜色/可辨度描述未评分."
+      },
+      "both_correct": true,
+      "usage": {
+        "requests": 1,
+        "known_usage": 1,
+        "missing_usage": 0,
+        "input_tokens": 2616,
+        "output_tokens": 2113,
+        "total_tokens": 4729,
+        "reasoning_tokens": 1907,
+        "cached_input_tokens": 0,
+        "reported_cost_usd": 0.00111686,
+        "cost_covered": 1,
+        "tokens_per_request": {
+          "mean": 4729,
+          "median": 4729,
+          "min": 4729,
+          "max": 4729
+        }
+      },
+      "provider": "CoreWeave",
+      "finish_reasons": [
+        "stop"
+      ],
+      "output": "1. 最明显变化：右上浅灰前圆整体变淡、透明感增强，重叠区的紫色调明显减弱，由 H1 的蓝紫渐变退为偏蓝灰，前圆存在感下降。\n\n2. 前圆非重叠外轮廓：H1 与 H2 都呈高度模糊弥散状，两者之间无明显变化，均明显软于 R 中较可辨的边缘。前圆内部的蓝后圆边界：有变化——H1 中是较宽的蓝紫过渡带，H2 中紫色减退、过渡变淡变窄，边界更难辨认；两者也都不同于 R 里较明确的紫色带。\n\n3. H1 更接近 R：主要依据是重叠区保留了 R 的紫色成分，前圆灰色浓度也更接近参考；H2 前圆更淡、紫色几乎消失，偏离更大。但在前圆轮廓清晰度上两版都不及 R，该区域两者同样失分，不构成额外取舍。",
+      "output_sha256": "621d9071f2f0ee23a0ce0ec25669f17d27e98104a35129e80c033e032cccdc0e",
+      "trace_id": "b1fef7be-5334-4d53-8c34-cde099b427bb",
+      "trace_url": "https://smith.langchain.com/o/fcb09333-f0ce-45e7-9ea2-c4750cdfbd16/projects/p/2e0945b1-fc78-4930-96bb-3085745b703a/r/b1fef7be-5334-4d53-8c34-cde099b427bb?poll=true",
+      "elapsed_seconds": 14.747113
+    },
+    {
+      "id": "R06-separate",
+      "mode": "separate",
+      "repeat": 6,
+      "blind_id": "O14",
+      "images": [
+        "R.png",
+        "H1.png",
+        "H2.png"
+      ],
+      "status": "completed",
+      "assessment": {
+        "blind_id": "O14",
+        "internal": "correct",
+        "outer": "false_change_sharper",
+        "preference": "H2",
+        "internal_quote": "H2 明显收窄、更贴近重叠区",
+        "outer_quote": "此处只能判断为轻微改善",
+        "preference_quote": "H2 更接近 R",
+        "note": "内部明确收窄, 外缘仍明确报告改善."
+      },
+      "both_correct": false,
+      "usage": {
+        "requests": 1,
+        "known_usage": 1,
+        "missing_usage": 0,
+        "input_tokens": 2642,
+        "output_tokens": 3401,
+        "total_tokens": 6043,
+        "reasoning_tokens": 3159,
+        "cached_input_tokens": 2624,
+        "reported_cost_usd": 0.00134702,
+        "cost_covered": 1,
+        "tokens_per_request": {
+          "mean": 6043,
+          "median": 6043,
+          "min": 6043,
+          "max": 6043
+        }
+      },
+      "provider": "CoreWeave",
+      "finish_reasons": [
+        "stop"
+      ],
+      "output": "一、最明确变化：前圆内部的蓝紫色雾状过渡带由 H1 的宽而弥散，在 H2 中明显收窄，右侧扩散边界左移回缩，前圆右半恢复为较干净的浅灰；前圆外轮廓的模糊度也略有下降。\n\n二、外轮廓：R 中前圆边缘柔和但清晰可辨；H1 几乎弥散消失，H2 仍高度弥散、仅右下方略有收敛，变化很小，两者均远糊于 R，此处只能判断为轻微改善。内部蓝色后圆边界过渡：H1 过渡带过宽且向右延伸过头，H2 明显收窄、更贴近重叠区，此处变化显著且方向朝 R 靠拢，与外轮廓的变化幅度明显不同。\n\n三、H2 更接近 R：主要依据是内部紫色过渡的范围与位置更符合 R 中集中于重叠区的形态，外轮廓也略清晰些。取舍说明：两图的前圆外轮廓都明显过糊，该区域两者差距不大、均不达标；差异主要体现在内部过渡，故整体 H2 略优。",
+      "output_sha256": "7f83f92cfc610c62ba9bce8d68b84113bc419295d7f90692f14d23a6b9fb3c3f",
+      "trace_id": "74f86bf5-d4a0-47a7-8a53-2e908d3e00b0",
+      "trace_url": "https://smith.langchain.com/o/fcb09333-f0ce-45e7-9ea2-c4750cdfbd16/projects/p/2e0945b1-fc78-4930-96bb-3085745b703a/r/74f86bf5-d4a0-47a7-8a53-2e908d3e00b0?poll=true",
+      "elapsed_seconds": 22.795685
+    },
+    {
+      "id": "R07-separate",
+      "mode": "separate",
+      "repeat": 7,
+      "blind_id": "O03",
+      "images": [
+        "R.png",
+        "H1.png",
+        "H2.png"
+      ],
+      "status": "completed",
+      "assessment": {
+        "blind_id": "O03",
+        "internal": "missed_change",
+        "outer": "uncertain",
+        "preference": "H2",
+        "internal_quote": "H1→H2 亦无明显变化",
+        "outer_quote": "差异小到难以可靠判断",
+        "preference_quote": "整体 H2 略接近 R",
+        "note": "提及雾团范围收缩, 但第2项明确判内部边界无变化; 外缘混合略显可辨与无法可靠判断, 不计明确不变."
+      },
+      "both_correct": false,
+      "usage": {
+        "requests": 1,
+        "known_usage": 1,
+        "missing_usage": 0,
+        "input_tokens": 2642,
+        "output_tokens": 5949,
+        "total_tokens": 8591,
+        "reasoning_tokens": 5693,
+        "cached_input_tokens": 2624,
+        "reported_cost_usd": 0.00231526,
+        "cost_covered": 1,
+        "tokens_per_request": {
+          "mean": 8591,
+          "median": 8591,
+          "min": 8591,
+          "max": 8591
+        }
+      },
+      "provider": "CoreWeave",
+      "finish_reasons": [
+        "stop"
+      ],
+      "output": "1. H1→H2 最明确的可见变化：前圆内的蓝紫色模糊团略有收缩——原本向右侧、右下方向溢出前圆边缘的蓝色雾状减弱，团块向重叠区中心回退，前圆灰色轮廓右缘因此略显可辨；幅度不大，是两图间唯一可辨差异。\n\n2. 浅灰前圆非重叠外轮廓：R 为清晰硬边，H1、H2 均呈重度羽化，H1→H2 无明显变化，差异小到难以可靠判断。前圆内部蓝色后圆边界：R 中可辨一条弧形分界，H1、H2 中该边界均被扩散的蓝色模糊团淹没而不可辨，H1→H2 亦无明显变化。两项均未向 R 靠拢。\n\n3. 重叠区方面 H2 的模糊团更收敛，较接近 R 中紫团基本限于前圆内的状态；但前圆外轮廓两者同样模糊，与 R 硬边的差距相当。故 H2 仅在重叠区略胜，整体 H2 略接近 R，主要依据是蓝色外溢更少、轮廓稍可辨。",
+      "output_sha256": "d72f1aa40736a0fa79a78734163c7a94a7e36ce062ca6fb731652b77de35b504",
+      "trace_id": "6a43fa3b-3a6b-4fe3-86ed-6cab1e045512",
+      "trace_url": "https://smith.langchain.com/o/fcb09333-f0ce-45e7-9ea2-c4750cdfbd16/projects/p/2e0945b1-fc78-4930-96bb-3085745b703a/r/6a43fa3b-3a6b-4fe3-86ed-6cab1e045512?poll=true",
+      "elapsed_seconds": 43.932456
+    },
+    {
+      "id": "R07-paired",
+      "mode": "paired",
+      "repeat": 7,
+      "blind_id": "O08",
+      "images": [
+        "paired.png"
+      ],
+      "status": "completed",
+      "assessment": {
+        "blind_id": "O08",
+        "internal": "correct",
+        "outer": "false_change_sharper",
+        "preference": "H2",
+        "internal_quote": "H2 变为清晰可辨的弧形明暗过渡",
+        "outer_quote": "H2 仅略微收紧、清晰度略增",
+        "preference_quote": "H2 更接近 R",
+        "note": "内部由雾化到清晰可辨符合方向; 外缘也明确报告改善."
+      },
+      "both_correct": false,
+      "usage": {
+        "requests": 1,
+        "known_usage": 1,
+        "missing_usage": 0,
+        "input_tokens": 2616,
+        "output_tokens": 2331,
+        "total_tokens": 4947,
+        "reasoning_tokens": 2092,
+        "cached_input_tokens": 0,
+        "reported_cost_usd": 0.0011997,
+        "cost_covered": 1,
+        "tokens_per_request": {
+          "mean": 4947,
+          "median": 4947,
+          "min": 4947,
+          "max": 4947
+        }
+      },
+      "provider": "CoreWeave",
+      "finish_reasons": [
+        "stop"
+      ],
+      "output": "1. 最明确变化：从 H1 到 H2，蓝色后圆明显变清晰、饱和度提高，其右缘在前圆内部显现出可辨认的弧形边界；同时前圆顶部的紫色雾状扩散收缩，整体雾化程度下降。\n\n2. 前圆非重叠外轮廓：H1 与 H2 都是宽幅柔糊过渡，H2 仅略微收紧、清晰度略增，变化轻微，仍远软于 R 的近实线边缘。前圆内部的蓝色后圆边界：H1 中几乎被雾化吞没，H2 变为清晰可辨的弧形明暗过渡，变化显著。两者改善方向一致但幅度不同：内部边界改善明显，外轮廓改善有限。\n\n3. H2 更接近 R：后圆形状、色彩饱和度及内部弧形边界都更贴近 R，紫色扩散也更收敛。但 R 的前圆外轮廓接近清晰实边、内部紫蓝渐变更集中，这一区域 H1、H2 均明显偏糊，属共同短板；故整体倾向 H2，外轮廓一项两者皆不足。",
+      "output_sha256": "e9d48d254fc46636d73b06e58a497ef1299952c07fb60da0c23f52f4e88cac7b",
+      "trace_id": "7ff79285-28be-4f5a-a013-8ecd910a3a23",
+      "trace_url": "https://smith.langchain.com/o/fcb09333-f0ce-45e7-9ea2-c4750cdfbd16/projects/p/2e0945b1-fc78-4930-96bb-3085745b703a/r/7ff79285-28be-4f5a-a013-8ecd910a3a23?poll=true",
+      "elapsed_seconds": 16.148111
+    },
+    {
+      "id": "R08-paired",
+      "mode": "paired",
+      "repeat": 8,
+      "blind_id": "O15",
+      "images": [
+        "paired.png"
+      ],
+      "status": "completed",
+      "assessment": {
+        "blind_id": "O15",
+        "internal": "wrong_direction",
+        "outer": "false_change_blurrier",
+        "preference": "H1",
+        "internal_quote": "渐变带加宽",
+        "outer_quote": "H2 更淡更散",
+        "preference_quote": "整体 H1 更接近 R",
+        "note": "明确内部变软、变宽."
+      },
+      "both_correct": false,
+      "usage": {
+        "requests": 1,
+        "known_usage": 1,
+        "missing_usage": 0,
+        "input_tokens": 2616,
+        "output_tokens": 1810,
+        "total_tokens": 4426,
+        "reasoning_tokens": 1568,
+        "cached_input_tokens": 192,
+        "reported_cost_usd": 0.00098252,
+        "cost_covered": 1,
+        "tokens_per_request": {
+          "mean": 4426,
+          "median": 4426,
+          "min": 4426,
+          "max": 4426
+        }
+      },
+      "provider": "CoreWeave",
+      "finish_reasons": [
+        "stop"
+      ],
+      "output": "1. H1→H2 最明确变化：右侧浅灰前圆明显变淡、边缘更弥散，几乎融入背景；重叠区紫色调也随之减弱。方向为不透明度/对比下降、模糊加大。\n\n2. 前圆非重叠外轮廓：R 中较清晰，H1 已明显发虚，H2 更淡更散，呈“清晰→模糊→近乎消失”的明确变化。前圆内部蓝色后圆边界（紫与灰的分界）：R 中可辨，H1 呈大片弥散紫色渐变，H2 紫色减弱、过渡更平缓。两者都在变软，但前者是轮廓整体淡出，后者是紫色混合减弱、渐变带加宽，可区分。\n\n3. 整体 H1 更接近 R：R 中前圆与紫色重叠区均清晰可见，H1 保留了紫色混合与前圆存在感，只是模糊过度；H2 前圆近乎消失、紫色大幅减弱，偏离更远。取舍上，H2 的蓝色圆形态与 R 相当，但前圆区域失真更重。",
+      "output_sha256": "c8e0570225a6b70dd73733620f659b323f212e2455135c720e82cd945055653c",
+      "trace_id": "f2fe2adf-dcd4-4d7a-ae37-ab469d319364",
+      "trace_url": "https://smith.langchain.com/o/fcb09333-f0ce-45e7-9ea2-c4750cdfbd16/projects/p/2e0945b1-fc78-4930-96bb-3085745b703a/r/f2fe2adf-dcd4-4d7a-ae37-ab469d319364?poll=true",
+      "elapsed_seconds": 12.075545
+    },
+    {
+      "id": "R08-separate",
+      "mode": "separate",
+      "repeat": 8,
+      "blind_id": "O16",
+      "images": [
+        "R.png",
+        "H1.png",
+        "H2.png"
+      ],
+      "status": "completed",
+      "assessment": {
+        "blind_id": "O16",
+        "internal": "correct",
+        "outer": "uncertain",
+        "preference": "H2",
+        "internal_quote": "H2 略有收窄，可见轻微变化",
+        "outer_quote": "接近无法判断",
+        "preference_quote": "H2 略更接近 R",
+        "note": "外缘混合极轻微收紧、无明显实质变化和接近无法判断, 不计明确不变."
+      },
+      "both_correct": false,
+      "usage": {
+        "requests": 1,
+        "known_usage": 1,
+        "missing_usage": 0,
+        "input_tokens": 2642,
+        "output_tokens": 4252,
+        "total_tokens": 6894,
+        "reasoning_tokens": 4009,
+        "cached_input_tokens": 2624,
+        "reported_cost_usd": 0.0016704,
+        "cost_covered": 1,
+        "tokens_per_request": {
+          "mean": 6894,
+          "median": 6894,
+          "min": 6894,
+          "max": 6894
+        }
+      },
+      "provider": "CoreWeave",
+      "finish_reasons": [
+        "stop"
+      ],
+      "output": "一、H1→H2 最明确的可见变化是紫蓝色模糊晕整体轻度收缩：晕的右缘、下缘略向左上回收，外围灰雾稍收紧，模糊度小幅下降，方向朝 R 靠近，但幅度轻微。\n\n二、浅灰前圆非重叠外轮廓：R 中是清晰可辨的圆形边界；H1 已弥散成灰雾，H2 仍基本弥散，仅极轻微收紧，无明显实质变化，远未恢复。前圆内部蓝色后圆边界的过渡：R 中是沿蓝圆右缘的较窄紫色渐变带；H1 明显展宽、紫晕外扩，H2 略有收窄，可见轻微变化，但仍远宽于 R。两项变化方向一致，外轮廓一项变化更微弱、接近无法判断。\n\n三、H2 略更接近 R：紫晕范围更紧凑、灰晕稍收敛，更符合 R 的紧凑过渡。但两图同样缺失 R 中灰圆的清晰外轮廓，此区域同等不足；蓝圆本体三图基本一致，不构成区分依据。",
+      "output_sha256": "eff2d056bc16441a87d09f79ef5f76b504b1d6d5e5a476f383c1a67500505931",
+      "trace_id": "bf3a9920-dfb4-4197-bf9f-aedb5a2686df",
+      "trace_url": "https://smith.langchain.com/o/fcb09333-f0ce-45e7-9ea2-c4750cdfbd16/projects/p/2e0945b1-fc78-4930-96bb-3085745b703a/r/bf3a9920-dfb4-4197-bf9f-aedb5a2686df?poll=true",
+      "elapsed_seconds": 27.853035
+    },
+    {
+      "id": "R09-separate",
+      "mode": "separate",
+      "repeat": 9,
+      "blind_id": "O12",
+      "images": [
+        "R.png",
+        "H1.png",
+        "H2.png"
+      ],
+      "status": "completed",
+      "assessment": {
+        "blind_id": "O12",
+        "internal": "correct",
+        "outer": "false_change_sharper",
+        "preference": "H2",
+        "internal_quote": "H2 仅略微收紧，变化微弱",
+        "outer_quote": "H1→H2 明显变清晰",
+        "preference_quote": "H2 更接近 R",
+        "note": "内部方向正确, 即使低估变化幅度仍计方向正确."
+      },
+      "both_correct": false,
+      "usage": {
+        "requests": 1,
+        "known_usage": 1,
+        "missing_usage": 0,
+        "input_tokens": 2642,
+        "output_tokens": 1748,
+        "total_tokens": 4390,
+        "reasoning_tokens": 1515,
+        "cached_input_tokens": 2624,
+        "reported_cost_usd": 0.00071888,
+        "cost_covered": 1,
+        "tokens_per_request": {
+          "mean": 4390,
+          "median": 4390,
+          "min": 4390,
+          "max": 4390
+        }
+      },
+      "provider": "CoreWeave",
+      "finish_reasons": [
+        "stop"
+      ],
+      "output": "1. 最明确变化：浅灰前圆的整体模糊度下降。H1 中前圆外轮廓几乎完全弥散、与背景融为一体，H2 中圆形轮廓重新可辨，重叠区的蓝紫晕染也略向左收缩、范围变小。\n\n2. 非重叠外轮廓：H1→H2 明显变清晰，由高度弥散转为可辨认的软边，方向朝 R 靠近，但仍比 R 更模糊。前圆内部蓝色后圆边界的过渡：H1 与 H2 都是很宽的蓝紫渐变，H2 仅略微收紧，变化微弱，远不如外轮廓变化明显，且两者均比 R 内较集中的紫晕更扩散。\n\n3. H2 更接近 R,主要依据是前圆外轮廓的清晰程度与 R 的软边更一致。取舍：重叠区紫色过渡在两张历史图中都过宽，H2 略好但均未达到 R 的集中度；R 顶部的粉紫色调在 H1、H2 中都很弱，此细节两者皆未还原。",
+      "output_sha256": "f6fdcd17cbf288857ffe4a9ef7f58ea6ca524a60d9053c287ef8bc495014c603",
+      "trace_id": "6a251faf-1914-4e4c-b729-be030354969c",
+      "trace_url": "https://smith.langchain.com/o/fcb09333-f0ce-45e7-9ea2-c4750cdfbd16/projects/p/2e0945b1-fc78-4930-96bb-3085745b703a/r/6a251faf-1914-4e4c-b729-be030354969c?poll=true",
+      "elapsed_seconds": 12.58999
+    },
+    {
+      "id": "R09-paired",
+      "mode": "paired",
+      "repeat": 9,
+      "blind_id": "O18",
+      "images": [
+        "paired.png"
+      ],
+      "status": "completed",
+      "assessment": {
+        "blind_id": "O18",
+        "internal": "missed_change",
+        "outer": "false_change_blurrier",
+        "preference": "H1",
+        "internal_quote": "过渡带宽度和锐度未见明显改变",
+        "outer_quote": "方向为更模糊更浅",
+        "preference_quote": "因此在重叠区颜色与前圆可见度上 H1 更接近",
+        "note": "偏好为有区域限定的H1; 宽度明确未改变."
+      },
+      "both_correct": false,
+      "usage": {
+        "requests": 1,
+        "known_usage": 1,
+        "missing_usage": 0,
+        "input_tokens": 2616,
+        "output_tokens": 4117,
+        "total_tokens": 6733,
+        "reasoning_tokens": 3849,
+        "cached_input_tokens": 0,
+        "reported_cost_usd": 0.00187838,
+        "cost_covered": 1,
+        "tokens_per_request": {
+          "mean": 6733,
+          "median": 6733,
+          "min": 6733,
+          "max": 6733
+        }
+      },
+      "provider": "CoreWeave",
+      "finish_reasons": [
+        "stop"
+      ],
+      "output": "1. 最明确变化：前圆浅灰圆整体变淡、变虚。H1 中灰圆填充与紫色调叠加仍明显，H2 中其透明度明显升高，紫色减退、趋于蓝灰，右侧轮廓几乎融入背景，整体向“更透明、更模糊”方向变化。\n\n2. 前圆非重叠外轮廓：H1 已较弥散，H2 更淡更散、与背景对比进一步降低，变化明确，方向为更模糊更浅。前圆内部蓝色后圆边界：两图均为较宽的柔和过渡，H2 主要是紫色减退、呈现蓝到浅灰的渐变，过渡带宽度和锐度未见明显改变，即边界清晰度无明显变化，可判断的只是颜色浓度变化。\n\n3. R 的前圆边缘清晰，紫色叠加明显且基本限于圆内。H1 保留了紫色叠加与灰圆可见度，色彩关系更接近 R,但轮廓扩散过度；H2 前圆过淡、紫色近乎消失，偏离更大。因此在重叠区颜色与前圆可见度上 H1 更接近；两图共同问题是前圆外轮廓远比 R 模糊、蓝圆偏大，均未还原 R 的清晰边缘，属整体皆有取舍。",
+      "output_sha256": "56bb7d0bbcf57fcbc4c30651b81aff171e7f98c606949ff85cf2e92dd292175e",
+      "trace_id": "e290367b-7074-46dd-9a9c-676a7c25ed78",
+      "trace_url": "https://smith.langchain.com/o/fcb09333-f0ce-45e7-9ea2-c4750cdfbd16/projects/p/2e0945b1-fc78-4930-96bb-3085745b703a/r/e290367b-7074-46dd-9a9c-676a7c25ed78?poll=true",
+      "elapsed_seconds": 29.401828
+    },
+    {
+      "id": "R10-paired",
+      "mode": "paired",
+      "repeat": 10,
+      "blind_id": "O02",
+      "images": [
+        "paired.png"
+      ],
+      "status": "completed",
+      "assessment": {
+        "blind_id": "O02",
+        "internal": "wrong_direction",
+        "outer": "false_change_blurrier",
+        "preference": "H1",
+        "internal_quote": "过渡更平缓且偏蓝灰",
+        "outer_quote": "H2 更散、近乎无边界",
+        "preference_quote": "H1 更接近 R",
+        "note": "内部描述为边界软化, 与收窄方向相反."
+      },
+      "both_correct": false,
+      "usage": {
+        "requests": 1,
+        "known_usage": 1,
+        "missing_usage": 0,
+        "input_tokens": 2616,
+        "output_tokens": 1365,
+        "total_tokens": 3981,
+        "reasoning_tokens": 1133,
+        "cached_input_tokens": 2560,
+        "reported_cost_usd": 0.00057662,
+        "cost_covered": 1,
+        "tokens_per_request": {
+          "mean": 3981,
+          "median": 3981,
+          "min": 3981,
+          "max": 3981
+        }
+      },
+      "provider": "CoreWeave",
+      "finish_reasons": [
+        "stop"
+      ],
+      "output": "1. 最明确变化：浅灰前圆整体进一步弱化。H2 中其右侧非重叠区几乎融入背景，模糊与透明程度高于 H1；同时重叠区紫色调明显减退，蓝色后圆的颜色向右渗入更多。\n\n2. 前圆非重叠外轮廓：H1 已发虚，H2 更散、近乎无边界，是持续变模糊的明确变化。前圆内部的蓝色后圆边界：R 中是较清晰的紫色渐变边，H1 尚存紫味但已扩散，H2 紫色基本消失、过渡更平缓且偏蓝灰。两者变化性质不同：前者是轮廓消散，后者是边界软化叠加色相偏移（紫→蓝灰）。\n\n3. H1 更接近 R：重叠区仍保留紫色调，前圆尚可辨认，蓝圆左缘清晰度也与 R 相符；H2 在前圆轮廓和紫色过渡上偏离更大。取舍：单看左侧蓝圆主体两版差距不大，差异集中在前圆可见度与重叠区色彩上。",
+      "output_sha256": "ded6a144cff60bc4c6e7eeb925268746088c5990541b4865abc644c21cc570fb",
+      "trace_id": "f9ae96d5-e111-4360-8625-4c1d1e6e4e19",
+      "trace_url": "https://smith.langchain.com/o/fcb09333-f0ce-45e7-9ea2-c4750cdfbd16/projects/p/2e0945b1-fc78-4930-96bb-3085745b703a/r/f9ae96d5-e111-4360-8625-4c1d1e6e4e19?poll=true",
+      "elapsed_seconds": 9.565844
+    },
+    {
+      "id": "R10-separate",
+      "mode": "separate",
+      "repeat": 10,
+      "blind_id": "O07",
+      "images": [
+        "R.png",
+        "H1.png",
+        "H2.png"
+      ],
+      "status": "completed",
+      "assessment": {
+        "blind_id": "O07",
+        "internal": "missed_change",
+        "outer": "false_change_blurrier",
+        "preference": "H1",
+        "internal_quote": "过渡宽度基本不变",
+        "outer_quote": "H1→H2 可辨度继续下降",
+        "preference_quote": "H1 更接近 R",
+        "note": "明确否认内部宽度变化."
+      },
+      "both_correct": false,
+      "usage": {
+        "requests": 1,
+        "known_usage": 1,
+        "missing_usage": 0,
+        "input_tokens": 2642,
+        "output_tokens": 3567,
+        "total_tokens": 6209,
+        "reasoning_tokens": 3289,
+        "cached_input_tokens": 2624,
+        "reported_cost_usd": 0.0014101,
+        "cost_covered": 1,
+        "tokens_per_request": {
+          "mean": 6209,
+          "median": 6209,
+          "min": 6209,
+          "max": 6209
+        }
+      },
+      "provider": "CoreWeave",
+      "finish_reasons": [
+        "stop"
+      ],
+      "output": "1. 最明显变化：浅灰前圆整体继续变淡、变虚。其右上方非重叠外轮廓由 H1 的模糊灰团进一步弱化，几乎融入背景；重叠区的蓝紫色晕斑同步减弱、范围略收缩。整体方向是可见度/不透明度下降，蓝圆本身无明显变化。\n\n2. 前圆非重叠外轮廓：H1→H2 可辨度继续下降，属明确变化，且两者都比 R 中软而可辨的边缘更虚。前圆内部蓝色后圆边界：H1 与 H2 均呈宽缓蓝紫渐变，无清晰边界，H2 只是颜色更浅、紫味更弱，过渡宽度基本不变——边界清晰度无明显变化，仅强度改变。\n\n3. H1 更接近 R。依据：R 的前圆轮廓虽软但可辨、重叠区紫色明显；H1 的灰圆存在感与重叠区色彩强度都更接近 R，H2 过度变淡，偏离更大。取舍说明：两图都把 R 中相对可辨的边缘过度模糊，该区域均失分、无一方占优；重叠区色相 H1 偏蓝、R 偏紫，两者均未完全还原，但 H1 仍更近。",
+      "output_sha256": "59940a1a597f6ab9bc6627f65a18546f5b6561cfcb39e766f93c5a3d7f15b9cc",
+      "trace_id": "99268c5d-0fc9-4591-a514-f62aedd31d01",
+      "trace_url": "https://smith.langchain.com/o/fcb09333-f0ce-45e7-9ea2-c4750cdfbd16/projects/p/2e0945b1-fc78-4930-96bb-3085745b703a/r/99268c5d-0fc9-4591-a514-f62aedd31d01?poll=true",
+      "elapsed_seconds": 31.360948
+    }
+  ],
+  "totals": {
+    "requests": 20,
+    "known_usage": 20,
+    "missing_usage": 0,
+    "input_tokens": 52580,
+    "output_tokens": 73354,
+    "total_tokens": 125934,
+    "reasoning_tokens": 68469,
+    "cached_input_tokens": 26368,
+    "reported_cost_usd": 0.03154732,
+    "cost_covered": 20,
+    "tokens_per_request": {
+      "mean": 6296.7,
+      "median": 6126.0,
+      "min": 3981,
+      "max": 11288
+    }
+  },
+  "trace_status": {
+    "terminal": 20
+  },
+  "posthoc_sensitivity": {
+    "separate": {
+      "outer_uncertain": 3,
+      "both_if_uncertain_outer_accepted": 2
+    },
+    "paired": {
+      "outer_uncertain": 0,
+      "both_if_uncertain_outer_accepted": 2
+    }
+  },
+  "assessment_method": "Root annotated group-hidden, shuffled outputs using frozen rubric; quoted evidence checked against original text; no external model judge",
+  "limitations": [
+    "20 calls repeat ONE image pair, not20differentcases",
+    "Same temperature0 does not ensure deterministic generation",
+    "Backend resizing/tiling unknown; image packing treatment includes that effect",
+    "Preference not scored against an overall gold label",
+    "No parameter modification, downstream optimization or causal improvement estimate",
+    "Earlier pilot2calls excluded from this batch"
+  ],
+  "validation": {
+    "all20_http_image_hash_orders_match": true,
+    "all_frozen_inputs_scripts_match": true,
+    "all20_one_request_no_retries": true,
+    "all20_finish_stop": true,
+    "all20_remote_llm_runs_ended": true,
+    "all60_annotation_excerpts_match_outputs": true,
+    "report_local_links_checked": true,
+    "browser_layout_reviewed": false,
+    "production_code_modified_this_turn": false
+  }
+}

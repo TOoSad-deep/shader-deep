@@ -6,6 +6,8 @@ import base64
 import json
 from typing import TYPE_CHECKING
 
+from shader_deep.experiments._parameter_state import ParameterObservation
+
 if TYPE_CHECKING:
     from langchain_core.tools import BaseTool
 
@@ -19,13 +21,20 @@ def configure_tool(operation: BaseTool) -> BaseTool:
     return operation
 
 
-def image_content(snapshot: PreviewSnapshot, *, trial_id: int | None = None, comparison: bytes | None = None) -> list[dict[str, object]]:
+def image_content(
+    snapshot: PreviewSnapshot,
+    *,
+    trial_id: int | None = None,
+    comparison: bytes | None = None,
+    comparison_layout: str = "reference_left_current_right",
+) -> list[dict[str, object]]:
     """将同一快照的元数据和图片包装为多模态消息.
 
     Args:
         snapshot: 参数与 PNG 来自同一次 capture 的只读快照.
         trial_id: 已成功记录的截图编号, 无历史时不提供.
         comparison: 可选并排图, 不提供时发送原始 PNG.
+        comparison_layout: 并排图的左右身份; 历史图不能标成当前图.
 
     Returns:
         元数据文本块和实际图片块, 不包含评价指标.
@@ -41,7 +50,7 @@ def image_content(snapshot: PreviewSnapshot, *, trial_id: int | None = None, com
     if trial_id is not None:
         metadata["trial_id"] = trial_id
     if comparison is not None:
-        metadata["layout"] = "reference_left_current_right"
+        metadata["layout"] = comparison_layout
         metadata["image_width"] = snapshot.width * 2
         metadata["image_height"] = snapshot.height + 24
     png = snapshot.png if comparison is None else comparison
@@ -49,3 +58,13 @@ def image_content(snapshot: PreviewSnapshot, *, trial_id: int | None = None, com
         {"type": "text", "text": json.dumps(metadata, ensure_ascii=False)},
         {"type": "image_url", "image_url": {"url": "data:image/png;base64," + base64.b64encode(png).decode("ascii")}},
     ]
+
+
+def observation_result(
+    snapshot: PreviewSnapshot, *, trial_id: int | None = None, comparison: bytes | None = None
+) -> tuple[list[dict[str, object]], ParameterObservation]:
+    """为截图附带程序回执; artifact 不进入模型正文, 原消息格式不变."""
+    content = image_content(snapshot, trial_id=trial_id, comparison=comparison)
+    png = snapshot.png if comparison is None else comparison
+    url = "data:image/png;base64," + base64.b64encode(png).decode("ascii")
+    return content, ParameterObservation(snapshot, url)

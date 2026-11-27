@@ -18,13 +18,16 @@ from tests.unit_tests.agents.test_parameter_execution import preview_fixture
 
 COMPLETE_ARGS = '{"parameters":{"RED":0.5}}'
 PARTIAL_ARGS = '{"parameters":{"RED":0.5'
+CAPTURE_REQUEST = 2
 
 
-def response(request: httpx2.Request, *, tool: bool, finishes: tuple[str, ...], arguments: str = COMPLETE_ARGS) -> httpx2.Response:
+def response(
+    request: httpx2.Request, *, tool: bool, finishes: tuple[str, ...], arguments: str = COMPLETE_ARGS, tool_name: str = "set_parameters"
+) -> httpx2.Response:
     base = {"id": "offline-stream", "created": 0, "model": "offline-model", "object": "chat.completion.chunk"}
     delta = {"role": "assistant", "content": "" if tool else "done"}
     if tool:
-        delta["tool_calls"] = [{"index": 0, "id": "call-1", "type": "function", "function": {"name": "set_parameters", "arguments": arguments}}]
+        delta["tool_calls"] = [{"index": 0, "id": "call-1", "type": "function", "function": {"name": tool_name, "arguments": arguments}}]
     frames = [{**base, "choices": [{"index": 0, "delta": delta, "finish_reason": None}]}]
     frames.extend({**base, "choices": [{"index": 0, "delta": {}, "finish_reason": finish}]} for finish in finishes)
     body = "".join("data: " + json.dumps(frame) + "\n\n" for frame in frames)
@@ -70,13 +73,15 @@ class ParameterStreamTests(TestCase):
                     _client: httpx2.Client, request: httpx2.Request, *, payloads: list = payloads, duplicate: bool = duplicate, **_kwargs: object
                 ) -> httpx2.Response:
                     payloads.append(json.loads(request.content))
+                    if len(payloads) == CAPTURE_REQUEST:
+                        return response(request, tool=True, finishes=("tool_calls",), tool_name="capture_preview", arguments="{}")
                     reason = "tool_calls" if len(payloads) == 1 else "stop"
                     return response(request, tool=len(payloads) == 1, finishes=(reason,) * (2 if duplicate else 1))
 
                 with patch("httpx2.Client.send", autospec=True, side_effect=send):
                     result = run_parameter_task(agent, HumanMessage(content="adjust RED"), preview, config={"callbacks": [recorder]})
-                self.assertEqual(result.model_calls, 2)
-                self.assertEqual(recorder.finishes, ["tool_calls", "stop"])
+                self.assertEqual(result.model_calls, 3)
+                self.assertEqual(recorder.finishes, ["tool_calls", "tool_calls", "stop"])
                 self.assertTrue(all(p["user"] == "subclass-retained" and p["stream"] for p in payloads))
                 preview.set_parameters.assert_called_once_with({"RED": 0.5})
 
@@ -237,13 +242,15 @@ class AsyncParameterStreamTests(IsolatedAsyncioTestCase):
                     _client: httpx2.AsyncClient, request: httpx2.Request, *, payloads: list = payloads, duplicate: bool = duplicate, **_kwargs: object
                 ) -> httpx2.Response:
                     payloads.append(json.loads(request.content))
+                    if len(payloads) == CAPTURE_REQUEST:
+                        return response(request, tool=True, finishes=("tool_calls",), tool_name="capture_preview", arguments="{}")
                     reason = "tool_calls" if len(payloads) == 1 else "stop"
                     return response(request, tool=len(payloads) == 1, finishes=(reason,) * (2 if duplicate else 1))
 
                 with patch("httpx2.AsyncClient.send", autospec=True, side_effect=send):
                     result = await agent.ainvoke({"messages": [HumanMessage(content="adjust RED")]}, config={"callbacks": [recorder]})
                 self.assertEqual(result["messages"][-1].content, "done")
-                self.assertEqual(recorder.finishes, ["tool_calls", "stop"])
+                self.assertEqual(recorder.finishes, ["tool_calls", "tool_calls", "stop"])
                 self.assertTrue(all(p["user"] == "subclass-retained" and p["stream"] for p in payloads))
                 preview.set_parameters.assert_called_once_with({"RED": 0.5})
 

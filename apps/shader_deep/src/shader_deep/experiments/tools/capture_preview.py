@@ -7,7 +7,8 @@ from typing import TYPE_CHECKING
 from langchain.tools import tool
 from langchain_core.tools import ToolException
 
-from shader_deep.experiments.tools._common import configure_tool, image_content
+from shader_deep.experiments._parameter_state import ParameterObservation  # noqa: TC001  # @tool 解析返回类型.
+from shader_deep.experiments.tools._common import configure_tool, observation_result
 
 if TYPE_CHECKING:
     from langchain_core.tools import BaseTool
@@ -27,12 +28,12 @@ def build_tool(preview: ShaderPreview, *, history: PreviewHistory | None = None)
         返回当前原始 PNG 与快照元数据的工具.
     """
 
-    @tool
-    def capture_preview() -> list[dict[str, object]]:
+    @tool(response_format="content_and_artifact")
+    def capture_preview() -> tuple[list[dict[str, object]], ParameterObservation]:
         """获取当前画布 PNG、完整参数、版本和时间, 用于观察调参效果."""
         try:
             snapshot = preview.capture()
-            return image_content(snapshot, trial_id=None if history is None else history.record(snapshot))
+            return observation_result(snapshot, trial_id=None if history is None else history.record(snapshot))
         except ValueError as exc:
             raise ToolException(str(exc)) from exc
 

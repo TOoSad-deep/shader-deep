@@ -2,48 +2,52 @@
 
 from __future__ import annotations
 
-import base64
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal
 
 from shader_deep.experiments._parameter_history import PreviewHistory
+from shader_deep.experiments.parameter_reference import freeze_parameter_reference
 from shader_deep.experiments.tools.capture_preview import build_tool as build_capture_tool
 from shader_deep.experiments.tools.compare_preview import build_tool as build_compare_tool
 from shader_deep.experiments.tools.get_trial_history import build_tool as build_history_tool
 from shader_deep.experiments.tools.set_parameters import build_tool as build_update_tool
-from shader_deep.imaging.comparison import side_by_side_png
-from shader_deep.infrastructure.llm.messages import png_data_url
 
 if TYPE_CHECKING:
     from pathlib import Path
 
     from langchain_core.tools import BaseTool
 
+    from shader_deep.experiments.parameter_reference import ParameterReference
     from shader_deep.rendering import ShaderPreview
 
 
-def build_parameter_tools(preview: ShaderPreview, *, reference_path: Path | None = None) -> list[BaseTool]:
+def build_parameter_tools(
+    preview: ShaderPreview, *, reference_path: Path | ParameterReference | None = None, history_mode: Literal["original", "paired"] = "original"
+) -> list[BaseTool]:
     """为同一个预览会话装配工具, 不接管浏览器生命周期.
 
     Args:
         preview: 由调用方在 with 内管理的 ShaderPreview, 工具不会关闭它.
-        reference_path: 可选参考 PNG, 构建时固定字节, 不把路径发送给模型.
+        reference_path: 可选参考 PNG 路径或共享冻结对象, 不把路径发送给模型.
+        history_mode: 历史回读使用独立原图或参考/历史并排; paired 必须提供参考图.
 
     Returns:
         按 set_parameters、capture_preview 顺序排列的工具; 有参考图时
         追加 compare_preview、get_trial_history, 共用本次绑定的成功截图历史.
 
     Raises:
-        ValueError: 参考文件不存在、扩展名不符或内容不是可解码 PNG.
+        ValueError: 参考文件无效、模式未知或 paired 模式未提供参考图.
         OSError: 参考文件无法读取.
     """
+    if history_mode not in {"original", "paired"} or (history_mode == "paired" and reference_path is None):
+        msg = "history_mode must be original or paired; paired requires reference_path"
+        raise ValueError(msg)
     if reference_path is None:
         return [build_update_tool(preview), build_capture_tool(preview)]
-    reference = base64.b64decode(png_data_url(reference_path).split(",", 1)[1])
-    side_by_side_png(reference, reference)
+    reference = freeze_parameter_reference(reference_path).png
     history = PreviewHistory()
     return [
         build_update_tool(preview),
         build_capture_tool(preview, history=history),
         build_compare_tool(preview, reference=reference, history=history),
-        build_history_tool(history),
+        build_history_tool(history, reference=reference, history_mode=history_mode),
     ]

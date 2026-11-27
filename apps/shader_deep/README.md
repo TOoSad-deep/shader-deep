@@ -23,6 +23,9 @@
 | [parameter_agent.py](src/shader_deep/experiments/parameter_agent.py) | 使用 Deep Agents 构建可独立 invoke 的调参 Agent, 不需要主 Agent |
 | [parameter_task.py](src/shader_deep/experiments/parameter_task.py) | 把只读目标 PNG 装入多模态任务消息, 不传目标参数或本地路径 |
 | [parameter_run.py](src/shader_deep/experiments/parameter_run.py) | 计数实际请求尝试, 将图执行和最终取图纳入同一追踪, 失败不覆盖原异常 |
+| [_parameter_policy.py](src/shader_deep/experiments/_parameter_policy.py) | 工具白名单、修改顺序、参考/会话身份和收尾图像一致性 |
+| [_parameter_state.py](src/shader_deep/experiments/_parameter_state.py) | 私有截图回执、每次运行独立的预算与部分证据 |
+| [parameter_reference.py](src/shader_deep/experiments/parameter_reference.py) | 一次冻结参考 PNG, 供任务和工具共同使用 |
 
 调用方指定 Shader、参数白名单及范围, 使用外层 with 管理常驻浏览器. 工具只转发参数更新和取图, 不启动/关闭浏览器、不保存候选文件、不重复实现参数范围校验. 取图响应包含完整当前参数、版本、时间、尺寸及实际 PNG 图片内容.
 
@@ -66,19 +69,23 @@ with ShaderPreview(
 
 真实模型调用在应用目录执行 `uv run --no-sync --env-file .env python parameter_example.py`, 配置规则见下文. 构建函数还允许通过可选 `model=` 传入已有模型, 便于离线测试. 该示例中的图步数上限不等于调参次数预算.
 
-执行保护: `build_parameter_agent` 保留原签名, OpenAI 兼容模型缺省单次输出为 8192 tokens、超时 45 秒, 显式预算/超时继续生效. 标准 OpenAI SDK 客户端关闭内部重试后, 原生 middleware 只对建连错误等待一秒、额外重试一次; 读取超时、认证及配置错误直接抛出. 重试只覆盖模型请求, 不重放成功工具. `finish_reason=length` 在工具执行前抛出 `ParameterOutputError`, 不把截断正文或工具参数当作成功结果. Chat Completions 流式模式在片段合并前检查结束标记, 去重一致的结束帧, 拒绝缺失/冲突/截断终态及不完整的工具参数 JSON, 同步和异步入口使用相同规则.
+执行保护: `build_parameter_agent` 保留既有调用兼容, OpenAI 兼容模型缺省单次输出为 8192 tokens、超时 45 秒, 显式预算/超时继续生效. 标准 OpenAI SDK 客户端关闭内部重试后, 原生 middleware 只对建连错误等待一秒、额外重试一次; 读取超时、认证及配置错误直接抛出. 重试只覆盖模型请求, 不重放成功工具. `finish_reason=length` 在工具执行前抛出 `ParameterOutputError`, 不把截断正文或工具参数当作成功结果. Chat Completions 流式模式在片段合并前检查结束标记, 去重一致的结束帧, 拒绝缺失/冲突/截断终态及不完整的工具参数 JSON, 同步和异步入口使用相同规则.
 
 支持通过 ChatOpenAI 的 `client` / `async_client` 直接注入标准 completions 客户端; 即使 `root_client` / `root_async_client` 为空, 仍从已有 SDK owner 复制配置并共享原传输连接, 不修改或关闭调用方客户端. 直接注入资源保留其已有超时, 除非模型显式设置了请求超时. 调用方 ChatOpenAI 子类的覆盖方法继续生效. 无法识别 SDK owner 的自定义 completions 对象保留原样, 其内部重试和超时由调用方管理, 本模块不承诺控制其内部 HTTP 请求数量.
 
 发现流协议错误后, 后续片段只被消费而不再交给消息聚合, 待 SDK 完成本次响应清理后抛出首个错误; 后续读取/关闭故障作为附加说明. 这可能等待当前响应结束或超时, 不等于即时断流. 外部取消/生成器关闭继续向外传播, 不转成继续排空响应.
 
-推荐 `run_parameter_task(agent, task, preview, max_model_calls=20, config=None)` 执行完整实验. 它按实际模型请求尝试计数, 失败和重试都占预算; LangSmith 根名称为 `shader-deep.parameter-run`, 包含最终取图失败. 仅图成功后取最终快照, 模型/工具失败时直接保留原异常; 不在 `finally` 无条件取图. 直接 `agent.invoke/ainvoke/stream` 仍可使用, 但调用方需自行管理总预算与收尾. 成功返回 `ParameterRunResult` 不代表视觉匹配已通过验收.
+推荐 `run_parameter_task(agent, task, preview, max_model_calls=20, config=None)` 执行完整实验. 它按实际模型请求尝试计数, 失败和重试都占预算; LangSmith 根名称为 `shader-deep.parameter-run`, 包含收尾取图与一致性校验. runner 在模型请求前核对 preview 与 Agent 绑定实例相同. 同步/异步图均限制业务工具, 拒绝同批修改与其他工具, 并要求最新截图进入后续模型请求后才能正常结束. 收尾时重新取图, 核对 PNG、参数、revision、时间和尺寸完全一致, 再返回 `ParameterRunResult`. 程序证明材料已呈现和状态一致, 不证明模型看懂或视觉验收通过.
+
+修改执行前至少预留两次请求额度, 分别用于取图及后续回读/总结. 额度不足时隐藏 `set_parameters`, 猜测调用也只返回错误且不修改参数. 重试仍可能用尽预留额度, 此时抛出 `ParameterBudgetError`, 其 `progress` 保留 model_calls、最近完整参数、last_snapshot 和 presented_revision. 最近快照可能早于最新参数, 更新后 presented_revision 清空; 不自动用旧图代替末态. 异常路径不额外渲染, 不覆盖原故障.
+
+直接 `agent.invoke/ainvoke/stream` 也执行权限、顺序和结束校验; 总预算仍由调用方管理. 一个 Agent/preview 只用于一个串行调参任务; 并行任务各自构建. 无 preview 的建议模式及旧 render_tool 入口仍可调用, 但不提供新版截图验证契约, 不能交给要求绑定 preview 的 runner.
 
 上述请求预算覆盖 LangChain 可见的请求尝试; 若传入不透明的自定义客户端, 需要调用方另行约束客户端内部的请求或重试.
 
 工具参数/范围错误仍返回可纠正的错误消息. 浏览器、会话、绘制或导出故障直接抛出 `RenderError` 终止任务. 本版采用停止策略, 不自动重建浏览器或复用旧图假装恢复; 若调用方显式新建会话, 应重新绑定工具/历史并检查新截图.
 
-更新只合并指定参数, 未提供的参数保留当前值. Agent 应先取基线图, 分轮执行更新和取图, 并根据取图结果观察. 更新回执不代表已看到图片; 同一轮并行更新和取图不保证图片属于刚提交的新值. 并行比较多个候选应使用独立的预览会话.
+更新只合并指定参数, 未提供的参数保留当前值. Agent 应先取基线图, 分轮执行更新和取图. 成功修改后, 最新图未进入后续模型请求前不能再次修改或结束; 直接调用底层工具仍由调用方管理顺序. 调参期间固定时间并避免外部修改; 动画时间变化或手动修改使收尾快照不一致时抛出 `ParameterProtocolError`.
 
 迁移说明: 旧实验工厂 `build_render_parameters_tool(shader_path, parameters, options=...)` 已替换为 `build_parameter_tools(preview)`, 不再提供旧 render_parameters 工具、隐式候选文件或三次尝试额度. `build_parameter_agent` 新增可选 `preview=` 和 `model=`, 原 `render_tool=` 单工具参数保留兼容, 不能与 preview 同时提供. 真实模型调参效果仍需单独验证, 模拟模型图执行及 PNG 像素测试不代表视觉质量已验收.
 
@@ -92,6 +99,7 @@ with ShaderPreview(
 from pathlib import Path
 
 from shader_deep.experiments.parameter_agent import build_parameter_agent
+from shader_deep.experiments.parameter_reference import freeze_parameter_reference
 from shader_deep.experiments.parameter_task import build_reference_task
 from shader_deep.experiments.parameter_run import run_parameter_task
 from shader_deep.rendering import ShaderPreview, WebGL2Renderer
@@ -107,7 +115,8 @@ with WebGL2Renderer() as renderer:
     # 隐藏目标值只用于生成图片, 不传入 agent 或工具说明.
     reference.write_bytes(renderer.render(shader, 512, 512, 0.0, uniforms={"RED": 0.65}))
 
-task = build_reference_task(reference)
+frozen_reference = freeze_parameter_reference(reference)
+task = build_reference_task(frozen_reference)
 with ShaderPreview(
     shader,
     parameters={"RED": {"min": 0.0, "max": 1.0, "initial": 0.2}},
@@ -115,14 +124,14 @@ with ShaderPreview(
     height=512,
     time=0.0,
 ) as preview:
-    agent = build_parameter_agent(preview=preview, reference_path=reference)
+    agent = build_parameter_agent(preview=preview, reference_path=frozen_reference)
     result = run_parameter_task(agent, task, preview, config={"recursion_limit": 20})
     final = result.snapshot
     Path("matched.png").write_bytes(final.png)
     print(dict(final.parameters))  # 实际提交的参数以会话状态为准.
 ```
 
-`build_reference_task` 返回 `HumanMessage`, 可选 `requirement=` 添加匹配优先级等补充说明. 构建时读取并固定 PNG 字节, 后续修改原文件不改变已构建的消息. 路径和文件名不发送给模型; 消息读取沿用文件存在/扩展名检查, 参考工具绑定时另验证 PNG 可以解码. 消息和工具分别固定参考图, 应连续构建且中间不修改文件; 换任务/参考图时重新构建 Agent, 不复用旧历史. 生成参考图和当前预览时应使用相同尺寸及固定时间. 不同工具配置、预算和提示词的真实实验分别记录, 既往结果不能直接证明最新配置提高了精度; 具体证据见下方实验记录.
+`build_reference_task` 返回 `HumanMessage`, 可选 `requirement=` 添加匹配优先级等补充说明. 三个 builder 的 reference_path 类型兼容扩展为 `Path | ParameterReference`, 原参数名、位置和默认值不变. 推荐先 `freeze_parameter_reference(path)` 读取、解码并冻结 PNG, 再把同一对象交给任务、Agent 或工具工厂. 路径和文件名不发送给模型. 仍分别传 Path 时, 目标内容若变化会在模型请求前报错, 不静默混用两张参考图. 参考绑定模式的用户图片均视为同一目标, 不支持附加其他图片作为另一目标. 换目标时重新构建 Agent, 不复用旧历史. 参考和当前预览使用相同尺寸及固定时间. 实测精度与用户验收另记.
 
 #### 差异、参数与验证流程
 
@@ -133,24 +142,28 @@ with ShaderPreview(
 3. 成功更新后单独取图, 核对完整参数及 `revision`, 判断该差异是改善、无明显变化、变差还是无法判断, 然后决定下一次调整.
 4. 结束前用最后一次修改后的最新截图逐项复查主要差异, 报告最终参数、截图 `revision` 和剩余问题. 恢复旧值也需检查恢复后的新截图. 若最新图已检查且没有后续修改, 不要求重复取图.
 
-上述视觉检查流程是模型可见的提示词约束, 尚未新增结束提交工具或程序验证视觉判断; 不保证模型必然遵循或判断正确. 执行层另行拦截输出截断及致命工具错误. 预算用尽或观察受限时, 要求模型如实报告尚未匹配/未完成验证. 历史回读保持可选, 工具不提供数值评分. 此版已完成双圆 case 的单轮 A/B 实测, 模型执行了逐轮与结束前检查, 但尚未证明精度稳定提高; 具体结果见下方实验记录.
+差异识别和改善判断仍由提示词引导. 程序只验证业务工具权限、调用顺序、真实截图呈现和收尾状态一致, 不解析自然语言来冒充视觉判断. 违规时抛出 `ParameterProtocolError`, 不返回伪验证结果; 历史图不能替代最新状态的检查. 历史回读保持可选, 工具不提供评分. 这些执行保证不等于精度收益, 既有实测结果见实验记录.
 
 #### 只读视觉反馈工具
 
-`build_parameter_tools(preview, reference_path=reference)` 返回四个工具; 不提供参考图时仍只返回原来的两个, 名称和顺序不变. Agent 构建函数只新增可选关键字参数 `reference_path=None`, 需要同时提供 `preview`.
+`build_parameter_tools(preview, reference_path=reference)` 返回四个工具; 不提供参考图时仍只返回原来的两个, 名称和顺序不变. Agent 构建函数提供可选关键字参数 `reference_path=None`, 需要同时提供 `preview`; 新增 `history_mode="original"` 保留原历史展示, 可设为 `"paired"` 启用参考与历史并排.
 
 | 工具 | 输入 | 输出与作用 |
 | --- | --- | --- |
 | `set_parameters` | `parameters` 字典 | 校验并更新指定参数, 返回完整参数; 不截图、不评分 |
 | `capture_preview` | 无 | 原始当前 PNG 和元数据; 绑定参考图时另记录截图编号 |
 | `compare_preview` | 无 | 捕获当前帧, 左参考右当前并排图及当前参数、截图编号; 不做数值评价 |
-| `get_trial_history` | 可选 `trial_ids` | 默认最近三张; 可指定一至三个不同编号, 返回原始截图和参数 |
+| `get_trial_history` | 可选 `trial_ids` | 默认最近三张; 可指定一至三个不同编号, 返回原始截图或参考/历史并排图及参数 |
 
 两张 `512×512` PNG 拼成 `1024×536` RGBA PNG, 顶部 24 像素标题栏不覆盖原图. 源图不裁剪、不缩放, RGBA 像素保持一致, 源 PNG 字节保存在历史快照中. 尺寸不同时返回错误, 不静默缩放. 对比响应中的 `width/height` 是当前源图尺寸, `image_width/image_height` 是并排图尺寸, `layout=reference_left_current_right` 标注左右身份.
 
 `trial_id` 从 1 开始, 表示本次绑定中成功取图的记录顺序, 包括基线、重复参数截图及 `capture_preview`; 它不是 `revision` 参数版本. 仅更新但未截图的状态没有历史图, 失败的截图/对比不新增编号. 历史默认按时间顺序展示, 不自动排名、选择或恢复参数; 模型需自行看图并用 `set_parameters` 恢复某次值. 每次回读最多三张以控制图片输入量, 可再次指定更早编号. 全部成功截图暂存本次工具闭包内存, 不持久写盘, 构建新工具时历史为空; 运行长度由外层限制.
 
 工具不计算或返回 MAE、其他相似度评分、差异图、优劣标签及自动最好结果. 外层离线评估可以保留 MAE 作为指标之一, 但不要把评估文件或结果注入模型消息、工具描述或可读取文件. 局部放大尚未实现. 更新和观察继续分轮执行, 并排图说明的是当前 capture 的真实状态, 不把更新回执当作视觉证据.
+
+`build_parameter_agent(..., history_mode="paired")` 与 `build_parameter_tools(..., history_mode="paired")` 均要求固定参考图. 历史并排图标注 `layout=reference_left_history_right`, 右侧标题包含原 trial/revision. 回读不重新截图, 不改变当前参数, 不将历史图标成当前图. 两种模式共享相同的历史编号、参数与读取限制. 此模式同时改变布局和参考图的重复呈现, 实验结论不能单独归因于布局.
+
+离线评估模块 [parameter_evaluation](src/shader_deep/experiments/parameter_evaluation/__init__.py) 在固定参考区域计算误差, 并为独立视觉评审组织输入和校验结果. 评审请求提供原生严格 JSON Schema, 实验入口核对实际 HTTP 已携带该约束; 仅在提示词里展示 schema 不作为格式保证. 数值诊断和评审结论不返回调参 Agent, 不作为已校准的自动验收门槛. 评估规则与实验协议见[历史对照评估](docs/work-items/parameter-history-evaluation.md).
 
 当前范围及验证结果见[实验记录](docs/work-items/parameter-agent-experiment.md).
 

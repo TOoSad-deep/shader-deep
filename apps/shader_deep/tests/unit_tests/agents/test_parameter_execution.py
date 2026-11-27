@@ -64,11 +64,13 @@ class ParameterExecutionTests(TestCase):
             if len(payloads) == failed_attempt:
                 msg = "TLS handshake"
                 raise httpx2.ConnectTimeout(msg, request=request)
+            if len(payloads) == failed_attempt + 1:
+                return reply(request, tool="capture_preview", finish="tool_calls")
             return reply(request)
 
         with patch("httpx2.Client.send", autospec=True, side_effect=send), patch("langchain.agents.middleware.model_retry.time.sleep"):
             result = run_parameter_task(self.agent, self.task, self.preview)
-        self.assertEqual(result.model_calls, 3)
+        self.assertEqual(result.model_calls, 4)
         self.assertEqual(payloads[1], payloads[2])
         self.assertEqual(payloads[0]["max_completion_tokens"], 8192)
         self.preview.set_parameters.assert_called_once_with({"RED": 0.5})
@@ -124,9 +126,11 @@ class ParameterExecutionTests(TestCase):
         self.preview.capture.assert_called_once()
 
     def test_final_capture_failure_is_not_success(self) -> None:
-        self.preview.capture.side_effect = RenderError("closed after graph", stage="browser")
+        self.preview.capture.side_effect = [self.preview.capture.return_value, RenderError("closed after graph", stage="browser")]
 
         def send(_client: httpx2.Client, request: httpx2.Request, **_kwargs: object) -> httpx2.Response:
+            if self.preview.capture.call_count == 0:
+                return reply(request, tool="capture_preview", finish="tool_calls")
             return reply(request)
 
         with patch("httpx2.Client.send", autospec=True, side_effect=send), self.assertRaisesRegex(RenderError, "closed after graph"):
@@ -134,9 +138,11 @@ class ParameterExecutionTests(TestCase):
 
     def test_trace_root_includes_final_capture_failure(self) -> None:
         client = Mock(spec=Client)
-        self.preview.capture.side_effect = RenderError("closed after graph", stage="browser")
+        self.preview.capture.side_effect = [self.preview.capture.return_value, RenderError("closed after graph", stage="browser")]
 
         def send(_client: httpx2.Client, request: httpx2.Request, **_kwargs: object) -> httpx2.Response:
+            if self.preview.capture.call_count == 0:
+                return reply(request, tool="capture_preview", finish="tool_calls")
             return reply(request)
 
         with (
@@ -158,11 +164,13 @@ class ParameterExecutionTests(TestCase):
 
         def send(_client: httpx2.Client, request: httpx2.Request, **_kwargs: object) -> httpx2.Response:
             caps.append(json.loads(request.content)["max_completion_tokens"])
+            if len(caps) == 1:
+                return reply(request, tool="capture_preview", finish="tool_calls")
             return reply(request)
 
         with patch("httpx2.Client.send", autospec=True, side_effect=send):
             run_parameter_task(agent, self.task, self.preview)
-        self.assertEqual(caps, [12000])
+        self.assertEqual(caps, [12000, 12000])
 
 
 class AsyncParameterExecutionTests(IsolatedAsyncioTestCase):

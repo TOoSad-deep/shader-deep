@@ -13,7 +13,7 @@ from langchain_core.messages import AIMessage, HumanMessage
 from PIL import Image
 
 from shader_deep.experiments.parameter_agent import build_parameter_agent
-from shader_deep.experiments.parameter_run import run_parameter_task
+from shader_deep.experiments.parameter_run import ParameterProtocolError, run_parameter_task
 from shader_deep.experiments.parameter_task import build_reference_task
 from shader_deep.experiments.tools import build_parameter_tools
 from shader_deep.rendering import RenderError, ShaderPreview, WebGL2Renderer
@@ -22,6 +22,48 @@ SHADER = "uniform float RED; uniform float GREEN; void mainImage(out vec4 c, in 
 
 
 class ParameterToolRenderTests(TestCase):
+    def test_agent_returns_the_real_image_presented_after_its_update(self) -> None:
+        model = FakeMessagesListChatModel(
+            responses=[
+                AIMessage(content="", tool_calls=[{"name": "set_parameters", "args": {"parameters": {"RED": 0.5}}, "id": "update"}]),
+                AIMessage(content="", tool_calls=[{"name": "capture_preview", "args": {}, "id": "capture"}]),
+                AIMessage(content="已查看 revision 1"),
+            ]
+        )
+        specs = {"RED": {"min": 0.0, "max": 1.0, "initial": 0.0}}
+        with (
+            ShaderPreview(SHADER, parameters=specs, width=7, height=5, headless=True) as preview,
+            patch.object(FakeMessagesListChatModel, "bind_tools", return_value=model),
+        ):
+            result = run_parameter_task(
+                build_parameter_agent(preview=preview, model=model), HumanMessage(content="adjust RED"), preview, max_model_calls=3
+            )
+        self.assertEqual(result.model_calls, 3)
+        self.assertEqual(result.snapshot.revision, 1)
+        self.assertEqual(dict(result.snapshot.parameters), {"RED": 0.5})
+        with Image.open(BytesIO(result.snapshot.png)) as image:
+            self.assertEqual(image.convert("RGBA").getpixel((0, 0)), (128, 0, 0, 255))
+
+    def test_agent_cannot_finish_after_an_external_update_to_the_real_preview(self) -> None:
+        specs = {"RED": {"min": 0.0, "max": 1.0, "initial": 0.0}}
+        with ShaderPreview(SHADER, parameters=specs, width=7, height=5, headless=True) as preview:
+
+            class ExternallyChangedModel(FakeMessagesListChatModel):
+                def _generate(self, *args: object, **kwargs: object) -> object:
+                    if self.i:
+                        preview.set_parameters({"RED": 0.8})
+                    return super()._generate(*args, **kwargs)
+
+            model = ExternallyChangedModel(
+                responses=[
+                    AIMessage(content="", tool_calls=[{"name": "capture_preview", "args": {}, "id": "capture"}]),
+                    AIMessage(content="完成"),
+                ]
+            )
+            with patch.object(ExternallyChangedModel, "bind_tools", return_value=model), self.assertRaises(ParameterProtocolError):
+                run_parameter_task(build_parameter_agent(preview=preview, model=model), HumanMessage(content="inspect"), preview)
+            self.assertEqual(dict(preview.capture().parameters), {"RED": 0.8})
+
     def test_closed_browser_stops_agent_and_records_unexpected_disconnect(self) -> None:
         specs = {"RED": {"min": 0.0, "max": 1.0, "initial": 0.0}}
         model = FakeMessagesListChatModel(
@@ -67,6 +109,27 @@ class ParameterToolRenderTests(TestCase):
                 with Image.open(BytesIO(base64.b64decode(history[2]["image_url"]["url"].split(",", 1)[1]))) as image:
                     self.assertEqual(image.getpixel((0, 0)), (0, 64, 0, 255))
                 self.assertEqual(dict(preview.capture().parameters), {"RED": 0.8, "GREEN": 0.25})
+
+    def test_paired_history_keeps_real_historical_pixels_after_update(self) -> None:
+        specs = {"RED": {"min": 0.0, "max": 1.0, "initial": 0.0}}
+        with TemporaryDirectory() as temporary:
+            target = Path(temporary) / "reference.png"
+            with Image.new("RGBA", (100, 5), (204, 0, 0, 255)) as reference:
+                reference.save(target)
+            with ShaderPreview(SHADER, parameters=specs, width=100, height=5, headless=True) as preview:
+                tools = {operation.name: operation for operation in build_parameter_tools(preview, reference_path=target, history_mode="paired")}
+                tools["compare_preview"].invoke({})
+                preview.set_parameters({"RED": 0.8})
+                history = tools["get_trial_history"].invoke({"trial_ids": [1]})
+                metadata = json.loads(history[1]["text"])
+                self.assertEqual(metadata["layout"], "reference_left_history_right")
+                self.assertEqual((metadata["revision"], metadata["parameters"]), (0, {"RED": 0.0}))
+                with Image.open(BytesIO(base64.b64decode(history[2]["image_url"]["url"].split(",", 1)[1]))) as image:
+                    self.assertEqual(image.size, (200, 29))
+                    self.assertEqual(image.getpixel((0, 24)), (204, 0, 0, 255))
+                    self.assertEqual(image.getpixel((100, 24)), (0, 0, 0, 255))
+                current = preview.capture()
+                self.assertEqual((current.revision, dict(current.parameters)), (1, {"RED": 0.8}))
 
     def test_generated_target_and_current_capture_are_distinct_images(self) -> None:
         with TemporaryDirectory() as temporary:
